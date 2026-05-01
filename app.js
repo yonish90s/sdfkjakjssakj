@@ -788,6 +788,27 @@ async function sendChatMessage() {
   input.value = '';
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
+  // --- PREDEFINED ANSWERS LOGIC ---
+  const predefinedAnswers = {
+    '1': 'אנחנו זמינים עבורכם 24/7 באתר שלנו! כל הכתבות והמוצרים זמינים בכל עת.',
+    '2': 'ניתן לשלוח לנו מייל לכתובת: support@project11.com או להשתמש בטופס יצירת הקשר באתר.',
+    '3': 'תוכלו לקבוע תור בקלות דרך עמוד "קביעת תור" בתפריט הניווט שלנו.',
+    '4': 'בעמוד "גרפים" תוכלו למצוא ניתוחים מתקדמים, גרפים וקבצי נתונים להורדה ישירה.'
+  };
+
+  if (predefinedAnswers[message]) {
+    setTimeout(() => {
+      chatContainer.innerHTML += `
+        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right;">
+          ${predefinedAnswers[message]}
+        </div>
+      `;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 500);
+    return;
+  }
+  // --- END PREDEFINED ANSWERS LOGIC ---
+
   // Add "Typing..."
   const typingId = 'typing-' + Date.now();
   chatContainer.innerHTML += `<div id="${typingId}" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right;">העוזר חושב...</div>`;
