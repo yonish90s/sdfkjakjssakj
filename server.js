@@ -19,6 +19,34 @@ const FRONTEND_URL = process.env.FRONTEND_URL
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
+// --- ML Intent Classifier ---
+const natural = require('natural');
+const classifier = new natural.BayesClassifier();
+
+classifier.addDocument('מתי אתם פתוחים', 'hours');
+classifier.addDocument('שעות פעילות', 'hours');
+classifier.addDocument('מתי אפשר להגיע', 'hours');
+classifier.addDocument('זמני פתיחה', 'hours');
+classifier.addDocument('איך יוצרים קשר', 'contact');
+classifier.addDocument('דברו איתי', 'contact');
+classifier.addDocument('טלפון', 'contact');
+classifier.addDocument('מייל', 'contact');
+classifier.addDocument('לקבוע תור', 'appointment');
+classifier.addDocument('להזמין פגישה', 'appointment');
+classifier.addDocument('תור חדש', 'appointment');
+classifier.addDocument('גרפים', 'charts');
+classifier.addDocument('נתונים', 'charts');
+classifier.addDocument('קובץ נתונים', 'charts');
+classifier.addDocument('סטטיסטיקה', 'charts');
+classifier.train();
+
+const intentResponses = {
+  hours: 'אנחנו זמינים עבורכם 24/7 באתר שלנו! כל הכתבות והמוצרים זמינים בכל עת.',
+  contact: 'ניתן לשלוח לנו מייל לכתובת: support@project11.com או להשתמש בטופס יצירת הקשר באתר.',
+  appointment: 'תוכלו לקבוע תור בקלות דרך עמוד "קביעת תור" בתפריט הניווט שלנו.',
+  charts: 'בעמוד "גרפים" תוכלו למצוא ניתוחים מתקדמים, גרפים וקבצי נתונים להורדה ישירה.'
+};
+
 // Test endpoint
 app.get('/api/test', (req, res) => res.json({ status: 'ok', message: 'Server is alive!' }));
 
@@ -26,6 +54,21 @@ app.get('/api/test', (req, res) => res.json({ status: 'ok', message: 'Server is 
 app.post(['/api/chat', '/chat'], async (req, res) => {
   try {
     const { message, history, systemPrompt } = req.body;
+
+    // --- ML INTENT CHECK ---
+    const intent = classifier.classify(message);
+    const classifications = classifier.getClassifications(message);
+    const topScore = classifications[0].value;
+
+    // Only use intent if the confidence is reasonably high
+    if (topScore > 0.001) {
+      const response = intentResponses[intent];
+      if (response) {
+        return res.json({ text: response, isIntent: true });
+      }
+    }
+    // --- END ML INTENT CHECK ---
+    
     const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
