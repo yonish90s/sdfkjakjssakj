@@ -582,22 +582,45 @@ function showArticle(id) {
 
 
 function renderRecommendations(currentId, category) {
-  // Find articles in the same category, excluding current
-  let recs = newsArticles.filter(art => art.id !== currentId && art.category === category);
-  
-  // If not enough, fill with others
-  if (recs.length < 4) {
-    const others = newsArticles.filter(art => art.id !== currentId && art.category !== category);
-    recs = [...recs, ...others].slice(0, 4);
-  } else {
-    recs = recs.slice(0, 4);
-  }
+  const currentArt = newsArticles.find(a => a.id === currentId);
+  if (!currentArt) return '';
 
-  return recs.map(r => `
+  // Simple ML-like similarity scoring
+  const getKeywords = (str) => {
+    if (!str) return [];
+    return str.toLowerCase()
+      .replace(/[^\w\sא-ת]/g, '') // Keep Hebrew and English
+      .split(/\s+/)
+      .filter(w => w.length > 2); // Ignore short words
+  };
+
+  const currentKeywords = getKeywords(`${currentArt.title} ${currentArt.snippet || ''}`);
+
+  const scoredArticles = newsArticles
+    .filter(a => a.id !== currentId && a.approved !== false)
+    .map(a => {
+      const keywords = getKeywords(`${a.title} ${a.snippet || ''}`);
+      let score = 0;
+      
+      // Bonus for same category
+      if (a.category === category) score += 5;
+      
+      // Score based on keyword overlap
+      currentKeywords.forEach(kw => {
+        if (keywords.includes(kw)) score += 2;
+      });
+
+      return { ...a, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  return scoredArticles.map(r => `
     <div class="rec-card" onclick="showArticle(${r.id})">
       <div class="rec-image" style="background-image: url('${r.image}')"></div>
       <div class="rec-meta">${escHtml(r.category)}</div>
       <div class="rec-title">${escHtml(r.title)}</div>
+      ${r.score > 5 ? `<div style="font-size:0.7rem; color:var(--primary); font-weight:700; margin-top:4px;">🔥 מותאם במיוחד עבורך</div>` : ''}
     </div>
   `).join('');
 }
