@@ -1,0 +1,8 @@
+.DS_Store
+scratch/
+agent/.seen.json
+node_modules/
+.env
+.vercel
+.env*.local
+.npm-cache/

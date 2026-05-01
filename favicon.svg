@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background circle (subtle, optional - removable) -->
+  <rect width="64" height="64" rx="12" fill="#000"/>
+
+  <!-- Lion head with mane - front view -->
+  <g fill="#fff" stroke="#fff" stroke-linejoin="round">
+    <!-- Mane: jagged sun-ray pattern around the head -->
+    <path d="M32 6
+             L36 12 L42 9 L42 16 L48 14 L46 21 L52 22 L48 28
+             L54 32 L48 36 L52 42 L46 43 L48 50 L42 48 L42 55 L36 52 L32 58
+             L28 52 L22 55 L22 48 L16 50 L18 43 L12 42 L16 36 L10 32
+             L16 28 L12 22 L18 21 L16 14 L22 16 L22 9 L28 12 Z" />
+  </g>
+
+  <!-- Inner face (black silhouette of the lion's face) -->
+  <g fill="#000">
+    <!-- Round face shape -->
+    <circle cx="32" cy="34" r="11"/>
+  </g>
+
+  <!-- Face features (white) -->
+  <g fill="#fff">
+    <!-- Eyes -->
+    <circle cx="28" cy="32" r="1.6"/>
+    <circle cx="36" cy="32" r="1.6"/>
+    <!-- Nose (triangle) -->
+    <path d="M30.5 36 L33.5 36 L32 38.2 Z"/>
+    <!-- Mouth line -->
+    <path d="M32 38.5 L32 40.5" stroke="#fff" stroke-width="0.8" fill="none"/>
+    <path d="M30 41 Q32 42.5 34 41" stroke="#fff" stroke-width="0.8" fill="none"/>
+  </g>
+</svg>

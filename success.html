@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הזמנה הושלמה — החנות הדיגיטלית</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .success-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 56px 48px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 80px rgba(124,58,237,0.1);
+    }
+    .success-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+    .success-card h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
+    .success-card p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.7; margin-bottom: 32px; }
+    .download-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .download-list a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: #a78bfa;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .download-list a:hover { background: rgba(124,58,237,0.14); border-color: rgba(124,58,237,0.35); }
+    .loading { color: var(--text-muted); font-size: 0.9rem; }
+    .error-msg { color: #f87171; font-size: 0.88rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 12px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <div class="success-card">
+    <span class="success-icon">🎉</span>
+    <h1>תשלום בוצע בהצלחה!</h1>
+    <p>תודה על הרכישה. קישורי ההורדה שלך מוכנים למטה.</p>
+
+    <div id="downloads-area">
+      <p class="loading">⏳ טוען קישורי הורדה...</p>
+    </div>
+
+    <a href="/" class="btn-secondary" style="display:inline-block; text-decoration:none;">← חזור לחנות</a>
+  </div>
+
+  <script>
+    const SERVER_URL = 'http://localhost:4242';
+
+    async function loadDownloads() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      const area = document.getElementById('downloads-area');
+
+      if (!sessionId) {
+        area.innerHTML = '<p class="error-msg">לא נמצא מזהה הזמנה.</p>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${SERVER_URL}/api/order/${sessionId}`);
+        if (!res.ok) throw new Error('Payment not verified');
+        const { downloads, customerEmail } = await res.json();
+
+        if (!downloads || downloads.length === 0) {
+          area.innerHTML = '<p class="error-msg">לא נמצאו קישורי הורדה. פנה לתמיכה.</p>';
+          return;
+        }
+
+        const emailNote = customerEmail ? `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:16px;">אישור נשלח לכתובת: ${customerEmail}</p>` : '';
+        area.innerHTML = emailNote + `<ul class="download-list">${
+          downloads.map((url, i) => `<li><a href="${url}" target="_blank" download>📥 הורד קובץ ${i + 1}</a></li>`).join('')
+        }</ul>`;
+      } catch (err) {
+        area.innerHTML = '<p class="error-msg">שגיאה באימות התשלום. שמור את מספר ההזמנה ופנה לתמיכה.</p>';
+      }
+    }
+
+    loadDownloads();
+  </script>
+</body>
+</html>

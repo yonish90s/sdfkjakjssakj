@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>פרויקט 11</title>
+
+  <!-- Favicon (האייקון של האתר בלשונית, במועדפים, וכשמוסיפים למסך הבית) -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="alternate icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <meta name="theme-color" content="#000000" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+<!-- Firebase auth guard: hide page until auth state is confirmed -->
+<script>document.documentElement.style.visibility='hidden';</script>
+<script type="module">
+  import { auth } from './firebase-config.js';
+  import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+  onAuthStateChanged(auth, (user) => {
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+
+    if (user) {
+      localStorage.removeItem('isGuest');
+      window._fbUser = {
+        name:   user.displayName || user.email.split('@')[0],
+        email:  user.email,
+        avatar: user.photoURL || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200&h=200'
+      };
+    } else {
+      window._fbUser = {
+        name:   'אורח',
+        email:  '',
+        avatar: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200&h=200'
+      };
+    }
+
+    window._fbSignOut = () => {
+      localStorage.removeItem('isGuest');
+      signOut(auth).then(() => {
+        window._fbUser = null;
+        location.reload();
+      });
+    };
+
+    if (typeof currentUser !== 'undefined' && (!currentUser || currentUser.name === 'אורח')) {
+      currentUser = window._fbUser;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      if (typeof updateUserUI === 'function') updateUserUI();
+    }
+    document.documentElement.style.visibility = 'visible';
+  });
+</script>
+
+
+<!-- APPLE GLOBAL NAVBAR -->
+<header class="navbar-apple">
+  <div class="nav-inner-apple">
+    <div class="apple-logo" onclick="showPage('home')" title="דף הבית">
+      <img src="logo.png" alt="לוגו" style="height: 32px; width: auto; display: block;" />
+    </div>
+    
+    <nav class="apple-nav-links">
+      <button onclick="showPage('home')" class="apple-nav-item">כתבות</button>
+      <button onclick="showPage('pdf-store')" class="apple-nav-item">גרפים</button>
+      
+      <div class="apple-dropdown" id="nav-dropdown">
+        <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)">
+          החנויות שלנו <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="apple-dropdown-content mega-menu">
+          <div class="mega-menu-title">החנויות שלנו</div>
+          <button onclick="showPage('store'); toggleNavDropdown(event)" class="apple-dropdown-item">
+            <i class="fas fa-laptop-code"></i> חנות תוכנות
+          </button>
+          <button onclick="showPage('appointments'); toggleNavDropdown(event)" class="apple-dropdown-item">
+            <i class="fas fa-calendar-alt"></i> קביעת תור
+          </button>
+          <button onclick="showPage('shop'); toggleNavDropdown(event)" class="apple-dropdown-item">
+            חנות
+          </button>
+          <button onclick="showPage('services'); toggleNavDropdown(event)" class="apple-dropdown-item">
+            שירותים
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="apple-nav-actions">
+      <button onclick="openCartModal()" class="apple-nav-item cart-nav-btn" title="העגלה שלי" style="position:relative;">
+        <i class="fas fa-bag-shopping" style="font-size:1.1rem;"></i>
+        <span id="cart-badge" class="cart-badge" style="display:none;">0</span>
+      </button>
+
+      <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.3s;width:40px;height:40px;">
+        <i class="fas fa-circle-half-stroke"></i>
+      </button>
+      
+      <!-- User Account Section -->
+      <div id="user-nav-section" style="display: flex; align-items: center; gap: 8px;">
+        <button class="btn-orange subscription-btn" onclick="showPage('subscription')" style="cursor:pointer;position:relative;z-index:1001;display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-crown" style="color:#f9b233;font-size:0.95rem;"></i> מנוי
+        </button>
+        <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.75rem;padding:6px 12px;height:30px;min-height:0;display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-circle-user" style="font-size:1rem;"></i> התחבר
+        </button>
+        <div id="user-profile-badge" onclick="openAuthModal('login')" style="display: none; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-main); padding: 4px 10px; border-radius: 980px; align-items: center; gap: 8px;">
+          <img id="user-badge-avatar" class="user-avatar-small" src="">
+          <span id="user-badge-name" style="font-size: 0.85rem; font-weight: 700;"></span>
+        </div>
+        <button id="btn-logout-nav" class="btn-secondary" onclick="logoutUser()" style="display:none;font-size:0.75rem;padding:6px 12px;height:30px;color:#ef4444;border-color:rgba(239,68,68,0.2);background:transparent;display:flex;align-items:center;gap:5px;">
+          <i class="fas fa-circle-user" style="font-size:1rem;"></i> התנתק
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Secondary Nav (Scrollable) -->
+  <div class="nav-secondary-apple">
+    <button onclick="showPage('home')" class="sec-nav-item">כתבות</button>
+    <button onclick="showPage('pdf-store')" class="sec-nav-item">גרפים</button>
+    <button onclick="showPage('store')" class="sec-nav-item">חנות תוכנות</button>
+    <button onclick="showPage('appointments')" class="sec-nav-item">קביעת תור</button>
+    <button onclick="showPage('shop')" class="sec-nav-item">🛍️ חנות</button>
+    <button onclick="showPage('services')" class="sec-nav-item">💼 שירותים</button>
+  </div>
+</header>
+
+<!-- ALL MODALS AT TOP LEVEL TO AVOID NESTING ISSUES -->
+
+<!-- UPLOAD GRAPH MODAL -->
+<div id="upload-graph-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 550px; border-radius: 32px; padding: 48px; position: relative; background: #1c1c1e; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+    <button class="modal-close" onclick="closeUploadGraphModal()" style="top: 24px; left: 24px; color: #fff; background: rgba(255,255,255,0.1);">✕</button>
+    
+    <div style="text-align: center; margin-bottom: 32px;">
+      <div style="width: 72px; height: 72px; background: rgba(0,113,227,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #0071e3; font-size: 2.2rem;">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </div>
+      <h2 style="font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px; color: #fff;">יש לך גרף או קובץ נתונים לשתף?</h2>
+      <p style="color: #a1a1a6; font-size: 1.1rem; font-weight: 500;">העלה את הגרף שלך לחנות בשניות.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: 700; font-size: 0.95rem; color: #f5f5f7; text-align: right;">שם הגרף / כותרת</label>
+        <input type="text" id="modal-user-pdf-title" placeholder="לדוגמה: ניתוח מניות עולמי 2024" style="width: 100%; padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); font-size: 1rem; background: #2c2c2e; color: #fff; outline: none; transition: border-color 0.2s;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: 700; font-size: 0.95rem; color: #f5f5f7; text-align: right;">תיאור הפריט</label>
+        <textarea id="modal-user-pdf-desc" placeholder="תאר בקצרה מה רואים בגרף..." style="width: 100%; padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); font-size: 1rem; background: #2c2c2e; color: #fff; min-height: 120px; resize: none; outline: none; transition: border-color 0.2s;"></textarea>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <label style="font-weight: 700; font-size: 0.95rem; color: #f5f5f7; text-align: right;">תמונות להמחשה (עד 4 תמונות)</label>
+        <div id="modal-user-pdf-preview" style="display: flex; gap: 10px; flex-wrap: wrap; min-height: 40px;"></div>
+        
+        <input type="file" id="modal-user-pdf-files" multiple accept="image/*" onchange="handleModalFileSelection(event)" style="display: none;">
+        <button onclick="document.getElementById('modal-user-pdf-files').click()" style="width: 100%; padding: 20px; border: 2px dashed rgba(0,113,227,0.5); border-radius: 16px; background: rgba(0,113,227,0.05); color: #0071e3; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: background 0.2s;">
+          📸 בחר תמונות מהגלריה (עד 4)
+        </button>
+      </div>
+
+      <button onclick="submitModalUserPdf()" style="width: 100%; padding: 18px; background: #0071e3; color: white; border: none; border-radius: 18px; font-size: 1.2rem; font-weight: 800; cursor: pointer; margin-top: 12px; box-shadow: 0 10px 30px rgba(0,113,227,0.3);">
+        🚀 שלח ופרסם עכשיו
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div id="contact-modal" class="modal-overlay floating-modal-overlay">
+  <div id="chat-draggable-window" class="modal-content" style="position: fixed; top: 120px; right: 32px; max-width: 400px; margin: 0; padding: 0; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 150px); z-index: 9999;">
+    <div class="chat-drag-handle" id="chat-header" style="cursor: move; background: #f8f9fa; padding: 12px 16px; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>✨ עוזר וירטואלי חכם</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button onclick="openTermsModal()" style="background:none; border:none; color:var(--primary); font-size:0.85rem; font-weight:700; cursor:pointer; text-decoration:underline;">תקנון</button>
+        <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:18px;">✕</button>
+      </div>
+    </div>
+    <div style="padding: 24px;">
+      <div id="ai-chat-messages" style="height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right;">
+          שלום! אני העוזר הוירטואלי של האתר. איך אוכל לעזור לך היום? 😊
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="ai-chat-input" class="admin-input" placeholder="כתוב הודעה..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+        <button class="btn-primary" onclick="sendChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center;">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME PAGE (NEWS LAYOUT) -->
+<div id="page-home" class="page active" style="padding-top: 0; max-width: 100%;">
+  
+  <section class="top-news-grid" id="top-news-grid">
+    <!-- Populated by JS -->
+  </section>
+
+  <div class="main-news-layout" style="margin-top: 40px; display: flex; gap: 40px;">
+    
+    <div class="news-feed" style="flex:1; min-width: 0;">
+      <div id="news-feed-list">
+        <!-- Populated by JS -->
+      </div>
+      <div id="news-pagination" style="display:flex; justify-content:center; gap:8px; margin-top: 32px; flex-wrap:wrap;"></div>
+    </div>
+    
+    <aside class="news-sidebar">
+      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
+        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">שטח פרסום</h3>
+        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">הזדמנות נהדרת להגיע לאלפי קוראים ביום. פנה אלינו לקבלת הצעת מחיר משתלמת.</p>
+        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">פרסם אצלנו למטה</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- APPOINTMENTS PAGE -->
+<div id="page-appointments" class="page">
+  <div class="main-news-layout" style="padding-top: 40px;">
+    <div class="news-main" style="flex: 1;">
+      <div class="sidebar-card" style="background:#fff; border-radius:18px; border:1px solid var(--border-subtle); padding:40px; box-shadow:var(--shadow-soft);">
+    <h2 style="font-size:2rem; font-weight:800; margin-bottom:32px; display:flex; align-items:center; gap:12px;">📅 קביעת תור</h2>
+    
+    <div id="booking-main-container">
+      <div id="booking-form-view">
+        <div class="booking-widget">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+            <div style="text-align:right;">
+              <label style="display:block; font-size:0.85rem; font-weight:700; color:#86868b; margin-bottom:8px;">1. בחר יום:</label>
+              <select id="book-day" onchange="initBookingWidget()" style="width:100%; padding:14px; border-radius:12px; border:1px solid #d2d2d7; font-size: 1rem; outline:none; background:#fbfbfd;">
+                <option>ראשון</option><option>שני</option><option>שלישי</option><option>רביעי</option><option>חמישי</option><option>שישי</option><option>שבת</option>
+              </select>
+            </div>
+            <div style="text-align:right;">
+              <label style="display:block; font-size:0.85rem; font-weight:700; color:#86868b; margin-bottom:8px;">2. בחר שעה:</label>
+              <div id="book-time-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px; max-height:100px; overflow-y:auto; padding:4px;"></div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid #f2f2f2; padding-top:32px; margin-top:32px;">
+            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:20px; color:#1d1d1f;">3. פרטי זיהוי וחזרה:</h3>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+              <div style="text-align: right;">
+                <label style="display:block; font-size:0.9rem; font-weight:700; margin-bottom:8px; color: #1d1d1f;">שם מלא</label>
+                <input type="text" id="book-name-direct" required class="admin-input" placeholder="הכנס את שמך" style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:12px;">
+              </div>
+              <div style="text-align: right;">
+                <label style="display:block; font-size:0.9rem; font-weight:700; margin-bottom:8px; color: #1d1d1f;">מספר טלפון</label>
+                <input type="tel" id="book-phone-direct" required class="admin-input" placeholder="הכנס מספר טלפון לחזרה" style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:12px;">
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 32px; text-align: right;">
+              <label style="display:block; font-size:0.9rem; font-weight:700; margin-bottom:8px; color: #1d1d1f;">בקשה מיוחדת (אופציונלי)</label>
+              <textarea id="book-request-direct" class="admin-input" placeholder="מה תרצה שנדע?..." style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:12px; font-family:inherit; min-height:80px; resize:none; outline:none;"></textarea>
+            </div>
+            
+            <button class="btn-primary" style="width:100%; padding: 18px; font-size: 1.2rem; font-weight:700; height:auto; border-radius:14px;" onclick="submitBookingDirect()">✅ קבע תור עכשיו</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS VIEW -->
+      <div id="booking-success-view" style="display: none; text-align: center; padding: 40px 0; animation: fadeIn 0.5s ease-out;">
+        <div style="font-size: 5rem; margin-bottom: 24px;">✅</div>
+        <h2 style="font-size: 2.2rem; font-weight: 900; margin-bottom: 12px; letter-spacing: -0.02em;">התור נקבע בהצלחה!</h2>
+        <p style="color: #86868b; font-size: 1.15rem; margin-bottom: 40px; font-weight: 500;">בוצע בהצלחה. ניצור איתך קשר בהקדם לאישור סופי.</p>
+        <button class="btn-secondary" onclick="resetBookingView()" style="padding: 14px 32px; border-radius: 980px; font-weight: 700;">➕ קבע תור נוסף</button>
+      </div>
+      </div>
+    </div>
+  </div>
+    
+    <aside class="news-sidebar">
+      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
+        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">שטח פרסום</h3>
+        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">הזדמנות נהדרת להגיע לאלפי קוראים ביום. פנה אלינו לקבלת הצעת מחיר משתלמת.</p>
+        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">פרסם אצלנו למטה</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- PDF STORE PAGE -->
+<div id="page-pdf-store" class="page">
+  <div class="main-news-layout" style="padding-top: 40px;">
+    <div class="news-main" style="flex: 1;">
+      <div style="text-align: right; margin-bottom: 40px; padding: 0 24px;">
+    <h2 style="font-size: 2.4rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">📊 גרפים ונתונים</h2>
+    <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 24px;">ניתוחים ויזואליים, גרפים מתקדמים וקבצי נתונים להורדה ישירה</p>
+    <button onclick="openUploadGraphModal()" style="background: var(--primary); color: white; padding: 12px 32px; border-radius: 980px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(0,113,227,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+      <i class="fa-solid fa-cloud-arrow-up"></i> העלה גרף משלך
+    </button>
+  </div>
+  <div id="pdf-store-grid" class="pdf-store-grid">
+    <!-- Populated by JS -->
+  </div>
+</div>
+    
+  <aside class="news-sidebar">
+    <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
+      <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">שטח פרסום</h3>
+      <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">הזדמנות נהדרת להגיע לאלפי קוראים ביום. פנה אלינו לקבלת הצעת מחיר משתלמת.</p>
+      <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">פרסם אצלנו למטה</button>
+    </div>
+  </aside>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- STORE PAGE -->
+<div id="page-store" class="page">
+  <div class="main-news-layout" style="padding-top: 40px;">
+    <div class="news-main" style="flex: 1;">
+  <div id="store-content-area">
+    <!-- Populated by JS -->
+  </div>
+    </div>
+    <aside class="news-sidebar">
+      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
+        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">שטח פרסום</h3>
+        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">הזדמנות נהדרת להגיע לאלפי קוראים ביום. פנה אלינו לקבלת הצעת מחיר משתלמת.</p>
+        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">פרסם אצלנו למטה</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+
+<!-- ARTICLE PAGE -->
+<div id="page-article" class="page" style="max-width: 860px; padding-top: 40px;">
+  <button class="back-btn" onclick="goBack()" style="margin-bottom: 30px;">&rarr; חזור</button>
+  <article class="article-detail" id="article-content"></article>
+
+  <!-- Comments Section -->
+  <div id="article-comments-section" style="margin-top: 80px; border-top: 1px solid #d2d2d7; padding-top: 60px;">
+    <h3 style="font-size: 2rem; font-weight: 800; margin-bottom: 40px;">🗨️ מה דעתכם?</h3>
+    <div id="article-comments-list" style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 48px;">
+      <!-- Populated by JS -->
+    </div>
+    <div id="article-comment-input-area" style="background: #fff; border-radius: 24px; padding: 32px; border: 1px solid #d2d2d7; display: none; box-shadow: var(--shadow-soft);">
+      <textarea id="article-new-comment" placeholder="מה דעתך על הכתבה?..." style="width: 100%; min-height: 120px; border: none; outline: none; font-size: 1.15rem; resize: none;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #f5f5f7;">
+        <span style="font-size: 0.95rem; color: #86868b;">מגיב כ: <strong id="article-comment-user-name"></strong></span>
+        <button class="btn-primary" onclick="submitComment('article')" style="padding: 12px 32px; font-size: 1.1rem; border-radius: 980px;">פרסם תגובה</button>
+      </div>
+    </div>
+    <div id="article-comment-join-prompt" style="text-align: center; padding: 60px; background: #fbfbfd; border-radius: 24px; border: 1px dashed #d2d2d7;">
+      <p style="margin-bottom: 20px; color: #86868b; font-size: 1.1rem;">הצטרף לדיון ושתף את דעתך!</p>
+      <button class="btn-primary" onclick="showPage('subscription')" style="padding: 16px 40px; font-size: 1.1rem; border-radius: 980px;">✨ הצטרף לקהילה</button>
+    </div>
+  </div>
+  
+  <!-- PAYWALL OVERLAY -->
+  <div id="premium-paywall" style="display: none;">
+    <div class="premium-overlay">
+      <div class="premium-overlay-icon">👑</div>
+      <h3 class="premium-overlay-title">כתבה זו למנויים בלבד</h3>
+      <p class="premium-overlay-text">הצטרף למסלול הפרימיום שלנו וקבל גישה לכל הכתבות הבלעדיות, ההורדות והתמיכה האישית.</p>
+      <button class="premium-cta-btn" onclick="showPage('subscription')">הצטרף עכשיו לפרימיום</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULL SCREEN IMAGE LIGHTBOX -->
+<div id="image-lightbox" class="modal-overlay" style="background: rgba(0,0,0,0.95); z-index: 10000;" onclick="closeLightbox()">
+  <span style="position: absolute; top: 30px; right: 30px; color: white; font-size: 30px; cursor: pointer; font-weight: bold; z-index: 10001;">✕</span>
+  <img id="lightbox-img" src="" style="max-width: 95%; max-height: 95%; object-fit: contain; box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 8px;">
+</div>
+
+<!-- JOIN PAGE (USER ACCOUNTS) -->
+<div id="page-join" class="page" style="max-width: 650px; padding-top: 60px; margin: 0 auto;">
+  <div style="background: #ffffff; border-radius: 32px; padding: 60px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-soft); position: relative;">
+    <button class="back-btn" onclick="goBack()" style="position: absolute; top: 30px; left: 30px; border:none; background:none; cursor:pointer; font-weight:700;">&rarr; חזור</button>
+    
+    <div class="auth-tabs">
+      <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">התחברות</button>
+      <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">הרשמה</button>
+    </div>
+
+    <!-- LOGIN SECTION -->
+    <div id="auth-login-section">
+      <div class="auth-form-group">
+        <label class="auth-label">אימייל או שם משתמש</label>
+        <input type="text" id="login-username" class="auth-input" placeholder="הזן שם משתמש או אימייל">
+      </div>
+      <div class="auth-form-group">
+        <label class="auth-label">סיסמה</label>
+        <input type="password" id="login-password" class="auth-input" placeholder="הזן סיסמה">
+      </div>
+      <button class="btn-auth-submit" onclick="handleAuthSubmit('login')">התחבר עכשיו</button>
+    </div>
+
+    <!-- REGISTER SECTION -->
+    <div id="auth-register-section" style="display: none;">
+      <div class="auth-form-group">
+        <label class="auth-label">שם מלא</label>
+        <input type="text" id="join-name" class="auth-input" placeholder="הכנס את שמך המלא">
+      </div>
+      <div class="auth-form-group">
+        <label class="auth-label">כתובת אימייל</label>
+        <input type="email" id="join-email" class="auth-input" placeholder="example@email.com">
+      </div>
+      <div class="auth-form-group">
+        <label class="auth-label">סיסמה</label>
+        <input type="password" id="join-password" class="auth-input" placeholder="בחר סיסמה חזקה">
+      </div>
+      <div class="auth-form-group">
+        <label class="auth-label">תמונת פרופיל:</label>
+        <div class="profile-pic-container">
+          <img id="register-avatar-preview" src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200&h=200">
+          <div class="profile-pic-actions">
+            <button class="btn-pic-action" onclick="document.getElementById('profile-pic-upload').click()">
+              <span>📸</span> העלאת תמונה
+            </button>
+            <button class="btn-pic-action" onclick="setRandomProfilePic()">
+              <span>🎲</span> רנדומלי
+            </button>
+          </div>
+          <input type="file" id="profile-pic-upload" hidden accept="image/*" onchange="handleProfilePicUpload(event)">
+          <input type="hidden" id="join-profile-pic" value="https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200&h=200">
+        </div>
+      </div>
+      <button class="btn-auth-submit" onclick="handleAuthSubmit('register')">צור חשבון והצטרף</button>
+    </div>
+    
+    <button id="btn-logout" class="btn-secondary" style="width:100%; border:none; color:#ef4444; margin-top:24px; font-size:1rem; display:none;" onclick="logoutUser()">התנתק מהחשבון</button>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION PAGE (PRICING TIERS) -->
+<div id="page-subscription" class="page" style="max-width: 1200px; padding-top: 60px;">
+  <div style="text-align: center; margin-bottom: 60px;">
+    <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">בחר את המסלול שלך</h2>
+    <p style="color: #86868b; font-size: 1.2rem;">קבל גישה לתוכן פרימיום, הורדות ללא הגבלה ותמיכה אישית.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <!-- BASIC -->
+    <div class="pricing-card" onclick="selectPricingTier(this)">
+      <div class="pricing-header">
+        <div class="tier-name">בסיס</div>
+        <div class="tier-price">₪10<span>/חודש</span></div>
+      </div>
+      <ul class="pricing-features">
+        <li><i class="fa-solid fa-check"></i> גישה מלאה לכל הכתבות</li>
+        <li><i class="fa-solid fa-check"></i> גלישה ללא פרסומות</li>
+        <li><i class="fa-solid fa-check"></i> עדכונים שבועיים למייל</li>
+      </ul>
+      <a href="https://paypal.me/yhsh98321/10" target="_blank" class="btn-paypal-tier">בחר במסלול בסיס</a>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="pricing-card selected" onclick="selectPricingTier(this)">
+      <div class="popular-badge">הנמכר ביותר</div>
+      <div class="pricing-header">
+        <div class="tier-name">מתקדם</div>
+        <div class="tier-price">₪20<span>/חודש</span></div>
+      </div>
+      <ul class="pricing-features">
+        <li><i class="fa-solid fa-check"></i> כל מה שכלול בבסיס</li>
+        <li><i class="fa-solid fa-check"></i> הורדת 5 קבצי PDF בחודש</li>
+        <li><i class="fa-solid fa-check"></i> תכני עומק בלעדיים</li>
+        <li><i class="fa-solid fa-check"></i> תמיכה טכנית בסיסית</li>
+      </ul>
+      <a href="https://paypal.me/yhsh98321/20" target="_blank" class="btn-paypal-tier featured-btn">בחר במסלול מתקדם</a>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="pricing-card" onclick="selectPricingTier(this)">
+      <div class="pricing-header">
+        <div class="tier-name">פרימיום</div>
+        <div class="tier-price">₪30<span>/חודש</span></div>
+      </div>
+      <ul class="pricing-features">
+        <li><i class="fa-solid fa-check"></i> כל מה שכלול במתקדם</li>
+        <li><i class="fa-solid fa-check"></i> הורדות PDF ללא הגבלה</li>
+        <li><i class="fa-solid fa-check"></i> תמיכה VIP (מענה מהיר)</li>
+        <li><i class="fa-solid fa-check"></i> גישה מוקדמת למוצרים</li>
+        <li><i class="fa-solid fa-check"></i> סמל "מנוי זהב" בפרופיל</li>
+      </ul>
+      <a href="https://paypal.me/yhsh98321/30" target="_blank" class="btn-paypal-tier">בחר במסלול פרימיום</a>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL PAGE -->
+<div id="page-product-detail" class="page" style="max-width: 1200px; padding-top: 60px;">
+  <button class="back-btn" onclick="goBack()" style="margin-bottom: 40px; border:none; background:none; color:#0066cc; font-weight:600; cursor:pointer; font-size:1rem;">&rarr; חזור לחנות</button>
+  
+  <div class="product-pdp-container">
+    <!-- Left: Info -->
+    <div class="product-info-column">
+      <h1 id="pdp-title" class="pdp-title">שם המוצר יופיע כאן</h1>
+      <p id="pdp-desc" class="pdp-description">תיאור המוצר המפורט יופיע כאן...</p>
+    </div>
+
+    <!-- Right: Visuals -->
+    <div class="product-visual-column">
+      <div class="main-image-wrapper" onclick="openLightbox()" style="cursor: zoom-in; position: relative;">
+        <img id="pdp-main-image" src="" alt="תמונת מוצר" />
+        <div style="position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.5); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); pointer-events: none;">
+          <i class="fas fa-expand"></i>
+        </div>
+      </div>
+      <div class="thumbnail-list" id="pdp-thumbnails">
+        <!-- Thumbnails -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations Section for Products -->
+  <div id="product-recommendations-wrapper" class="recommendations-wrapper">
+    <h3 class="recommendations-title">אולי יעניין אותך גם</h3>
+    <div id="product-recommendations-grid" class="recommendations-grid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+
+<!-- ADMIN LOGIN PAGE -->
+<div id="page-admin-login" class="page">
+  <div class="admin-login-box">
+    <h2>התחברות מנהל</h2>
+    <input type="text" id="admin-user" placeholder="שם משתמש (נסה: admin)" class="admin-input" style="margin-bottom: 12px;" />
+    <input type="password" id="admin-pass" placeholder="הזן סיסמה (נסה: admin)" class="admin-input" />
+    <button class="btn-primary" style="width:100%" onclick="adminLogin()">התחבר</button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="page-admin" class="page" style="max-width: 1400px;">
+  <div style="display: flex; gap: 32px; align-items: flex-start; direction: rtl;">
+    
+    <!-- SIDEBAR (Always on the right in RTL) -->
+    <aside style="width: 250px; flex-shrink: 0; background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
+      <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800;">תפריט מנהלי</h3>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="admin-nav-btn active" onclick="switchAdminTab('dashboard', this)">ראשי (סטטיסטיקות)</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('calendar', this)">יומן תורים</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('store', this)">ניהול פרויקט 11</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('pdfstore', this)">📊 ניהול גרפים ונתונים</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('articles', this)">ניהול כתבות</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('users', this)">👥 ניהול משתמשים</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('orders', this)">📦 הזמנות חדשות</button>
+
+        <button class="admin-nav-btn" onclick="switchAdminTab('messages', this)" style="display: flex; justify-content: space-between; align-items: center;">
+          תיבת הודעות
+          <span id="nav-msg-count" style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">0</span>
+        </button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('ads', this)">📢 ניהול פרסומות</button>
+        <button class="admin-nav-btn" onclick="switchAdminTab('social', this)">🌐 ניהול רשתות חברתיות</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT (On the left) -->
+    <div style="flex: 1; min-width: 0;">
+      
+      <!-- DASHBOARD TAB -->
+      <div id="admin-section-dashboard" class="admin-section">
+        <!-- Stats -->
+        <div style="display:flex; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
+            <div style="font-size:2.5rem; font-weight:800;" id="stat-total">0</div>
+            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">סה״כ כניסות לאתר</div>
+          </div>
+          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
+            <div style="font-size:2.5rem; font-weight:800;" id="stat-today">0</div>
+            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">כניסות היום</div>
+          </div>
+          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
+            <div style="font-size:2.5rem; font-weight:800;" id="stat-articles">0</div>
+            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">כתבות פעילות</div>
+          </div>
+          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
+            <div style="font-size:2.5rem; font-weight:800; color: #0071e3;" id="stat-messages">0</div>
+            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">הודעות חדשות</div>
+          </div>
+          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
+            <div style="font-size:2.5rem; font-weight:800; color: #34c759;" id="stat-orders">0</div>
+            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">הזמנות שבוצעו</div>
+          </div>
+          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
+            <div style="font-size:2.5rem; font-weight:800; color: #af52de;" id="stat-users">0</div>
+            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">משתמשים רשומים</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES TAB -->
+      <div id="admin-section-messages" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>תיבת הודעות נכנסות</h2>
+        </div>
+        <table class="admin-table" style="margin-bottom: 40px;">
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>מאת</th>
+              <th>הודעה</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="admin-messages-list">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ARTICLES TAB -->
+      <div id="admin-section-articles" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>ניהול כתבות</h2>
+          <button class="btn-primary" onclick="openArticleEditor()">+ כתבה חדשה</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>כותרת</th>
+              <th>קטגוריה</th>
+              <th>מחבר</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="admin-articles-list">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+
+        <!-- FEATURED ARTICLES MANAGEMENT -->
+        <div style="margin-top: 40px; background: #fbfbfd; border-radius: 20px; padding: 24px; border: 1px solid var(--border-subtle);">
+          <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 800;">
+            <i class="fas fa-star" style="color: #f9b233;"></i> ניהול כתבות נבחרות (Top Articles)
+          </h3>
+          <p style="font-size: 0.9rem; color: #86868b; margin-bottom: 20px;">הכתבות המסומנות כאן יופיעו ברידג' העליון של דף הבית (ה-3 הראשונות יוצגו).</p>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>כותרת</th>
+                <th>קטגוריה</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="admin-featured-articles-list">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="admin-editor" class="hidden" style="margin-top: 40px; border-top: 1px solid #e5e5ea; padding-top: 24px;">
+          <h3>עריכת כתבה</h3>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <input type="hidden" id="edit-id" value="">
+            <input type="text" id="edit-title" placeholder="כותרת הכתבה" class="admin-input" required>
+            <input type="text" id="edit-category" placeholder="קטגוריה" class="admin-input" required>
+            <input type="text" id="edit-author" placeholder="יוצר/כתב" class="admin-input" required>
+            <input type="text" id="edit-time" placeholder="זמן פרסום (למשל: היום, 10:00)" class="admin-input" required>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">תמונה (אפשר להדביק קישור או להעלות):</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="edit-image" placeholder="URL תמונה או קוד..." class="admin-input" style="flex:1;" required>
+                <button type="button" class="btn-secondary" style="padding: 0 16px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; white-space: nowrap;" onclick="document.getElementById('edit-image-upload').click()">העלה תמונה מהמכשיר</button>
+                <input type="file" id="edit-image-upload" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+              </div>
+            </div>
+            <input type="text" id="edit-snippet" placeholder="תקציר / קטע הכתבה" rows="4" class="admin-input" required></textarea>
+            <textarea id="edit-content" placeholder="תוכן הכתבה המלא (יופיע כשנכנסים לכתבה)" rows="10" class="admin-input"></textarea>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <label style="font-size:0.85rem;font-weight:600;color:#1d1d1f;">🎬 סרטון YouTube (אופציונלי):</label>
+              <input type="text" id="edit-youtube" placeholder="למשל: https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="admin-input">
+              <p style="font-size:0.78rem;color:#86868b;margin-top:2px;">הסרטון יוצג בתוך הכתבה מתחת לתוכן.</p>
+            </div>
+            <label style="display: flex; gap: 8px;"><input type="checkbox" id="edit-isTop"> סמן ככתבה פופולרית (תוצג בראש האתר)</label>
+            <label style="display: flex; gap: 8px; color: #f9b233; font-weight: 700;"><input type="checkbox" id="edit-isPremium"> 👑 כתבת פרימיום (למנויים בלבד)</label>
+            <div style="display:flex; gap:12px;">
+              <button class="btn-primary" onclick="saveAdminArticle()">שמור כתבה</button>
+              <button class="btn-secondary" onclick="document.getElementById('admin-editor').classList.add('hidden')" style="background:#f5f5f7; border:none; padding:12px 24px; border-radius:980px; font-weight:600; cursor:pointer;">ביטול</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      
+      <!-- STORE ADMIN TAB -->
+      <div id="admin-section-store" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>ניהול פרויקט 11</h2>
+        </div>
+        <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); display:flex; flex-direction:column; gap:16px;">
+          <input type="text" id="store-edit-title" placeholder="שם התוכנה" class="admin-input">
+          <input type="text" id="store-edit-version" placeholder="גרסה (למשל: גרסה 1.0)" class="admin-input">
+          <textarea id="store-edit-desc" placeholder="תיאור קצר של התוכנה" rows="4" class="admin-input"></textarea>
+          
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">סרטון יוטיוב (קישור או ID):</label>
+            <input type="text" id="store-edit-youtube" placeholder="למשל: https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="admin-input">
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">תמונה (קובץ תמונה למוצר):</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="store-edit-image" placeholder="URL תמונה או קוד..." class="admin-input" style="flex:1;">
+              <button type="button" class="btn-secondary" style="padding: 0 16px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; white-space: nowrap;" onclick="document.getElementById('store-image-upload').click()">העלה תמונה מהמכשיר</button>
+              <input type="file" id="store-image-upload" accept="image/*" style="display:none;" onchange="handleStoreImageUpload(event)">
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">קישור להורדה או מסמך למכירה:</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="store-edit-download" placeholder="הכנס קישור להורדת הקובץ (Google Drive וכו')" class="admin-input" style="flex:1;">
+            </div>
+            <p style="font-size: 0.8rem; color: #86868b; margin-top: 4px;">הלקוחות יקבלו את הקישור הזה כשילחצו על כפתור ההורדה.</p>
+          </div>
+          
+          <button class="btn-primary" onclick="saveStoreConfig()" style="width: 200px; margin-top: 8px;">שמור שינויים בחנות</button>
+        </div>
+      </div>
+
+      <!-- PDF STORE ADMIN TAB -->
+      <div id="admin-section-pdfstore" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>📊 ניהול גרפים ונתונים</h2>
+          <button class="btn-primary" onclick="openPdfItemEditorById()">הוסף פריט</button>
+        </div>
+        <div id="pdf-admin-list" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px;">
+          <!-- Populated by JS -->
+        </div>
+        <div id="pdf-item-editor" class="hidden" style="background: #fff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); margin-top: 24px;">
+          <h3>עריכת פריט</h3>
+          <div style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
+            <input type="hidden" id="pdf-edit-id" value="">
+            <input type="text" id="pdf-edit-title" placeholder="שם הגרף / הקובץ" class="admin-input">
+            <textarea id="pdf-edit-desc" placeholder="תיאור קצר" rows="2" class="admin-input"></textarea>
+            <select id="pdf-edit-type" class="admin-input">
+              <option value="גרף">📊 גרף</option>
+              <option value="נתונים">📈 נתונים</option>
+              <option value="PDF">📄 PDF</option>
+              <option value="תוכנה">🖥️ תוכנה</option>
+              <option value="קובץ">📁 קובץ</option>
+            </select>
+            <input type="text" id="pdf-edit-price" placeholder="מחיר (למשל: חינם / ₪29.90)" class="admin-input">
+            
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:10px; background:#f5f5f7; border-radius:10px; font-weight:600;">
+              <input type="checkbox" id="pdf-edit-premium" style="width:20px; height:20px;">
+              <span>🌟 תוכן פרימיום (למנויים בלבד)</span>
+            </label>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">תמונת גלריה 1 (ראשית):</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="pdf-edit-img1" placeholder="URL תמונה" class="admin-input" style="flex:1;">
+                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(1)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">תמונת גלריה 2:</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="pdf-edit-img2" placeholder="URL תמונה" class="admin-input" style="flex:1;">
+                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(2)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">תמונת גלריה 3:</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="pdf-edit-img3" placeholder="URL תמונה" class="admin-input" style="flex:1;">
+                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(3)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">תמונת גלריה 4:</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="pdf-edit-img4" placeholder="URL תמונה" class="admin-input" style="flex:1;">
+                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(4)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
+                </div>
+              </div>
+              <input type="file" id="pdf-image-upload-hidden" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+              <label style="font-size:0.85rem; font-weight:600; color:#1d1d1f;">קובץ PDF / קישור להורדה:</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="pdf-edit-link" placeholder="קישור להורדה (Google Drive וכו')" class="admin-input" style="flex:1;">
+                <span style="font-size:0.85rem; color:#86868b; white-space:nowrap;">- או -</span>
+                <button type="button" class="btn-secondary" style="padding: 10px 16px; border-radius:8px; border:1px solid #ccc; background:white; cursor:pointer; white-space:nowrap; font-size:0.9rem;" onclick="document.getElementById('pdf-file-upload').click()">📄 העלה מהמחשב</button>
+                <input type="file" id="pdf-file-upload" accept=".pdf,application/pdf" style="display:none;" onchange="handlePdfFileUpload(event)">
+              </div>
+              <div id="pdf-upload-status" style="font-size:0.82rem; color:#0071e3; display:none;"></div>
+              <p style="font-size:0.78rem; color:#86868b; margin-top:2px;">העלאת קובץ מהמחשב מומלצת עד 5MB. לקבצים גדולים יותר – השתמש בקישור Google Drive.</p>
+            </div>
+            <div style="display:flex; gap:12px;">
+              <button class="btn-primary" onclick="savePdfItemAdmin()">שמור</button>
+              <button class="btn-secondary" onclick="document.getElementById('pdf-item-editor').classList.add('hidden')" style="background:#f5f5f7; border:none; padding:12px 24px; border-radius:980px; font-weight:600; cursor:pointer;">ביטול</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+
+    <div id="admin-section-users" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>👥 ניהול משתמשים רשומים</h2>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>תמונה</th>
+              <th>שם</th>
+              <th>אימייל</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-list">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ADS ADMIN TAB -->
+      <div id="admin-section-ads" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>📢 ניהול שטחי פרסום</h2>
+          <button class="btn-primary" onclick="saveAdminAds()">💾 שמור פרסומות</button>
+        </div>
+        <p style="color: #86868b; margin-bottom: 24px; font-size: 0.95rem;">העלה עד 4 תמונות פרסומת והוסף קישורים. אם לא תעלה תמונות, יוצג שטח הפרסום המקורי ("צור קשר לפרסום").</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+          <!-- Ad 1 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size: 1.1rem; margin:0;">פרסומת 1</h3>
+              <button onclick="clearAdSlot(1)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="נקה פרסומת"><i class="fas fa-trash-can"></i></button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-1" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-1" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-1" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 1)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-1').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-1" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+          
+          <!-- Ad 2 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size: 1.1rem; margin:0;">פרסומת 2</h3>
+              <button onclick="clearAdSlot(2)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="נקה פרסומת"><i class="fas fa-trash-can"></i></button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-2" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-2" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-2" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 2)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-2').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-2" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 3 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size: 1.1rem; margin:0;">פרסומת 3</h3>
+              <button onclick="clearAdSlot(3)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="נקה פרסומת"><i class="fas fa-trash-can"></i></button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-3" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-3" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-3" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 3)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-3').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-3" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 4 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size: 1.1rem; margin:0;">פרסומת 4</h3>
+              <button onclick="clearAdSlot(4)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="נקה פרסומת"><i class="fas fa-trash-can"></i></button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-4" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-4" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-4" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 4)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-4').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-4" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 5 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">פרסומת 5</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-5" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-5" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-5" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 5)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-5').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-5" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 6 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">פרסומת 6</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-6" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-6" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-6" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 6)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-6').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-6" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 7 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">פרסומת 7</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-7" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-7" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-7" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 7)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-7').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-7" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 8 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">פרסומת 8</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-8" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-8" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-8" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 8)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-8').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-8" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+
+          <!-- Ad 9 -->
+          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">פרסומת 9</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div id="ad-preview-9" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
+                <span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>
+              </div>
+              <input type="text" id="ad-img-9" placeholder="URL תמונה (או העלה מהמחשב)" class="admin-input">
+              <input type="file" id="ad-file-9" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 9)">
+              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-9').click()">🖼️ העלה תמונה</button>
+              <input type="text" id="ad-link-9" placeholder="קישור לחיצה (למשל https://example.com)" class="admin-input">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-section-orders" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>📦 ניהול הזמנות</h2>
+          <button class="btn-secondary" onclick="clearOrders()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">נקה היסטוריית הזמנות</button>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>אימייל לקוח</th>
+              <th>פריטים</th>
+              <th>סה"כ</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="admin-orders-list">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="admin-section-calendar" class="admin-section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+          <h2>📅 יומן תורים</h2>
+          <button class="btn-secondary" onclick="clearAppointments()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">מחק את כל התורים</button>
+        </div>
+        <div id="admin-calendar-list" style="display: grid; gap: 16px; margin-top: 20px;">
+          <!-- Appointments listed here -->
+        </div>
+      </div>
+
+      <!-- SOCIAL LINKS ADMIN TAB -->
+      <div id="admin-section-social" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>🌐 ניהול רשתות חברתיות</h2>
+        </div>
+        <div style="background: #ffffff; border-radius: 16px; padding: 32px; border: 1px solid var(--border-subtle); display:flex; flex-direction:column; gap:20px;">
+          <p style="color: #86868b; font-size: 0.95rem; margin-bottom: 10px;">הכנס את הקישורים המלאים לפרופילים שלך ברשתות החברתיות (כולל http:// או https://):</p>
+          
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 קישור ל-X (טוויטר):</label>
+            <input type="text" id="admin-social-x" placeholder="https://x.com/username" class="admin-input">
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 קישור לפייסבוק:</label>
+            <input type="text" id="admin-social-fb" placeholder="https://facebook.com/username" class="admin-input">
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 קישור לאינסטגרם:</label>
+            <input type="text" id="admin-social-ig" placeholder="https://instagram.com/username" class="admin-input">
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 קישור ליוטיוב:</label>
+            <input type="text" id="admin-social-yt" placeholder="https://youtube.com/@channel" class="admin-input">
+          </div>
+          
+          <button class="btn-primary" onclick="saveSocialLinks()" style="height: 52px; font-size: 1.1rem; border-radius: 12px; margin-top: 12px;">💾 שמור קישורים ועדכן אתר</button>
+        </div>
+      </div>
+    </div>
+
+<!-- ============================================ -->
+<!-- SHOP PAGE (חנות מוצרים) -->
+<!-- ============================================ -->
+<div id="page-shop" class="page">
+  <div class="main-news-layout" style="padding-top: 40px; padding-left: 24px; padding-right: 24px;">
+    <div class="news-main" style="flex: 1;">
+      <div style="text-align: right; margin-bottom: 40px;">
+        <h2 style="font-size: 2.4rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">🛍️ החנות</h2>
+        <p style="color: #86868b; font-size: 1.1rem;">מוצרים נבחרים, איכותיים, במשלוח עד הבית</p>
+      </div>
+      <div class="shop-grid" id="shop-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <aside class="news-sidebar">
+      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SERVICES PAGE (שירותים) -->
+<!-- ============================================ -->
+<div id="page-services" class="page">
+  <div class="main-news-layout" style="padding-top: 40px; padding-left: 24px; padding-right: 24px;">
+    <div class="news-main" style="flex: 1;">
+      <div style="text-align: right; margin-bottom: 40px;">
+        <h2 style="font-size: 2.4rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">💼 שירותים</h2>
+        <p style="color: #86868b; font-size: 1.1rem;">שירותים מקצועיים — יעוץ, ליווי, ופתרונות מותאמים אישית</p>
+      </div>
+      <div class="services-grid" id="services-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <aside class="news-sidebar">
+      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SHOPPING CART MODAL (עגלת קניות) -->
+<!-- ============================================ -->
+<div id="cart-modal" class="modal-overlay modal-sidebar-right">
+  <div class="modal-content cart-modal-content" style="max-height: 100vh; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom: 2px solid #f5f5f7; margin-bottom: 16px;">
+      <h2 style="font-size:1.6rem; font-weight:800; margin:0;">🛒 העגלה שלך</h2>
+      <button onclick="closeCartModal()" style="background:none; border:none; font-size:1.6rem; cursor:pointer; color:#86868b; line-height:1; padding:0;">×</button>
+    </div>
+
+    <div id="cart-items" style="flex:1; overflow-y:auto; min-height: 200px; margin: 0 -8px; padding: 0 8px;">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="cart-summary" style="border-top: 2px solid #f5f5f7; padding-top: 16px; margin-top: 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <span style="font-size:1rem; color:#86868b; font-weight:600;">סך הכל</span>
+        <span id="cart-total" style="font-size:1.6rem; font-weight:900; color:#1d1d1f;">₪0</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-secondary" onclick="closeCartModal()" style="flex:1; height:50px; border-radius:12px; font-weight:700;">המשך קניות</button>
+        <button id="cart-checkout-btn" class="btn-primary" onclick="checkoutCart()" style="flex:2; height:50px; border-radius:12px; font-weight:800; font-size:1.05rem;">לתשלום ←</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- ORDER CONFIRMATION MODAL (חנות + שירותים) -->
+<!-- ============================================ -->
+<div id="order-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 460px;">
+    <div style="text-align:center; padding: 8px 0 24px 0;">
+      <div style="width:72px; height:72px; background: linear-gradient(135deg, #0071e3, #0a84ff); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2.2rem; margin: 0 auto 16px; color:white;">✓</div>
+      <h2 style="font-size:1.6rem; font-weight:800; margin-bottom: 8px;">הזמנתך התקבלה!</h2>
+      <p style="color:#86868b; font-size:1rem; margin-bottom: 4px;" id="order-modal-item">—</p>
+      <p style="color:#86868b; font-size:0.95rem; line-height:1.5;">ניצור איתך קשר טלפוני בקרוב לאישור פרטי ההזמנה והמשלוח.</p>
+    </div>
+    <form onsubmit="submitOrder(event)" style="display:flex; flex-direction:column; gap:14px; margin-top: 8px;">
+      <input type="text" id="order-name" placeholder="שמך המלא" required style="padding:14px; border-radius:12px; background:#fbfbfd; border:1px solid var(--border-subtle); font-size:1rem;">
+      <input type="tel" id="order-phone" placeholder="טלפון לחזרה" required style="padding:14px; border-radius:12px; background:#fbfbfd; border:1px solid var(--border-subtle); font-size:1rem; direction:ltr; text-align:right;">
+      <button type="submit" class="btn-primary full-width" style="height:54px; font-size:1.05rem; font-weight:700; border-radius:12px; margin-top:8px;">שלח פרטים 🚀</button>
+      <button type="button" class="btn-secondary" onclick="closeOrderModal()" style="border-radius:12px; border-color:transparent; color:#86868b; font-weight:600;">ביטול</button>
+    </form>
+  </div>
+</div>
+
+<!-- USER ARTICLE UPLOAD PAGE -->
+<div id="page-user-article" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px;">
+  <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 32px; border-bottom: 2px solid #f5f5f7; padding-bottom: 16px;">
+      <h2 style="font-size: 2rem; font-weight: 800; color: #1d1d1f; margin: 0;">יצירת כתבה חדשה</h2>
+    </div>
+
+    <form onsubmit="submitUserArticle(event)" style="display:flex; flex-direction:column; gap:20px;">
+      
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <input type="text" id="user-art-title" class="admin-input" placeholder="כותרת הכתבה" required style="font-weight: 600; font-size: 1.1rem; padding: 16px; border-radius: 12px; background: #fbfbfd;">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <input type="text" id="user-art-cat" class="admin-input" placeholder="קטגוריה (לדוגמה: ביטחון, פוליטיקה, טכנולוגיה)" required style="padding: 16px; border-radius: 12px; background: #fbfbfd;">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <input type="text" id="user-art-author" class="admin-input" placeholder="שם המחבר / הקרדיט" required style="padding: 16px; border-radius: 12px; background: #fbfbfd;">
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-size: 0.95rem; font-weight: 700; color: #1d1d1f;">תמונה (העלה מהמכשיר או הדבק קישור):</label>
+        <div style="display:flex; gap:16px; align-items:center;">
+          <input type="text" id="user-art-image" class="admin-input" placeholder="https://..." style="flex:1; padding: 16px; border-radius: 12px; background: #fbfbfd; font-family: monospace;">
+          <input type="file" id="user-art-image-file" accept="image/*" style="display:none;" onchange="handleUserArticleImage()">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('user-art-image-file').click()" style="padding: 16px 24px; border-radius: 12px; white-space: nowrap;">העלה תמונה מהמכשיר</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <textarea id="user-art-excerpt" class="admin-input" rows="3" placeholder="תקציר / קטע הכתבה" required style="padding: 16px; border-radius: 12px; background: #fbfbfd; resize: vertical;"></textarea>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <textarea id="user-art-body" class="admin-input" rows="10" placeholder="תוכן הכתבה המלא (יופיע כשנכנסים לכתבה)" required style="padding: 16px; border-radius: 12px; background: #fbfbfd; resize: vertical; margin-bottom: 24px;"></textarea>
+      </div>
+
+      <div style="display:flex; justify-content: flex-end; gap:16px;">
+        <button type="button" class="btn-secondary" onclick="showPage('home')" style="border-radius: 12px; width: 140px; border-color: transparent; font-weight: 600; color: #86868b;">ביטול מוצר</button>
+        <button type="submit" class="btn-primary" style="height: 54px; width: 220px; font-size: 1.1rem; border-radius: 12px;">שלח כתבה לאישור 🚀</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="page-about" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px;">
+  <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft);">
+    <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 24px;">אודות</h2>
+    <p style="font-size: 1.1rem; line-height: 1.8; color: #1d1d1f; margin-bottom: 16px;">
+      ברוכים הבאים למערכת החדשות שלנו. המערכת הוקמה במטרה לספק חדשות ועדכונים שוטפים בזמן אמת, תוך שקיפות מלאה ומקצועיות ללא פשרות.
+    </p>
+    <p style="font-size: 1.1rem; line-height: 1.8; color: #1d1d1f;">
+      אנו מאמינים בחדשנות ובשיפור מתמיד, ומזמינים את הקוראים שלנו לקחת חלק ביצירת התוכן. שירות הלקוחות שלנו זמין לכם בכל עת.
+    </p>
+  </div>
+</div>
+
+<!-- WHATS NEW PAGE -->
+<div id="page-whats-new" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px;">
+  <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft);">
+    <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 24px;">מה חדש?</h2>
+    
+    <div style="margin-bottom: 32px;">
+      <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 8px;">✨ חווית משתמש משופרת</div>
+      <p style="font-size: 1rem; line-height: 1.6; color: #1d1d1f;">עדכנו את עיצוב המערכת כך שיהיה נקי, יוקרתי, ונוח מאי פעם בכל מכשיר.</p>
+    </div>
+
+    <div style="margin-bottom: 32px;">
+      <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 8px;">💬 שירות לקוחות צף</div>
+      <p style="font-size: 1rem; line-height: 1.6; color: #1d1d1f;">כפתור צף לגישה מהירה וישירה למערכת המסרים של ההנהלה נראה בתחתית המסך.</p>
+    </div>
+
+    <div style="margin-bottom: 32px;">
+      <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 8px;">📝 העלאת תוכן אישי</div>
+      <p style="font-size: 1rem; line-height: 1.6; color: #1d1d1f;">השקנו יכולת לכותבים להציע כתבות מקוריות לאישור ופרסום באתר.</p>
+    </div>
+  </div>
+</div>
+
+<!-- APPLE STYLE FOOTER -->
+<footer class="apple-footer">
+  <div class="footer-content">
+      <div class="footer-col">
+        <h4>צרו קשר</h4>
+        <ul>
+          <li><a href="#" onclick="showToast('אופציית מנוי חודשי תהיה זמינה בקרוב!'); return false;">⭐ מנוי חודשי</a></li>
+          <li><a href="#" onclick="openContactModal(); return false;">אימייל למערכת</a></li>
+          <li><a href="tel:050-000-0000">התקשר אלינו: 050-000-0000</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>מידע</h4>
+        <ul>
+          <li><a href="#" onclick="showPage('about')">אודות</a></li>
+          <li><a href="#" onclick="showPage('whats-new')">מה חדש?</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>ניהול</h4>
+        <ul>
+          <li><a href="#" onclick="showPage('admin-login')">התחבר מנהל</a></li>
+          <li><a href="#" onclick="showPage('user-article'); return false;">העלאת כתבות</a></li>
+        </ul>
+      </div>
+      <div class="footer-col social-col" style="max-width: 320px;">
+        <h4>צור קשר</h4>
+        <div class="social-icons" style="display: flex; gap: 12px; margin-top: 20px;">
+          <a href="#" id="footer-link-x" class="social-icon-btn" target="_blank" title="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" id="footer-link-fb" class="social-icon-btn" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" id="footer-link-ig" class="social-icon-btn" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" id="footer-link-yt" class="social-icon-btn" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="https://paypal.me/yhsh98321" class="social-icon-btn paypal-footer-icon" target="_blank" title="PayPal"><i class="fa-brands fa-paypal"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>כל הזכויות שמורות © 2026 חדשות. נבנה על מנת לספק את העדכונים החדשים ביותר.</p>
+    </div>
+</footer>
+
+<!-- FLOATING SUPPORT BUTTON -->
+<div id="support-floating-btn-container" style="position:fixed; bottom:32px; right:32px; z-index:9000; display:flex; align-items:center; gap:8px;">
+  <div id="support-floating-btn" onclick="openCustomerServiceModal()" style="background:var(--primary); color:white; padding: 14px 24px; border-radius:32px; box-shadow:0 10px 30px rgba(0,113,227,0.4); display:flex; gap: 8px; justify-content:center; align-items:center; cursor:pointer; font-size:1.1rem; font-weight: bold; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+    <i class="fa-solid fa-headset"></i> שירות לקוחות
+  </div>
+  <button onclick="dismissSupportWidget()" style="background:rgba(0,0,0,0.5); color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(5px);" title="סגור לתמיד">✕</button>
+</div>
+
+<style>
+  .floating-modal-overlay {
+    pointer-events: none;
+    background: transparent !important;
+    backdrop-filter: none !important;
+  }
+  .floating-modal-overlay.active {
+    pointer-events: auto;
+  }
+  .floating-modal-overlay .modal-content {
+    pointer-events: none;
+  }
+  .floating-modal-overlay.show .modal-content,
+  .floating-modal-overlay.active .modal-content {
+    pointer-events: auto;
+  }
+  /* Draggable Handle Style */
+  .chat-drag-handle {
+    cursor: move;
+    background: #f8f9fa;
+    padding: 12px 16px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>
+
+
+
+<!-- TERMS MODAL -->
+<div id="terms-modal" class="modal-overlay floating-modal-overlay">
+  <div class="modal-content" style="position: fixed; top: 120px; right: 32px; max-width: 450px; margin: 0; padding: 40px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 150px); overflow-y: auto; z-index: 9999;">
+    <button class="modal-close" onclick="closeTermsModal()">✕</button>
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+      <i class="fa-solid fa-file-contract" style="font-size: 2rem; color: var(--primary);"></i>
+      <h2 style="margin: 0; font-weight: 800;">תקנון האתר</h2>
+    </div>
+    <div style="color: #1d1d1f; line-height: 1.8; font-size: 1.05rem; text-align: right; background: #fbfbfd; padding: 24px; border-radius: 16px; border: 1px solid var(--border-subtle);">
+      <p style="margin-bottom: 12px;"><strong>ברוכים הבאים לאתר שלנו. הגלישה והשימוש באתר כפופים לתנאים המפורטים להלן:</strong></p>
+      <ol style="padding-right: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <li>השימוש באתר מהווה הסכמה לתנאי התקנון.</li>
+        <li>כל התכנים באתר מוגנים בזכויות יוצרים ואין להעתיק, לשכפל או להפיץ אותם ללא אישור בכתב.</li>
+        <li>הנהלת האתר אינה נושאת באחריות לכל נזק ישיר או עקיף שייגרם כתוצאה משימוש באתר או במידע המופיע בו.</li>
+        <li>רכישת מוצרים או שירותים באתר כפופה למדיניות ההחזרים והביטולים של האתר.</li>
+        <li>הנהלת האתר שומרת לעצמה את הזכות לשנות את התקנון בכל עת, וללא הודעה מוקדמת.</li>
+        <li>אנו מכבדים את פרטיות המשתמשים ומתחייבים לא להעביר פרטים אישיים לצד שלישי ללא הסכמה מפורשת.</li>
+      </ol>
+    </div>
+    <button class="btn-primary full-width" onclick="closeTermsModal()" style="margin-top: 24px; height: 54px; border-radius: 12px; font-weight: 700;">הבנתי, סגור</button>
+  </div>
+</div>
+
+<!-- MESSAGE VIEW MODAL -->
+<div id="message-view-modal" class="modal-overlay" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-content" style="position: fixed; left: 0; top: 0; bottom: 0; margin: 0; width: 450px; max-width: 100vw; border-radius: 0; display: flex; flex-direction: column; padding: 40px 32px; background: #ffffff; animation: slideInLeft 0.3s forwards; box-shadow: 10px 0 30px rgba(0,0,0,0.1);">
+    <style>
+      @keyframes slideInLeft {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+      }
+    </style>
+    <button class="modal-close" onclick="closeMessageViewModal()" style="position: absolute; top: 24px; left: 24px; background: #f5f5f7; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">✕</button>
+    
+    <div style="flex: 1; overflow-y: auto; padding-top: 20px;">
+      <h2 id="view-msg-name" style="margin-top: 10px; margin-bottom: 4px; font-size: 1.8rem; font-weight: 800;">שם השולח</h2>
+      <div id="view-msg-phone" style="color: var(--primary); font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">טלפון: </div>
+      <div id="view-msg-date" style="color: #86868b; font-size: 0.95rem; margin-bottom: 24px;">תאריך</div>
+      
+      <div id="view-msg-body" style="background: #fbfbfd; border-radius: 12px; padding: 24px; font-size: 1.1rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 40px; text-align: right; border: 1px solid var(--border-subtle); color: #1d1d1f; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);"></div>
+    </div>
+    
+    <div style="display: flex; gap: 16px; margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
+      <button class="btn-primary" onclick="closeMessageViewModal()" style="flex:1; padding: 16px; font-size: 1.1rem;">סגור הודעה</button>
+      <button class="btn-secondary" onclick="deleteMessageFromModal()" style="color: #ef4444; border-color: #ef4444; padding: 16px 24px; font-size: 1.1rem;">מחק</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div id="booking-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 400px; padding: 40px; border-radius: 28px;">
+    <button class="modal-close" onclick="closeBookingModal()" style="background:#f5f5f7; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:none; position:absolute; top:20px; left:20px; cursor:pointer;">✕</button>
+    <h2 id="booking-modal-title" style="font-size:1.8rem; font-weight:800; margin-bottom:8px; text-align:right;">פרטי התור</h2>
+    <p id="booking-selected-info" style="color: #86868b; margin-bottom: 32px; font-size: 1rem; text-align:right; font-weight:500;"></p>
+    <form id="booking-form" onsubmit="submitBooking(event)">
+      <div style="margin-bottom: 20px; text-align: right;">
+        <label style="display:block; font-size:0.9rem; font-weight:700; margin-bottom:8px; color: #1d1d1f;">שם מלא</label>
+        <input type="text" id="book-name" required class="admin-input" placeholder="הכנס את שמך" style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:12px;">
+      </div>
+      <div style="margin-bottom: 20px; text-align: right;">
+        <label style="display:block; font-size:0.9rem; font-weight:700; margin-bottom:8px; color: #1d1d1f;">טלפון</label>
+        <input type="tel" id="book-phone" required class="admin-input" placeholder="הכנס מספר טלפון" style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:12px;">
+      </div>
+      <div style="margin-bottom: 24px; text-align: right;">
+        <label style="display:block; font-size:0.9rem; font-weight:700; margin-bottom:8px; color: #1d1d1f;">בקשה / הודעה</label>
+        <textarea id="book-request" class="admin-input" placeholder="ציין כאן את פרטי הבקשה..." style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:12px; font-family:inherit; min-height:80px; resize:none; outline:none;"></textarea>
+      </div>
+      <button type="submit" class="btn-primary full-width" style="width:100%; height: 56px; font-size: 1.1rem; font-weight:700;">✅ קבע תור עכשיו</button>
+    </form>
+  </div>
+</div>
+
+<!-- COMIC PASSWORD MODAL -->
+<div id="comic-password-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 400px; padding: 40px; border-radius: 28px; text-align: center;">
+    <button class="modal-close" onclick="closeComicPasswordModal()" style="background:#f5f5f7; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:none; position:absolute; top:20px; left:20px; cursor:pointer;">✕</button>
+    <div style="font-size: 3rem; margin-bottom: 20px;">🔒</div>
+    <h2 style="font-size:1.8rem; font-weight:800; margin-bottom:12px;">הזן סיסמת גישה</h2>
+    <p style="color: #86868b; margin-bottom: 32px; font-size: 1rem; font-weight:500;">הזן את הסיסמה האישית שקיבלת כדי להוריד את הקומיקס.</p>
+    
+    <div style="margin-bottom: 24px; text-align: right;">
+      <input type="password" id="comic-access-password" class="admin-input" placeholder="הזן סיסמה כאן..." style="width:100%; border-radius:12px; border:1px solid #d2d2d7; padding:16px; font-size: 1.1rem; text-align: center; letter-spacing: 4px;">
+    </div>
+    
+    <button class="btn-primary" style="width:100%; height: 56px; font-size: 1.1rem; font-weight:700; border-radius: 14px;" onclick="verifyComicPassword()">🔓 פתח הורדה</button>
+  </div>
+</div>
+
+<!-- UPLOAD LOADING OVERLAY -->
+<div id="upload-loading-overlay" class="modal-overlay" style="display: none; flex-direction: column; gap: 24px;">
+  <div class="loading-spinner"></div>
+  <h2 style="color: #fff; font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; animation: pulse 1.5s infinite;">שולח את הפריט שלך...</h2>
+  <p style="color: rgba(255,255,255,0.7); font-size: 1.1rem;">אנא המתן רגע, אנחנו מעבדים את התמונות</p>
+</div>
+
+
+<!-- TOAST NOTIFICATION -->
+<!-- CHECKOUT MODAL -->
+<div id="checkout-modal" class="modal-overlay">
+  <div class="checkout-container modal-content" style="max-width: 1000px; width: 95vw; padding: 0; display: flex !important; transform: translateY(0); opacity: 1;">
+    <button class="modal-close" onclick="closeCheckoutModal()" style="top: 24px; left: 24px; z-index: 10;">✕</button>
+    
+    <!-- LEFT: PAYMENT & FORM -->
+    <div class="checkout-left">
+      <div class="billing-badge">
+        <span>🔒 Secure billing</span>
+      </div>
+      <h2 class="checkout-title">הפעל מנוי Premium</h2>
+      
+      <div class="payment-buttons">
+        <button class="pay-btn pay-btn-apple"> Pay</button>
+        <button class="pay-btn pay-btn-google">Buy with G Pay</button>
+        <button class="pay-btn pay-btn-paypal">PayPal</button>
+      </div>
+      
+      <div class="checkout-divider">או שלח פרטי כרטיס</div>
+      
+      <form onsubmit="event.preventDefault(); showToast('💳 נהדר! הפרטים נקלטו במערכת המדמה שלנו.'); closeCheckoutModal();">
+        <div class="billing-grid">
+          <div>
+            <label class="form-label-sub">שם פרטי</label>
+            <input type="text" class="checkout-input" placeholder="ישראל" required>
+          </div>
+          <div>
+            <label class="form-label-sub">שם משפחה</label>
+            <input type="text" class="checkout-input" placeholder="ישראלי" required>
+          </div>
+          
+          <div class="full">
+            <label class="form-label-sub">מדינה</label>
+            <select class="checkout-input">
+              <option>Israel</option>
+              <option>United States</option>
+              <option>United Kingdom</option>
+            </select>
+          </div>
+          
+          <div class="full">
+            <label class="form-label-sub">כתובת</label>
+            <input type="text" class="checkout-input" placeholder="רחוב, מספר בית" required>
+          </div>
+          
+          <div>
+            <label class="form-label-sub">עיר</label>
+            <input type="text" class="checkout-input" placeholder="תל אביב" required>
+          </div>
+          <div>
+            <label class="form-label-sub">מיקוד</label>
+            <input type="text" class="checkout-input" placeholder="1234567" required>
+          </div>
+        </div>
+        
+        <div style="margin-top: 32px; display: flex; flex-direction: column; gap: 12px;">
+          <label style="display: flex; gap: 10px; font-size: 0.85rem; cursor: pointer; color: #86868b;">
+            <input type="checkbox" required style="margin-top: 2px;">
+            אני מסכים לתנאי השימוש ולמדיניות הפרטיות.
+          </label>
+          <label style="display: flex; gap: 10px; font-size: 0.85rem; cursor: pointer; color: #86868b;">
+            <input type="checkbox" required style="margin-top: 2px;">
+            אני מאשר למערכת לחייב את הכרטיס עבור הגישה לתוכן Premium בצורה חודשית.
+          </label>
+        </div>
+
+        <div style="margin-top: 32px; border-top: 1px solid #f2f2f2; padding-top: 32px;">
+          <p style="text-align: center; font-size: 0.9rem; color: #86868b; margin-bottom: 20px;">או שלם בדרך המהירה והמאובטחת ביותר:</p>
+          <a href="https://paypal.me/yhsh98321" target="_blank" rel="noopener noreferrer" class="btn-paypal">
+            <i class="fa-brands fa-paypal"></i> שלם באמצעות PayPal
+          </a>
+        </div>
+        
+        <button type="submit" class="btn-primary full-width" style="margin-top: 32px; height: 56px; font-size: 1.1rem; font-weight: 800; border-radius: 12px;">🚀 התחל מנוי עכשיו</button>
+      </form>
+    </div>
+    
+    <!-- RIGHT: SUMMARY -->
+    <div class="checkout-right">
+      <h3 class="summary-header">סיכום הזמנה</h3>
+      
+      <div class="summary-item">
+        <span>מנוי Premium חודשי</span>
+        <span>₪5 / חודש</span>
+      </div>
+      
+      <p style="font-size: 0.85rem; color: #86868b; margin-top: 8px;">גישה מלאה לכל התוכן המורחב, כולל הורדות PDF ללא הגבלה.</p>
+      
+      <ul class="feature-list">
+        <li>גלישה ללא פרסומות כלל</li>
+        <li>גישה בלעדית לכתבות עומק</li>
+        <li>הורדת קבצי PDF ללא הגבלה</li>
+        <li>תמיכה טכנית מועדפת (24/7)</li>
+        <li>עדכונים לפני כולם</li>
+      </ul>
+      
+      <div class="summary-total">
+        <span>לתשלום היום*</span>
+        <span>₪5 / חודש</span>
+      </div>
+      
+      <p style="font-size: 0.75rem; color: #a1a1a6; margin-top: 16px; line-height: 1.4;">
+        * המחיר כולל מע"מ כחוק. החיוב יתבצע באופן חודשי עד לביטול המנוי. ניתן לבטל בכל עת דרך תפריט הניהול האישי.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- WELCOME DEAL MODAL (מבצע הצטרפות)            -->
+<!-- ============================================ -->
+<div id="welcome-deal-modal" class="modal-overlay" onclick="if(event.target===this)closeWelcomeDealModal()">
+  <div class="modal-content" style="max-width:440px; text-align:center; padding:44px 36px;">
+    <div style="width:80px;height:80px;background:linear-gradient(135deg,#ff9500,#ffcc00);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 20px;color:#fff;box-shadow:0 8px 28px rgba(255,149,0,.4);">🎁</div>
+    <h2 style="font-size:1.9rem;font-weight:900;margin-bottom:10px;color:#1d1d1f;">מבצע הצטרפות! 🎁</h2>
+    <p style="color:#86868b;font-size:1rem;line-height:1.65;margin-bottom:28px;">ברוכים הבאים לחנות שלנו! קבלו 10% הנחה על הרכישה הראשונה שלכם.<br>השתמשו בקוד הקופון: <strong>WELCOME10</strong></p>
+    <button onclick="closeWelcomeDealModal()" class="btn-primary" style="width:100%;height:52px;border-radius:14px;font-size:1.05rem;font-weight:800;">תודה, המשך לקנות →</button>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- PAYMENT MODAL                               -->
+<!-- ============================================ -->
+<div id="payment-modal" class="modal-overlay modal-sidebar-right" onclick="if(event.target===this)closePaymentModal()">
+  <div class="modal-content" style="padding:52px 32px 44px; text-align:center; display: flex; flex-direction: column;">
+    <div id="payment-step-form" style="display:none;"></div>
+
+    <div id="payment-step-anim" style="display:none;">
+
+      <!-- Phase A: ספינר נטען -->
+      <div id="pay-phase-spinner" style="margin:0 auto 24px;">
+        <div class="pay-spinner-track">
+          <div class="pay-spinner-fill" id="pay-spinner-fill"></div>
+        </div>
+        <p style="font-size:1rem;font-weight:600;color:#86868b;margin-top:20px;">מעבד תשלום...</p>
+      </div>
+
+      <!-- Phase B: וי + טקסט -->
+      <div id="pay-phase-success" style="display:none;">
+        <div class="pay-checkmark-wrap">
+          <svg class="pay-checkmark-svg" viewBox="0 0 52 52">
+            <circle class="pay-checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+            <polyline class="pay-checkmark-path" points="14,27 22,35 38,18"
+              fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="pay-success-text-wrap">
+          <h2 class="pay-success-title">בוצע בהצלחה!</h2>
+          <p style="color:#86868b;font-size:0.92rem;line-height:1.65;margin-bottom:18px;">ההזמנה תגיע תוך 7–14 ימי עסקים.</p>
+          <div id="payment-success-items" style="background:#f5f5f7;border-radius:14px;padding:14px;margin-bottom:20px;font-size:0.88rem;color:#1d1d1f;line-height:1.8;text-align:right;"></div>
+          <button onclick="closePaymentModal()" class="btn-primary" style="height:50px;width:100%;border-radius:14px;font-size:1rem;font-weight:800;">סגור</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── ספינר עיגול נטען ── */
+.pay-spinner-track {
+  position: relative;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(#0071e3 0deg, #e8e8ed 0deg);
+  margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  animation: paySpinFill 1.6s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+.pay-spinner-track::after {
+  content: '';
+  position: absolute;
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: white;
+}
+@keyframes paySpinFill {
+  0%   { background: conic-gradient(#0071e3 0deg,   #e8e8ed 0deg); }
+  100% { background: conic-gradient(#0071e3 360deg, #e8e8ed 360deg); }
+}
+
+/* ── עיגול וי ── */
+.pay-checkmark-wrap {
+  margin: 0 auto 24px;
+  width: 110px; height: 110px;
+}
+.pay-checkmark-svg {
+  width: 110px; height: 110px;
+  animation: payCirclePop 0.4s cubic-bezier(0.175,0.885,0.32,1.3) forwards;
+}
+.pay-checkmark-circle {
+  stroke: #34c759;
+  stroke-width: 3.5;
+  stroke-dasharray: 157;
+  stroke-dashoffset: 157;
+}
+.pay-checkmark-path {
+  stroke: #34c759;
+  stroke-width: 3.5;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+}
+/* אנימציות מופעלות inline מ-JS */
+
+@keyframes payCirclePop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+@keyframes payCircleDraw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes payCheckDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.pay-success-title {
+  font-size: 1.9rem; font-weight: 900; color: #1d1d1f; margin: 0 0 10px;
+}
+@keyframes payFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div id="toast" class="toast"></div>
+
+
+<!-- ====== AUTH MODAL ====== -->
+<div id="auth-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:#09090b;border:1px solid #27272a;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;position:relative;margin:16px;">
+    <button onclick="closeAuthModal()" style="position:absolute;top:16px;left:16px;background:none;border:none;color:#71717a;font-size:1.4rem;cursor:pointer;">&#x2715;</button>
+    <div id="modal-otp-screen" style="display:none;">
+      <h2 style="color:#fafafa;font-size:1.4rem;font-weight:700;margin-bottom:4px;">&#x05D0;&#x05D9;&#x05DE;&#x05D5;&#x05EA; &#x05DE;&#x05D9;&#x05D9;&#x05DC; &#x1F4E7;</h2>
+      <p id="modal-otp-subtitle" style="color:#71717a;font-size:0.875rem;margin-bottom:24px;">&#x05E9;&#x05DC;&#x05D7;&#x05E0;&#x05D5; &#x05E7;&#x05D5;&#x05D3; &#x05D1;&#x05DF; 6 &#x05E1;&#x05E4;&#x05E8;&#x05D5;&#x05EA; &#x05DC;&#x05DE;&#x05D9;&#x05D9;&#x05DC; &#x05E9;&#x05DC;&#x05DA;</p>
+      <div style="display:flex;gap:8px;justify-content:center;direction:ltr;margin-bottom:20px;">
+        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+      </div>
+      <div id="modal-otp-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;color:#f87171;font-size:0.8rem;margin-bottom:12px;"></div>
+      <button id="modal-btn-verify" onclick="modalVerifyOtp()" style="width:100%;background:#fafafa;color:#09090b;font-weight:700;font-size:0.875rem;padding:12px;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px;">&#x05D0;&#x05DE;&#x05EA; &#x05E7;&#x05D5;&#x05D3; &#x2713;</button>
+      <div style="text-align:center;font-size:0.8rem;color:#52525b;">&#x05DC;&#x05D0; &#x05E7;&#x05D9;&#x05D1;&#x05DC;&#x05EA;? <button id="modal-btn-resend" onclick="modalResendOtp()" style="background:none;border:none;color:#a1a1aa;cursor:pointer;text-decoration:underline;font-family:inherit;font-size:inherit;">&#x05E9;&#x05DC;&#x05D7; &#x05E9;&#x05D5;&#x05D1;</button> <span id="modal-otp-timer"></span></div>
+      <button onclick="modalShowForm()" style="display:block;width:100%;text-align:center;margin-top:16px;font-size:0.85rem;color:#71717a;background:none;border:none;cursor:pointer;text-decoration:underline;">&#x2190; &#x05D7;&#x05D6;&#x05D5;&#x05E8;</button>
+    </div>
+    <div id="modal-auth-form">
+      <h2 id="modal-title" style="color:#fafafa;font-size:1.4rem;font-weight:700;margin-bottom:4px;">&#x05D1;&#x05E8;&#x05D5;&#x05DA; &#x05D4;&#x05E9;&#x05D1;</h2>
+      <p id="modal-subtitle" style="color:#71717a;font-size:0.875rem;margin-bottom:20px;">&#x05D4;&#x05DB;&#x05E0;&#x05E1; &#x05D0;&#x05EA; &#x05D4;&#x05E4;&#x05E8;&#x05D8;&#x05D9;&#x05DD; &#x05E9;&#x05DC;&#x05DA; &#x05DB;&#x05D3;&#x05D9; &#x05DC;&#x05D4;&#x05DE;&#x05E9;&#x05D9;&#x05DA;</p>
+      <div style="display:flex;background:#18181b;border-radius:10px;padding:3px;margin-bottom:20px;">
+        <button id="modal-tab-login" onclick="openAuthModal('login')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;background:#fafafa;color:#09090b;font-family:inherit;">&#x05DB;&#x05E0;&#x05D9;&#x05E1;&#x05D4;</button>
+        <button id="modal-tab-signup" onclick="openAuthModal('signup')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;background:transparent;color:#71717a;font-family:inherit;">&#x05D4;&#x05E8;&#x05E9;&#x05DE;&#x05D4;</button>
+      </div>
+      <div id="modal-field-name" style="display:none;margin-bottom:14px;">
+        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">&#x05E9;&#x05DD; &#x05DE;&#x05DC;&#x05D0;</label>
+        <input type="text" id="modal-input-name" placeholder="&#x05D9;&#x05E9;&#x05E8;&#x05D0;&#x05DC; &#x05D9;&#x05E9;&#x05E8;&#x05D0;&#x05DC;&#x05D9;" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">&#x05D0;&#x05D9;&#x05DE;&#x05D9;&#x05D9;&#x05DC;</label>
+        <input type="email" id="modal-input-email" placeholder="you@example.com" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;direction:ltr;text-align:right;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">&#x05E1;&#x05D9;&#x05E1;&#x05DE;&#x05D0;</label>
+        <input type="password" id="modal-input-pw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div id="modal-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;color:#f87171;font-size:0.8rem;margin-bottom:12px;"></div>
+      <button id="modal-btn-submit" onclick="modalSubmit()" style="width:100%;background:#fafafa;color:#09090b;font-weight:700;font-size:0.875rem;padding:12px;border:none;border-radius:12px;cursor:pointer;margin-bottom:14px;">&#x05DB;&#x05E0;&#x05D9;&#x05E1;&#x05D4; &#x2192;</button>
+      <div style="display:flex;align-items:center;margin:14px 0;color:#3f3f46;font-size:0.75rem;"><div style="flex:1;height:1px;background:#27272a;"></div><span style="margin:0 10px;">&#x05D0;&#x05D5;</span><div style="flex:1;height:1px;background:#27272a;"></div></div>
+      <button onclick="modalGoogleLogin()" style="width:100%;background:#18181b;color:#fafafa;border:1px solid #27272a;border-radius:12px;padding:12px;font-weight:600;font-size:0.875rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;"> &#x05D4;&#x05DE;&#x05E9;&#x05DA; &#x05E2;&#x05DD; Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+  import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  
+  // Expose to global window for app.js
+  window.fbDb = db;
+  window.fbColl = collection;
+  window.fbAddDoc = addDoc;
+  window.fbGetDocs = getDocs;
+  window.fbUpdateDoc = updateDoc;
+  window.fbDeleteDoc = deleteDoc;
+  window.fbDoc = doc;
+  window.fbQuery = query;
+  window.fbOrderBy = orderBy;
+
+  let mMode='login',mEmail='',mPw='',mName='',mTimer=null;
+  const overlay=document.getElementById('auth-modal-overlay');
+  const otpScreen=document.getElementById('modal-otp-screen');
+  const authForm=document.getElementById('modal-auth-form');
+  const otpDigits=document.querySelectorAll('.modal-otp-digit');
+  const otpError=document.getElementById('modal-otp-error');
+  window.openAuthModal=function(mode){
+    mMode=mode||'login'; overlay.style.display='flex'; otpScreen.style.display='none'; authForm.style.display='block';
+    document.getElementById('modal-error').style.display='none';
+    const s=mMode==='signup';
+    document.getElementById('modal-field-name').style.display=s?'block':'none';
+    document.getElementById('modal-title').textContent=s?'\u05D9\u05E6\u05D9\u05E8\u05EA \u05D7\u05E9\u05D1\u05D5\u05DF':'\u05D1\u05E8\u05D5\u05DA \u05D4\u05E9\u05D1';
+    document.getElementById('modal-subtitle').textContent=s?'\u05D4\u05E8\u05E9\u05DD \u05DB\u05D3\u05D9 \u05DC\u05D2\u05E9\u05EA \u05DC\u05D0\u05EA\u05E8':'\u05D4\u05DB\u05E0\u05E1 \u05D0\u05EA \u05D4\u05E4\u05E8\u05D8\u05D9\u05DD \u05E9\u05DC\u05DA';
+    document.getElementById('modal-btn-submit').textContent=s?'\u05D4\u05E8\u05E9\u05DE\u05D4 \u2192':'\u05DB\u05E0\u05D9\u05E1\u05D4 \u2192';
+    document.getElementById('modal-tab-login').style.background=s?'transparent':'#fafafa';
+    document.getElementById('modal-tab-login').style.color=s?'#71717a':'#09090b';
+    document.getElementById('modal-tab-signup').style.background=s?'#fafafa':'transparent';
+    document.getElementById('modal-tab-signup').style.color=s?'#09090b':'#71717a';
+  };
+  window.closeAuthModal=()=>{overlay.style.display='none';};
+  window.modalShowForm=()=>{otpScreen.style.display='none';authForm.style.display='block';};
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeAuthModal();});
+  window.modalSubmit=async function(){
+    const email=document.getElementById('modal-input-email').value.trim();
+    const pw=document.getElementById('modal-input-pw').value.trim();
+    const name=document.getElementById('modal-input-name').value.trim();
+    if(!email||!pw){showMErr('\u05E0\u05D0 \u05DC\u05DE\u05DC\u05D0 \u05D0\u05EA \u05DB\u05DC \u05D4\u05E9\u05D3\u05D5\u05EA');return;}
+    if(mMode==='signup'&&!name){showMErr('\u05E0\u05D0 \u05DC\u05D4\u05D6\u05D9\u05DF \u05E9\u05DD \u05DE\u05DC\u05D0');return;}
+    const btn=document.getElementById('modal-btn-submit');
+    btn.disabled=true;btn.textContent='...';
+    try{
+      if(mMode==='signup'){
+        mEmail=email;mPw=pw;mName=name;
+        const r=await fetch('/api/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+        if(!r.ok)throw new Error((await r.json()).error);
+        authForm.style.display='none';otpScreen.style.display='block';
+        document.getElementById('modal-otp-subtitle').textContent='\u05E9\u05DC\u05D7\u05E0\u05D5 \u05E7\u05D5\u05D3 \u05D1\u05DF 6 \u05E1\u05E4\u05E8\u05D5\u05EA \u05DC: '+email;
+        otpDigits[0].focus();startOtpTimer();
+      }else{
+        await signInWithEmailAndPassword(auth,email,pw);
+        closeAuthModal();location.reload();
+      }
+    }catch(e){showMErr(fbErr(e.code)||e.message);}
+    finally{btn.disabled=false;btn.textContent=mMode==='signup'?'\u05D4\u05E8\u05E9\u05DE\u05D4 \u2192':'\u05DB\u05E0\u05D9\u05E1\u05D4 \u2192';}
+  };
+  window.modalVerifyOtp=async function(){
+    const code=Array.from(otpDigits).map(d=>d.value).join('');
+    if(code.length<6){showOErr('\u05D4\u05DB\u05E0\u05E1 6 \u05E1\u05E4\u05E8\u05D5\u05EA');return;}
+    const btn=document.getElementById('modal-btn-verify');
+    btn.disabled=true;btn.textContent='...';otpError.style.display='none';
+    try{
+      const r=await fetch('/api/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:mEmail,code})});
+      const d=await r.json();if(!r.ok)throw new Error(d.error);
+      const cred=await createUserWithEmailAndPassword(auth,mEmail,mPw);
+      await updateProfile(cred.user,{displayName:mName});
+      closeAuthModal();location.reload();
+    }catch(e){showOErr(e.message);btn.disabled=false;btn.textContent='\u05D0\u05DE\u05EA \u05E7\u05D5\u05D3 \u2713';}
+  };
+  window.modalResendOtp=async function(){
+    otpDigits.forEach(d=>d.value='');otpDigits[0].focus();startOtpTimer();
+    await fetch('/api/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:mEmail})});
+  };
+  window.modalGoogleLogin=async function(){
+    try{await signInWithPopup(auth,new GoogleAuthProvider());closeAuthModal();location.reload();}
+    catch(e){if(e.code!=='auth/popup-closed-by-user')showMErr(fbErr(e.code)||e.message);}
+  };
+  otpDigits.forEach((inp,i)=>{
+    inp.addEventListener('input',()=>{inp.value=inp.value.replace(/\D/g,'');if(inp.value&&i<5)otpDigits[i+1].focus();if(Array.from(otpDigits).map(d=>d.value).join('').length===6)modalVerifyOtp();});
+    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)otpDigits[i-1].focus();});
+  });
+  function startOtpTimer(){clearInterval(mTimer);document.getElementById('modal-btn-resend').disabled=true;let s=60;document.getElementById('modal-otp-timer').textContent=' ('+s+'s)';mTimer=setInterval(()=>{s--;document.getElementById('modal-otp-timer').textContent=s>0?' ('+s+'s)':'';if(s<=0){clearInterval(mTimer);document.getElementById('modal-btn-resend').disabled=false;}},1000);}
+  function showMErr(msg){const e=document.getElementById('modal-error');e.textContent=msg;e.style.display='block';}
+  function showOErr(msg){otpError.textContent=msg;otpError.style.display='block';}
+  function fbErr(c){return({'auth/invalid-credential':'\u05D0\u05D9\u05DE;\u05D9;\u05D9;\u05DC; \u05D0;\u05D5; \u05E1;\u05D9;\u05E1;\u05DE;\u05D0; \u05E9;\u05D2;\u05D5;\u05D9;\u05DD;','auth/email-already-in-use':'\u05D4;\u05DE;\u05D9;\u05D9;\u05DC; \u05DB;\u05D1;\u05E8; \u05E8;\u05E9;\u05D5;\u05DD;','auth/weak-password':'\u05E1;\u05D9;\u05E1;\u05DE;\u05D0; \u05D7;\u05DC;\u05E9;\u05D4; (6+ \u05EA;\u05D5;\u05D5;\u05D9;\u05DD;)','auth/invalid-email':'\u05DE;\u05D9;\u05D9;\u05DC; \u05DC;\u05D0; \u05EA;\u05E7;\u05D9;\u05DF;','auth/too-many-requests':'\u05D9;\u05D5;\u05EA;\u05E8; \u05DE;\u05D3;\u05D9; \u05E0;\u05D9;\u05E1;\u05D9;\u05D5;\u05E0;\u05D5;\u05EA;'})[c];}
+</script>
+
+
+<script src="app.js?v=5"></script>
+</body>
+</html>

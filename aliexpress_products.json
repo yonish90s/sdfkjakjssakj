@@ -1,0 +1,202 @@
+[
+  {
+    "id": "ali_001",
+    "title": "אוזניות בלוטות׳ TWS עם ביטול רעשים",
+    "cat": "אלקטרוניקה",
+    "desc": "אוזניות אלחוטיות עם ביטול רעשים אקטיבי, Bluetooth 5.3, עד 8 שעות שמע + 24 שעות בקייס.",
+    "price": "₪96",
+    "aliPrice": 48,
+    "img": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=tws+earbuds+anc"
+  },
+  {
+    "id": "ali_002",
+    "title": "שעון חכם עם מד לחץ דם",
+    "cat": "אלקטרוניקה",
+    "desc": "סמארטווטש עם מעקב בריאות, ניטור שינה, עמיד למים IP67. תואם iOS ואנדרואיד.",
+    "price": "₪130",
+    "aliPrice": 65,
+    "img": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=smart+watch+health"
+  },
+  {
+    "id": "ali_004",
+    "title": "מטען אלחוטי מהיר 15W",
+    "cat": "אלקטרוניקה",
+    "desc": "מטען Qi תואם לכל מכשיר, טעינה מהירה 15W, עיצוב שטוח ומינימליסטי.",
+    "price": "₪56",
+    "aliPrice": 28,
+    "img": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=wireless+charger+15w"
+  },
+  {
+    "id": "ali_009",
+    "title": "רב-שקע חכם USB-C 65W",
+    "cat": "אלקטרוניקה",
+    "desc": "3 שקעים + 4 יציאות USB כולל USB-C PD 65W לטעינה מהירה של לפטופ.",
+    "price": "₪84",
+    "aliPrice": 42,
+    "img": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=power+strip+usb-c+pd"
+  },
+  {
+    "id": "ali_011",
+    "title": "משקפי מציאות מדומה VR",
+    "cat": "אלקטרוניקה",
+    "desc": "משקפי VR לסמארטפון 4-7 אינץ׳, עדשות מתכווננות, כפתור סיבוב 360°.",
+    "price": "₪70",
+    "aliPrice": 35,
+    "img": "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=vr+headset+smartphone"
+  },
+  {
+    "id": "ali_013",
+    "title": "רמקול Bluetooth עמיד למים",
+    "cat": "אלקטרוניקה",
+    "desc": "רמקול נייד IPX7, 360° סאונד, 24 שעות סוללה, מיקרופון מובנה.",
+    "price": "₪110",
+    "aliPrice": 55,
+    "img": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=bluetooth+speaker+waterproof"
+  },
+  {
+    "id": "ali_014",
+    "title": "מקלדת מכנית RGB אלחוטית",
+    "cat": "אלקטרוניקה",
+    "desc": "מקלדת גיימינג 75% עם מתגים אדומים, תאורת RGB, חיבור Bluetooth + USB-C.",
+    "price": "₪144",
+    "aliPrice": 72,
+    "img": "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=mechanical+keyboard+rgb+wireless"
+  },
+  {
+    "id": "ali_015",
+    "title": "עכבר גיימינג אלחוטי 26000 DPI",
+    "cat": "אלקטרוניקה",
+    "desc": "עכבר גיימינג עם חיישן אופטי 26000 DPI, 70 שעות סוללה, 8 כפתורים תכנותיים.",
+    "price": "₪90",
+    "aliPrice": 45,
+    "img": "https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=gaming+mouse+wireless+26000dpi"
+  },
+  {
+    "id": "ali_016",
+    "title": "מסך נייד 15.6 אינץ׳ IPS",
+    "cat": "אלקטרוניקה",
+    "desc": "מסך חיצוני 1080p IPS, USB-C/HDMI, דק ב-8mm, מושלם ללפטופ ולנינטנדו Switch.",
+    "price": "₪220",
+    "aliPrice": 110,
+    "img": "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=portable+monitor+usb-c"
+  },
+  {
+    "id": "ali_017",
+    "title": "מצלמת אקשן 4K 60fps",
+    "cat": "אלקטרוניקה",
+    "desc": "מצלמת ספורט 4K עם ייצוב תמונה EIS, עמידה למים עד 40 מטר, WiFi, מסך מגע.",
+    "price": "₪136",
+    "aliPrice": 68,
+    "img": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=action+camera+4k+60fps"
+  },
+  {
+    "id": "ali_018",
+    "title": "מקרן מיני Bluetooth 1080p",
+    "cat": "אלקטרוניקה",
+    "desc": "מקרן כיס עם רזולוציית 1080p, רמקול Bluetooth מובנה, HDMI+USB, 120 אינץ׳.",
+    "price": "₪176",
+    "aliPrice": 88,
+    "img": "https://images.unsplash.com/photo-1626379953822-baec19c3accd?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=mini+projector+1080p+bluetooth"
+  },
+  {
+    "id": "ali_019",
+    "title": "סטנד לפטופ מתכוונן אלומיניום",
+    "cat": "אלקטרוניקה",
+    "desc": "מעמד לפטופ מאלומיניום עם 6 גבהים, מתקפל לנסיעות, לפטופ עד 17 אינץ׳.",
+    "price": "₪44",
+    "aliPrice": 22,
+    "img": "https://images.unsplash.com/photo-1593642634315-48f5414c3ad9?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=laptop+stand+aluminum+foldable"
+  },
+  {
+    "id": "ali_020",
+    "title": "ענן אחסון NAS נייד 1TB",
+    "cat": "אלקטרוניקה",
+    "desc": "כונן אחסון אישי נייד עם WiFi, אפליקציה, גיבוי אוטומטי לסמארטפון, 1TB.",
+    "price": "₪190",
+    "aliPrice": 95,
+    "img": "https://images.unsplash.com/photo-1531492746076-161ca9bcad58?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=portable+nas+wifi+1tb"
+  },
+  {
+    "id": "ali_021",
+    "title": "נורת LED חכמה RGBW WiFi",
+    "cat": "אלקטרוניקה",
+    "desc": "נורה חכמה 16M צבעים, שליטה קולית (Alexa/Google), תזמון, E27.",
+    "price": "₪36",
+    "aliPrice": 18,
+    "img": "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=smart+bulb+rgbw+wifi+alexa"
+  },
+  {
+    "id": "ali_022",
+    "title": "מנעול דלת חכם טביעת אצבע",
+    "cat": "אלקטרוניקה",
+    "desc": "מנעול חכם עם קורא טביעות אצבע, קוד, כרטיס RFID ומפתח. Bluetooth + אפליקציה.",
+    "price": "₪150",
+    "aliPrice": 75,
+    "img": "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=smart+lock+fingerprint+bluetooth"
+  },
+  {
+    "id": "ali_023",
+    "title": "רובוט שואב אבק WiFi",
+    "cat": "אלקטרוניקה",
+    "desc": "שואב רובוטי עם מיפוי LiDAR, שאיבה 2700Pa, מגב, שליטה מהאפליקציה.",
+    "price": "₪240",
+    "aliPrice": 120,
+    "img": "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=robot+vacuum+lidar+wifi"
+  },
+  {
+    "id": "ali_024",
+    "title": "מכשיר בדיקת איכות אוויר CO2",
+    "cat": "אלקטרוניקה",
+    "desc": "חיישן CO2, לחות, טמפרטורה ו-PM2.5. מסך OLED, התראות, ניתן לחיבור ל-Home Assistant.",
+    "price": "₪76",
+    "aliPrice": 38,
+    "img": "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=co2+air+quality+monitor+home"
+  },
+  {
+    "id": "ali_025",
+    "title": "משדר FM לרכב Bluetooth 5.0",
+    "cat": "אלקטרוניקה",
+    "desc": "מתאם FM לרכב, Bluetooth 5.0, מטען כפול USB-A+C, ידיים חופשיות, EQ.",
+    "price": "₪32",
+    "aliPrice": 16,
+    "img": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=car+fm+transmitter+bluetooth+5"
+  },
+  {
+    "id": "ali_026",
+    "title": "חולצת טי סגנון ואן גוך – Starry Night",
+    "cat": "אופנה",
+    "desc": "חולצת קוטון 100% עם הדפס אמנותי בסגנון ציורי ואן גוך. עיצוב ייחודי של 'ליל הכוכבים', זמינה במידות S–3XL.",
+    "price": "₪78",
+    "aliPrice": 39,
+    "img": "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=van+gogh+starry+night+t-shirt+art+print"
+  },
+  {
+    "id": "ali_027",
+    "title": "אוזניות גיימינג עם מיקרופון רעשי",
+    "cat": "אלקטרוניקה",
+    "desc": "אוזניות גיימינג 7.1 סראונד, מיקרופון עם ביטול רעש, LED RGB, חוטיות USB.",
+    "price": "₪64",
+    "aliPrice": 32,
+    "img": "https://images.unsplash.com/photo-1599669454699-248893623440?auto=format&fit=crop&q=80&w=600",
+    "aliUrl": "https://www.aliexpress.com/wholesale?SearchText=gaming+headset+71+surround+rgb"
+  }
+]

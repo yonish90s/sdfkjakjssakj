@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>כניסה – פרויקט 11</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #09090b;
+      color: #fafafa;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Left image panel ── */
+    .image-panel {
+      display: none;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #27272a 0%, #18181b 50%, #000 100%);
+    }
+    @media (min-width: 1024px) {
+      .image-panel { display: flex; flex-direction: column; justify-content: space-between; width: 50%; padding: 48px; }
+    }
+
+    .image-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top right, rgba(161,161,170,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .image-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .panel-logo {
+      position: relative;
+      z-index: 1;
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .panel-logo img { height: 26px; width: auto; display: block; }
+
+    .panel-body {
+      position: relative;
+      z-index: 1;
+    }
+    .panel-body h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .panel-body h2 span { color: #71717a; }
+    .panel-body p { color: #52525b; font-size: 1rem; line-height: 1.6; max-width: 320px; }
+
+    .panel-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .avatar-stack { display: flex; flex-direction: row-reverse; }
+    .avatar-stack span {
+      display: block;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid #18181b;
+      margin-left: -8px;
+    }
+    .avatar-stack span:nth-child(1) { background: #52525b; }
+    .avatar-stack span:nth-child(2) { background: #71717a; }
+    .avatar-stack span:nth-child(3) { background: #a1a1aa; }
+    .panel-footer p { color: #52525b; font-size: 0.85rem; }
+
+    /* ── Form panel ── */
+    .form-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+    }
+    .form-box { width: 100%; max-width: 400px; }
+
+    .form-header { margin-bottom: 28px; }
+    .form-header h1 { font-size: 1.6rem; font-weight: 700; color: #fafafa; margin-bottom: 4px; }
+    .form-header p { font-size: 0.875rem; color: #71717a; }
+
+    label { display: block; font-size: 0.8rem; color: #a1a1aa; margin-bottom: 6px; }
+
+    .field { margin-bottom: 16px; }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap .icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #52525b;
+      pointer-events: none;
+      font-size: 0.85rem;
+      line-height: 1;
+    }
+    .input-wrap input {
+      width: 100%;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 12px 36px 12px 16px;
+      color: #fafafa;
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+      direction: ltr;
+      text-align: right;
+    }
+    .input-wrap input:focus { border-color: #52525b; }
+    .input-wrap input::placeholder { color: #3f3f46; }
+
+    .toggle-pw {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #52525b;
+      font-size: 0.85rem;
+      padding: 0;
+      line-height: 1;
+    }
+    .toggle-pw:hover { color: #a1a1aa; }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .forgot-link {
+      font-size: 0.75rem;
+      color: #52525b;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .forgot-link:hover { color: #fafafa; }
+
+    .error-msg {
+      display: none;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #f87171;
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+    .error-msg.visible { display: block; }
+
+    .btn-submit {
+      width: 100%;
+      background: #fafafa;
+      color: #09090b;
+      font-weight: 700;
+      font-size: 0.875rem;
+      font-family: inherit;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .15s, opacity .15s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover { background: #e4e4e7; }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    .switch-mode {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #71717a;
+      margin-top: 20px;
+    }
+    .switch-mode button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #fafafa;
+      font-family: inherit;
+      font-size: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* Animated name field */
+    #field-name {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height .25s ease, opacity .2s ease, margin-bottom .25s ease;
+      margin-bottom: 0;
+    }
+    #field-name.visible {
+      max-height: 80px;
+      opacity: 1;
+      margin-bottom: 16px;
+    }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(9,9,11,.3);
+      border-top-color: #09090b;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+
+    /* Google Button & Divider */
+    .btn-google {
+      width: 100%;
+      background: #18181b;
+      color: #fafafa;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: background .15s, border-color .15s;
+      margin-top: 16px;
+    }
+    .btn-google:hover {
+      background: #27272a;
+      border-color: #3f3f46;
+    }
+    .btn-google img {
+      width: 18px;
+      height: 18px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 24px 0;
+      color: #3f3f46;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #27272a;
+    }
+    .divider:not(:empty)::before { margin-left: 12px; }
+    .divider:not(:empty)::after { margin-right: 12px; }
+    .divider span { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+
+    .btn-guest {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: #71717a;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      transition: color 0.2s;
+    }
+    .btn-guest:hover { color: #fafafa; }
+
+    /* OTP Screen */
+    #otp-screen { display: none; }
+    #otp-screen.visible { display: block; }
+    #auth-form-wrap.hidden { display: none; }
+
+    .otp-inputs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 24px 0;
+      direction: ltr;
+    }
+    .otp-inputs input {
+      width: 46px;
+      height: 56px;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      color: #fafafa;
+      outline: none;
+      transition: border-color .15s;
+      font-family: inherit;
+    }
+    .otp-inputs input:focus { border-color: #71717a; }
+    .otp-resend {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: #52525b;
+    }
+    .otp-resend button {
+      background: none;
+      border: none;
+      color: #a1a1aa;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .otp-resend button:hover { color: #fafafa; }
+    .otp-timer { color: #52525b; }
+  </style>
+</head>
+<body>
+
+<!-- Left panel -->
+<div class="image-panel">
+  <div class="panel-logo">
+    <img src="logo.png" alt="לוגו" />
+  </div>
+  <div class="panel-body">
+    <h2>ברוכים הבאים,<br><span>התחבר כדי להמשיך</span></h2>
+    <p>גש לכל התכנים, החנויות והשירותים שלנו. כניסה מהירה ומאובטחת.</p>
+  </div>
+  <div class="panel-footer">
+    <div class="avatar-stack">
+      <span></span><span></span><span></span>
+    </div>
+    <p>מאות משתמשים פעילים</p>
+  </div>
+</div>
+
+<!-- Form panel -->
+<div class="form-panel">
+  <div class="form-box">
+
+    <!-- OTP Screen -->
+    <div id="otp-screen">
+      <div class="form-header">
+        <h1>אימות מייל 📧</h1>
+        <p id="otp-subtitle">שלחנו קוד בן 6 ספרות למייל שלך</p>
+      </div>
+      <div class="otp-inputs">
+        <input type="text" maxlength="1" class="otp-digit" id="otp-0" inputmode="numeric" />
+        <input type="text" maxlength="1" class="otp-digit" id="otp-1" inputmode="numeric" />
+        <input type="text" maxlength="1" class="otp-digit" id="otp-2" inputmode="numeric" />
+        <input type="text" maxlength="1" class="otp-digit" id="otp-3" inputmode="numeric" />
+        <input type="text" maxlength="1" class="otp-digit" id="otp-4" inputmode="numeric" />
+        <input type="text" maxlength="1" class="otp-digit" id="otp-5" inputmode="numeric" />
+      </div>
+      <div class="error-msg" id="otp-error"></div>
+      <button type="button" class="btn-submit" id="btn-verify-otp">
+        <span>אמת קוד ✓</span>
+      </button>
+      <div class="otp-resend">
+        לא קיבלת? <button type="button" id="btn-resend">שלח שוב</button>
+        <span class="otp-timer" id="otp-timer"></span>
+      </div>
+      <button type="button" class="btn-guest" id="btn-back-to-form">← חזור</button>
+    </div>
+
+    <!-- Auth Form -->
+    <div id="auth-form-wrap">
+    <div class="form-header">
+      <h1 id="form-title">ברוך השב</h1>
+      <p id="form-subtitle">הכנס את הפרטים שלך כדי להמשיך</p>
+    </div>
+
+    <form id="auth-form" novalidate>
+
+      <!-- Name field (signup only) -->
+      <div class="field" id="field-name">
+        <label for="input-name">שם מלא</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="input-name" placeholder="ישראל ישראלי" autocomplete="name" />
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label for="input-email">אימייל</label>
+        <div class="input-wrap">
+          <span class="icon">✉</span>
+          <input type="email" id="input-email" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <div class="field-row">
+          <label for="input-password">סיסמה</label>
+          <button type="button" class="forgot-link" id="btn-forgot">שכחת סיסמה?</button>
+        </div>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="input-password" placeholder="••••••••" autocomplete="current-password" required />
+          <button type="button" class="toggle-pw" id="btn-toggle-pw" title="הצג/הסתר סיסמה">👁</button>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-msg" id="error-msg"></div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-submit" id="btn-submit">
+        <span id="btn-label">כניסה</span>
+        <span id="btn-arrow">→</span>
+      </button>
+
+      <!-- Divider -->
+      <div class="divider"><span>או</span></div>
+
+      <!-- Google Login -->
+      <button type="button" class="btn-google" id="btn-google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        <span>המשך עם Google</span>
+      </button>
+
+      <button type="button" class="btn-guest" id="btn-guest">המשך כאורח 🔓</button>
+    </form>
+
+    <p class="switch-mode">
+      <span id="switch-text">עדיין אין לך חשבון?</span>
+      <button type="button" id="btn-switch">הרשם עכשיו</button>
+    </p>
+    </div><!-- end auth-form-wrap -->
+  </div>
+</div>
+
+<script type="module">
+  import { auth } from './firebase-config.js';
+  import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup
+  } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+  // ── OTP state ──
+  let pendingEmail = '';
+  let pendingPassword = '';
+  let pendingName = '';
+  let resendTimer = null;
+
+  const otpScreen      = document.getElementById('otp-screen');
+  const authFormWrap   = document.getElementById('auth-form-wrap');
+  const otpSubtitle    = document.getElementById('otp-subtitle');
+  const otpError       = document.getElementById('otp-error');
+  const btnVerifyOtp   = document.getElementById('btn-verify-otp');
+  const btnResend      = document.getElementById('btn-resend');
+  const otpTimerEl     = document.getElementById('otp-timer');
+  const btnBackToForm  = document.getElementById('btn-back-to-form');
+  const otpDigits      = document.querySelectorAll('.otp-digit');
+
+  // Auto-advance OTP digits
+  otpDigits.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/g, '');
+      if (inp.value && i < 5) otpDigits[i + 1].focus();
+      if (getOtpCode().length === 6) btnVerifyOtp.click();
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) otpDigits[i - 1].focus();
+    });
+  });
+
+  function getOtpCode() {
+    return Array.from(otpDigits).map(d => d.value).join('');
+  }
+
+  function showOtpScreen(email) {
+    pendingEmail = email;
+    otpSubtitle.textContent = `שלחנו קוד בן 6 ספרות ל: ${email}`;
+    otpScreen.classList.add('visible');
+    authFormWrap.classList.add('hidden');
+    otpDigits[0].focus();
+    startResendTimer();
+  }
+
+  function hideOtpScreen() {
+    otpScreen.classList.remove('visible');
+    authFormWrap.classList.remove('hidden');
+    otpDigits.forEach(d => d.value = '');
+    clearInterval(resendTimer);
+  }
+
+  function startResendTimer() {
+    let secs = 60;
+    btnResend.disabled = true;
+    otpTimerEl.textContent = ` (${secs}s)`;
+    resendTimer = setInterval(() => {
+      secs--;
+      otpTimerEl.textContent = secs > 0 ? ` (${secs}s)` : '';
+      if (secs <= 0) { clearInterval(resendTimer); btnResend.disabled = false; }
+    }, 1000);
+  }
+
+  async function sendOtp(email) {
+    const res = await fetch('/api/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!res.ok) throw new Error((await res.json()).error);
+  }
+
+  // Verify OTP button
+  btnVerifyOtp.addEventListener('click', async () => {
+    const code = getOtpCode();
+    if (code.length < 6) { otpError.textContent = 'הכנס 6 ספרות'; otpError.classList.add('visible'); return; }
+    otpError.classList.remove('visible');
+    btnVerifyOtp.disabled = true;
+    btnVerifyOtp.innerHTML = '<div class="spinner"></div>';
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, code })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      // OTP verified! Create Firebase account
+      const cred = await createUserWithEmailAndPassword(auth, pendingEmail, pendingPassword);
+      await updateProfile(cred.user, { displayName: pendingName });
+      window.location.replace('index.html');
+    } catch (err) {
+      otpError.textContent = err.message;
+      otpError.classList.add('visible');
+      btnVerifyOtp.disabled = false;
+      btnVerifyOtp.innerHTML = '<span>אמת קוד ✓</span>';
+    }
+  });
+
+  // Resend OTP
+  btnResend.addEventListener('click', async () => {
+    otpDigits.forEach(d => d.value = '');
+    otpDigits[0].focus();
+    startResendTimer();
+    try { await sendOtp(pendingEmail); } catch {}
+  });
+
+  // Back to form
+  btnBackToForm.addEventListener('click', hideOtpScreen);
+
+  // If already logged in, go straight to the app
+  onAuthStateChanged(auth, (user) => {
+    if (user) window.location.replace('index.html');
+  });
+
+  let mode = 'login'; // 'login' | 'signup'
+
+  const formTitle    = document.getElementById('form-title');
+  const formSubtitle = document.getElementById('form-subtitle');
+  const fieldName    = document.getElementById('field-name');
+  const inputName    = document.getElementById('input-name');
+  const inputEmail   = document.getElementById('input-email');
+  const inputPw      = document.getElementById('input-password');
+  const btnSubmit    = document.getElementById('btn-submit');
+  const btnLabel     = document.getElementById('btn-label');
+  const btnArrow     = document.getElementById('btn-arrow');
+  const errorMsg     = document.getElementById('error-msg');
+  const btnSwitch    = document.getElementById('btn-switch');
+  const switchText   = document.getElementById('switch-text');
+  const btnForgot    = document.getElementById('btn-forgot');
+  const btnTogglePw  = document.getElementById('btn-toggle-pw');
+  const btnGoogle    = document.getElementById('btn-google');
+  const btnGuest     = document.getElementById('btn-guest');
+
+  // Toggle password visibility
+  btnTogglePw.addEventListener('click', () => {
+    const show = inputPw.type === 'password';
+    inputPw.type = show ? 'text' : 'password';
+    btnTogglePw.textContent = show ? '🙈' : '👁';
+  });
+
+  // Switch between login / signup
+  btnSwitch.addEventListener('click', () => {
+    mode = mode === 'login' ? 'signup' : 'login';
+    hideError();
+    inputEmail.value = '';
+    inputPw.value = '';
+    inputName.value = '';
+
+    if (mode === 'signup') {
+      formTitle.textContent    = 'יצירת חשבון';
+      formSubtitle.textContent = 'הרשם כדי לגשת לאתר';
+      btnLabel.textContent     = 'הרשמה';
+      fieldName.classList.add('visible');
+      switchText.textContent   = 'כבר יש לך חשבון?';
+      btnSwitch.textContent    = 'כניסה';
+      btnForgot.style.visibility = 'hidden';
+      inputPw.autocomplete     = 'new-password';
+    } else {
+      formTitle.textContent    = 'ברוך השב';
+      formSubtitle.textContent = 'הכנס את הפרטים שלך כדי להמשיך';
+      btnLabel.textContent     = 'כניסה';
+      fieldName.classList.remove('visible');
+      switchText.textContent   = 'עדיין אין לך חשבון?';
+      btnSwitch.textContent    = 'הרשם עכשיו';
+      btnForgot.style.visibility = 'visible';
+      inputPw.autocomplete     = 'current-password';
+    }
+  });
+
+  // Forgot password
+  btnForgot.addEventListener('click', async () => {
+    const email = inputEmail.value.trim();
+    if (!email) { showError('הכנס את האימייל שלך תחילה'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showError('📧 נשלח מייל לאיפוס סיסמה');
+      errorMsg.style.color = '#86efac'; // green tint for success
+    } catch {
+      showError('לא נמצא חשבון עם האימייל הזה');
+    }
+  });
+
+  // Submit
+  document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const email    = inputEmail.value.trim();
+    const password = inputPw.value.trim();
+    const name     = inputName.value.trim();
+
+    if (!email || !password) { showError('נא למלא את כל השדות'); return; }
+    if (mode === 'signup' && !name) { showError('נא להזין שם מלא'); return; }
+
+    setLoading(true);
+    try {
+      if (mode === 'signup') {
+        // Send OTP first, then show OTP screen
+        pendingEmail    = email;
+        pendingPassword = password;
+        pendingName     = name;
+        await sendOtp(email);
+        setLoading(false);
+        showOtpScreen(email);
+        return;
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.replace('index.html');
+      }
+    } catch (err) {
+      showError(firebaseErrorHe(err.code));
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // Google Login
+  btnGoogle.addEventListener('click', async () => {
+    hideError();
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      // Auth listener above will handle redirect
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        showError(firebaseErrorHe(err.code));
+      }
+    }
+  });
+
+  // Guest Access
+  btnGuest.addEventListener('click', () => {
+    localStorage.setItem('isGuest', 'true');
+    window.location.replace('index.html');
+  });
+
+  function setLoading(on) {
+    btnSubmit.disabled = on;
+    if (on) {
+      btnLabel.textContent = '';
+      btnArrow.textContent = '';
+      btnSubmit.innerHTML = '<div class="spinner"></div>';
+    } else {
+      btnSubmit.innerHTML = `<span id="btn-label">${mode === 'login' ? 'כניסה' : 'הרשמה'}</span><span id="btn-arrow">→</span>`;
+    }
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.color = '';
+    errorMsg.classList.add('visible');
+  }
+  function hideError() {
+    errorMsg.classList.remove('visible');
+  }
+
+  function firebaseErrorHe(code) {
+    switch (code) {
+      case 'auth/email-already-in-use':   return 'כתובת המייל כבר רשומה';
+      case 'auth/invalid-email':           return 'כתובת מייל לא תקינה';
+      case 'auth/weak-password':           return 'הסיסמה חלשה מדי (לפחות 6 תווים)';
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':      return 'אימייל או סיסמה שגויים';
+      case 'auth/too-many-requests':       return 'יותר מדי ניסיונות, נסה שוב מאוחר יותר';
+      case 'auth/network-request-failed':  return 'בעיית חיבור לאינטרנט';
+      case 'auth/operation-not-allowed':   return 'שיטת התחברות זו אינה מופעלת ב-Firebase (Email/Password)';
+      default:                             return 'שגיאה: ' + code;
+    }
+  }
+</script>
+</body>
+</html>
