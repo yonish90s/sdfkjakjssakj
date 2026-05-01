@@ -179,13 +179,13 @@
 
 <!-- CONTACT MODAL -->
 <div id="contact-modal" class="modal-overlay floating-modal-overlay">
-  <div id="chat-draggable-window" class="modal-content" style="position: fixed; top: 120px; right: 32px; max-width: 400px; margin: 0; padding: 0; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 150px); z-index: 9999;">
-    <div class="chat-drag-handle" id="chat-header" style="cursor: move; background: #f8f9fa; padding: 12px 16px; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+  <div id="chat-draggable-window" class="modal-content chat-window" style="position: fixed; top: 120px; right: 32px; max-width: 400px; margin: 0; padding: 0; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 150px); z-index: 9999;">
+    <div class="chat-drag-handle chat-header" id="chat-header" style="cursor: move; padding: 12px 16px; border-top-left-radius: 20px; border-top-right-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div style="display:flex; align-items:center; gap:8px;">
         <span>✨ עוזר וירטואלי חכם</span>
       </div>
       <div style="display:flex; align-items:center; gap:12px;">
-        <button onclick="openTermsModal()" style="background:none; border:none; color:var(--primary); font-size:0.85rem; font-weight:700; cursor:pointer; text-decoration:underline;">תקנון</button>
+        <button onclick="openTermsModal()" class="chat-terms-btn">תקנון</button>
         <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:18px;">✕</button>
       </div>
     </div>
