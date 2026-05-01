@@ -26,18 +26,26 @@ const classifier = new natural.BayesClassifier();
 classifier.addDocument('מתי אתם פתוחים', 'hours');
 classifier.addDocument('שעות פעילות', 'hours');
 classifier.addDocument('מתי אפשר להגיע', 'hours');
+classifier.addDocument('מתי פתוח', 'hours');
 classifier.addDocument('זמני פתיחה', 'hours');
+
 classifier.addDocument('איך יוצרים קשר', 'contact');
 classifier.addDocument('דברו איתי', 'contact');
 classifier.addDocument('טלפון', 'contact');
 classifier.addDocument('מייל', 'contact');
+classifier.addDocument('איך אפשר לדבר איתכם', 'contact');
+
 classifier.addDocument('לקבוע תור', 'appointment');
 classifier.addDocument('להזמין פגישה', 'appointment');
 classifier.addDocument('תור חדש', 'appointment');
+classifier.addDocument('איך אפשר לקבוע תור', 'appointment');
+classifier.addDocument('רוצה לקבוע פגישה', 'appointment');
+
 classifier.addDocument('גרפים', 'charts');
 classifier.addDocument('נתונים', 'charts');
 classifier.addDocument('קובץ נתונים', 'charts');
 classifier.addDocument('סטטיסטיקה', 'charts');
+classifier.addDocument('איפה הגרפים', 'charts');
 classifier.train();
 
 const intentResponses = {
@@ -73,7 +81,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     
     if (!apiKey) {
       console.error('SERVER ERROR: GEMINI_API_KEY is missing.');
-      return res.status(500).json({ error: 'מפתח Gemini API חסר בשרת.' });
+      return res.json({ text: 'סליחה, אני עדיין לומד ולא הבנתי את השאלה. תוכל לבחור אחת מהאפשרויות (1-4) או לנסות לנסח שוב? 😊' });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
