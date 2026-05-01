@@ -840,7 +840,8 @@ async function sendChatMessage() {
   try {
     const systemPrompt = localStorage.getItem('aiSystemPrompt') || "אתה עוזר וירטואלי באתר. תענה בעברית בצורה מנומסת.";
     
-    const res = await fetch(`${window.API_URL}/api/chat`, {
+    const apiUrl = window.API_URL || '';
+    const res = await fetch(`${apiUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, history: chatHistory, systemPrompt })
