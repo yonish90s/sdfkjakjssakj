@@ -59,17 +59,29 @@ const intentResponses = {
 app.get('/api/test', (req, res) => res.json({ status: 'ok', message: 'Server is alive!' }));
 
 // --- AI Chat Endpoint ---
+const DEFAULT_SYSTEM_PROMPT = `
+אתה עוזר וירטואלי חכם ומקצועי עבור האתר "פרויקט 11" (Project 11). 
+האתר עוסק בחדשות, טכנולוגיה, שירותים דיגיטליים, גרפים להורדה, וקביעת תורים.
+
+הנחיות להתנהגות:
+1. תענה תמיד בעברית רהוטה ומנומסת.
+2. תהיה תמציתי וענייני, אך ידידותי.
+3. אם שואלים אותך שאלות על האתר, תפנה את המשתמשים לעמודים הרלוונטיים (כתבות, גרפים, קביעת תור).
+4. אם המשתמש רוצה ליצור קשר, תגיד לו שאפשר לשלוח מייל ל-support@project11.com.
+5. אל תמציא מידע שאתה לא יודע על האתר.
+`;
+
 app.post(['/api/chat', '/chat'], async (req, res) => {
   try {
     const { message, history, systemPrompt } = req.body;
 
-    // --- ML INTENT CHECK ---
+    // --- ML INTENT CHECK (Fast Pass) ---
     const intent = classifier.classify(message);
     const classifications = classifier.getClassifications(message);
     const topScore = classifications[0].value;
 
-    // Only use intent if the confidence is reasonably high
-    if (topScore > 0.001) {
+    // High confidence ML match - return instant answer
+    if (topScore > 0.5) {
       const response = intentResponses[intent];
       if (response) {
         return res.json({ text: response, isIntent: true });
@@ -80,23 +92,26 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
-      console.error('SERVER ERROR: GEMINI_API_KEY is missing.');
+      // Fallback if no API key is provided
+      if (topScore > 0.001) {
+        const response = intentResponses[intent];
+        return res.json({ text: response, isIntent: true });
+      }
       return res.json({ text: 'סליחה, אני עדיין לומד ולא הבנתי את השאלה. תוכל לבחור אחת מהאפשרויות (1-4) או לנסות לנסח שוב? 😊' });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT
+    });
     
     const chat = model.startChat({
       history: history || [],
       generationConfig: { maxOutputTokens: 1000 },
     });
 
-    const fullPrompt = systemPrompt 
-      ? `הנחיות מערכת: ${systemPrompt}\n\nהודעת משתמש: ${message}` 
-      : message;
-
-    const result = await chat.sendMessage(fullPrompt);
+    const result = await chat.sendMessage(message);
     const response = await result.response;
     const text = response.text();
     
