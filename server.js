@@ -89,7 +89,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     }
     // --- END ML INTENT CHECK ---
     
-    const apiKey = process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini || process.env.bbb;
+    const apiKey = process.env.bbb || process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini;
     
     if (!apiKey) {
       // Fallback if no API key is provided

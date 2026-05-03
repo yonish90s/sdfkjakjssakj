@@ -29,8 +29,8 @@ module.exports = async (req, res) => {
   try {
     const { message, history, systemPrompt } = req.body;
     
-    // Check for multiple possible env var names
-    const apiKey = process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini || process.env.bbb;
+    // Check for multiple possible env var names - Prioritizing 'bbb'
+    const apiKey = process.env.bbb || process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini;
     
     if (!apiKey) {
       return res.json({ text: 'סליחה, אני עדיין לומד ולא הבנתי את השאלה. תוכל לבחור אחת מהאפשרויות (1-4) או לנסות לנסח שוב? 😊' });
