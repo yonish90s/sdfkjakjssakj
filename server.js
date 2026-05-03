@@ -116,11 +116,37 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     const text = response.text();
     
     if (!text) throw new Error('התקבלה תשובה ריקה');
-    
-    res.json({ text });
+    return res.status(200).json({ text });
   } catch (err) {
-    console.error('GEMINI API ERROR:', err);
+    console.error('CHAT ERROR:', err);
     res.status(500).json({ error: 'שגיאה בבינה המלאכותית', details: err.message });
+  }
+});
+
+// --- Translation Endpoint ---
+app.post('/api/translate', async (req, res) => {
+  try {
+    const { text } = req.body;
+    const apiKey = process.env.bbb || process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'מפתח API חסר בשרת.' });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-flash-latest",
+      systemInstruction: "אתה מתרגם מקצועי מאנגלית לעברית. תרגם את הטקסט הבא לעברית רהוטה, טבעית ומקצועית, תוך שמירה על משמעות המקור ועל מבנה הפסקאות. אל תוסיף הערות משלך, רק את התרגום."
+    });
+
+    const result = await model.generateContent(text);
+    const response = await result.response;
+    const translatedText = response.text();
+
+    res.json({ translatedText });
+  } catch (err) {
+    console.error('TRANSLATION ERROR:', err);
+    res.status(500).json({ error: 'שגיאה בתרגום הטקסט' });
   }
 });
 
