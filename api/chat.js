@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     const { message, history, systemPrompt } = req.body;
     
     // Check for multiple possible env var names
-    const apiKey = process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.aa || process.env.gemini || process.env.bbb;
     
     if (!apiKey) {
       return res.json({ text: 'סליחה, אני עדיין לומד ולא הבנתי את השאלה. תוכל לבחור אחת מהאפשרויות (1-4) או לנסות לנסח שוב? 😊' });
