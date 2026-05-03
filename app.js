@@ -504,10 +504,6 @@ function showArticle(id) {
         <span class="meta-sep">|</span> 
         <span id="inline-time" class="meta-date">${escHtml(a.time)}</span>
       </div>
-      
-      <button class="translate-btn" onclick="translateCurrentArticle('${a.id}')" id="translate-btn-${a.id}">
-        <i class="fas fa-language"></i> תרגם לעברית 🇮🇱
-      </button>
     </header>
     <div class="article-hero-img" id="inline-hero-img" style="background-image: url('${a.image}'); position: relative;">
     </div>
@@ -3026,48 +3022,5 @@ function closeLightbox() {
   const lightbox = document.getElementById('image-lightbox');
   if (lightbox) {
     lightbox.classList.remove('active');
-  }
-}
-
-/* AI TRANSLATION LOGIC */
-async function translateCurrentArticle(articleId) {
-  const btn = document.getElementById(`translate-btn-${articleId}`);
-  const contentDiv = document.querySelector('.article-text');
-  const titleH1 = document.getElementById('inline-title');
-  
-  if (!btn || !contentDiv) return;
-
-  const originalContent = contentDiv.innerHTML;
-  const originalTitle = titleH1.innerText;
-
-  btn.classList.add('loading');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> מתרגם...';
-  
-  try {
-    // We send only the text content to keep it clean for the AI
-    const textToTranslate = contentDiv.innerText;
-    
-    const res = await fetch('/api/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: textToTranslate })
-    });
-
-    const data = await res.json();
-    if (data.translatedText) {
-      contentDiv.innerHTML = `<div class="translated-content">${data.translatedText.replace(/\n/g, '<br>')}</div>`;
-      btn.innerHTML = '<i class="fas fa-check"></i> תורגם בהצלחה';
-      btn.style.borderColor = '#34c759';
-      btn.style.color = '#34c759';
-      btn.disabled = true;
-      showToast('הכתבה תורגמה לעברית על ידי בינה מלאכותית');
-    } else {
-      throw new Error('Translation failed');
-    }
-  } catch (err) {
-    console.error(err);
-    btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> שגיאה בתרגום';
-    btn.classList.remove('loading');
-    showToast('חלה שגיאה בתרגום הכתבה');
   }
 }
