@@ -431,21 +431,39 @@ function renderNewsLayout(page = 1) {
   const paginationEl = document.getElementById('news-pagination');
   if(!topGrid || !feedList) return;
 
-  // Top 3 hero cards only on first page
-  const topArticles = newsArticles.filter(x => x.isTop && x.approved !== false).sort((a,b) => a.isTop - b.isTop);
+  // Featured 3-column top grid only on first page
   if (page === 1) {
-    topGrid.innerHTML = topArticles.map(a => `
-      <div class="top-news-card" onclick="showArticle(${a.id})">
-        <div class="top-news-bg" style="background-image: url('${a.image}')"></div>
-        <div class="top-news-overlay">
-          ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
-          <h3>${escHtml(a.title)}</h3>
+    const artRight = newsArticles.find(a => a.topPosition === 'right' && a.approved !== false);
+    const artCenter = newsArticles.find(a => a.topPosition === 'center' && a.approved !== false);
+    const artLeft = newsArticles.find(a => a.topPosition === 'left' && a.approved !== false);
+
+    const renderFeaturedCard = (a, className) => {
+      if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">אין כתבה במיקום זה</div>`;
+      return `
+        <div class="featured-card ${className}" onclick="showArticle(${a.id})">
+          <img src="${a.image}" alt="${escHtml(a.title)}">
+          <div class="featured-overlay">
+            <span class="featured-tag">${escHtml(a.category)}</span>
+            ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
+            <div class="featured-title">${escHtml(a.title)}</div>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    };
+
+    const featuredGrid = document.getElementById('featured-top-grid');
+    if (featuredGrid) {
+      featuredGrid.innerHTML = `
+        <div class="featured-col">${renderFeaturedCard(artRight, 'right')}</div>
+        <div class="featured-col">${renderFeaturedCard(artCenter, 'center')}</div>
+        <div class="featured-col">${renderFeaturedCard(artLeft, 'left')}</div>
+      `;
+    }
+    // Hide old topGrid if it exists
+    if (topGrid) topGrid.style.display = 'none';
   }
 
-  const feedArticles = newsArticles.filter(x => !x.isTop && x.approved !== false);
+  const feedArticles = newsArticles.filter(x => !x.topPosition && x.approved !== false);
   const totalPages = Math.max(1, Math.ceil(feedArticles.length / ARTICLES_PER_PAGE));
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
@@ -1067,7 +1085,7 @@ function openArticleEditor() {
   document.getElementById('edit-snippet').value = '';
   document.getElementById('edit-content').value = '';
   document.getElementById('edit-youtube').value = '';
-  document.getElementById('edit-isTop').checked = false;
+  document.getElementById('pos-none').checked = true;
   document.getElementById('edit-isPremium').checked = false;
   
   document.getElementById('admin-editor').scrollIntoView({ behavior: 'smooth' });
@@ -1089,7 +1107,12 @@ function editArticle(id) {
   document.getElementById('edit-snippet').value = a.snippet || '';
   document.getElementById('edit-content').value = a.content || '';
   document.getElementById('edit-youtube').value = a.youtube || '';
-  document.getElementById('edit-isTop').checked = !!a.isTop;
+  
+  const posValue = a.topPosition || 'none';
+  const posRadio = document.getElementById(`pos-${posValue}`);
+  if (posRadio) posRadio.checked = true;
+  else document.getElementById('pos-none').checked = true;
+
   document.getElementById('edit-isPremium').checked = !!a.isPremium;
   
   document.getElementById('admin-editor').scrollIntoView({ behavior: 'smooth' });
@@ -1099,10 +1122,10 @@ function editArticle(id) {
 
 function saveAdminArticle() {
   const idValue = document.getElementById('edit-id').value;
-  const isTop = document.getElementById('edit-isTop').checked;
+  const topPos = document.querySelector('input[name="topPos"]:checked').value;
   
   const articleObj = {
-    id: idValue ? Number(idValue) : nextId++,
+    id: idValue ? Number(idValue) : Date.now(),
     title: document.getElementById('edit-title').value,
     category: document.getElementById('edit-category').value,
     author: document.getElementById('edit-author').value,
@@ -1111,7 +1134,7 @@ function saveAdminArticle() {
     snippet: document.getElementById('edit-snippet').value,
     content: document.getElementById('edit-content').value,
     youtube: document.getElementById('edit-youtube').value.trim(),
-    isTop: isTop ? (newsArticles.filter(a => a.isTop).length + 1) : false,
+    topPosition: topPos !== 'none' ? topPos : false,
     isPremium: document.getElementById('edit-isPremium').checked
   };
 
@@ -1120,24 +1143,24 @@ function saveAdminArticle() {
     return;
   }
 
+  // If assigning to a top position, remove that position from others
+  if (articleObj.topPosition) {
+    newsArticles.forEach(a => {
+      if (a.topPosition === articleObj.topPosition && a.id !== articleObj.id) {
+        a.topPosition = false;
+      }
+    });
+  }
+
   if (idValue) {
-    // Editing existing
     const idx = newsArticles.findIndex(a => a.id === Number(idValue));
     if (idx !== -1) {
       newsArticles[idx] = articleObj;
       showToast('עודכן בהצלחה');
     }
   } else {
-    // New article
     newsArticles.unshift(articleObj);
     showToast('נוצר בהצלחה');
-  }
-
-  if (isTop) {
-     const topArts = newsArticles.filter(a => a.isTop).sort((a,b) => a.isTop - b.isTop);
-     if(topArts.length > 3) {
-        topArts[topArts.length-1].isTop = false; // Limit to 3 top items max implicitly
-     }
   }
 
   localStorage.setItem('newsArticles', JSON.stringify(newsArticles));

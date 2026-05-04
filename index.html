@@ -213,7 +213,10 @@
 <!-- HOME PAGE (NEWS LAYOUT) -->
 <div id="page-home" class="page active" style="padding-top: 0; max-width: 100%;">
   
-  <section class="top-news-grid" id="top-news-grid">
+  <!-- Featured 3-Position Grid -->
+  <div class="featured-top-grid" id="featured-top-grid"></div>
+
+  <section class="top-news-grid" id="top-news-grid" style="display: none;">
     <!-- Populated by JS -->
   </section>
 
@@ -704,7 +707,27 @@
               <input type="text" id="edit-youtube" placeholder="למשל: https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="admin-input">
               <p style="font-size:0.78rem;color:#86868b;margin-top:2px;">הסרטון יוצג בתוך הכתבה מתחת לתוכן.</p>
             </div>
-            <label style="display: flex; gap: 8px;"><input type="checkbox" id="edit-isTop"> סמן ככתבה פופולרית (תוצג בראש האתר)</label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size: 0.9rem; font-weight: 700; color: #1d1d1f;">מיקום בראש האתר (כתבה פופולרית):</label>
+              <div class="position-options">
+                <label class="pos-option">
+                  <input type="radio" name="topPos" value="none" id="pos-none" checked>
+                  <span class="pos-label">ללא</span>
+                </label>
+                <label class="pos-option">
+                  <input type="radio" name="topPos" value="right" id="pos-right">
+                  <span class="pos-label">ימין</span>
+                </label>
+                <label class="pos-option">
+                  <input type="radio" name="topPos" value="center" id="pos-center">
+                  <span class="pos-label">מרכז</span>
+                </label>
+                <label class="pos-option">
+                  <input type="radio" name="topPos" value="left" id="pos-left">
+                  <span class="pos-label">שמאל</span>
+                </label>
+              </div>
+            </div>
             <label style="display: flex; gap: 8px; color: #f9b233; font-weight: 700;"><input type="checkbox" id="edit-isPremium"> 👑 כתבת פרימיום (למנויים בלבד)</label>
             <div style="display:flex; gap:12px;">
               <button class="btn-primary" onclick="saveAdminArticle()">שמור כתבה</button>
