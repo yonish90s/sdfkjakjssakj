@@ -1412,13 +1412,14 @@ body.dark-theme .apple-dropdown-content.mega-menu .apple-dropdown-item:hover {
 .footer-col ul li {
   margin-bottom: 8px;
 }
+.footer-col ul li a:hover {
+  color: #ffffff !important;
+  text-decoration: none;
+}
 .footer-col ul li a {
   color: #515154;
   text-decoration: none;
   transition: color 0.2s;
-}
-.footer-col ul li a:hover {
-  color: #1d1d1f;
 }
 .footer-bottom {
   border-top: 1px solid #e5e5ea;
