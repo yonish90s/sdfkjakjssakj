@@ -52,7 +52,12 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
     const mergedScraped = scraped.map(s => {
       const local = newsArticles.find(ln => ln.id === s.id);
       if (local) {
-        return { ...s, isPremium: local.isPremium ?? s.isPremium, isTop: local.isTop ?? s.isTop };
+        return { 
+          ...s, 
+          isPremium: local.isPremium ?? s.isPremium, 
+          isTop: local.isTop ?? s.isTop,
+          topPosition: local.topPosition ?? s.topPosition // Keep the custom position!
+        };
       }
       return s;
     });
