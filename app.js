@@ -45,8 +45,9 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
     const scraped = await resp.json();
     if (!Array.isArray(scraped) || scraped.length === 0) return;
 
-    // Keep user's custom articles (id < 1000)
-    const userArticles = newsArticles.filter(a => (a.id ?? 0) < 1000);
+    // Keep user's custom articles or anything not in the new scraped list
+    const scrapedIds = new Set(scraped.map(s => s.id));
+    const userArticles = newsArticles.filter(a => !scrapedIds.has(a.id) || a.isCustom);
     
     // For scraped articles, merge local flags (like isPremium) if they exist
     const mergedScraped = scraped.map(s => {
@@ -1140,7 +1141,8 @@ function saveAdminArticle() {
     content: document.getElementById('edit-content').value,
     youtube: document.getElementById('edit-youtube').value.trim(),
     topPosition: topPos !== 'none' ? topPos : false,
-    isPremium: document.getElementById('edit-isPremium').checked
+    isPremium: document.getElementById('edit-isPremium').checked,
+    isCustom: true // Mark as custom to protect from deletion
   };
 
   if(!articleObj.title) {
