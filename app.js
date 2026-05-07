@@ -2501,51 +2501,29 @@ async function loadAliExpressProducts() {
 const shopProducts = [
   {
     id: 'p1',
-    title: 'תיק עור איכותי',
-    cat: 'אביזרים',
-    desc: 'תיק עור אמיתי בעבודת יד, מושלם ליום-יום ולעבודה. עמיד, רך ויפהפה.',
-    price: '₪299',
-    img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=600'
+    title: 'נעלי ספורט Pro 3D',
+    cat: 'אופנה',
+    desc: 'נעלי ריצה מתקדמות עם טכנולוגיית בלימת זעזועים. סובב אותי כדי לראות את הסוליה!',
+    price: '₪450',
+    img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=600',
+    model3d: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' // דוגמה למודל (אסטרונאוט לצורך המחשה)
   },
   {
     id: 'p2',
-    title: 'אוזניות אלחוטיות Pro',
-    cat: 'אלקטרוניקה',
-    desc: 'איכות סאונד יוצאת דופן עם ביטול רעשים אקטיבי. עד 30 שעות סוללה.',
-    price: '₪549',
-    img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600'
+    title: 'כסא מעצבים 360',
+    cat: 'בית',
+    desc: 'כסא ארגונומי המעניק תמיכה מושלמת לגב. עיצוב מינימליסטי יוקרתי.',
+    price: '₪890',
+    img: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&q=80&w=600',
+    model3d: 'https://modelviewer.dev/shared-assets/models/Chair.glb' // מודל כסא אמיתי
   },
   {
     id: 'p3',
-    title: 'שעון יד קלאסי',
-    cat: 'אופנה',
-    desc: 'שעון מינימליסטי ואלגנטי עם רצועת עור. מתאים לכל סגנון לבוש.',
-    price: '₪399',
-    img: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 'p4',
-    title: 'מנורת LED מעוצבת',
-    cat: 'בית',
-    desc: 'מנורה חכמה עם בקרת בהירות, צבעים מתחלפים ושליטה מהאפליקציה.',
-    price: '₪189',
-    img: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 'p5',
-    title: 'כוס תרמית פרימיום',
-    cat: 'יומיום',
-    desc: 'שומרת חום עד 12 שעות וקור עד 24 שעות. נירוסטה איכותית, 500 מ"ל.',
-    price: '₪89',
-    img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 'p6',
-    title: 'תרמיל גב יומיומי',
-    cat: 'אביזרים',
-    desc: 'תרמיל מינימליסטי עמיד למים, עם תא ייעודי ללפטופ עד 16 אינץ\'.',
-    price: '₪249',
-    img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=600'
+    title: 'אוזניות Studio 3D',
+    cat: 'אלקטרוניקה',
+    desc: 'חווית סאונד היקפית. סובב כדי לראות את הגימור המטאלי.',
+    price: '₪1,200',
+    img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600'
   }
 ];
 
@@ -2607,8 +2585,19 @@ function renderShopGrid() {
   if (!grid) return;
   grid.innerHTML = shopProducts.map(p => `
     <div class="shop-card">
-      <div class="shop-card-image">
-        <img src="${p.img}" alt="${p.title}" loading="lazy">
+      <div class="shop-card-image" style="position:relative; overflow:hidden;">
+        ${p.model3d ? `
+          <model-viewer 
+            src="${p.model3d}" 
+            camera-controls 
+            auto-rotate 
+            shadow-intensity="1" 
+            style="width:100%; height:250px; background:#f5f5f7;"
+            alt="${p.title}">
+          </model-viewer>
+        ` : `
+          <img src="${p.img}" alt="${p.title}" loading="lazy">
+        `}
       </div>
       <div class="shop-card-body">
         <span class="shop-card-cat">${p.cat}</span>
