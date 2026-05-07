@@ -1458,6 +1458,10 @@ function showProductDetailById(id) {
   document.getElementById('pdp-title').textContent = item.title;
   const mainImg = document.getElementById('pdp-main-image');
   const thumbList = document.getElementById('pdp-thumbnails');
+  const toggle3dBtn = document.getElementById('toggle-3d-btn');
+  const viewer3d = document.getElementById('pdp-model-viewer');
+  const container3d = document.getElementById('pdp-3d-container');
+  const imageWrapper = document.getElementById('pdp-image-wrapper');
   
   // Gallery Logic
   const images = item.images || [];
@@ -1467,6 +1471,19 @@ function showProductDetailById(id) {
 
   const descEl = document.getElementById('pdp-desc');
   descEl.textContent = item.desc || '';
+
+  // Reset 3D State
+  container3d.classList.add('hidden');
+  container3d.classList.remove('active');
+  imageWrapper.classList.remove('hidden');
+
+  if (item.model3d) {
+    toggle3dBtn.classList.remove('hidden');
+    viewer3d.src = item.model3d;
+    toggle3dBtn.innerHTML = '<i class="fas fa-cube"></i> צפה בתלת-מימד (3D)';
+  } else {
+    toggle3dBtn.classList.add('hidden');
+  }
 
   if (images.length > 0) {
     if (hasAccess) {
@@ -3052,5 +3069,24 @@ function closeLightbox() {
   const lightbox = document.getElementById('image-lightbox');
   if (lightbox) {
     lightbox.classList.remove('active');
+  }
+}
+
+// ========== 3D PRODUCT LOGIC ==========
+function toggle3DMode() {
+  const container3D = document.getElementById('pdp-3d-container');
+  const imageWrapper = document.getElementById('pdp-image-wrapper');
+  const btn = document.getElementById('toggle-3d-btn');
+
+  if (container3D.classList.contains('hidden')) {
+    container3D.classList.remove('hidden');
+    container3D.classList.add('active');
+    imageWrapper.classList.add('hidden');
+    btn.innerHTML = '<i class="fas fa-image"></i> חזור לתצוגת תמונה';
+  } else {
+    container3D.classList.add('hidden');
+    container3D.classList.remove('active');
+    imageWrapper.classList.remove('hidden');
+    btn.innerHTML = '<i class="fas fa-cube"></i> צפה בתלת-מימד (3D)';
   }
 }
