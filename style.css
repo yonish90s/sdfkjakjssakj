@@ -174,9 +174,10 @@ body {
 }
 
 .sidebar-collapsed + #main-wrapper .navbar-apple,
+.sidebar-collapsed + #main-wrapper .navbar-apple,
 .sidebar-collapsed ~ #main-wrapper .navbar-apple {
-  left: var(--sidebar-collapsed-width) !important;
-  width: calc(100% - var(--sidebar-collapsed-width)) !important;
+  left: calc(var(--sidebar-collapsed-width) + 25px) !important;
+  width: calc(100% - (var(--sidebar-collapsed-width) + 25px)) !important;
 }
 
 .nav-inner-apple {
@@ -4003,8 +4004,8 @@ model-viewer {
 }
 
 #main-wrapper.sidebar-collapsed {
-  margin-left: var(--sidebar-collapsed-width);
-  width: calc(100% - var(--sidebar-collapsed-width));
+  margin-left: calc(var(--sidebar-collapsed-width) + 25px); /* Added 25px gap from the icons/button */
+  width: calc(100% - (var(--sidebar-collapsed-width) + 25px));
 }
 
 @media (max-width: 1024px) {
