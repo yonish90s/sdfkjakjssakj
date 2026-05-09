@@ -4349,7 +4349,27 @@ body.dark-theme .meta-bookmark-btn.active {
   pointer-events: auto !important;
   cursor: pointer !important;
   z-index: 100;
+  background: var(--primary);
+  color: white !important;
+  opacity: 1 !important;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
 }
+
+.sidebar.focus-mode .sidebar-link.focused-link .focus-toggle::before {
+  content: '\f066'; /* fa-compress-alt */
+}
+
+/* Ensure original icon is hidden when using content override */
+.sidebar.focus-mode .sidebar-link.focused-link .focus-toggle.fa-expand-alt::before {
+  content: '\f066'; /* Override FontAwesome expand with compress */
+}
+
 
 
 
