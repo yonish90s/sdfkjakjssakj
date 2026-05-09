@@ -4133,27 +4133,41 @@ model-viewer {
   background: rgba(242, 54, 69, 0.1);
 }
 
-/* Dark Theme Adjustments */
-body.dark-theme .sidebar {
+/* Dark Theme Adjustments - FORCED */
+body.dark-theme .sidebar,
+body.dark-theme aside.sidebar,
+body#body.dark-theme .sidebar {
+  background-color: #1c1c1e !important;
   background: #1c1c1e !important;
   border-right: 1px solid #38383a !important;
 }
 
 body.dark-theme .sidebar-logo, 
-body.dark-theme .sidebar-link {
+body.dark-theme .sidebar-link,
+body.dark-theme .sidebar h2,
+body.dark-theme .sidebar span {
+  color: #f5f5f7 !important;
+}
+
+body.dark-theme .sidebar-link i {
   color: #f5f5f7 !important;
 }
 
 body.dark-theme .sidebar-link:hover, 
 body.dark-theme .sidebar-link.active {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #0071e3 !important;
+}
+
+body.dark-theme .sidebar-link.active i {
   color: #0071e3 !important;
 }
 
 body.dark-theme .sidebar-divider {
-  background: #38383a;
+  background-color: #38383a !important;
 }
 
 body.dark-theme .sidebar-ad-box {
-  background: #2c2c2e;
+  background-color: #2c2c2e !important;
+  border: 1px solid #38383a !important;
 }
