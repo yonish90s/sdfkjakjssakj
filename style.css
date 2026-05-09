@@ -4238,7 +4238,9 @@ body.dark-theme .submenu-link::before {
 }
 
 .sidebar.collapsed .sidebar-submenu,
-.sidebar.collapsed .sidebar-link .fa-chevron-down {
+.sidebar.collapsed .sidebar-link .fa-chevron-down,
+.sidebar.collapsed .sidebar-link[data-page^="my-"],
+.sidebar.collapsed .sidebar-divider:nth-of-type(2) {
   display: none !important;
 }
 
