@@ -1550,11 +1550,12 @@ async function syncUserPersonalDataToFirebase() {
 
 window.enterFocusMode = function(event, type) {
   if (event) event.stopPropagation();
+  console.log('enterFocusMode called for', type);
   const sidebar = document.getElementById('app-sidebar');
   const targetLink = document.getElementById(`link-${type}`);
   
-  // Toggle off if already focused on this specific section
   if (sidebar.classList.contains('focus-mode') && targetLink.classList.contains('focused-link')) {
+    console.log('Already in focus mode for this type, exiting...');
     exitFocusMode();
     return;
   }

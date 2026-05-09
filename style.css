@@ -4340,15 +4340,17 @@ body.dark-theme .meta-bookmark-btn.active {
   cursor: default;
 }
 
-.sidebar.focus-mode .sidebar-link.focused-link i,
+.sidebar.focus-mode .sidebar-link.focused-link i:not(.focus-toggle),
 .sidebar.focus-mode .sidebar-link.focused-link span {
-  pointer-events: none; /* Disable clicking text/other icons */
+  pointer-events: none !important;
 }
 
 .sidebar.focus-mode .sidebar-link.focused-link .focus-toggle {
-  pointer-events: auto !important; /* Re-enable for the toggle button */
-  cursor: pointer;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 100;
 }
+
 
 
 .sidebar.focus-mode .sidebar-link.focused-link .fa-chevron-down {
