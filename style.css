@@ -4232,46 +4232,41 @@ body.dark-theme .submenu-link::before {
   display: none !important;
 }
 
-/* Article Bookmark Button */
-.bookmark-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
+/* Meta Bookmark Button */
+.meta-bookmark-btn {
+  background: none;
   border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  padding: 0 5px;
+  cursor: pointer;
+  color: #86868b;
+  font-size: 0.9rem;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 5;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.meta-bookmark-btn:hover {
   color: #1d1d1f;
-}
-
-.bookmark-btn:hover {
   transform: scale(1.1);
-  background: #fff;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
-.bookmark-btn.active {
-  color: #0071e3;
+.meta-bookmark-btn.active {
+  color: #f9b233; /* Yellow for active state */
 }
 
-body.dark-theme .bookmark-btn {
-  background: rgba(44, 44, 46, 0.85);
+body.dark-theme .meta-bookmark-btn {
+  color: #a1a1a6;
+}
+
+body.dark-theme .meta-bookmark-btn:hover {
   color: #f5f5f7;
 }
 
-body.dark-theme .bookmark-btn:hover {
-  background: #3a3a3c;
+body.dark-theme .meta-bookmark-btn.active {
+  color: #f9b233;
 }
 
-body.dark-theme .bookmark-btn.active {
-  color: #0a84ff;
+.btn-save-article.active i {
+  color: #f9b233 !important;
 }

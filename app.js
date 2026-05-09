@@ -477,16 +477,19 @@ function renderNewsLayout(page = 1) {
 
   feedList.innerHTML = pageArticles.map(a => `
     <div class="feed-item" onclick="showArticle(${a.id})">
-      <div class="feed-image" style="background-image: url('${a.image}')">
-        <button class="bookmark-btn ${myArticlesList.includes(a.id) ? 'active' : ''}" 
-          onclick="event.stopPropagation(); ${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; renderNewsLayout(${page});"
-          title="${myArticlesList.includes(a.id) ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
-          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
-        </button>
-      </div>
+      <div class="feed-image" style="background-image: url('${a.image}')"></div>
       <div class="feed-content">
         <h2 class="feed-title">${escHtml(a.title)}</h2>
-        <div class="feed-meta"><span class="author-name">${escHtml(a.author)}</span> <span class="meta-sep">|</span> <span class="meta-date">${escHtml(a.time)}</span></div>
+        <div class="feed-meta">
+          <span class="author-name">${escHtml(a.author)}</span> 
+          <span class="meta-sep">|</span> 
+          <button class="meta-bookmark-btn ${myArticlesList.includes(a.id) ? 'active' : ''}" 
+            onclick="event.stopPropagation(); ${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; renderNewsLayout(${page});"
+            title="${myArticlesList.includes(a.id) ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
+            <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
+          </button>
+          <span class="meta-date">${escHtml(a.time)}</span>
+        </div>
         ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
         ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
       </div>
@@ -530,9 +533,10 @@ function showArticle(id) {
     <header class="article-header">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <div class="article-category">${escHtml(a.category)}</div>
-        <button class="btn-save-article" onclick="${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; showArticle(${a.id});" 
+        <button class="btn-save-article ${myArticlesList.includes(a.id) ? 'active' : ''}" 
+          onclick="${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; showArticle(${a.id});" 
           style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark" style="color:${myArticlesList.includes(a.id) ? '#0071e3' : 'inherit'};"></i>
+          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark" style="color:${myArticlesList.includes(a.id) ? '#f9b233' : 'inherit'};"></i>
           ${myArticlesList.includes(a.id) ? 'שמור' : 'שמור לקריאה מאוחרת'}
         </button>
       </div>
