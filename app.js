@@ -464,7 +464,9 @@ function renderNewsLayout(page = 1) {
   const topGrid = document.getElementById('top-news-grid');
   const feedList = document.getElementById('news-feed-list');
   const paginationEl = document.getElementById('news-pagination');
-  if(!topGrid || !feedList) return;
+  
+  // Only return if at least the main feed list is missing
+  if(!feedList) return;
 
   // Featured 3-column top grid only on first page
   if (page === 1) {
@@ -472,22 +474,31 @@ function renderNewsLayout(page = 1) {
     const artCenter = newsArticles.find(a => a.topPosition === 'center' && a.approved !== false);
     const artLeft = newsArticles.find(a => a.topPosition === 'left' && a.approved !== false);
 
-    // Apple Style Grid
-    const appleGrid = document.getElementById('featured-articles-grid');
-    if (appleGrid) {
-      // Pick top 3 articles for the apple grid if no specific positions are set
-      const topArticles = newsArticles.filter(a => a.approved !== false).slice(0, 3);
-      appleGrid.innerHTML = topArticles.map(a => `
-        <div class="article-card-apple" onclick="showArticle(${a.id})">
-          <div class="article-card-image" style="background-image: url('${a.image}')"></div>
-          <div class="article-card-content">
-            <span class="article-card-category">${escHtml(a.category)}</span>
-            <h3 class="article-card-title">${escHtml(a.title)}</h3>
-            <p class="article-card-snippet">${escHtml(a.snippet || '')}</p>
+    const renderFeaturedCard = (a, className) => {
+      if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">No article in this position</div>`;
+      const isSaved = myArticlesList.some(x => x.id === a.id);
+      return `
+        <div class="featured-card ${className} ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
+          <img src="${a.image}" alt="${escHtml(a.title)}">
+          <div class="featured-overlay">
+            <span class="featured-tag">${escHtml(a.category)}</span>
+            ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
+            <div class="featured-title">${escHtml(a.title)}</div>
           </div>
         </div>
-      `).join('');
+      `;
+    };
+
+    const featuredGrid = document.getElementById('featured-top-grid');
+    if (featuredGrid) {
+      featuredGrid.innerHTML = `
+        <div class="featured-col">${renderFeaturedCard(artRight, 'right')}</div>
+        <div class="featured-col">${renderFeaturedCard(artCenter, 'center')}</div>
+        <div class="featured-col">${renderFeaturedCard(artLeft, 'left')}</div>
+      `;
     }
+    // Hide old topGrid if it exists
+    if (topGrid) topGrid.style.display = 'none';
   }
 
   const feedArticles = newsArticles.filter(x => !x.topPosition && x.approved !== false);

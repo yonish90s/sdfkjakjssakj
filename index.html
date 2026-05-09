@@ -296,45 +296,32 @@
   </div>
 </div>
 
-<div id="page-home" class="page active">
-  <div class="hero-section-apple">
-    <h1 class="hero-title">Financial Intelligence</h1>
-    <p class="hero-subtitle">Deep insights and data for the modern investor.</p>
-    <div class="hero-actions">
-      <button class="btn-primary hero-btn" onclick="showPage('subscription')">Start Free Trial</button>
-      <button class="btn-secondary hero-btn" onclick="showPage('pdf-store')">Explore Data</button>
-    </div>
-  </div>
+<!-- HOME PAGE -->
+<div id="page-home" class="page active" style="padding-top: 0; max-width: 100%;">
+  
+  <!-- Featured 3-Position Grid -->
+  <div class="featured-top-grid" id="featured-top-grid" style="margin-top: 20px;"></div>
 
-  <div class="content-section-apple">
-    <div class="section-header">
-      <h2 class="section-title">Latest Market Insights</h2>
-      <div class="section-nav">
-        <button class="nav-arrow prev"><i class="fas fa-chevron-left"></i></button>
-        <button class="nav-arrow next"><i class="fas fa-chevron-right"></i></button>
-      </div>
-    </div>
-    <div id="featured-articles-grid" class="articles-grid-apple">
-      <!-- Dynamic items -->
-    </div>
+  <section class="top-news-grid" id="top-news-grid" style="display: none;">
+    <!-- Populated by JS -->
+  </section>
 
-    <!-- Main Feed Section -->
-    <div class="main-news-layout" style="margin-top: 60px; display: flex; gap: 40px;">
-      <div class="news-feed" style="flex:1; min-width: 0;">
-        <div id="news-feed-list">
-          <!-- Populated by JS -->
-        </div>
-        <div id="news-pagination" style="display:flex; justify-content:center; gap:8px; margin-top: 32px; flex-wrap:wrap;"></div>
+  <div class="main-news-layout" style="margin-top: 40px; display: flex; gap: 40px;">
+    
+    <div class="news-feed" style="flex:1; min-width: 0;">
+      <div id="news-feed-list">
+        <!-- Populated by JS -->
       </div>
-      
-      <aside class="news-sidebar">
-        <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
-          <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">Ad Space</h3>
-          <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">Reach thousands of daily readers. Contact us for rates.</p>
-          <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">Advertise</button>
-        </div>
-      </aside>
+      <div id="news-pagination" style="display:flex; justify-content:center; gap:8px; margin-top: 32px; flex-wrap:wrap;"></div>
     </div>
+    
+    <aside class="news-sidebar">
+      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
+        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">Ad Space</h3>
+        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">Reach thousands of daily readers. Contact us for rates.</p>
+        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">Advertise</button>
+      </div>
+    </aside>
   </div>
 </div>
 
