@@ -197,7 +197,7 @@ app.post('/api/verify-otp', (req, res) => {
   res.json({ success: true });
 });
 
-// GET /api/articles - מחזיר את כל הכתבות מתיקיית articles
+// GET /api/articles - Returns all articles from the articles directory
 const fs = require('fs');
 const path = require('path');
 
@@ -219,7 +219,7 @@ app.get('/api/articles', (req, res) => {
     }
 });
 
-// GET /api/ali-products — מוצרי אלי אקספרס עם מחיר כפול
+// GET /api/ali-products — AliExpress products with localized pricing
 app.get('/api/ali-products', (req, res) => {
   try {
     const filePath = path.join(process.cwd(), 'aliexpress_products.json');
@@ -259,7 +259,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
     const lineItems = items.map(item => ({
       price_data: {
-        currency: 'ils',
+        currency: 'usd',
         product_data: {
           name: item.name,
           description: item.desc || undefined,
@@ -319,7 +319,7 @@ app.get('/api/order/:sessionId', async (req, res) => {
       <tr>
         <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${item.description || item.price?.product_data?.name || 'Product'}</td>
         <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;">${item.quantity}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;text-align:left;">₪${(item.amount_total / 100).toFixed(2)}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;text-align:left;">$${(item.amount_total / 100).toFixed(2)}</td>
       </tr>
     `).join('');
 
@@ -351,7 +351,7 @@ app.get('/api/order/:sessionId', async (req, res) => {
 
               <div style="background:#111;color:#fff;padding:16px 20px;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:24px;">
                 <span style="font-weight:700;font-size:1.1rem;">Total paid:</span>
-                <span style="font-weight:800;font-size:1.2rem;">₪${total}</span>
+                <span style="font-weight:800;font-size:1.2rem;">$${total}</span>
               </div>
 
               ${downloads.length > 0 ? `
@@ -387,7 +387,7 @@ app.post('/api/send-receipt', async (req, res) => {
     const itemsHtml = (items || []).map(item => `
       <tr>
         <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${item}</td>
-        <td style="padding:10px;border-bottom:1px solid #eee;text-align:left;">₪${(total / items.length).toFixed(2)}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;text-align:left;">$${(total / items.length).toFixed(2)}</td>
       </tr>
     `).join('');
 
@@ -417,7 +417,7 @@ app.post('/api/send-receipt', async (req, res) => {
 
           <div style="background:#111;color:#fff;padding:16px 20px;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:24px;">
             <span style="font-weight:700;font-size:1.1rem;">Total (Test):</span>
-            <span style="font-weight:800;font-size:1.2rem;">₪${total}</span>
+            <span style="font-weight:800;font-size:1.2rem;">$${total}</span>
           </div>
 
           <p style="color:#999;font-size:0.8rem;text-align:center;">Sent on: ${new Date().toLocaleString('en-US')}</p>

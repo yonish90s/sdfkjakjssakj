@@ -67,7 +67,7 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
 
     // Re-render if we're on the home page
-    if (document.getElementById('top-news-grid')) {
+    if (document.getElementById('page-home')) {
       if (typeof renderNewsLayout === 'function') renderNewsLayout();
     }
     console.log(`[articles] Loaded ${scraped.length} scraped articles`);
@@ -472,32 +472,22 @@ function renderNewsLayout(page = 1) {
     const artCenter = newsArticles.find(a => a.topPosition === 'center' && a.approved !== false);
     const artLeft = newsArticles.find(a => a.topPosition === 'left' && a.approved !== false);
 
-    const renderFeaturedCard = (a, className) => {
-      if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">No article in this position</div>`;
-      const isSaved = myArticlesList.some(x => x.id === a.id);
-      return `
-        <div class="featured-card ${className} ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
-          <img src="${a.image}" alt="${escHtml(a.title)}">
-          <div class="featured-overlay">
-            <span class="featured-tag">${escHtml(a.category)}</span>
-            ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
-            <div class="featured-title">${escHtml(a.title)}</div>
+    // Apple Style Grid
+    const appleGrid = document.getElementById('featured-articles-grid');
+    if (appleGrid) {
+      // Pick top 3 articles for the apple grid if no specific positions are set
+      const topArticles = newsArticles.filter(a => a.approved !== false).slice(0, 3);
+      appleGrid.innerHTML = topArticles.map(a => `
+        <div class="article-card-apple" onclick="showArticle(${a.id})">
+          <div class="article-card-image" style="background-image: url('${a.image}')"></div>
+          <div class="article-card-content">
+            <span class="article-card-category">${escHtml(a.category)}</span>
+            <h3 class="article-card-title">${escHtml(a.title)}</h3>
+            <p class="article-card-snippet">${escHtml(a.snippet || '')}</p>
           </div>
         </div>
-      `;
-    };
-
-
-    const featuredGrid = document.getElementById('featured-top-grid');
-    if (featuredGrid) {
-      featuredGrid.innerHTML = `
-        <div class="featured-col">${renderFeaturedCard(artRight, 'right')}</div>
-        <div class="featured-col">${renderFeaturedCard(artCenter, 'center')}</div>
-        <div class="featured-col">${renderFeaturedCard(artLeft, 'left')}</div>
-      `;
+      `).join('');
     }
-    // Hide old topGrid if it exists
-    if (topGrid) topGrid.style.display = 'none';
   }
 
   const feedArticles = newsArticles.filter(x => !x.topPosition && x.approved !== false);
@@ -1390,7 +1380,7 @@ function saveStoreConfig() {
 function handleStoreImageUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  showToast('מעבד תמונה...');
+  showToast('Processing image...');
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
@@ -1424,8 +1414,8 @@ function downloadStorePlatform(platform) {
   const baseUrl = 'https://pub-572449ca23df42e8b074673b3720fb60.r2.dev';
   
   if (platform === 'Mac') {
-    link.href = `${baseUrl}/תרשים זרימה-1.0.0-universal.dmg`;
-    link.download = 'תרשים זרימה-universal.dmg';
+    link.href = `${baseUrl}/flowchart-1.0.0-universal.dmg`;
+    link.download = 'flowchart-universal.dmg';
   } else if (platform === 'Android') {
     link.href = `${baseUrl}/app-android.apk`;
     link.download = 'app-android.apk';
@@ -2010,7 +2000,7 @@ function showProductDetailById(id) {
       </div>
     `).join('');
   } else {
-    const cidMap = { 'PDF': '1544716278-ca5e3f4abd8c', 'תוכנה': '1517694712202-14dd9538aa97', 'סרטון': '1492724441997-5dc865305da7', 'קובץ': '1544391490-01c6db9f5a70', 'מדריך': '1497633762265-9d179a990aa6' };
+    const cidMap = { 'PDF': '1544716278-ca5e3f4abd8c', 'Software': '1517694712202-14dd9538aa97', 'Video': '1492724441997-5dc865305da7', 'File': '1544391490-01c6db9f5a70', 'Guide': '1497633762265-9d179a990aa6' };
     const cid = cidMap[item.type] || cidMap['PDF'];
     const fallback = `https://images.unsplash.com/photo-${cid}?auto=format&fit=crop&q=80&w=800`;
     mainImg.src = fallback;
@@ -2091,7 +2081,7 @@ function renderPdfAdminList() {
       ${item.approved === false ? '<div style="background:#f9b233; color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:4px; position:absolute; top:8px; right:8px; font-weight:800;">Pending Approval</div>' : ''}
       <div style="font-size:2rem; text-align:center;">${typeEmoji[item.type] || '📄'}</div>
       <div style="font-weight:700; font-size:0.9rem; text-align:center; color:#1d1d1f;">${escHtml(item.title)}</div>
-      <div style="font-size:0.8rem; color:#86868b; text-align:center;">${escHtml(item.type)} · ${escHtml(item.price || 'חינם')}</div>
+      <div style="font-size:0.8rem; color:#86868b; text-align:center;">${escHtml(item.type)} · ${escHtml(item.price || 'Free')}</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:4px;">
         ${item.approved === false ? `<button class="btn-primary" style="padding:4px 10px; font-size:0.78rem; background:#34c759;" onclick="approvePdfItem('${item.id}')">Approve</button>` : ''}
         <button class="btn-primary" style="padding:4px 10px; font-size:0.78rem;" onclick="openPdfItemEditorById('${item.id}')">Edit</button>
@@ -2276,7 +2266,7 @@ function triggerImgUpload(slot) {
 function handleProductImageUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  showToast('מעבד תמונה...');
+  showToast('Processing image...');
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
@@ -2589,7 +2579,7 @@ function updateUserUI() {
   if (isUserLoggedIn || isAdminLoggedIn) {
     btnJoin.style.display = 'none';
     profileBadge.style.display = 'flex';
-    btnLogoutNav.style.display = 'block'; // מחובר → הצג התנתק
+    btnLogoutNav.style.display = 'block'; // User connected -> Show logout
 
     if (isAdminLoggedIn && !isUserLoggedIn) {
       document.getElementById('user-badge-avatar').style.display = 'none';
@@ -2917,7 +2907,6 @@ function handleUserArticleImage() {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-|
       tempUserArticleImage = canvas.toDataURL('image/jpeg', 0.8);
       document.getElementById('user-art-image').value = 'Image selected successfully ✓';
       showToast('Image loaded!');
@@ -2941,7 +2930,6 @@ function submitUserArticle(event) {
   } else if (!image) {
     image = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=800'; // fallback
   }
-|
   const now = new Date();
   const timeStr = 'Today, ' + now.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
 
@@ -2960,7 +2948,6 @@ function submitUserArticle(event) {
 
   newsArticles.unshift(newArticle);
   localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-|
   showToast('Article submitted successfully and pending admin approval! 🚀');
   
   event.target.reset();
@@ -2980,7 +2967,7 @@ function approveArticle(id) {
 }
 
 // =====================================================================
-// SHOP & SERVICES — מוצרים פיזיים + שירותים מקצועיים
+// SHOP & SERVICES — Products + Professional Services
 // =====================================================================
 
 // AliExpress products loaded from /api/ali-products (replaces static list when server is running)
@@ -3172,7 +3159,7 @@ function submitOrder(event) {
 }
 
 // =====================================================================
-// SHOPPING CART — עגלת קניות לחנות ולשירותים
+// SHOPPING CART — Store and Services
 // =====================================================================
 
 // Cart is always empty on page load (fresh session)
@@ -3184,7 +3171,7 @@ function saveCart() {
 }
 
 function parsePrice(priceStr) {
-  // Extract first numeric value from strings like "₪299" or "₪350 / שעה" or "החל מ-₪2,500"
+  // Extract first numeric value from strings like "$299" or "$350 / hr" or "From $2,500"
   if (!priceStr) return 0;
   const match = String(priceStr).replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
   return match ? parseFloat(match[1]) : 0;
@@ -3279,7 +3266,6 @@ function renderCart() {
       </div>
     `;
   }).join('');
-|
   totalEl.textContent = '$' + total.toLocaleString('en-US');
   checkoutBtn.style.opacity = '1';
   checkoutBtn.style.pointerEvents = 'auto';
@@ -3333,7 +3319,7 @@ function runPaymentAnimation(summaryLines, total) {
   spinner.style.display = 'block';
   success.style.display = 'none';
 
-  // ── שלב 1: ספינר conic-gradient נטען ב-JS frame-by-frame ──
+  // Step 1: Loading spinner conic-gradient in JS frame-by-frame
   const FILL_DURATION = 1600;
   const startTime = performance.now();
 
@@ -3398,7 +3384,7 @@ function runPaymentAnimation(summaryLines, total) {
 
     success.style.display = 'block';
 
-    // ── שלב 2: עיגול מצטייר ──
+    // Step 2: Drawing the circle
     const circle  = success.querySelector('.pay-checkmark-circle');
     const path    = success.querySelector('.pay-checkmark-path');
     const textWrap = success.querySelector('.pay-success-text-wrap');
@@ -3410,9 +3396,9 @@ function runPaymentAnimation(summaryLines, total) {
     if (textWrap) textWrap.style.opacity = '0';
 
     animateValue(circle, 'strokeDashoffset', CIRC, 0, 500, easeInOut, () => {
-      // ── שלב 3: וי מצטייר ──
+      // Step 3: Drawing the checkmark
       animateValue(path, 'strokeDashoffset', CHECK, 0, 380, easeInOut, () => {
-        // ── שלב 4: טקסט עולה ──
+        // Step 4: Fading up the text
         if (textWrap) animateFadeUp(textWrap, 420);
       });
     });

@@ -147,24 +147,6 @@
     </div>
   </aside>
 
-  <!-- CART SIDEBAR -->
-  <div class="cart-sidebar" id="cart-sidebar">
-    <div class="cart-header">
-      <h3>Your Cart</h3>
-      <button class="close-cart" onclick="toggleCart()"><i class="fas fa-times"></i></button>
-    </div>
-    <div id="cart-items" class="cart-items">
-      <div class="empty-cart">Your cart is empty</div>
-    </div>
-    <div class="cart-footer">
-      <div class="cart-total">
-        <span>Total:</span>
-        <span id="cart-total-price">$0.00</span>
-      </div>
-      <button class="btn-checkout" onclick="checkout()">Checkout Now</button>
-    </div>
-  </div>
-
   <div id="main-wrapper">
     <!-- APPLE GLOBAL NAVBAR -->
     <header class="navbar-apple">
@@ -314,38 +296,7 @@
   </div>
 </div>
 
-<!-- HOME PAGE (NEWS LAYOUT) -->
-<div id="page-home" class="page active" style="padding-top: 0; max-width: 100%;">
-  
-  <!-- Featured 3-Position Grid -->
-  <div class="featured-top-grid" id="featured-top-grid" style="margin-top: 20px;"></div>
-
-  <section class="top-news-grid" id="top-news-grid" style="display: none;">
-    <!-- Populated by JS -->
-  </section>
-
-  <!-- Sidebar was here, moved to global -->
-
-  <div class="main-news-layout" style="margin-top: 40px; display: flex; gap: 40px;">
-    
-    <div class="news-feed" style="flex:1; min-width: 0;">
-      <div id="news-feed-list">
-        <!-- Populated by JS -->
-      </div>
-      <div id="news-pagination" style="display:flex; justify-content:center; gap:8px; margin-top: 32px; flex-wrap:wrap;"></div>
-    </div>
-    
-    <aside class="news-sidebar">
-      <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
-        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">Ad Space</h3>
-        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">Great opportunity to reach thousands of daily readers. Contact us for competitive rates.</p>
-        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">Advertise with us</button>
-      </div>
-    </aside>
-  </div>
-</div>
-<!-- HOME PAGE -->
-<section id="page-home" class="page-content active">
+<div id="page-home" class="page active">
   <div class="hero-section-apple">
     <h1 class="hero-title">Financial Intelligence</h1>
     <p class="hero-subtitle">Deep insights and data for the modern investor.</p>
@@ -366,8 +317,26 @@
     <div id="featured-articles-grid" class="articles-grid-apple">
       <!-- Dynamic items -->
     </div>
+
+    <!-- Main Feed Section -->
+    <div class="main-news-layout" style="margin-top: 60px; display: flex; gap: 40px;">
+      <div class="news-feed" style="flex:1; min-width: 0;">
+        <div id="news-feed-list">
+          <!-- Populated by JS -->
+        </div>
+        <div id="news-pagination" style="display:flex; justify-content:center; gap:8px; margin-top: 32px; flex-wrap:wrap;"></div>
+      </div>
+      
+      <aside class="news-sidebar">
+        <div class="sidebar-ad public-sidebar-ad" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:16px; text-align:center; box-shadow:var(--shadow-soft); display:flex; flex-direction:column; min-height: 250px;">
+          <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">Ad Space</h3>
+          <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">Reach thousands of daily readers. Contact us for rates.</p>
+          <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">Advertise</button>
+        </div>
+      </aside>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- APPOINTMENTS PAGE -->
 <div id="page-appointments" class="page">
