@@ -133,16 +133,17 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
 });
 
 // Serve static frontend files
-app.use(express.static(__dirname));
+app.use(express.static(process.cwd()));
 
 // Explicit route for home page to fix "Cannot GET /"
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
 // Explicit route for other common pages
-app.get(['/login', '/login.html'], (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
-app.get(['/success', '/success.html'], (req, res) => res.sendFile(path.join(__dirname, 'success.html')));
+app.get(['/login', '/login.html'], (req, res) => res.sendFile(path.join(process.cwd(), 'login.html')));
+app.get(['/success', '/success.html'], (req, res) => res.sendFile(path.join(process.cwd(), 'success.html')));
+
 
 // =============================================
 // OTP System - in-memory store
