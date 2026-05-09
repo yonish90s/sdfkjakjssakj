@@ -4172,31 +4172,47 @@ body.dark-theme .sidebar-ad-box {
   border: 1px solid #38383a !important;
 }
 
-/* Sidebar Submenu Styles */
+/* Sidebar Submenu Styles - Refined */
 .sidebar-submenu {
-  margin: 5px 15px 15px 0;
-  padding-right: 15px;
-  border-right: 2px solid rgba(0, 113, 227, 0.3);
+  margin: 0;
+  padding: 5px 0 10px 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .submenu-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  color: #515154;
+  gap: 12px;
+  padding: 10px 45px 10px 15px; /* Aligned with sidebar icons */
+  color: #86868b;
   text-decoration: none;
   font-size: 0.85rem;
-  border-radius: 8px;
   transition: all 0.2s;
+  border-radius: 0;
+  position: relative;
+}
+
+.submenu-link::before {
+  content: '';
+  position: absolute;
+  right: 25px;
+  width: 4px;
+  height: 4px;
+  background: #d2d2d7;
+  border-radius: 50%;
 }
 
 .submenu-link:hover {
   background: rgba(0, 113, 227, 0.05);
   color: var(--primary);
+}
+
+.submenu-link:hover::before {
+  background: var(--primary);
+  transform: scale(1.5);
 }
 
 body.dark-theme .submenu-link {
@@ -4206,6 +4222,10 @@ body.dark-theme .submenu-link {
 body.dark-theme .submenu-link:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #f5f5f7;
+}
+
+body.dark-theme .submenu-link::before {
+  background: #424245;
 }
 
 .sidebar.collapsed .sidebar-submenu {
