@@ -4242,6 +4242,32 @@ body.dark-theme .submenu-link::before {
   display: none !important;
 }
 
+.btn-save-article {
+  background: #1d1d1f !important; /* Black in light mode */
+  color: #ffffff !important;      /* White text in light mode */
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 980px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-save-article:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+body.dark-theme .btn-save-article {
+  background: #ffffff !important; /* White in dark mode */
+  color: #1d1d1f !important;      /* Black text in dark mode */
+}
+
 /* Meta Bookmark Button */
 .meta-bookmark-btn {
   background: none;
@@ -4251,9 +4277,10 @@ body.dark-theme .submenu-link::before {
   color: #86868b;
   font-size: 0.9rem;
   transition: all 0.2s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  vertical-align: middle;
 }
 
 .meta-bookmark-btn:hover {
