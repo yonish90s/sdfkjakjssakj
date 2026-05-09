@@ -1492,10 +1492,14 @@ function renderPdfStoreGrid() {
     
     return `
       <div class="pdf-card" onclick="showProductDetailById('${item.id}')">
-        <div class="pdf-card-icon">${icon}</div>
-        <div class="pdf-card-title">${escHtml(item.title)}</div>
+        <div class="pdf-card-icon">
+          ${mainImg ? `<img src="${mainImg}" style="width:100%; height:100%; object-fit:cover; border-radius:10px;" alt="thumb" />` : icon}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px; flex-grow:1;">
+          <div class="pdf-card-title">${escHtml(item.title)}</div>
+          <div class="pdf-card-date" style="color:#ff9500; font-size:0.75rem; font-weight:600;">${item.date ? new Date(item.date).toLocaleDateString('he-IL') : 'הועלה לאחרונה'}</div>
+        </div>
         <div class="pdf-card-ticker-wrapper">
-          ${mainImg ? `<img src="${mainImg}" class="pdf-card-ticker-img" alt="ticker" />` : ''}
           ${isUserLoggedIn ? `
             <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
                     onclick="event.stopPropagation(); addToMyGraphs('${item.id}')">
@@ -2608,13 +2612,13 @@ function updateUserUI() {
       document.querySelectorAll('[id$="-comment-user-name"]').forEach(el => el.textContent = currentUser.name);
       
       // Show Sidebar Links for email-logged-in users
-      const myGraphsLink = document.getElementById('sidebar-my-graphs');
+      const myGraphsLink = document.getElementById('link-my-graphs');
       if (myGraphsLink) myGraphsLink.style.display = 'flex';
 
-      const myArticlesLink = document.getElementById('sidebar-my-articles');
+      const myArticlesLink = document.getElementById('link-my-articles');
       if (myArticlesLink) myArticlesLink.style.display = 'flex';
 
-      const myPurchasesLink = document.getElementById('sidebar-my-purchases');
+      const myPurchasesLink = document.getElementById('link-my-purchases');
       if (myPurchasesLink) myPurchasesLink.style.display = 'flex';
 
       const displayEmail = document.getElementById('user-display-email');
@@ -2629,13 +2633,13 @@ function updateUserUI() {
     document.querySelectorAll('[id$="-comment-join-prompt"]').forEach(el => el.style.display = 'block');
     
     // Hide "My Graphs" for guests/logged-out
-    const myGraphsLink = document.getElementById('sidebar-my-graphs');
+    const myGraphsLink = document.getElementById('link-my-graphs');
     if (myGraphsLink) myGraphsLink.style.display = 'none';
 
-    const myArticlesLink = document.getElementById('sidebar-my-articles');
+    const myArticlesLink = document.getElementById('link-my-articles');
     if (myArticlesLink) myArticlesLink.style.display = 'none';
 
-    const myPurchasesLink = document.getElementById('sidebar-my-purchases');
+    const myPurchasesLink = document.getElementById('link-my-purchases');
     if (myPurchasesLink) myPurchasesLink.style.display = 'none';
   }
 }
