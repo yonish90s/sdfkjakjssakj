@@ -135,8 +135,14 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
 // Serve static frontend files
 app.use(express.static(__dirname));
 
-// Payment & Other Endpoints (Existing logic preserved...)
-// ... (I will keep the rest of the file content intact but without the cron part)
+// Explicit route for home page to fix "Cannot GET /"
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Explicit route for other common pages
+app.get(['/login', '/login.html'], (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get(['/success', '/success.html'], (req, res) => res.sendFile(path.join(__dirname, 'success.html')));
 
 // =============================================
 // OTP System - in-memory store
