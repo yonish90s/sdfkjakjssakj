@@ -3859,9 +3859,9 @@ model-viewer {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 15px rgba(0, 113, 227, 0.4);
-  z-index: 1100; /* Higher than sidebar and main wrapper */
+  z-index: 999999 !important; /* Absolute top priority */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-toggle:hover {
