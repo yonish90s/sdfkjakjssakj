@@ -170,34 +170,54 @@ function showPage(pageId) {
   const pages = document.querySelectorAll('.page');
   pages.forEach(p => p.classList.remove('active'));
   
-  const targetPage = document.getElementById(`page-${page}`);
+  const targetPage = document.getElementById(`page-${pageId}`);
   if (targetPage) {
     targetPage.classList.add('active');
   } else {
-    console.warn('Page not found:', page);
+    console.warn('Page not found:', pageId);
     const home = document.getElementById('page-home');
     if (home) home.classList.add('active');
   }
 
-  if (page === 'home') renderNewsLayout();
-  if (page === 'store') renderStoreLayout();
-  if (page === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
-  if (page === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
-  if (page === 'services') renderServicesGrid();
-  if (page === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (page === 'appointments') initBookingWidget();
-  if (page === 'my-graphs') renderMyGraphsWatchlist();
+  // Scroll to top
+  window.scrollTo(0, 0);
+
+  // Close sidebar on mobile if open
+  const sidebar = document.getElementById('app-sidebar');
+  if (sidebar && window.innerWidth <= 1024) {
+    sidebar.classList.remove('active');
+  }
+
+  // Trigger rendering logic based on pageId
+  if (pageId === 'home') renderNewsLayout();
+  if (pageId === 'store') renderStoreLayout();
+  if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
+  if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
+  if (pageId === 'services') renderServicesGrid();
+  if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (pageId === 'appointments') initBookingWidget();
+  if (pageId === 'my-graphs') renderMyGraphsWatchlist();
   
-  if (page === 'join') {
-    if (currentUser) {
-      document.getElementById('join-name').value = currentUser.name || '';
-      document.getElementById('join-email').value = currentUser.email || '';
-      document.getElementById('join-password').value = '';
-      document.getElementById('btn-logout').style.display = 'block';
-      document.querySelector('.auth-tabs').style.display = 'none';
-      document.getElementById('auth-login-section').style.display = 'none';
-      document.getElementById('auth-register-section').style.display = 'block';
-      document.getElementById('auth-register-section').querySelector('h2')?.remove(); 
+  if (pageId === 'join') {
+    if (typeof currentUser !== 'undefined' && currentUser) {
+      const joinName = document.getElementById('join-name');
+      const joinEmail = document.getElementById('join-email');
+      if (joinName) joinName.value = currentUser.name || '';
+      if (joinEmail) joinEmail.value = currentUser.email || '';
+      const logoutBtn = document.getElementById('btn-logout');
+      if (logoutBtn) logoutBtn.style.display = 'block';
+      const authTabs = document.querySelector('.auth-tabs');
+      if (authTabs) authTabs.style.display = 'none';
+      const loginSection = document.getElementById('auth-login-section');
+      if (loginSection) loginSection.style.display = 'none';
+      const registerSection = document.getElementById('auth-register-section');
+      if (registerSection) {
+        registerSection.style.display = 'block';
+        registerSection.querySelector('h2')?.remove();
+      }
+    }
+  }
+}
       // Maybe add a heading "פרופיל אישי"
     } else {
       document.getElementById('join-name').value = '';
