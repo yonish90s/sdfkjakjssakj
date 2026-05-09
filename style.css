@@ -161,15 +161,21 @@ body {
 
 /* ========== APPLE NAVBAR ========== */
 .navbar-apple {
-  position: sticky;
+  position: fixed;
   top: 0;
-  width: 100%;
+  left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid rgba(0,0,0,0.08);
   z-index: 1000;
-  transition: background-color 0.4s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-collapsed ~ #main-wrapper .navbar-apple {
+  left: var(--sidebar-collapsed-width) !important;
+  width: calc(100% - var(--sidebar-collapsed-width)) !important;
 }
 
 .nav-inner-apple {
@@ -3823,6 +3829,7 @@ model-viewer {
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 70px;
 }
+
 
 .sidebar {
   position: fixed;
