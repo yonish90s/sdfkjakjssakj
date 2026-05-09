@@ -1664,7 +1664,6 @@ function renderMyGraphsWatchlist() {
     return;
   }
   
-  const graphIds = myGraphsList.map(x => x.id);
   const savedItems = pdfStoreItems.filter(item => graphIds.includes(item.id));
   
   let html = `
