@@ -95,9 +95,19 @@
           <i class="fas fa-chart-pie"></i> <span>הגרפים שלי</span>
           <i class="fas fa-chevron-down" style="margin-right: auto; font-size: 0.8rem; transition: transform 0.3s;" id="my-graphs-chevron"></i>
         </a>
-        <div id="my-graphs-dropdown" class="sidebar-submenu" style="display: none;">
-          <!-- Saved graphs list will be injected here -->
-        </div>
+        <div id="my-graphs-dropdown" class="sidebar-submenu" style="display: none;"></div>
+
+        <a href="#" id="sidebar-my-articles" onclick="toggleMyArticlesDropdown(event)" class="sidebar-link" style="display: none;">
+          <i class="fas fa-newspaper"></i> <span>הכתבות שלי</span>
+          <i class="fas fa-chevron-down" style="margin-right: auto; font-size: 0.8rem; transition: transform 0.3s;" id="my-articles-chevron"></i>
+        </a>
+        <div id="my-articles-dropdown" class="sidebar-submenu" style="display: none;"></div>
+
+        <a href="#" id="sidebar-my-purchases" onclick="toggleMyPurchasesDropdown(event)" class="sidebar-link" style="display: none;">
+          <i class="fas fa-bag-shopping"></i> <span>הקניות שלי</span>
+          <i class="fas fa-chevron-down" style="margin-right: auto; font-size: 0.8rem; transition: transform 0.3s;" id="my-purchases-chevron"></i>
+        </a>
+        <div id="my-purchases-dropdown" class="sidebar-submenu" style="display: none;"></div>
       </nav>
 
       <!-- Sidebar Ads Section at the Bottom -->

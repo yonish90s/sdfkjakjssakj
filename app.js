@@ -477,7 +477,13 @@ function renderNewsLayout(page = 1) {
 
   feedList.innerHTML = pageArticles.map(a => `
     <div class="feed-item" onclick="showArticle(${a.id})">
-      <div class="feed-image" style="background-image: url('${a.image}')"></div>
+      <div class="feed-image" style="background-image: url('${a.image}')">
+        <button class="bookmark-btn ${myArticlesList.includes(a.id) ? 'active' : ''}" 
+          onclick="event.stopPropagation(); ${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; renderNewsLayout(${page});"
+          title="${myArticlesList.includes(a.id) ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
+          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
+        </button>
+      </div>
       <div class="feed-content">
         <h2 class="feed-title">${escHtml(a.title)}</h2>
         <div class="feed-meta"><span class="author-name">${escHtml(a.author)}</span> <span class="meta-sep">|</span> <span class="meta-date">${escHtml(a.time)}</span></div>
@@ -522,7 +528,14 @@ function showArticle(id) {
 
   document.getElementById('article-content').innerHTML = `
     <header class="article-header">
-      <div class="article-category">${escHtml(a.category)}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <div class="article-category">${escHtml(a.category)}</div>
+        <button class="btn-save-article" onclick="${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; showArticle(${a.id});" 
+          style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
+          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark" style="color:${myArticlesList.includes(a.id) ? '#0071e3' : 'inherit'};"></i>
+          ${myArticlesList.includes(a.id) ? 'שמור' : 'שמור לקריאה מאוחרת'}
+        </button>
+      </div>
       <h1 class="article-title-main" id="inline-title">${escHtml(a.title)}</h1>
       <div class="article-meta-main">
         מאת <span id="inline-author" class="author-name" style="font-weight:700;">${escHtml(a.author)}</span>
@@ -1461,6 +1474,7 @@ function renderPdfStoreGrid() {
 
 // ========== MY GRAPHS WATCHLIST LOGIC ==========
 let myGraphsList = JSON.parse(localStorage.getItem('myGraphsList') || '[]');
+let myArticlesList = JSON.parse(localStorage.getItem('myArticlesList') || '[]');
 
 function addToMyGraphs(id) {
   if (!currentUser || !currentUser.email) {
@@ -1492,7 +1506,9 @@ function renderMyGraphsWatchlist() {
   const container = document.getElementById('my-graphs-list');
   if (!container) return;
   
-  if (myGraphsList.length === 0) {
+  const items = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
+  
+  if (items.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:60px; color:#86868b;">
         <i class="fas fa-list-ul" style="font-size:3rem; margin-bottom:16px; opacity:0.3;"></i>
@@ -2271,13 +2287,18 @@ function updateUserUI() {
       document.querySelectorAll('[id$="-comment-join-prompt"]').forEach(el => el.style.display = 'none');
       document.querySelectorAll('[id$="-comment-user-name"]').forEach(el => el.textContent = currentUser.name);
       
-      // Show "My Graphs" for email-logged-in users
+      // Show Sidebar Links for email-logged-in users
       const myGraphsLink = document.getElementById('sidebar-my-graphs');
-      if (myGraphsLink) {
-        myGraphsLink.style.display = 'flex';
-        const displayEmail = document.getElementById('user-display-email');
-        if (displayEmail) displayEmail.textContent = currentUser.email;
-      }
+      if (myGraphsLink) myGraphsLink.style.display = 'flex';
+
+      const myArticlesLink = document.getElementById('sidebar-my-articles');
+      if (myArticlesLink) myArticlesLink.style.display = 'flex';
+
+      const myPurchasesLink = document.getElementById('sidebar-my-purchases');
+      if (myPurchasesLink) myPurchasesLink.style.display = 'flex';
+
+      const displayEmail = document.getElementById('user-display-email');
+      if (displayEmail) displayEmail.textContent = currentUser.email;
     }
   } else {
     btnJoin.style.display = 'block';
@@ -2290,6 +2311,12 @@ function updateUserUI() {
     // Hide "My Graphs" for guests/logged-out
     const myGraphsLink = document.getElementById('sidebar-my-graphs');
     if (myGraphsLink) myGraphsLink.style.display = 'none';
+
+    const myArticlesLink = document.getElementById('sidebar-my-articles');
+    if (myArticlesLink) myArticlesLink.style.display = 'none';
+
+    const myPurchasesLink = document.getElementById('sidebar-my-purchases');
+    if (myPurchasesLink) myPurchasesLink.style.display = 'none';
   }
 }
 
