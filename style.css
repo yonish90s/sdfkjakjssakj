@@ -3855,7 +3855,7 @@ model-viewer {
 
 .sidebar-toggle {
   position: absolute;
-  top: 60px; /* Moved down to avoid navbar overlap */
+  top: 80px; /* Moved further down to ensure it's below the navbar in all states */
   right: -18px;
   width: 36px;
   height: 36px;
