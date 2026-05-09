@@ -3837,6 +3837,7 @@ model-viewer {
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  overflow: visible !important;
 }
 
 .sidebar.collapsed {
@@ -3845,11 +3846,11 @@ model-viewer {
 
 .sidebar-toggle {
   position: absolute;
-  top: 20px;
-  right: -15px;
-  width: 30px;
-  height: 30px;
-  background: var(--primary);
+  top: 25px;
+  right: -18px; /* Move slightly more to the right to be more visible */
+  width: 36px;
+  height: 36px;
+  background: #0071e3; /* Classic Apple Blue */
   color: white;
   border: none;
   border-radius: 50%;
@@ -3857,9 +3858,15 @@ model-viewer {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
-  z-index: 1001;
-  transition: transform 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 113, 227, 0.4);
+  z-index: 1100; /* Higher than sidebar and main wrapper */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
+}
+
+.sidebar-toggle:hover {
+  background: #0077ed;
+  transform: scale(1.1);
 }
 
 .sidebar.collapsed .sidebar-toggle {
