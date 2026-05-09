@@ -3079,3 +3079,42 @@ function toggle3DMode() {
     btn.innerHTML = '<i class="fas fa-cube"></i> צפה בתלת-מימד (3D)';
   }
 }
+
+// ========== SIDEBAR LOGIC ==========
+function toggleSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const mainWrapper = document.getElementById('main-wrapper');
+  const toggleBtn = document.getElementById('sidebar-toggle').querySelector('i');
+
+  sidebar.classList.toggle('collapsed');
+  mainWrapper.classList.toggle('sidebar-collapsed');
+
+  const isCollapsed = sidebar.classList.contains('collapsed');
+  localStorage.setItem('sidebarCollapsed', isCollapsed);
+
+  // Update toggle icon
+  if (isCollapsed) {
+    toggleBtn.classList.remove('fa-chevron-right');
+    toggleBtn.classList.add('fa-chevron-left');
+  } else {
+    toggleBtn.classList.remove('fa-chevron-left');
+    toggleBtn.classList.add('fa-chevron-right');
+  }
+}
+
+// Restore sidebar state on load
+(function initSidebar() {
+  const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+  if (isCollapsed) {
+    const sidebar = document.getElementById('app-sidebar');
+    const mainWrapper = document.getElementById('main-wrapper');
+    const toggleBtn = document.getElementById('sidebar-toggle').querySelector('i');
+    
+    if (sidebar) sidebar.classList.add('collapsed');
+    if (mainWrapper) mainWrapper.classList.add('sidebar-collapsed');
+    if (toggleBtn) {
+      toggleBtn.classList.remove('fa-chevron-right');
+      toggleBtn.classList.add('fa-chevron-left');
+    }
+  }
+})();

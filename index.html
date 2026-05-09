@@ -64,8 +64,51 @@
 </script>
 
 
-<!-- APPLE GLOBAL NAVBAR -->
-<header class="navbar-apple">
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="app-sidebar" class="sidebar">
+    <button id="sidebar-toggle" class="sidebar-toggle" onclick="toggleSidebar()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    
+    <div class="sidebar-inner">
+      <div class="sidebar-header">
+        <h2 class="sidebar-logo">התפריט שלי</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" onclick="showPage('home')" class="sidebar-link active">
+          <i class="fas fa-home"></i> <span>ראשי</span>
+        </a>
+        <a href="#" onclick="showPage('store')" class="sidebar-link">
+          <i class="fas fa-shopping-bag"></i> <span>חנות</span>
+        </a>
+        <a href="#" onclick="showPage('pdf-store')" class="sidebar-link">
+          <i class="fas fa-chart-line"></i> <span>גרפים ונתונים</span>
+        </a>
+        <a href="#" onclick="showPage('services')" class="sidebar-link">
+          <i class="fas fa-briefcase"></i> <span>שירותים</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <a href="#" onclick="showPage('subscription')" class="sidebar-link">
+          <i class="fas fa-crown"></i> <span>מנוי פרימיום</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Ads Section at the Bottom -->
+      <div class="sidebar-ads-container">
+        <div class="sidebar-ad-box">
+          <p>שטח פרסום</p>
+          <div id="sidebar-dynamic-ad" class="dynamic-ad-slot">
+            <!-- Ad content will be injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div id="main-wrapper">
+    <!-- APPLE GLOBAL NAVBAR -->
+    <header class="navbar-apple">
   <div class="nav-inner-apple">
     <div class="apple-logo" onclick="showPage('home')" title="דף הבית">
       <img src="logo.png" alt="לוגו" style="height: 32px; width: auto; display: block;" />
@@ -222,6 +265,8 @@
   <section class="top-news-grid" id="top-news-grid" style="display: none;">
     <!-- Populated by JS -->
   </section>
+
+  <!-- Sidebar was here, moved to global -->
 
   <div class="main-news-layout" style="margin-top: 40px; display: flex; gap: 40px;">
     
@@ -1829,6 +1874,7 @@
 </script>
 
 
-<script src="app.js?v=5"></script>
+  </div> <!-- Close #main-wrapper -->
+  <script src="app.js?v=5"></script>
 </body>
 </html>
