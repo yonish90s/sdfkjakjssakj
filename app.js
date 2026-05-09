@@ -178,6 +178,7 @@ function showPage(page) {
   if (page === 'services') renderServicesGrid();
   if (page === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (page === 'appointments') initBookingWidget();
+  if (page === 'my-graphs') renderMyGraphsWatchlist();
   
   if (page === 'join') {
     if (currentUser) {
@@ -1434,20 +1435,116 @@ function renderPdfStoreGrid() {
   grid.innerHTML = visibleItems.map((item) => {
     const icon = typeEmoji[item.type] || '📄';
     const mainImg = (item.images && item.images.length > 0) ? item.images[0] : '';
+    const isUserLoggedIn = !!currentUser && !!currentUser.email;
     
     return `
-      <div class="pdf-card" onclick="showProductDetailById('${item.id}')" style="position:relative;">
-        ${item.isPremium ? `
-          <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#f9b233; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:800; z-index:2; display:flex; align-items:center; gap:4px;">
-            <i class="fas fa-crown"></i> PREMIUM
-          </div>
+      <div class="pdf-card" style="position:relative;">
+        <div onclick="showProductDetailById('${item.id}')">
+          ${item.isPremium ? `
+            <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#f9b233; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:800; z-index:2; display:flex; align-items:center; gap:4px;">
+              <i class="fas fa-crown"></i> PREMIUM
+            </div>
+          ` : ''}
+          ${mainImg ? `<img src="${mainImg}" style="width:100%; aspect-ratio: 1/1; object-fit:cover; margin-bottom:8px;" />` : 
+                      `<div class="pdf-card-icon" style="padding: 40px 0; font-size: 3rem;">${icon}</div>`}
+          <div class="pdf-card-title">${escHtml(item.title)}</div>
+        </div>
+        ${isUserLoggedIn ? `
+          <button onclick="addToMyGraphs('${item.id}')" style="position:absolute; bottom:12px; left:12px; background:var(--primary); color:white; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,113,227,0.4); z-index:10;">
+            <i class="fas fa-plus"></i>
+          </button>
         ` : ''}
-        ${mainImg ? `<img src="${mainImg}" style="width:100%; aspect-ratio: 1/1; object-fit:cover; margin-bottom:8px;" />` : 
-                    `<div class="pdf-card-icon" style="padding: 40px 0; font-size: 3rem;">${icon}</div>`}
-        <div class="pdf-card-title">${escHtml(item.title)}</div>
       </div>
     `;
   }).join('');
+}
+
+// ========== MY GRAPHS WATCHLIST LOGIC ==========
+let myGraphsList = JSON.parse(localStorage.getItem('myGraphsList') || '[]');
+
+function addToMyGraphs(id) {
+  if (!currentUser || !currentUser.email) {
+    showToast('❌ עליך להתחבר כדי להוסיף גרפים לרשימה');
+    return;
+  }
+  
+  if (myGraphsList.includes(id)) {
+    showToast('ℹ️ הגרף כבר נמצא ברשימה שלך');
+    return;
+  }
+  
+  myGraphsList.push(id);
+  localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
+  showToast('✅ נוסף לגרפים שלי');
+  renderMyGraphsWatchlist();
+}
+
+function removeFromMyGraphs(id) {
+  myGraphsList = myGraphsList.filter(item => item !== id);
+  localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
+  renderMyGraphsWatchlist();
+  showToast('🗑️ הוסר מהרשימה');
+}
+
+function renderMyGraphsWatchlist() {
+  const container = document.getElementById('my-graphs-list');
+  if (!container) return;
+  
+  if (myGraphsList.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:60px; color:#86868b;">
+        <i class="fas fa-list-ul" style="font-size:3rem; margin-bottom:16px; opacity:0.3;"></i>
+        <p>רשימת המעקב שלך ריקה. הוסף גרפים מעמוד "גרפים ונתונים".</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const savedItems = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
+  
+  let html = `
+    <div class="watchlist-container">
+      <div class="watchlist-header">
+        <div class="col-symbol">Symbol</div>
+        <div class="col-last">Last</div>
+        <div class="col-chg">Chg</div>
+        <div class="col-chg-pct">Chg%</div>
+        <div class="col-actions"></div>
+      </div>
+      <div class="watchlist-group">
+        <div class="group-title">הבחירות שלי</div>
+        ${savedItems.map(item => {
+          // Mock data for the TradingView style
+          const lastPrice = (Math.random() * 500 + 50).toFixed(2);
+          const chgValue = (Math.random() * 20 - 10).toFixed(2);
+          const chgPct = (Math.random() * 5 - 2).toFixed(2);
+          const isUp = parseFloat(chgValue) >= 0;
+          
+          return `
+            <div class="watchlist-row">
+              <div class="col-symbol">
+                <div class="symbol-icon">${typeEmoji[item.type] || '📊'}</div>
+                <div class="symbol-info">
+                  <span class="symbol-name">${escHtml(item.title)}</span>
+                  <span class="symbol-desc">${item.type || 'DATA'}</span>
+                </div>
+              </div>
+              <div class="col-last">${lastPrice}</div>
+              <div class="col-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgValue}</div>
+              <div class="col-chg-pct ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgPct}%</div>
+              <div class="col-actions">
+                <button onclick="removeFromMyGraphs('${item.id}')" class="remove-btn">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = html;
 }
 
 

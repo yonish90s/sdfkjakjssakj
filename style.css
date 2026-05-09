@@ -4023,16 +4023,113 @@ model-viewer {
   }
 }
 
-/* Dark Theme Adjustments */
-body.dark-theme .sidebar {
-  background: rgba(28, 28, 30, 0.8);
-  border-right-color: #38383a;
+/* ========== WATCHLIST STYLES (TradingView Style) ========== */
+.watchlist-container {
+  background: #131722; /* Dark theme background */
+  border-radius: 12px;
+  overflow: hidden;
+  color: #d1d4dc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  margin-top: 20px;
 }
 
-body.dark-theme .sidebar-logo, body.dark-theme .sidebar-link {
-  color: #f5f5f7;
+.watchlist-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+  padding: 10px 16px;
+  background: #1e222d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #787b86;
+  text-transform: uppercase;
+  border-bottom: 1px solid #2a2e39;
 }
 
-body.dark-theme .sidebar-ad-box {
-  background: #2c2c2e;
+.watchlist-group {
+  border-bottom: 1px solid #2a2e39;
+}
+
+.group-title {
+  padding: 8px 16px;
+  background: #1a1e2a;
+  font-size: 0.7rem;
+  color: #86868b;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.watchlist-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+  padding: 12px 16px;
+  align-items: center;
+  border-bottom: 1px solid #2a2e39;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.watchlist-row:hover {
+  background: #2a2e39;
+}
+
+.col-symbol {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.symbol-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.symbol-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.symbol-name {
+  font-weight: 700;
+  color: #f0f3fa;
+  font-size: 0.9rem;
+}
+
+.symbol-desc {
+  font-size: 0.7rem;
+  color: #787b86;
+}
+
+.col-last {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #f0f3fa;
+}
+
+.col-chg.up, .col-chg-pct.up {
+  color: #089981; /* Green */
+}
+
+.col-chg.down, .col-chg-pct.down {
+  color: #f23645; /* Red */
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #787b86;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  color: #f23645;
+  background: rgba(242, 54, 69, 0.1);
+}
+
+/* Ensure Dashboard Card doesn't conflict */
+.dashboard-card {
+  transition: transform 0.3s ease;
 }
