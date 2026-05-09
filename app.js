@@ -2128,6 +2128,14 @@ function updateUserUI() {
       document.querySelectorAll('[id$="-comment-input-area"]').forEach(el => el.style.display = 'block');
       document.querySelectorAll('[id$="-comment-join-prompt"]').forEach(el => el.style.display = 'none');
       document.querySelectorAll('[id$="-comment-user-name"]').forEach(el => el.textContent = currentUser.name);
+      
+      // Show "My Graphs" for email-logged-in users
+      const myGraphsLink = document.getElementById('sidebar-my-graphs');
+      if (myGraphsLink) {
+        myGraphsLink.style.display = 'flex';
+        const displayEmail = document.getElementById('user-display-email');
+        if (displayEmail) displayEmail.textContent = currentUser.email;
+      }
     }
   } else {
     btnJoin.style.display = 'block';
@@ -2136,6 +2144,10 @@ function updateUserUI() {
     
     document.querySelectorAll('[id$="-comment-input-area"]').forEach(el => el.style.display = 'none');
     document.querySelectorAll('[id$="-comment-join-prompt"]').forEach(el => el.style.display = 'block');
+    
+    // Hide "My Graphs" for guests/logged-out
+    const myGraphsLink = document.getElementById('sidebar-my-graphs');
+    if (myGraphsLink) myGraphsLink.style.display = 'none';
   }
 }
 
