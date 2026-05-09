@@ -1566,8 +1566,6 @@ function toggleMyGraphsDropdown(event) {
   
   if (isHidden) {
     renderSidebarWatchlist();
-    // Navigate to the main page as well
-    showPage('my-graphs');
   }
 }
 
