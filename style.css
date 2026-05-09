@@ -4362,13 +4362,17 @@ body.dark-theme .meta-bookmark-btn.active {
 }
 
 .sidebar.focus-mode .sidebar-link.focused-link .focus-toggle::before {
-  content: '\f066'; /* fa-compress-alt */
+  content: '\f061'; /* fa-arrow-right */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 0.9rem;
 }
 
-/* Ensure original icon is hidden when using content override */
-.sidebar.focus-mode .sidebar-link.focused-link .focus-toggle.fa-expand-alt::before {
-  content: '\f066'; /* Override FontAwesome expand with compress */
+.sidebar.focus-mode .sidebar-link.focused-link .focus-toggle::after {
+  content: none;
 }
+
+
 
 
 
