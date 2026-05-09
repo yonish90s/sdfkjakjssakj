@@ -4398,3 +4398,31 @@ body.dark-theme .meta-bookmark-btn.active {
 .sidebar.focus-mode #back-from-focus {
   display: flex;
 }
+
+/* Saved Highlight Style */
+.feed-item.saved-highlight {
+  background: rgba(249, 178, 51, 0.08) !important;
+  border-right: 4px solid #f9b233 !important;
+  transition: all 0.3s ease;
+}
+
+body.dark-theme .feed-item.saved-highlight {
+  background: rgba(249, 178, 51, 0.15) !important;
+}
+
+.featured-card.saved-highlight {
+  box-shadow: inset 0 0 0 4px #f9b233, 0 10px 30px rgba(249, 178, 51, 0.3) !important;
+}
+
+.featured-card.saved-highlight::after {
+  content: '\f02e'; /* Bookmark solid */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  color: #f9b233;
+  font-size: 1.2rem;
+  z-index: 10;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}

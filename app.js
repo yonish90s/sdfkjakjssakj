@@ -474,8 +474,9 @@ function renderNewsLayout(page = 1) {
 
     const renderFeaturedCard = (a, className) => {
       if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">אין כתבה במיקום זה</div>`;
+      const isSaved = myArticlesList.some(x => x.id === a.id);
       return `
-        <div class="featured-card ${className}" onclick="showArticle(${a.id})">
+        <div class="featured-card ${className} ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
           <img src="${a.image}" alt="${escHtml(a.title)}">
           <div class="featured-overlay">
             <span class="featured-tag">${escHtml(a.category)}</span>
@@ -485,6 +486,7 @@ function renderNewsLayout(page = 1) {
         </div>
       `;
     };
+
 
     const featuredGrid = document.getElementById('featured-top-grid');
     if (featuredGrid) {
@@ -503,27 +505,31 @@ function renderNewsLayout(page = 1) {
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
 
-  feedList.innerHTML = pageArticles.map(a => `
-    <div class="feed-item" onclick="showArticle(${a.id})">
-      <div class="feed-image" style="background-image: url('${a.image}')"></div>
-      <div class="feed-content">
-        <h2 class="feed-title">${escHtml(a.title)}</h2>
-        <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
-          <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
-          <span class="meta-sep">|</span> 
-          <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
-          <button class="meta-bookmark-btn ${myArticlesList.includes(a.id) ? 'active' : ''}" 
-            onclick="event.stopPropagation(); toggleMyArticle(${a.id}, ${page});"
-            style="margin-right: auto; flex-shrink: 0;"
-            title="${myArticlesList.includes(a.id) ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
-            <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
-          </button>
+  feedList.innerHTML = pageArticles.map(a => {
+    const isSaved = myArticlesList.some(x => x.id === a.id);
+    return `
+      <div class="feed-item ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
+        <div class="feed-image" style="background-image: url('${a.image}')"></div>
+        <div class="feed-content">
+          <h2 class="feed-title">${escHtml(a.title)}</h2>
+          <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
+            <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
+            <span class="meta-sep">|</span> 
+            <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
+            <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
+              onclick="event.stopPropagation(); toggleMyArticle(${a.id}, ${page});"
+              style="margin-right: auto; flex-shrink: 0;"
+              title="${isSaved ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
+              <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
+            </button>
+          </div>
+          ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
+          ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
         </div>
-        ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
-        ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+
 
   // Render pagination buttons
   if (paginationEl) {
