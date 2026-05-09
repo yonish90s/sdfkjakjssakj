@@ -1509,37 +1509,150 @@ function renderPdfStoreGrid() {
 let myGraphsList = JSON.parse(localStorage.getItem('myGraphsList') || '[]');
 let myArticlesList = JSON.parse(localStorage.getItem('myArticlesList') || '[]');
 
+// Data migration logic: convert old ID arrays to object arrays [{id, customName}]
+function migrateWatchlists() {
+  let changed = false;
+  if (myGraphsList.length > 0 && typeof myGraphsList[0] === 'string') {
+    myGraphsList = myGraphsList.map(id => {
+      const item = pdfStoreItems.find(x => x.id === id);
+      return { id, customName: item ? item.title : id };
+    });
+    changed = true;
+  }
+  if (myArticlesList.length > 0 && typeof myArticlesList[0] === 'number') {
+    myArticlesList = myArticlesList.map(id => {
+      const art = newsArticles.find(x => x.id === id);
+      return { id, customName: art ? art.title : id.toString() };
+    });
+    changed = true;
+  }
+  if (changed) {
+    localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
+    localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
+  }
+}
+migrateWatchlists();
+
+// Firestore Sync Functions
+async function syncUserPersonalDataToFirebase() {
+  if (!currentUser || !currentUser.email || !window.fbSetDoc) return;
+  try {
+    const userDocRef = window.fbDoc(window.fbDb, 'userData', currentUser.email);
+    await window.fbSetDoc(userDocRef, {
+      myGraphsList,
+      myArticlesList,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    console.error('Error syncing to Firestore:', err);
+  }
+}
+
+async function loadUserPersonalDataFromFirebase() {
+  if (!currentUser || !currentUser.email || !window.fbGetDoc) return;
+  try {
+    const userDocRef = window.fbDoc(window.fbDb, 'userData', currentUser.email);
+    const docSnap = await window.fbGetDoc(userDocRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data.myGraphsList) myGraphsList = data.myGraphsList;
+      if (data.myArticlesList) myArticlesList = data.myArticlesList;
+      localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
+      localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
+      renderSidebarWatchlist();
+      renderSidebarArticles();
+      if (document.getElementById('page-my-graphs') && document.getElementById('page-my-graphs').classList.contains('active')) {
+        renderMyGraphsWatchlist();
+      }
+    }
+  } catch (err) {
+    console.error('Error loading from Firestore:', err);
+  }
+}
+
+// Inline Rename Functionality
+function inlineRename(element, type, id) {
+  const currentName = element.textContent;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentName;
+  input.className = 'inline-rename-input';
+  input.style.width = '100%';
+  input.style.background = 'transparent';
+  input.style.border = '1px solid var(--primary)';
+  input.style.color = 'inherit';
+  input.style.padding = '2px 5px';
+  input.style.borderRadius = '4px';
+  input.style.outline = 'none';
+
+  const saveName = async () => {
+    const newName = input.value.trim() || currentName;
+    if (type === 'graph') {
+      const item = myGraphsList.find(x => x.id === id);
+      if (item) item.customName = newName;
+      localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
+      renderMyGraphsWatchlist();
+      renderSidebarWatchlist();
+    } else if (type === 'article') {
+      const item = myArticlesList.find(x => x.id === id);
+      if (item) item.customName = newName;
+      localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
+      renderSidebarArticles();
+    }
+    syncUserPersonalDataToFirebase();
+  };
+
+  input.addEventListener('blur', saveName);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      input.blur();
+    }
+    if (e.key === 'Escape') {
+      input.value = currentName;
+      input.blur();
+    }
+  });
+
+  element.parentNode.replaceChild(input, element);
+  input.focus();
+  input.select();
+}
+
 function addToMyGraphs(id) {
   if (!currentUser || !currentUser.email) {
     showToast('❌ עליך להתחבר כדי להוסיף גרפים לרשימה');
     return;
   }
   
-  if (myGraphsList.includes(id)) {
+  if (myGraphsList.some(x => x.id === id)) {
     showToast('ℹ️ הגרף כבר נמצא ברשימה שלך');
     return;
   }
   
-  myGraphsList.push(id);
+  const item = pdfStoreItems.find(x => x.id === id);
+  myGraphsList.push({ id, customName: item ? item.title : id });
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
   showToast('✅ נוסף לגרפים שלי');
   renderMyGraphsWatchlist();
-  renderSidebarWatchlist(); // Sync sidebar
+  renderSidebarWatchlist();
+  syncUserPersonalDataToFirebase();
 }
 
 function removeFromMyGraphs(id) {
-  myGraphsList = myGraphsList.filter(item => item !== id);
+  myGraphsList = myGraphsList.filter(item => item.id !== id);
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
   renderMyGraphsWatchlist();
-  renderSidebarWatchlist(); // Sync sidebar
+  renderSidebarWatchlist();
   showToast('🗑️ הוסר מהרשימה');
+  syncUserPersonalDataToFirebase();
 }
 
 function renderMyGraphsWatchlist() {
   const container = document.getElementById('my-graphs-list');
   if (!container) return;
   
-  const items = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
+  const graphIds = myGraphsList.map(x => x.id);
+  const items = pdfStoreItems.filter(item => graphIds.includes(item.id));
   
   if (items.length === 0) {
     container.innerHTML = `
@@ -1551,7 +1664,8 @@ function renderMyGraphsWatchlist() {
     return;
   }
   
-  const savedItems = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
+  const graphIds = myGraphsList.map(x => x.id);
+  const savedItems = pdfStoreItems.filter(item => graphIds.includes(item.id));
   
   let html = `
     <div class="watchlist-container">
@@ -1565,6 +1679,7 @@ function renderMyGraphsWatchlist() {
       <div class="watchlist-group">
         <div class="group-title">הבחירות שלי</div>
         ${savedItems.map(item => {
+          const savedItem = myGraphsList.find(x => x.id === item.id);
           // Mock data for the TradingView style
           const lastPrice = (Math.random() * 500 + 50).toFixed(2);
           const chgRaw = (Math.random() * 20 - 10).toFixed(2);
@@ -1579,7 +1694,7 @@ function renderMyGraphsWatchlist() {
               <div class="col-symbol">
                 <div class="symbol-icon">${typeEmoji[item.type] || '📊'}</div>
                 <div class="symbol-info">
-                  <span class="symbol-name">${escHtml(item.title)}</span>
+                  <span class="symbol-name" ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="לחץ פעמיים לשינוי שם">${escHtml(savedItem.customName || item.title)}</span>
                   <span class="symbol-desc">${item.type || 'DATA'}</span>
                 </div>
               </div>
@@ -1631,19 +1746,25 @@ function renderSidebarWatchlist() {
     return;
   }
   
-  const savedItems = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
+  const graphIds = myGraphsList.map(x => x.id);
+  const savedItems = pdfStoreItems.filter(item => graphIds.includes(item.id));
   
-  container.innerHTML = savedItems.map(item => `
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')" style="flex:1;">
-        <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
-        <span>${item.title.length > 15 ? item.title.substring(0, 15) + '...' : item.title}</span>
-      </a>
-      <button onclick="removeFromMyGraphs('${item.id}')" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  `).join('');
+  container.innerHTML = savedItems.map(item => {
+    const savedItem = myGraphsList.find(x => x.id === item.id);
+    const displayName = savedItem.customName || item.title;
+    const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
+    return `
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')" style="flex:1;">
+          <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
+          <span ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="לחץ פעמיים לשינוי שם">${shortName}</span>
+        </a>
+        <button onclick="removeFromMyGraphs('${item.id}')" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
 }
 
 // ========== MY ARTICLES LOGIC ==========
@@ -1672,31 +1793,40 @@ function renderSidebarArticles() {
     return;
   }
 
-  const items = newsArticles.filter(art => myArticlesList.includes(art.id));
-  container.innerHTML = items.map(art => `
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <a href="#" class="submenu-link" onclick="showArticle(${art.id}); return false;" style="flex:1;">
-        ${art.title.length > 20 ? art.title.substring(0, 20) + '...' : art.title}
-      </a>
-      <button onclick="toggleMyArticle(${art.id})" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  `).join('');
+  const artIds = myArticlesList.map(x => x.id);
+  const items = newsArticles.filter(art => artIds.includes(art.id));
+  container.innerHTML = items.map(art => {
+    const savedItem = myArticlesList.find(x => x.id === art.id);
+    const displayName = savedItem.customName || art.title;
+    const shortName = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
+    return `
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <a href="#" class="submenu-link" onclick="showArticle(${art.id}); return false;" style="flex:1;">
+          <span ondblclick="event.stopPropagation(); inlineRename(this, 'article', ${art.id})" title="לחץ פעמיים לשינוי שם">${shortName}</span>
+        </a>
+        <button onclick="toggleMyArticle(${art.id})" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
 }
 
 function toggleMyArticle(id, page) {
-  if (myArticlesList.includes(id)) {
-    myArticlesList = myArticlesList.filter(artId => artId !== id);
+  const existing = myArticlesList.find(x => x.id === id);
+  if (existing) {
+    myArticlesList = myArticlesList.filter(art => art.id !== id);
     showToast('🗑️ הוסר מהכתבות שלי');
   } else {
-    myArticlesList.push(id);
+    const art = newsArticles.find(x => x.id === id);
+    myArticlesList.push({ id, customName: art ? art.title : id.toString() });
     showToast('✅ נוסף לכתבות שלי');
   }
   localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
   renderSidebarArticles();
+  syncUserPersonalDataToFirebase();
   if (page) renderNewsLayout(page);
-  else {
+  else if (!existing) {
     const a = newsArticles.find(x => x.id === id);
     if (a) showArticle(id);
   }
@@ -2248,6 +2378,11 @@ let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 if (!currentUser && window._fbUser) {
   currentUser = window._fbUser;
   localStorage.setItem('currentUser', JSON.stringify(currentUser));
+}
+
+// Initial sync from cloud
+if (currentUser && currentUser.email) {
+  loadUserPersonalDataFromFirebase();
 }
 
 
