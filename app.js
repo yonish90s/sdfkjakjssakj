@@ -480,15 +480,16 @@ function renderNewsLayout(page = 1) {
       <div class="feed-image" style="background-image: url('${a.image}')"></div>
       <div class="feed-content">
         <h2 class="feed-title">${escHtml(a.title)}</h2>
-        <div class="feed-meta">
-          <span class="author-name">${escHtml(a.author)}</span> 
+        <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
+          <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
           <span class="meta-sep">|</span> 
+          <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
           <button class="meta-bookmark-btn ${myArticlesList.includes(a.id) ? 'active' : ''}" 
-            onclick="event.stopPropagation(); ${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; renderNewsLayout(${page});"
+            onclick="event.stopPropagation(); toggleMyArticle(${a.id}, ${page});"
+            style="margin-right: auto; flex-shrink: 0;"
             title="${myArticlesList.includes(a.id) ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
             <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
           </button>
-          <span class="meta-date">${escHtml(a.time)}</span>
         </div>
         ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
         ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
@@ -534,7 +535,7 @@ function showArticle(id) {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <div class="article-category">${escHtml(a.category)}</div>
         <button class="btn-save-article ${myArticlesList.includes(a.id) ? 'active' : ''}" 
-          onclick="${myArticlesList.includes(a.id) ? `removeFromMyArticles(${a.id})` : `addToMyArticles(${a.id})`}; showArticle(${a.id});" 
+          onclick="toggleMyArticle(${a.id});" 
           style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
           <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark" style="color:${myArticlesList.includes(a.id) ? '#f9b233' : 'inherit'};"></i>
           ${myArticlesList.includes(a.id) ? 'שמור' : 'שמור לקריאה מאוחרת'}
@@ -1605,9 +1606,115 @@ function renderSidebarWatchlist() {
   const savedItems = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
   
   container.innerHTML = savedItems.map(item => `
-    <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')">
-      <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
-      <span>${item.title.length > 15 ? item.title.substring(0, 15) + '...' : item.title}</span>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')" style="flex:1;">
+        <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
+        <span>${item.title.length > 15 ? item.title.substring(0, 15) + '...' : item.title}</span>
+      </a>
+      <button onclick="removeFromMyGraphs('${item.id}')" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+// ========== MY ARTICLES LOGIC ==========
+function toggleMyArticlesDropdown(event) {
+  if (event) event.preventDefault();
+  const dropdown = document.getElementById('my-articles-dropdown');
+  const chevron = document.getElementById('my-articles-chevron');
+  const isHidden = dropdown.style.display === 'none';
+  
+  dropdown.style.display = isHidden ? 'flex' : 'none';
+  if (chevron) {
+    chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+  
+  if (isHidden) {
+    renderSidebarArticles();
+  }
+}
+
+function renderSidebarArticles() {
+  const container = document.getElementById('my-articles-dropdown');
+  if (!container) return;
+
+  if (myArticlesList.length === 0) {
+    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">אין כתבות שמורות</div>';
+    return;
+  }
+
+  const items = newsArticles.filter(art => myArticlesList.includes(art.id));
+  container.innerHTML = items.map(art => `
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <a href="#" class="submenu-link" onclick="showArticle(${art.id}); return false;" style="flex:1;">
+        ${art.title.length > 20 ? art.title.substring(0, 20) + '...' : art.title}
+      </a>
+      <button onclick="toggleMyArticle(${art.id})" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+function toggleMyArticle(id, page) {
+  if (myArticlesList.includes(id)) {
+    myArticlesList = myArticlesList.filter(artId => artId !== id);
+    showToast('🗑️ הוסר מהכתבות שלי');
+  } else {
+    myArticlesList.push(id);
+    showToast('✅ נוסף לכתבות שלי');
+  }
+  localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
+  renderSidebarArticles();
+  if (page) renderNewsLayout(page);
+  else {
+    const a = newsArticles.find(x => x.id === id);
+    if (a) showArticle(id);
+  }
+}
+
+// ========== MY PURCHASES LOGIC ==========
+function toggleMyPurchasesDropdown(event) {
+  if (event) event.preventDefault();
+  const dropdown = document.getElementById('my-purchases-dropdown');
+  const chevron = document.getElementById('my-purchases-chevron');
+  const isHidden = dropdown.style.display === 'none';
+  
+  dropdown.style.display = isHidden ? 'flex' : 'none';
+  if (chevron) {
+    chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+  
+  if (isHidden) {
+    renderSidebarPurchases();
+  }
+}
+
+function renderSidebarPurchases() {
+  const container = document.getElementById('my-purchases-dropdown');
+  if (!container) return;
+
+  const orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+  const userOrders = currentUser?.email ? orders.filter(o => o.email === currentUser.email) : [];
+
+  if (userOrders.length === 0) {
+    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">טרם ביצעת רכישות</div>';
+    return;
+  }
+
+  const purchasedItems = [];
+  userOrders.forEach(order => {
+    order.items.forEach(item => {
+      if (!purchasedItems.some(pi => pi.id === item.id)) {
+        purchasedItems.push(item);
+      }
+    });
+  });
+
+  container.innerHTML = purchasedItems.map(item => `
+    <a href="#" class="submenu-link" onclick="showPage('store'); return false;">
+      ${item.name}
     </a>
   `).join('');
 }
