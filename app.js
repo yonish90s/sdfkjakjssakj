@@ -1548,6 +1548,41 @@ async function syncUserPersonalDataToFirebase() {
   }
 }
 
+window.enterFocusMode = function(event, type) {
+  if (event) event.stopPropagation();
+  const sidebar = document.getElementById('app-sidebar');
+  sidebar.classList.add('focus-mode');
+  
+  // Remove any previous focused-link class
+  document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('focused-link'));
+  
+  const targetLink = document.getElementById(`link-${type}`);
+  if (targetLink) targetLink.classList.add('focused-link');
+  
+  // Ensure the submenu is open and rendered
+  if (type === 'my-graphs') renderSidebarWatchlist();
+  if (type === 'my-articles') renderSidebarArticles();
+  // if (type === 'my-purchases') renderSidebarPurchases();
+  
+  const dropdown = document.getElementById(`${type}-dropdown`);
+  if (dropdown) dropdown.style.display = 'flex';
+};
+
+window.exitFocusMode = function(event) {
+  if (event) event.preventDefault();
+  const sidebar = document.getElementById('app-sidebar');
+  sidebar.classList.remove('focus-mode');
+  document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('focused-link'));
+  
+  // Close all personal dropdowns for a clean return
+  const dropdowns = ['my-graphs-dropdown', 'my-articles-dropdown', 'my-purchases-dropdown'];
+  dropdowns.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+};
+
+
 async function loadUserPersonalDataFromFirebase() {
   if (!currentUser || !currentUser.email || !window.fbGetDoc) return;
   try {

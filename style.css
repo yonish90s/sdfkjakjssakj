@@ -4309,3 +4309,55 @@ body.dark-theme .meta-bookmark-btn.active {
 .btn-save-article.active i {
   color: #f9b233 !important;
 }
+
+/* Focus Mode Styles */
+.focus-toggle {
+  margin-right: 8px;
+  font-size: 0.85rem;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.focus-toggle:hover {
+  opacity: 1;
+  background: rgba(0, 113, 227, 0.1);
+  color: var(--primary);
+}
+
+.sidebar.focus-mode .sidebar-link:not(.focused-link),
+.sidebar.focus-mode .sidebar-divider,
+.sidebar.focus-mode .sidebar-logo,
+.sidebar.focus-mode .sidebar-ads-container {
+  display: none !important;
+}
+
+.sidebar.focus-mode .sidebar-link.focused-link {
+  background: rgba(0, 113, 227, 0.05);
+  margin-bottom: 10px;
+  pointer-events: none; /* Disable clicking main link while focused */
+}
+
+.sidebar.focus-mode .sidebar-link.focused-link .fa-chevron-down {
+  display: none !important;
+}
+
+.sidebar.focus-mode .sidebar-submenu {
+  display: flex !important;
+  opacity: 1 !important;
+  max-height: none !important;
+}
+
+#back-from-focus {
+  display: none;
+  margin-bottom: 20px;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sidebar.focus-mode #back-from-focus {
+  display: flex;
+}

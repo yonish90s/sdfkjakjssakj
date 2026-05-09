@@ -71,6 +71,11 @@
     </button>
     
     <div class="sidebar-inner">
+      <a href="#" id="back-from-focus" class="sidebar-link" onclick="exitFocusMode(event)" style="display: none; background: rgba(255,255,255,0.05);">
+        <i class="fas fa-arrow-right"></i>
+        <span>חזרה לתפריט</span>
+      </a>
+
       <div class="sidebar-header">
         <h2 class="sidebar-logo">התפריט שלי</h2>
       </div>
@@ -100,27 +105,30 @@
           <div class="sidebar-divider"></div>
 
           <!-- Personalized Sections -->
-          <a href="#" class="sidebar-link" data-page="my-graphs" onclick="toggleMyGraphsDropdown(event)">
+          <a href="#" class="sidebar-link" id="link-my-graphs" data-page="my-graphs" onclick="toggleMyGraphsDropdown(event)">
             <i class="fas fa-chart-pie"></i>
             <span>הגרפים שלי</span>
+            <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-graphs')" title="תצוגה מורחבת"></i>
             <i class="fas fa-chevron-down" id="my-graphs-chevron" style="margin-right: auto; font-size: 0.7rem; transition: transform 0.3s;"></i>
           </a>
           <div id="my-graphs-dropdown" class="sidebar-submenu" style="display: none;">
             <!-- Submenu items -->
           </div>
 
-          <a href="#" class="sidebar-link" data-page="my-articles" onclick="toggleMyArticlesDropdown(event)">
+          <a href="#" class="sidebar-link" id="link-my-articles" data-page="my-articles" onclick="toggleMyArticlesDropdown(event)">
             <i class="fas fa-newspaper"></i>
             <span>הכתבות שלי</span>
+            <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-articles')" title="תצוגה מורחבת"></i>
             <i class="fas fa-chevron-down" id="my-articles-chevron" style="margin-right: auto; font-size: 0.7rem; transition: transform 0.3s;"></i>
           </a>
           <div id="my-articles-dropdown" class="sidebar-submenu" style="display: none;">
             <!-- Submenu items -->
           </div>
 
-          <a href="#" class="sidebar-link" data-page="my-purchases" onclick="toggleMyPurchasesDropdown(event)">
+          <a href="#" class="sidebar-link" id="link-my-purchases" data-page="my-purchases" onclick="toggleMyPurchasesDropdown(event)">
             <i class="fas fa-shopping-cart"></i>
             <span>הקניות שלי</span>
+            <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-purchases')" title="תצוגה מורחבת"></i>
             <i class="fas fa-chevron-down" id="my-purchases-chevron" style="margin-right: auto; font-size: 0.7rem; transition: transform 0.3s;"></i>
           </a>
           <div id="my-purchases-dropdown" class="sidebar-submenu" style="display: none;">
