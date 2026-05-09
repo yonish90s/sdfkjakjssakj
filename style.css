@@ -4001,6 +4001,7 @@ model-viewer {
   margin-left: var(--sidebar-width);
   transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   width: calc(100% - var(--sidebar-width));
+  padding-top: 44px; /* Space for the fixed navbar */
 }
 
 #main-wrapper.sidebar-collapsed {
