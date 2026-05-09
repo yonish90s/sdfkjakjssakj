@@ -3828,7 +3828,7 @@ model-viewer {
 /* ========== COLLAPSIBLE SIDEBAR ========== */
 :root {
   --sidebar-width: 260px;
-  --sidebar-collapsed-width: 70px;
+  --sidebar-collapsed-width: 55px; /* Reduced from 70px to bring content closer */
 }
 
 
@@ -3934,6 +3934,10 @@ model-viewer {
 .sidebar-link:hover, .sidebar-link.active {
   background: rgba(0, 113, 227, 0.1);
   color: var(--primary);
+}
+
+.sidebar.collapsed .sidebar-inner {
+  padding: 20px 10px; /* Slimmer padding for collapsed state */
 }
 
 .sidebar.collapsed .sidebar-link {
