@@ -4337,8 +4337,19 @@ body.dark-theme .meta-bookmark-btn.active {
 .sidebar.focus-mode .sidebar-link.focused-link {
   background: rgba(0, 113, 227, 0.05);
   margin-bottom: 10px;
-  pointer-events: none; /* Disable clicking main link while focused */
+  cursor: default;
 }
+
+.sidebar.focus-mode .sidebar-link.focused-link i,
+.sidebar.focus-mode .sidebar-link.focused-link span {
+  pointer-events: none; /* Disable clicking text/other icons */
+}
+
+.sidebar.focus-mode .sidebar-link.focused-link .focus-toggle {
+  pointer-events: auto !important; /* Re-enable for the toggle button */
+  cursor: pointer;
+}
+
 
 .sidebar.focus-mode .sidebar-link.focused-link .fa-chevron-down {
   display: none !important;
