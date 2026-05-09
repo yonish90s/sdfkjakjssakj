@@ -26,39 +26,39 @@ const getClassifier = () => {
   const natural = require('natural');
   classifier = new natural.BayesClassifier();
   
-  classifier.addDocument('מתי אתם פתוחים', 'hours');
-  classifier.addDocument('שעות פעילות', 'hours');
-  classifier.addDocument('מתי אפשר להגיע', 'hours');
-  classifier.addDocument('מתי פתוח', 'hours');
-  classifier.addDocument('זמני פתיחה', 'hours');
+  classifier.addDocument('when are you open', 'hours');
+  classifier.addDocument('opening hours', 'hours');
+  classifier.addDocument('when can I visit', 'hours');
+  classifier.addDocument('when are you open', 'hours');
+  classifier.addDocument('opening hours', 'hours');
 
-  classifier.addDocument('איך יוצרים קשר', 'contact');
-  classifier.addDocument('דברו איתי', 'contact');
-  classifier.addDocument('טלפון', 'contact');
-  classifier.addDocument('מייל', 'contact');
-  classifier.addDocument('איך אפשר לדבר איתכם', 'contact');
+  classifier.addDocument('how to contact', 'contact');
+  classifier.addDocument('talk to me', 'contact');
+  classifier.addDocument('phone', 'contact');
+  classifier.addDocument('email', 'contact');
+  classifier.addDocument('how can I talk to you', 'contact');
 
-  classifier.addDocument('לקבוע תור', 'appointment');
-  classifier.addDocument('להזמין פגישה', 'appointment');
-  classifier.addDocument('תור חדש', 'appointment');
-  classifier.addDocument('איך אפשר לקבוע תור', 'appointment');
-  classifier.addDocument('רוצה לקבוע פגישה', 'appointment');
+  classifier.addDocument('book an appointment', 'appointment');
+  classifier.addDocument('schedule a meeting', 'appointment');
+  classifier.addDocument('new appointment', 'appointment');
+  classifier.addDocument('how to book an appointment', 'appointment');
+  classifier.addDocument('want to book an appointment', 'appointment');
 
-  classifier.addDocument('גרפים', 'charts');
-  classifier.addDocument('נתונים', 'charts');
-  classifier.addDocument('קובץ נתונים', 'charts');
-  classifier.addDocument('סטטיסטיקה', 'charts');
-  classifier.addDocument('איפה הגרפים', 'charts');
+  classifier.addDocument('graphs', 'charts');
+  classifier.addDocument('data', 'charts');
+  classifier.addDocument('data file', 'charts');
+  classifier.addDocument('statistics', 'charts');
+  classifier.addDocument('where are the charts', 'charts');
   
   classifier.train();
   return classifier;
 };
 
 const intentResponses = {
-  hours: 'אנחנו זמינים עבורכם 24/7 באתר שלנו! כל הכתבות והמוצרים זמינים בכל עת.',
-  contact: 'ניתן לשלוח לנו מייל לכתובת: support@project11.com או להשתמש בטופס יצירת הקשר באתר.',
-  appointment: 'תוכלו לקבוע תור בקלות דרך עמוד "קביעת תור" בתפריט הניווט שלנו.',
-  charts: 'בעמוד "גרפים" תוכלו למצוא ניתוחים מתקדמים, גרפים וקבצי נתונים להורדה ישירה.'
+  hours: 'We are available for you 24/7 on our website! All articles and products are available at any time.',
+  contact: 'You can send us an email at support@project11.com or use the contact form on the site.',
+  appointment: 'You can easily book an appointment through the "Book Appointment" page in our navigation menu.',
+  charts: 'On the "Charts" page, you can find advanced analytics, graphs, and data files for direct download.'
 };
 
 // Test endpoint
@@ -66,15 +66,15 @@ app.get('/api/test', (req, res) => res.json({ status: 'ok', message: 'Server is 
 
 // --- AI Chat Endpoint ---
 const DEFAULT_SYSTEM_PROMPT = `
-אתה עוזר וירטואלי חכם ומקצועי עבור האתר "פרויקט 11" (Project 11). 
-האתר עוסק בחדשות, טכנולוגיה, שירותים דיגיטליים, גרפים להורדה, וקביעת תורים.
+You are a smart and professional virtual assistant for the website "Project 11". 
+The site deals with news, technology, digital services, downloadable graphs, and appointment scheduling.
 
-הנחיות להתנהגות:
-1. תענה תמיד בעברית רהוטה ומנומסת.
-2. תהיה תמציתי וענייני, אך ידידותי.
-3. אם שואלים אותך שאלות על האתר, תפנה את המשתמשים לעמודים הרלוונטיים (כתבות, גרפים, קביעת תור).
-4. אם המשתמש רוצה ליצור קשר, תגיד לו שאפשר לשלוח מייל ל-support@project11.com.
-5. אל תמציא מידע שאתה לא יודע על האתר.
+Guidelines:
+1. Always answer in clear and polite English.
+2. Be concise and relevant, but friendly.
+3. If asked about the site, refer users to the relevant pages (Articles, Charts, Appointment booking).
+4. If the user wants to contact us, tell them they can send an email to support@project11.com.
+5. Do not invent information about the site.
 `;
 
 app.post(['/api/chat', '/chat'], async (req, res) => {
@@ -104,7 +104,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         const response = intentResponses[intent];
         return res.json({ text: response, isIntent: true });
       }
-      return res.json({ text: 'סליחה, אני עדיין לומד ולא הבנתי את השאלה. תוכל לבחור אחת מהאפשרויות (1-4) או לנסות לנסח שוב? 😊' });
+      return res.json({ text: "Sorry, I'm still learning and didn't understand the question. You can try rephrasing or visit our contact page. 😊" });
     }
 
 
@@ -123,12 +123,12 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     const response = await result.response;
     const text = response.text();
     
-    if (!text) throw new Error('התקבלה תשובה ריקה');
+    if (!text) throw new Error('Received empty response');
     
     res.json({ text });
   } catch (err) {
     console.error('GEMINI API ERROR:', err);
-    res.status(500).json({ error: 'שגיאה בבינה המלאכותית', details: err.message });
+    res.status(500).json({ error: 'AI Error', details: err.message });
   }
 });
 
@@ -153,10 +153,10 @@ const otpStore = new Map(); // email -> { code, expires }
 // POST /api/send-otp
 app.post('/api/send-otp', async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'נדרש מייל' });
+  if (!email) return res.status(400).json({ error: 'Email is required' });
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expires = Date.now() + 10 * 60 * 1000; // 10 דקות
+  const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
   otpStore.set(email, { code, expires });
 
   try {
@@ -164,20 +164,20 @@ app.post('/api/send-otp', async (req, res) => {
     await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
-      subject: 'קוד האימות שלך',
+      subject: 'Your Verification Code',
       html: `
-        <div dir="rtl" style="font-family:Arial,sans-serif;max-width:400px;margin:0 auto;padding:24px;background:#f9f9f9;border-radius:12px">
-          <h2 style="color:#111;margin-bottom:8px">קוד האימות שלך</h2>
-          <p style="color:#555;margin-bottom:20px">הכנס את הקוד הבא כדי לאמת את החשבון שלך:</p>
-          <div style="background:#111;color:#fff;font-size:2rem;font-weight:bold;letter-spacing:12px;text-align:center;padding:20px;border-radius:8px">${code}</div>
-          <p style="color:#999;font-size:0.8rem;margin-top:16px">הקוד תקף ל-10 דקות. אל תשתף אותו עם אף אחד.</p>
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 12px; max-width: 400px;">
+          <h2 style="color:#111;margin-bottom:8px">Your Verification Code</h2>
+          <p style="color:#555;margin-bottom:20px">Enter the following code to verify your account:</p>
+          <div style="background:#f5f5f7; padding:16px; font-size:2rem; font-weight:800; text-align:center; border-radius:8px; color:#0071e3; letter-spacing:4px;">${code}</div>
+          <p style="color:#999;font-size:0.8rem;margin-top:16px">The code is valid for 10 minutes. Do not share it with anyone.</p>
         </div>
       `
     });
     res.json({ success: true });
   } catch (err) {
     console.error('OTP email error:', err.message);
-    res.status(500).json({ error: 'שגיאה בשליחת המייל' });
+    res.status(500).json({ error: 'Error sending email' });
   }
 });
 
@@ -186,12 +186,12 @@ app.post('/api/verify-otp', (req, res) => {
   const { email, code } = req.body;
   const record = otpStore.get(email);
 
-  if (!record) return res.status(400).json({ error: 'לא נשלח קוד לכתובת זו' });
+  if (!record) return res.status(400).json({ error: 'No code sent to this address' });
   if (Date.now() > record.expires) {
     otpStore.delete(email);
-    return res.status(400).json({ error: 'הקוד פג תוקף, בקש קוד חדש' });
+    return res.status(400).json({ error: 'Code expired, please request a new one' });
   }
-  if (record.code !== code) return res.status(400).json({ error: 'קוד שגוי' });
+  if (record.code !== code) return res.status(400).json({ error: 'Invalid code' });
 
   otpStore.delete(email);
   res.json({ success: true });
@@ -309,7 +309,7 @@ app.get('/api/order/:sessionId', async (req, res) => {
     }).filter(Boolean);
 
     const customerEmail = session.customer_details?.email;
-    const customerName = session.customer_details?.name || 'לקוח יקר';
+    const customerName = session.customer_details?.name || 'Valued Customer';
     const total = (session.amount_total / 100).toFixed(2);
     const currency = session.currency?.toUpperCase() || 'ILS';
 
@@ -317,7 +317,7 @@ app.get('/api/order/:sessionId', async (req, res) => {
     const lineItems = session.line_items?.data || [];
     const itemsHtml = lineItems.map(item => `
       <tr>
-        <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${item.description || item.price?.product_data?.name || 'מוצר'}</td>
+        <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">${item.description || item.price?.product_data?.name || 'Product'}</td>
         <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;">${item.quantity}</td>
         <td style="padding:10px;border-bottom:1px solid #eee;text-align:left;">₪${(item.amount_total / 100).toFixed(2)}</td>
       </tr>
@@ -330,37 +330,37 @@ app.get('/api/order/:sessionId', async (req, res) => {
         await resend.emails.send({
           from: 'onboarding@resend.dev',
           to: customerEmail,
-          subject: '✅ קבלה על הזמנתך',
+          subject: '✅ Receipt for your order',
           html: `
-            <div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fafafa;border-radius:16px;border:1px solid #e5e5e5;">
-              <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:4px;color:#111;">תודה על הזמנתך! 🎉</h1>
-              <p style="color:#666;margin-bottom:28px;">שלום ${customerName}, ההזמנה שלך התקבלה בהצלחה.</p>
+            <div dir="ltr" style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fafafa;border-radius:16px;border:1px solid #e5e5e5;">
+              <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:4px;color:#111;">Thank you for your order! 🎉</h1>
+              <p style="color:#666;margin-bottom:28px;">Hello ${customerName}, your order has been received successfully.</p>
 
               <table style="width:100%;border-collapse:collapse;margin-bottom:20px;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e5e5;">
                 <thead>
                   <tr style="background:#111;color:#fff;">
-                    <th style="padding:12px;text-align:right;">מוצר</th>
-                    <th style="padding:12px;text-align:center;">כמות</th>
-                    <th style="padding:12px;text-align:left;">מחיר</th>
+                    <th style="padding:12px;text-align:right;">Product</th>
+                    <th style="padding:12px;text-align:center;">Quantity</th>
+                    <th style="padding:12px;text-align:left;">Price</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${itemsHtml || `<tr><td colspan="3" style="padding:12px;text-align:center;color:#888;">פרטי המוצר יישלחו בנפרד</td></tr>`}
+                  ${itemsHtml || `<tr><td colspan="3" style="padding:12px;text-align:center;color:#888;">Product details will be sent separately</td></tr>`}
                 </tbody>
               </table>
 
               <div style="background:#111;color:#fff;padding:16px 20px;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:24px;">
-                <span style="font-weight:700;font-size:1.1rem;">סה"כ ששולם:</span>
+                <span style="font-weight:700;font-size:1.1rem;">Total paid:</span>
                 <span style="font-weight:800;font-size:1.2rem;">₪${total}</span>
               </div>
 
               ${downloads.length > 0 ? `
               <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
-                <p style="font-weight:700;color:#166534;margin-bottom:8px;">🔗 קישורי ההורדה שלך:</p>
-                ${downloads.map((url, i) => `<a href="${url}" style="display:block;color:#0071e3;margin-bottom:6px;word-break:break-all;">הורד קובץ ${i+1}</a>`).join('')}
+                <p style="font-weight:700;color:#166534;margin-bottom:8px;">🔗 Your download links:</p>
+                ${downloads.map((url, i) => `<a href="${url}" style="display:block;color:#0071e3;margin-bottom:6px;word-break:break-all;">Download file ${i+1}</a>`).join('')}
               </div>` : ''}
 
-              <p style="color:#999;font-size:0.8rem;text-align:center;margin-top:20px;">מספר הזמנה: ${session.id}</p>
+              <p style="color:#999;font-size:0.8rem;text-align:center;margin-top:20px;">Order ID: ${session.id}</p>
             </div>
           `
         });
@@ -382,7 +382,7 @@ app.get('/api/order/:sessionId', async (req, res) => {
 app.post('/api/send-receipt', async (req, res) => {
   try {
     const { email, name, items, total } = req.body;
-    if (!email) return res.status(400).json({ error: 'נדרש מייל' });
+    if (!email) return res.status(400).json({ error: 'Email is required' });
 
     const itemsHtml = (items || []).map(item => `
       <tr>
@@ -397,17 +397,17 @@ app.post('/api/send-receipt', async (req, res) => {
     const sendResult = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
-      subject: '📄 קבלה על הזמנת בדיקה',
+      subject: '📄 Receipt for test order',
       html: `
-        <div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fafafa;border-radius:16px;border:1px solid #e5e5e5;">
-          <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:4px;color:#111;">קבלה על הזמנה (מצב בדיקה) 🧪</h1>
-          <p style="color:#666;margin-bottom:28px;">שלום ${name || 'לקוח יקר'}, זוהי קבלה שנשלחה לבדיקה של המערכת.</p>
+        <div dir="ltr" style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fafafa;border-radius:16px;border:1px solid #e5e5e5;">
+          <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:4px;color:#111;">Order Receipt (Test Mode) 🧪</h1>
+          <p style="color:#666;margin-bottom:28px;">Hello ${name || 'Valued Customer'}, this is a receipt sent for system testing.</p>
 
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e5e5;">
             <thead>
               <tr style="background:#0071e3;color:#fff;">
-                <th style="padding:12px;text-align:right;">מוצר</th>
-                <th style="padding:12px;text-align:left;">מחיר</th>
+                <th style="padding:12px;text-align:right;">Product</th>
+                <th style="padding:12px;text-align:left;">Price</th>
               </tr>
             </thead>
             <tbody>
@@ -416,11 +416,11 @@ app.post('/api/send-receipt', async (req, res) => {
           </table>
 
           <div style="background:#111;color:#fff;padding:16px 20px;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:24px;">
-            <span style="font-weight:700;font-size:1.1rem;">סה"כ (בדיקה):</span>
+            <span style="font-weight:700;font-size:1.1rem;">Total (Test):</span>
             <span style="font-weight:800;font-size:1.2rem;">₪${total}</span>
           </div>
 
-          <p style="color:#999;font-size:0.8rem;text-align:center;">נשלח בתאריך: ${new Date().toLocaleString('he-IL')}</p>
+          <p style="color:#999;font-size:0.8rem;text-align:center;">Sent on: ${new Date().toLocaleString('en-US')}</p>
         </div>
       `
     });
@@ -429,7 +429,7 @@ app.post('/api/send-receipt', async (req, res) => {
     res.json({ success: true, message: 'Receipt sent successfully', id: sendResult.id });
   } catch (err) {
     console.error('Manual receipt error:', err.message);
-    res.status(500).json({ error: 'שגיאה בשליחת הקבלה: ' + err.message });
+    res.status(500).json({ error: 'Error sending receipt: ' + err.message });
   }
 });
 

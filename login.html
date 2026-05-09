@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>כניסה – פרויקט 11</title>
+  <title>Login – Project 11</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,7 +118,7 @@
     }
     .input-wrap .icon {
       position: absolute;
-      right: 12px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
       color: #52525b;
@@ -131,21 +131,21 @@
       background: #18181b;
       border: 1px solid #27272a;
       border-radius: 12px;
-      padding: 12px 36px 12px 16px;
+      padding: 12px 16px 12px 36px;
       color: #fafafa;
       font-size: 0.875rem;
       font-family: inherit;
       outline: none;
       transition: border-color .15s;
       direction: ltr;
-      text-align: right;
+      text-align: left;
     }
     .input-wrap input:focus { border-color: #52525b; }
     .input-wrap input::placeholder { color: #3f3f46; }
 
     .toggle-pw {
       position: absolute;
-      left: 12px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
@@ -360,17 +360,17 @@
 <!-- Left panel -->
 <div class="image-panel">
   <div class="panel-logo">
-    <img src="logo.png" alt="לוגו" />
+    <img src="logo.png" alt="Logo" />
   </div>
   <div class="panel-body">
-    <h2>ברוכים הבאים,<br><span>התחבר כדי להמשיך</span></h2>
-    <p>גש לכל התכנים, החנויות והשירותים שלנו. כניסה מהירה ומאובטחת.</p>
+    <h2>Welcome back,<br><span>Sign in to continue</span></h2>
+    <p>Access all our content, shops, and services. Fast and secure login.</p>
   </div>
   <div class="panel-footer">
     <div class="avatar-stack">
       <span></span><span></span><span></span>
     </div>
-    <p>מאות משתמשים פעילים</p>
+    <p>Hundreds of active users</p>
   </div>
 </div>
 
@@ -381,8 +381,8 @@
     <!-- OTP Screen -->
     <div id="otp-screen">
       <div class="form-header">
-        <h1>אימות מייל 📧</h1>
-        <p id="otp-subtitle">שלחנו קוד בן 6 ספרות למייל שלך</p>
+        <h1>Email Verification 📧</h1>
+        <p id="otp-subtitle">We've sent a 6-digit code to your email</p>
       </div>
       <div class="otp-inputs">
         <input type="text" maxlength="1" class="otp-digit" id="otp-0" inputmode="numeric" />
@@ -394,36 +394,36 @@
       </div>
       <div class="error-msg" id="otp-error"></div>
       <button type="button" class="btn-submit" id="btn-verify-otp">
-        <span>אמת קוד ✓</span>
+        <span>Verify Code ✓</span>
       </button>
       <div class="otp-resend">
-        לא קיבלת? <button type="button" id="btn-resend">שלח שוב</button>
+        Didn't receive it? <button type="button" id="btn-resend">Resend</button>
         <span class="otp-timer" id="otp-timer"></span>
       </div>
-      <button type="button" class="btn-guest" id="btn-back-to-form">← חזור</button>
+      <button type="button" class="btn-guest" id="btn-back-to-form">← Back</button>
     </div>
 
     <!-- Auth Form -->
     <div id="auth-form-wrap">
     <div class="form-header">
-      <h1 id="form-title">ברוך השב</h1>
-      <p id="form-subtitle">הכנס את הפרטים שלך כדי להמשיך</p>
+      <h1 id="form-title">Welcome Back</h1>
+      <p id="form-subtitle">Enter your details to continue</p>
     </div>
 
     <form id="auth-form" novalidate>
 
       <!-- Name field (signup only) -->
       <div class="field" id="field-name">
-        <label for="input-name">שם מלא</label>
+        <label for="input-name">Full Name</label>
         <div class="input-wrap">
           <span class="icon">👤</span>
-          <input type="text" id="input-name" placeholder="ישראל ישראלי" autocomplete="name" />
+          <input type="text" id="input-name" placeholder="John Doe" autocomplete="name" />
         </div>
       </div>
 
       <!-- Email -->
       <div class="field">
-        <label for="input-email">אימייל</label>
+        <label for="input-email">Email Address</label>
         <div class="input-wrap">
           <span class="icon">✉</span>
           <input type="email" id="input-email" placeholder="you@example.com" autocomplete="email" required />
@@ -433,13 +433,13 @@
       <!-- Password -->
       <div class="field">
         <div class="field-row">
-          <label for="input-password">סיסמה</label>
-          <button type="button" class="forgot-link" id="btn-forgot">שכחת סיסמה?</button>
+          <label for="input-password">Password</label>
+          <button type="button" class="forgot-link" id="btn-forgot">Forgot password?</button>
         </div>
         <div class="input-wrap">
           <span class="icon">🔒</span>
           <input type="password" id="input-password" placeholder="••••••••" autocomplete="current-password" required />
-          <button type="button" class="toggle-pw" id="btn-toggle-pw" title="הצג/הסתר סיסמה">👁</button>
+          <button type="button" class="toggle-pw" id="btn-toggle-pw" title="Show/Hide password">👁</button>
         </div>
       </div>
 
@@ -448,25 +448,25 @@
 
       <!-- Submit -->
       <button type="submit" class="btn-submit" id="btn-submit">
-        <span id="btn-label">כניסה</span>
-        <span id="btn-arrow">→</span>
+        <span id="btn-label">Sign In</span>
+        <span id="btn-arrow">&rarr;</span>
       </button>
 
       <!-- Divider -->
-      <div class="divider"><span>או</span></div>
+      <div class="divider"><span>OR</span></div>
 
       <!-- Google Login -->
       <button type="button" class="btn-google" id="btn-google">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        <span>המשך עם Google</span>
+        <span>Continue with Google</span>
       </button>
 
-      <button type="button" class="btn-guest" id="btn-guest">המשך כאורח 🔓</button>
+      <button type="button" class="btn-guest" id="btn-guest">Continue as guest 🔓</button>
     </form>
 
     <p class="switch-mode">
-      <span id="switch-text">עדיין אין לך חשבון?</span>
-      <button type="button" id="btn-switch">הרשם עכשיו</button>
+      <span id="switch-text">Don't have an account yet?</span>
+      <button type="button" id="btn-switch">Sign up now</button>
     </p>
     </div><!-- end auth-form-wrap -->
   </div>
@@ -518,7 +518,7 @@
 
   function showOtpScreen(email) {
     pendingEmail = email;
-    otpSubtitle.textContent = `שלחנו קוד בן 6 ספרות ל: ${email}`;
+    otpSubtitle.textContent = `We sent a 6-digit code to: ${email}`;
     otpScreen.classList.add('visible');
     authFormWrap.classList.add('hidden');
     otpDigits[0].focus();
@@ -555,7 +555,7 @@
   // Verify OTP button
   btnVerifyOtp.addEventListener('click', async () => {
     const code = getOtpCode();
-    if (code.length < 6) { otpError.textContent = 'הכנס 6 ספרות'; otpError.classList.add('visible'); return; }
+    if (code.length < 6) { otpError.textContent = 'Enter 6 digits'; otpError.classList.add('visible'); return; }
     otpError.classList.remove('visible');
     btnVerifyOtp.disabled = true;
     btnVerifyOtp.innerHTML = '<div class="spinner"></div>';
@@ -575,7 +575,7 @@
       otpError.textContent = err.message;
       otpError.classList.add('visible');
       btnVerifyOtp.disabled = false;
-      btnVerifyOtp.innerHTML = '<span>אמת קוד ✓</span>';
+      btnVerifyOtp.innerHTML = '<span>Verify Code ✓</span>';
     }
   });
 
@@ -630,21 +630,21 @@
     inputName.value = '';
 
     if (mode === 'signup') {
-      formTitle.textContent    = 'יצירת חשבון';
-      formSubtitle.textContent = 'הרשם כדי לגשת לאתר';
-      btnLabel.textContent     = 'הרשמה';
+      formTitle.textContent    = 'Create Account';
+      formSubtitle.textContent = 'Sign up to access the site';
+      btnLabel.textContent     = 'Sign Up';
       fieldName.classList.add('visible');
-      switchText.textContent   = 'כבר יש לך חשבון?';
-      btnSwitch.textContent    = 'כניסה';
+      switchText.textContent   = 'Already have an account?';
+      btnSwitch.textContent    = 'Sign In';
       btnForgot.style.visibility = 'hidden';
       inputPw.autocomplete     = 'new-password';
     } else {
-      formTitle.textContent    = 'ברוך השב';
-      formSubtitle.textContent = 'הכנס את הפרטים שלך כדי להמשיך';
-      btnLabel.textContent     = 'כניסה';
+      formTitle.textContent    = 'Welcome Back';
+      formSubtitle.textContent = 'Enter your details to continue';
+      btnLabel.textContent     = 'Sign In';
       fieldName.classList.remove('visible');
-      switchText.textContent   = 'עדיין אין לך חשבון?';
-      btnSwitch.textContent    = 'הרשם עכשיו';
+      switchText.textContent   = "Don't have an account yet?";
+      btnSwitch.textContent    = 'Sign up now';
       btnForgot.style.visibility = 'visible';
       inputPw.autocomplete     = 'current-password';
     }
@@ -653,13 +653,13 @@
   // Forgot password
   btnForgot.addEventListener('click', async () => {
     const email = inputEmail.value.trim();
-    if (!email) { showError('הכנס את האימייל שלך תחילה'); return; }
+    if (!email) { showError('Enter your email first'); return; }
     try {
       await sendPasswordResetEmail(auth, email);
-      showError('📧 נשלח מייל לאיפוס סיסמה');
+      showError('📧 Password reset email sent');
       errorMsg.style.color = '#86efac'; // green tint for success
     } catch {
-      showError('לא נמצא חשבון עם האימייל הזה');
+      showError('No account found with this email');
     }
   });
 
@@ -672,8 +672,8 @@
     const password = inputPw.value.trim();
     const name     = inputName.value.trim();
 
-    if (!email || !password) { showError('נא למלא את כל השדות'); return; }
-    if (mode === 'signup' && !name) { showError('נא להזין שם מלא'); return; }
+    if (!email || !password) { showError('Please fill in all fields'); return; }
+    if (mode === 'signup' && !name) { showError('Please enter full name'); return; }
 
     setLoading(true);
     try {
@@ -691,7 +691,7 @@
         window.location.replace('index.html');
       }
     } catch (err) {
-      showError(firebaseErrorHe(err.code));
+      showError(firebaseErrorEn(err.code));
     } finally {
       setLoading(false);
     }
@@ -706,7 +706,7 @@
       // Auth listener above will handle redirect
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
-        showError(firebaseErrorHe(err.code));
+        showError(firebaseErrorEn(err.code));
       }
     }
   });
@@ -724,7 +724,7 @@
       btnArrow.textContent = '';
       btnSubmit.innerHTML = '<div class="spinner"></div>';
     } else {
-      btnSubmit.innerHTML = `<span id="btn-label">${mode === 'login' ? 'כניסה' : 'הרשמה'}</span><span id="btn-arrow">→</span>`;
+      btnSubmit.innerHTML = `<span id="btn-label">${mode === 'login' ? 'Sign In' : 'Sign Up'}</span><span id="btn-arrow">&rarr;</span>`;
     }
   }
 
@@ -737,18 +737,18 @@
     errorMsg.classList.remove('visible');
   }
 
-  function firebaseErrorHe(code) {
+  function firebaseErrorEn(code) {
     switch (code) {
-      case 'auth/email-already-in-use':   return 'כתובת המייל כבר רשומה';
-      case 'auth/invalid-email':           return 'כתובת מייל לא תקינה';
-      case 'auth/weak-password':           return 'הסיסמה חלשה מדי (לפחות 6 תווים)';
+      case 'auth/email-already-in-use':   return 'Email address already registered';
+      case 'auth/invalid-email':           return 'Invalid email address';
+      case 'auth/weak-password':           return 'Password too weak (at least 6 characters)';
       case 'auth/user-not-found':
       case 'auth/wrong-password':
-      case 'auth/invalid-credential':      return 'אימייל או סיסמה שגויים';
-      case 'auth/too-many-requests':       return 'יותר מדי ניסיונות, נסה שוב מאוחר יותר';
-      case 'auth/network-request-failed':  return 'בעיית חיבור לאינטרנט';
-      case 'auth/operation-not-allowed':   return 'שיטת התחברות זו אינה מופעלת ב-Firebase (Email/Password)';
-      default:                             return 'שגיאה: ' + code;
+      case 'auth/invalid-credential':      return 'Incorrect email or password';
+      case 'auth/too-many-requests':       return 'Too many attempts, try again later';
+      case 'auth/network-request-failed':  return 'Internet connection problem';
+      case 'auth/operation-not-allowed':   return 'This login method is not enabled in Firebase';
+      default:                             return 'Error: ' + code;
     }
   }
 </script>

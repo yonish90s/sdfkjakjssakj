@@ -1,7 +1,7 @@
 name: Fetch Articles Daily
 
-# כל יום ב-02:00 UTC (~05:00 שעון ישראל בקיץ / 04:00 בחורף)
-# אפשר גם להריץ ידנית מכפתור "Run workflow"
+# Every day at 02:00 UTC
+# Can also be run manually from the "Run workflow" button
 on:
   schedule:
     - cron: "0 2 * * *"

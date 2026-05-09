@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>הזמנה הושלמה — החנות הדיגיטלית</title>
+  <title>Order Complete — Digital Store</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
@@ -45,14 +45,14 @@
 <body>
   <div class="success-card">
     <span class="success-icon">🎉</span>
-    <h1>תשלום בוצע בהצלחה!</h1>
-    <p>תודה על הרכישה. קישורי ההורדה שלך מוכנים למטה.</p>
+    <h1>Payment Successful!</h1>
+    <p>Thank you for your purchase. Your download links are ready below.</p>
 
     <div id="downloads-area">
-      <p class="loading">⏳ טוען קישורי הורדה...</p>
+      <p class="loading">⏳ Loading download links...</p>
     </div>
 
-    <a href="/" class="btn-secondary" style="display:inline-block; text-decoration:none;">← חזור לחנות</a>
+    <a href="/" class="btn-secondary" style="display:inline-block; text-decoration:none;">&larr; Back to shop</a>
   </div>
 
   <script>
@@ -64,7 +64,7 @@
       const area = document.getElementById('downloads-area');
 
       if (!sessionId) {
-        area.innerHTML = '<p class="error-msg">לא נמצא מזהה הזמנה.</p>';
+        area.innerHTML = '<p class="error-msg">Order ID not found.</p>';
         return;
       }
 
@@ -74,16 +74,16 @@
         const { downloads, customerEmail } = await res.json();
 
         if (!downloads || downloads.length === 0) {
-          area.innerHTML = '<p class="error-msg">לא נמצאו קישורי הורדה. פנה לתמיכה.</p>';
+          area.innerHTML = '<p class="error-msg">No download links found. Please contact support.</p>';
           return;
         }
 
-        const emailNote = customerEmail ? `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:16px;">אישור נשלח לכתובת: ${customerEmail}</p>` : '';
+        const emailNote = customerEmail ? `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:16px;">Confirmation sent to: ${customerEmail}</p>` : '';
         area.innerHTML = emailNote + `<ul class="download-list">${
-          downloads.map((url, i) => `<li><a href="${url}" target="_blank" download>📥 הורד קובץ ${i + 1}</a></li>`).join('')
+          downloads.map((url, i) => `<li><a href="${url}" target="_blank" download>📥 Download file ${i + 1}</a></li>`).join('')
         }</ul>`;
       } catch (err) {
-        area.innerHTML = '<p class="error-msg">שגיאה באימות התשלום. שמור את מספר ההזמנה ופנה לתמיכה.</p>';
+        area.innerHTML = '<p class="error-msg">Payment verification error. Please save your order ID and contact support.</p>';
       }
     }
 

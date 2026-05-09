@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 """
-Article Scraper Agent - מותאם לאתר שלך
+Article Scraper Agent - Localized for Project 11
 =========================================
-שואב כתבות מאתרי מקור (TechCrunch וכו') וכותב articles.json
-בפורמט שה-app.js שלך מצפה לו.
+Scrapes articles from source sites (TechCrunch, etc.) and writes to articles.json
+in the format expected by app.js.
 
-שימוש:
-    python agent/scrape_articles.py
-
-מריץ מהתיקייה הראשית של האתר:
-    cd /path/to/your-site
+Usage:
     python agent/scrape_articles.py
 """
 
@@ -25,14 +21,12 @@ from typing import Optional, Union, List, Dict, Set
 
 import requests
 from bs4 import BeautifulSoup
-from deep_translator import GoogleTranslator
-
 
 # =============================================================================
 # Configuration
 # =============================================================================
 
-# אתרי מקור - תוסיף/תערוך לפי הצורך
+# Source sites - add/edit as needed
 SOURCES = [
     {
         "name": "TechCrunch AI",
@@ -53,18 +47,17 @@ SOURCES = [
         "image_meta": "og:image",
         "author_selectors": ["a.wp-block-tc23-author-card-name__link", "span.wp-block-tc23-author-card-name", "a[rel='author']"],
         "date_selectors": ["time", "div.wp-block-post-date time"],
-        "category": "AI",
-        "category_he": "בינה מלאכותית",
+        "category": "Artificial Intelligence",
         "max_per_run": 3,
         "url_must_include": "/20",  # ensures we get article URLs (with year in them)
     },
 ]
 
-# פרטי Output
+# Output details
 ROOT = Path(__file__).resolve().parent.parent
 ARTICLES_JSON = ROOT / "articles.json"
 STATE_PATH = ROOT / "agent" / ".seen.json"
-MAX_TOTAL_ARTICLES = 50  # נשמור עד X כתבות, הישנות ביותר נמחקות
+MAX_TOTAL_ARTICLES = 50  # Keep up to X articles, oldest are deleted
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -136,18 +129,6 @@ def fetch(url: str, timeout: int = 20) -> str:
     if not resp.encoding or resp.encoding.lower() == "iso-8859-1":
         resp.encoding = resp.apparent_encoding or "utf-8"
     return resp.text
-
-
-def translate_text(text: str, target: str = "iw") -> str:
-    """Translate text to Hebrew using Google Translator."""
-    if not text or not text.strip():
-        return text
-    try:
-        translated = GoogleTranslator(source="auto", target=target).translate(text)
-        return translated if translated else text
-    except Exception as e:
-        log.error(f"  Translation failed: {e}")
-        return text
 
 
 # =============================================================================
@@ -260,7 +241,7 @@ def extract_article(url: str, source: dict) -> Optional[dict]:
     return {
         "title": title,
         "image": image,
-        "category": source.get("category_he", source.get("category", "חדשות")),
+        "category": source.get("category", "News"),
         "author": author,
         "time": date_str,
         "snippet": snippet,
@@ -283,18 +264,15 @@ def to_site_format(article: dict, article_id: int) -> dict:
         f'📰 Source: <a href="{article["source_url"]}" target="_blank" '
         f'rel="noopener">{article["source_name"]}</a></p>\n'
     )
-    # Translate title and snippet to Hebrew
-    translated_title = translate_text(article["title"])
-    translated_snippet = translate_text(article["snippet"])
 
     return {
         "id": article_id,
-        "title": translated_title,
+        "title": article["title"],
         "image": article["image"],
         "category": article["category"],
         "author": article["author"],
         "time": article["time"],
-        "snippet": translated_snippet,
+        "snippet": article["snippet"],
         "content": attribution + article["content"],
     }
 

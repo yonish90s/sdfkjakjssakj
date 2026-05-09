@@ -1,14 +1,14 @@
 // ========== DATA ==========
 
 const defaultNewsArticles = [
-  { id: 1, title: 'לנובו מרעננת את סדרת ניידי ה-ThinkPad עם חמישה דגמים חדשים', image: 'https://images.unsplash.com/photo-1531297122539-5692f69f1092?auto=format&fit=crop&q=80&w=800', category: 'מחשבים', isTop: 1, author: 'מערכת החדשות', time: 'היום, 18:30' },
-  { id: 2, title: 'גוגל מציגה: תהליך אבטחה חדש להתקנת אפליקציות באנדרואיד', image: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?auto=format&fit=crop&q=80&w=800', category: 'אבטחה', isTop: 2, author: 'מערכת החדשות', time: 'היום, 17:00' },
-  { id: 3, title: 'הוכרז: Xiaomi Watch S5 - מסך גדול יותר, ועד 21 ימי סוללה', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', category: 'שעונים חכמים', isTop: 3, author: 'מערכת החדשות', time: 'היום, 16:00' },
-  { id: 4, title: 'גוגל משדרגת את מנוי ה-Google AI Pro ל-5TB, ללא תוספת תשלום', image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=800', author: 'מערכת החדשות', time: 'היום, 16:45', snippet: 'נקודת עיקריות גוגל משדרגת את נפח אחסון מ-2TB ל-5TB. הגדלת הנפח מתבצעת ללא שינוי במחיר, שעומד על 74.90 שקלים בישראל. המהלך נועד להפוך את התוכנית לאטרקטיבית יותר עבור משתמשים הדורשים שטח רב עבור תוצרי בינה מלאכותית...', category: 'גוגל' },
-  { id: 5, title: 'וואטסאפ מזהירה: כ-200 משתמשים הורידו גרסה מזויפת עם תוכנת ריגול', image: 'https://images.unsplash.com/photo-1614064641913-6b7140414f70?auto=format&fit=crop&q=80&w=800', author: 'מערכת החדשות', time: 'היום, 15:45', snippet: 'חוקרי אבטחה מזהירים כי גרסה מזויפת של וואטסאפ עוקפת את מנגנוני ההגנה של חנות האפליקציות, במטרה לאסוף מידע אישי על המשתמשים...', category: 'אבטחה' },
-  { id: 6, title: 'גוגל מכריזה על Wear OS 6.1: זיהוי מיקום עצמאי ושדרוג חשבונות ילדים', image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=800', author: 'מערכת החדשות', time: 'היום, 12:12', snippet: 'העדכון משפר את יכולות השעונים החכמים, במטרה להתחרות ראש בראש עם שעוני אפל בגרסאותיהם החדשות.', category: 'גוגל' },
-  { id: 7, title: 'אנבידיה מציגה את טכנולוגיית ה-Auto Shader Compilation לקיצור זמני טעינה במשחקים', image: 'https://images.unsplash.com/photo-1598550487031-0898b4852123?auto=format&fit=crop&q=80&w=800', author: 'מערכת החדשות', time: 'היום, 10:40', snippet: 'הטכנולוגיה החדשה צפויה לחסוך שניות יקרות בעת טעינת המשחק הראשונית, ומונעת כליל את צורך בדימוי גרפי מיותר מראש.', category: 'חומרה' },
-  { id: 8, title: 'טלגרם מציגה: עורך טקסט מבוסס AI, שדרוג לסקרים ותמיכה בתמונות חיים', image: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800', author: 'מערכת החדשות', time: 'היום, 09:19', snippet: 'גרסת טלגרם החדשה כוללת חידושים בולטים הנוגעים לכלי הבינה המלאכותית ולנוחות השיתוף בפלטפורמה.', category: 'אפליקציות' }
+  { id: 1, title: 'Lenovo Refreshes ThinkPad Laptop Series with Five New Models', image: 'https://images.unsplash.com/photo-1531297122539-5692f69f1092?auto=format&fit=crop&q=80&w=800', category: 'Computers', isTop: 1, author: 'News Desk', time: 'Today, 18:30' },
+  { id: 2, title: 'Google Introduces New Security Process for Android App Installation', image: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?auto=format&fit=crop&q=80&w=800', category: 'Security', isTop: 2, author: 'News Desk', time: 'Today, 17:00' },
+  { id: 3, title: 'Xiaomi Watch S5 Announced: Larger Screen and Up to 21 Days of Battery', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800', category: 'Smartwatches', isTop: 3, author: 'News Desk', time: 'Today, 16:00' },
+  { id: 4, title: 'Google Upgrades Google AI Pro Subscription to 5TB at No Extra Cost', image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=800', author: 'News Desk', time: 'Today, 16:45', snippet: 'Highlights: Google is upgrading storage from 2TB to 5TB. The increase is without any change in price, which stands at $19.99/mo. This move aims to make the plan more attractive for users demanding more space for AI-generated content...', category: 'Google' },
+  { id: 5, title: 'WhatsApp Warning: About 200 Users Downloaded Fake Version with Spyware', image: 'https://images.unsplash.com/photo-1614064641913-6b7140414f70?auto=format&fit=crop&q=80&w=800', author: 'News Desk', time: 'Today, 15:45', snippet: 'Security researchers warn that a fake version of WhatsApp bypasses App Store protection mechanisms to collect personal user information...', category: 'Security' },
+  { id: 6, title: 'Google Announces Wear OS 6.1: Independent Location and Kids Account Upgrade', image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=800', author: 'News Desk', time: 'Today, 12:12', snippet: 'The update improves smartwatch capabilities, aiming to compete head-to-head with the newest Apple Watch versions.', category: 'Google' },
+  { id: 7, title: 'NVIDIA Introduces Auto Shader Compilation to Shorten Game Loading Times', image: 'https://images.unsplash.com/photo-1598550487031-0898b4852123?auto=format&fit=crop&q=80&w=800', author: 'News Desk', time: 'Today, 10:40', snippet: 'The new technology is expected to save precious seconds during initial game loading, completely eliminating the need for unnecessary pre-graphic simulation.', category: 'Hardware' },
+  { id: 8, title: 'Telegram Introduces AI-Based Text Editor, Poll Upgrades, and Live Photo Support', image: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800', author: 'News Desk', time: 'Today, 09:19', snippet: 'The new Telegram version includes prominent innovations concerning AI tools and sharing convenience on the platform.', category: 'Apps' }
 ];
 
 const defaultPdfStoreItems = [];
@@ -108,7 +108,7 @@ function applySocialLinksToUI(links) {
 
 function saveSocialLinks() {
   if (!isAdmin) {
-    showToast('❌ אין לך הרשאות לבצע פעולה זו');
+    showToast('❌ You do not have permissions to perform this action');
     return;
   }
   const links = {
@@ -119,14 +119,14 @@ function saveSocialLinks() {
   };
   localStorage.setItem('siteSocialLinks', JSON.stringify(links));
   applySocialLinksToUI(links);
-  showToast('✅ הקישורים עודכנו בהצלחה');
+  showToast('✅ Links updated successfully');
 }
 
 function openCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
   if (modal) {
     modal.classList.add('active');
-    showToast('טוען מערכת תשלום מאובטחת...');
+    showToast('Loading secure payment system...');
   }
 }
 
@@ -308,11 +308,11 @@ function selectTime(el) {
 function openBookingModal() {
   const day = document.getElementById('book-day').value;
   if (!selectedTime) {
-    showToast('❌ נא לבחור שעה פנויה');
+    showToast('❌ Please select an available slot');
     return;
   }
   
-  document.getElementById('booking-selected-info').textContent = `יום ${day} בשעה ${selectedTime}`;
+  document.getElementById('booking-selected-info').textContent = `${day} at ${selectedTime}`;
   document.getElementById('booking-modal').classList.add('active');
 }
 
@@ -321,7 +321,7 @@ function closeBookingModal() {
 }
 
 // stub — prevents crash from duplicate definition above
-function openAddSiteModal() { showToast('בקרוב: הוספת אתר'); }
+function openAddSiteModal() { showToast('Coming soon: Add Site'); }
 function closeComicPasswordModal() { const m = document.getElementById('comic-password-modal'); if (m) m.classList.remove('active'); }
 function verifyComicPassword() { closeComicPasswordModal(); }
 
@@ -332,11 +332,11 @@ function submitBookingDirect() {
   const day = document.getElementById('book-day').value;
   
   if (!selectedTime) {
-    showToast('❌ נא לבחור שעה פנויה');
+    showToast('❌ Please select an available slot');
     return;
   }
   if (!name || !phone) {
-    showToast('❌ נא למלא שם וטלפון');
+    showToast('❌ Please fill in name and phone');
     return;
   }
 
@@ -354,7 +354,7 @@ function submitBookingDirect() {
   appts.push(appt);
   localStorage.setItem('appointments', JSON.stringify(appts));
   
-  showToast('✅ התור נקבע בהצלחה!');
+  showToast('✅ Appointment booked successfully!');
   
   // Transition to Success View
   document.getElementById('booking-form-view').style.display = 'none';
@@ -396,7 +396,7 @@ function submitBooking(e) {
   appts.push(appt);
   localStorage.setItem('appointments', JSON.stringify(appts));
   
-  showToast('✅ התור נקבע בהצלחה!');
+  showToast('✅ Appointment booked successfully!');
   
   // If on appointments page, show success view
   const formView = document.getElementById('booking-form-view');
@@ -417,7 +417,7 @@ function renderAdminCalendar() {
   const appts = JSON.parse(localStorage.getItem('appointments') || '[]');
   
   if (appts.length === 0) {
-    list.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;">אין תורים קבועים ביומן.</div>';
+    list.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;">No scheduled appointments in the calendar.</div>';
     return;
   }
   
@@ -429,13 +429,13 @@ function renderAdminCalendar() {
           <div style="font-size:0.95rem; color:#86868b;">📞 ${escHtml(a.phone)}</div>
         </div>
         <div style="text-align:left;">
-          <div style="font-weight:800; color:#0071e3; font-size:1.1rem;">יום ${escHtml(a.day)} | ${escHtml(a.time)}</div>
-          <div style="font-size:0.75rem; color:#86868b; margin-top:6px;">נקבע ב: ${a.created}</div>
+          <div style="font-weight:800; color:#0071e3; font-size:1.1rem;">Day ${escHtml(a.day)} | ${escHtml(a.time)}</div>
+          <div style="font-size:0.75rem; color:#86868b; margin-top:6px;">Booked on: ${a.created}</div>
         </div>
       </div>
       ${a.request ? `
         <div style="background:#fff; border-radius:10px; padding:16px; border:1px solid #e1e1e6; font-size:1rem; color:#424245; line-height:1.5;">
-          <strong>בקשה:</strong> ${escHtml(a.request)}
+          <strong>Request:</strong> ${escHtml(a.request)}
         </div>
       ` : ''}
     </div>
@@ -443,10 +443,10 @@ function renderAdminCalendar() {
 }
 
 function clearAppointments() {
-  if (confirm('האם אתה בטוח שברצונך למחוק את כל התורים?')) {
+  if (confirm('Are you sure you want to delete all appointments?')) {
     localStorage.removeItem('appointments');
     renderAdminCalendar();
-    showToast('🗑️ היומן נוקה');
+    showToast('🗑️ Calendar cleared');
   }
 }
 
@@ -473,14 +473,14 @@ function renderNewsLayout(page = 1) {
     const artLeft = newsArticles.find(a => a.topPosition === 'left' && a.approved !== false);
 
     const renderFeaturedCard = (a, className) => {
-      if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">אין כתבה במיקום זה</div>`;
+      if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">No article in this position</div>`;
       const isSaved = myArticlesList.some(x => x.id === a.id);
       return `
         <div class="featured-card ${className} ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
           <img src="${a.image}" alt="${escHtml(a.title)}">
           <div class="featured-overlay">
             <span class="featured-tag">${escHtml(a.category)}</span>
-            ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
+            ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
             <div class="featured-title">${escHtml(a.title)}</div>
           </div>
         </div>
@@ -519,12 +519,12 @@ function renderNewsLayout(page = 1) {
             <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
               onclick="event.stopPropagation(); toggleMyArticle(${a.id}, ${page});"
               style="margin-right: auto; flex-shrink: 0;"
-              title="${isSaved ? 'הסר מהכתבות שלי' : 'שמור בכתבות שלי'}">
+              title="${isSaved ? 'Remove from My Articles' : 'Save to My Articles'}">
               <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
             </button>
           </div>
           ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
-          ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> פרימיום</div>` : ''}
+          ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
         </div>
       </div>
     `;
@@ -572,12 +572,12 @@ function showArticle(id) {
           onclick="toggleMyArticle(${a.id});" 
           style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
           <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark" style="color:${myArticlesList.includes(a.id) ? '#f9b233' : 'inherit'};"></i>
-          ${myArticlesList.includes(a.id) ? 'שמור' : 'שמור לקריאה מאוחרת'}
+          ${myArticlesList.includes(a.id) ? 'Saved' : 'Save for later'}
         </button>
       </div>
       <h1 class="article-title-main" id="inline-title">${escHtml(a.title)}</h1>
       <div class="article-meta-main">
-        מאת <span id="inline-author" class="author-name" style="font-weight:700;">${escHtml(a.author)}</span>
+        By <span id="inline-author" class="author-name" style="font-weight:700;">${escHtml(a.author)}</span>
         <span class="meta-sep">|</span> 
         <span id="inline-time" class="meta-date">${escHtml(a.time)}</span>
       </div>
@@ -587,9 +587,9 @@ function showArticle(id) {
     <div class="article-body">
       <div id="inline-content">
         ${a.content ? a.content : `
-        <p>זהו טקסט דמה להמחשת הכתבה. במערכת החדשות המלאה, אזור זה יישאב ממסד הנתונים ויכיל פסקאות, ציטוטים מורחבים, גלריות תמונות ואפשרויות לשיתוף ברשתות חברתיות.</p>
-        <p>חברת הטכנולוגיה המובילה חשפה לאחרונה את כל העדכונים של המערכת המיוחלת החדשה. באירוע שערכה, השתתפו אלפי עיתונאי טכנולוגיה מכל העולם, שזכו לראות את כלי התוכנה המתקדמים ואת החומרה.</p>
-        <p>בנוסף, הושם דגש מיוחד על יכולות בינה מלאכותית, פרטיות ואבטחת מידע, עם שיפורים שיהפכו כל פעולה ליעילה, נוחה ומאובטחת יותר מתמיד.</p>
+        <p>This is placeholder text to illustrate the article. In the full news system, this area will be pulled from the database and contain paragraphs, extended quotes, image galleries, and social sharing options.</p>
+        <p>The leading technology company recently unveiled all the updates for the highly anticipated new system. At the event, thousands of technology journalists from around the world participated, getting a first look at the advanced software tools and hardware.</p>
+        <p>In addition, special emphasis was placed on AI capabilities, privacy, and data security, with improvements that will make every action more efficient, convenient, and secure than ever before.</p>
         `}
       </div>
 
@@ -624,9 +624,9 @@ function showArticle(id) {
             <div class="article-text">
               <p>${escHtml(a.snippet || '')}</p>
               <div class="content-blurred" style="user-select:none; pointer-events:none; opacity:0.6;">
-                <p>כאן מופיע תוכן הכתבה המלא והבלעדי של פרויקט 11. המנויים שלנו נהנים מגישה מלאה לכל המידע, הניתוחים והנתונים המתקדמים ביותר בתחום. הצטרפו אלינו עוד היום כדי לפתוח את הגישה לכתבה זו ולמאות כתבות נוספות במאגר שלנו.</p>
-                <p>עוד טקסט מטושטש כדי ליצור מראה של כתבה מלאה... עוד טקסט מטושטש כדי ליצור מראה של כתבה מלאה... עוד טקסט מטושטש כדי ליצור מראה של כתבה מלאה...</p>
-                <p>עוד טקסט מטושטש כדי ליצור מראה של כתבה מלאה... עוד טקסט מטושטש כדי ליצור מראה של כתבה מלאה...</p>
+                <p>This is where the full and exclusive content of Project 11 appears. Our subscribers enjoy full access to all the information, analysis, and most advanced data in the field. Join us today to unlock access to this article and hundreds more in our database.</p>
+                <p>More blurred text to create the look of a full article... More blurred text to create the look of a full article... More blurred text to create the look of a full article...</p>
+                <p>More blurred text to create the look of a full article... More blurred text to create the look of a full article...</p>
               </div>
             </div>
           `;
@@ -635,7 +635,7 @@ function showArticle(id) {
       
       <!-- Recommended Articles Section -->
       <div class="recommendations-wrapper">
-        <h3 class="recommendations-title">אולי יעניין אותך גם</h3>
+        <h3 class="recommendations-title">You might also be interested in</h3>
         <div class="recommendations-grid">
           ${renderRecommendations(a.id, a.category)}
         </div>
@@ -666,7 +666,7 @@ function renderRecommendations(currentId, category) {
   const getKeywords = (str) => {
     if (!str) return [];
     return str.toLowerCase()
-      .replace(/[^\w\sא-ת]/g, '') // Keep Hebrew and English
+      .replace(/[^\w\s]/g, '') // Keep English only (removed Hebrew support)
       .split(/\s+/)
       .filter(w => w.length > 2); // Ignore short words
   };
@@ -697,7 +697,7 @@ function renderRecommendations(currentId, category) {
       <div class="rec-image" style="background-image: url('${r.image}')"></div>
       <div class="rec-meta">${escHtml(r.category)}</div>
       <div class="rec-title">${escHtml(r.title)}</div>
-      ${r.score > 5 ? `<div style="font-size:0.7rem; color:var(--primary); font-weight:700; margin-top:4px;">🔥 מותאם במיוחד עבורך</div>` : ''}
+      ${r.score > 5 ? `<div style="font-size:0.7rem; color:var(--primary); font-weight:700; margin-top:4px;">🔥 Specially matched for you</div>` : ''}
     </div>
   `).join('');
 }
@@ -709,10 +709,10 @@ function adminLogin() {
   if (user === '1' && pass === '1') {
     localStorage.setItem('isAdmin', 'true');
     isAdmin = true;
-    showToast('✅ מנהל התחבר בהצלחה');
+    showToast('✅ Admin logged in successfully');
     showPage('admin');
   } else {
-    showToast('❌ שם משתמש או סיסמה שגויים');
+    showToast('❌ Invalid username or password');
   }
 }
 
@@ -749,7 +749,7 @@ function initAdminDashboard() {
     const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
     const emails = Object.keys(users);
     if (emails.length === 0) {
-      userList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#86868b;">אין משתמשים רשומים</td></tr>';
+      userList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#86868b;">No registered users</td></tr>';
     } else {
       userList.innerHTML = emails.map(email => `
         <tr>
@@ -757,7 +757,7 @@ function initAdminDashboard() {
           <td><strong>${escHtml(users[email].name)}</strong></td>
           <td>${escHtml(email)}</td>
           <td>
-            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="deleteUser('${email}')">מחק</button>
+            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="deleteUser('${email}')">Delete</button>
           </td>
         </tr>
       `).join('');
@@ -769,16 +769,16 @@ function initAdminDashboard() {
   if (ordersList) {
     const orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
     if (orders.length === 0) {
-      ordersList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#86868b;">אין הזמנות חדשות</td></tr>';
+      ordersList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#86868b;">No new orders</td></tr>';
     } else {
       ordersList.innerHTML = orders.map((o, i) => `
         <tr>
           <td style="white-space: nowrap;">${escHtml(o.date)}</td>
           <td><strong>${escHtml(o.email)}</strong></td>
           <td style="font-size: 0.85rem;">${o.items.join('<br>')}</td>
-          <td>₪${parseFloat(o.total).toLocaleString('he-IL')}</td>
+          <td>$${parseFloat(o.total).toLocaleString('en-US')}</td>
           <td>
-            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="deleteOrder(${i})">מחק</button>
+            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="deleteOrder(${i})">Delete</button>
           </td>
         </tr>
       `).join('');
@@ -788,14 +788,14 @@ function initAdminDashboard() {
   list.innerHTML = newsArticles.map(a => `
     <tr style="${a.approved === false ? 'background-color: #fff8e1;' : ''}">
       <td>${a.id}</td>
-      <td><strong>${escHtml(a.title)}</strong> ${a.isTop ? '🌟' : ''} ${a.approved === false ? '<span style="color:#d97706; font-size:0.8rem; margin-right:8px; background:#fef3c7; padding:2px 6px; border-radius:4px;">ממתין</span>' : ''}</td>
+      <td><strong>${escHtml(a.title)}</strong> ${a.isTop ? '🌟' : ''} ${a.approved === false ? '<span style="color:#d97706; font-size:0.8rem; margin-right:8px; background:#fef3c7; padding:2px 6px; border-radius:4px;">Pending</span>' : ''}</td>
       <td>${escHtml(a.category)}</td>
       <td>${escHtml(a.author)}</td>
       <td style="display:flex; gap:8px;">
-        <button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem; background: #0071e3;" onclick="editArticle(${a.id})">ערוך</button>
-        ${a.approved === false ? `<button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem;" onclick="approveArticle(${a.id})">אשר</button>` : ''}
-        <button class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem; border: 1px solid #d2d2d7;" onclick="toggleFeatured(${a.id})">${a.isTop ? 'הסר מהמומלצים' : 'הפוך למומלץ'}</button>
-        <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent;" onclick="deleteArticle(${a.id})">מחק</button>
+        <button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem; background: #0071e3;" onclick="editArticle(${a.id})">Edit</button>
+        ${a.approved === false ? `<button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem;" onclick="approveArticle(${a.id})">Approve</button>` : ''}
+        <button class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem; border: 1px solid #d2d2d7;" onclick="toggleFeatured(${a.id})">${a.isTop ? 'Remove Featured' : 'Make Featured'}</button>
+        <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent;" onclick="deleteArticle(${a.id})">Delete</button>
       </td>
     </tr>
   `).join('');
@@ -805,21 +805,21 @@ function initAdminDashboard() {
   if (featuredList) {
     const featured = newsArticles.filter(a => a.isTop);
     if (featured.length === 0) {
-      featuredList.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color:#86868b;">אין כתבות נבחרות כרגע</td></tr>';
+      featuredList.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color:#86868b;">No featured articles at the moment</td></tr>';
     } else {
       featuredList.innerHTML = featured.map(a => `
         <tr>
           <td><strong>${escHtml(a.title)}</strong></td>
           <td>${escHtml(a.category)}</td>
           <td>
-            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="toggleFeatured(${a.id})">הסר</button>
+            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="toggleFeatured(${a.id})">Remove</button>
           </td>
         </tr>
       `).join('');
     }
   }
 
-  const sc = JSON.parse(localStorage.getItem('storeConfig')) || { title: 'התוכנה המקצועית שלי', version: 'גרסה 1.0', desc: 'קבל גישה לכלים המתקדמים ביותר עם התוכנה שלנו. כלי חובה לכל מקצוען שמחפש לייעל עבודה ולחסוך זמן.', image: '', downloadLink: '', youtube: '' };
+  const sc = JSON.parse(localStorage.getItem('storeConfig')) || { title: 'My Professional Software', version: 'Version 1.0', desc: 'Access the most advanced tools with our software. A must-have tool for every professional looking to streamline work and save time.', image: '', downloadLink: '', youtube: '' };
   const storeTitleInput = document.getElementById('store-edit-title');
   if(storeTitleInput) {
     storeTitleInput.value = sc.title || '';
@@ -852,7 +852,7 @@ function initAdminDashboard() {
       if (ad.img) {
         preview.innerHTML = `<img src="${ad.img}" style="width:100%; height:100%; object-fit:contain;">`;
       } else {
-        preview.innerHTML = '<span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>';
+        preview.innerHTML = '<span style="color:#86868b; font-size:0.85rem;">No Image</span>';
       }
     }
   }
@@ -867,7 +867,7 @@ function initAdminDashboard() {
 function saveAiSettings() {
   const prompt = document.getElementById('admin-ai-prompt').value;
   localStorage.setItem('aiSystemPrompt', prompt);
-  showToast('הגדרות AI נשמרו בהצלחה');
+  showToast('AI settings saved successfully');
 }
 
 let chatHistory = [];
@@ -890,10 +890,10 @@ async function sendChatMessage() {
 
   // --- PREDEFINED ANSWERS LOGIC ---
   const predefinedAnswers = {
-    '1': 'אנחנו זמינים עבורכם 24/7 באתר שלנו! כל הכתבות והמוצרים זמינים בכל עת.',
-    '2': 'ניתן לשלוח לנו מייל לכתובת: support@project11.com או להשתמש בטופס יצירת הקשר באתר.',
-    '3': 'תוכלו לקבוע תור בקלות דרך עמוד "קביעת תור" בתפריט הניווט שלנו.',
-    '4': 'בעמוד "גרפים" תוכלו למצוא ניתוחים מתקדמים, גרפים וקבצי נתונים להורדה ישירה.'
+    '1': 'We are available 24/7 on our site! All articles and products are available anytime.',
+    '2': 'You can email us at: support@project11.com or use the contact form on the site.',
+    '3': 'You can easily book an appointment via the "Book Appointment" page in our navigation menu.',
+    '4': 'On the "Graphs" page, you can find advanced analytics, charts, and data files for direct download.'
   };
 
   if (predefinedAnswers[message]) {
@@ -911,11 +911,11 @@ async function sendChatMessage() {
 
   // Add "Typing..."
   const typingId = 'typing-' + Date.now();
-  chatContainer.innerHTML += `<div id="${typingId}" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right;">העוזר חושב...</div>`;
+  chatContainer.innerHTML += `<div id="${typingId}" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left;">Assistant is thinking...</div>`;
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
   try {
-    const systemPrompt = localStorage.getItem('aiSystemPrompt') || "אתה עוזר וירטואלי באתר. תענה בעברית בצורה מנומסת.";
+    const systemPrompt = localStorage.getItem('aiSystemPrompt') || "You are a virtual assistant on the site. Answer in English politely.";
     
     const apiUrl = window.API_URL || '';
     const res = await fetch(`${apiUrl}/api/chat`, {
@@ -930,7 +930,7 @@ async function sendChatMessage() {
       data = JSON.parse(responseText);
     } catch (parseErr) {
       const typingElem = document.getElementById(typingId);
-      if (typingElem) typingElem.innerHTML = `<span style="color:red;">שגיאת שרת (לא JSON): ${responseText.substring(0, 100)}...</span>`;
+      if (typingElem) typingElem.innerHTML = `<span style="color:red;">Server error (not JSON): ${responseText.substring(0, 100)}...</span>`;
       return;
     }
 
@@ -939,25 +939,25 @@ async function sendChatMessage() {
 
     if (res.ok && data.text) {
       chatContainer.innerHTML += `
-        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right;">
+        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left;">
           ${data.text}
         </div>
       `;
       chatHistory.push({ role: 'user', parts: [{ text: message }] });
       chatHistory.push({ role: 'model', parts: [{ text: data.text }] });
     } else {
-      const errorMsg = data.error || 'שגיאה לא ידועה';
+      const errorMsg = data.error || 'Unknown error';
       const details = data.details || '';
       chatContainer.innerHTML += `
-        <div style="background:#fff1f0; border:1px solid #ffa39e; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right; color:#cf1322;">
-          <strong>שגיאת שרת:</strong> ${errorMsg}<br>
+        <div style="background:#fff1f0; border:1px solid #ffa39e; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color:#cf1322;">
+          <strong>Server Error:</strong> ${errorMsg}<br>
           <small>${details}</small>
         </div>
       `;
     }
   } catch (err) {
     const typingElem = document.getElementById(typingId);
-    if (typingElem) typingElem.innerHTML = `<span style="color:red;">שגיאת תקשורת: ${err.message}</span>`;
+    if (typingElem) typingElem.innerHTML = `<span style="color:red;">Connection error: ${err.message}</span>`;
   }
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
@@ -965,7 +965,7 @@ async function sendChatMessage() {
 function handleAdImageUpload(event, index) {
   const file = event.target.files[0];
   if (!file) return;
-  showToast('מעבד תמונה...');
+  showToast('Processing image...');
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
@@ -988,7 +988,7 @@ function handleAdImageUpload(event, index) {
       if (preview) {
         preview.innerHTML = `<img src="${dataUrl}" style="width:100%; height:100%; object-fit:contain;">`;
       }
-      showToast('התמונה מוכנה! ✅');
+      showToast('Image ready! ✅');
     };
     img.src = e.target.result;
   };
@@ -1002,9 +1002,9 @@ function clearAdSlot(index) {
   
   if (imgInput) imgInput.value = '';
   if (linkInput) linkInput.value = '';
-  if (preview) preview.innerHTML = '<span style="color:#86868b; font-size:0.85rem;">אין תמונה</span>';
+  if (preview) preview.innerHTML = '<span style="color:#86868b; font-size:0.85rem;">No Image</span>';
   
-  showToast(`פרסומת ${index} נוקתה. אל תשכח לשמור!`);
+  showToast(`Ad slot ${index} cleared. Don't forget to save!`);
 }
 
 function saveAdminAds() {
@@ -1017,7 +1017,7 @@ function saveAdminAds() {
     }
   }
   localStorage.setItem('siteAds', JSON.stringify(ads));
-  showToast('✅ פרסומות נשמרו בהצלחה');
+  showToast('✅ Ads saved successfully');
   renderAdsSidebar();
 }
 
@@ -1036,9 +1036,9 @@ function renderAdsSidebar() {
       adContainer.style.borderRadius = '16px';
 
       adContainer.innerHTML = `
-        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">שטח פרסום</h3>
-        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">הזדמנות נהדרת להגיע לאלפי קוראים ביום. פנה אלינו לקבלת הצעת מחיר משתלמת.</p>
-        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">פרסם אצלנו למטה</button>
+        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">Ad Space</h3>
+        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">Great opportunity to reach thousands of daily readers. Contact us for a competitive quote.</p>
+        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">Advertise with us</button>
       `;
       return;
     }
@@ -1079,12 +1079,12 @@ function switchAdminTab(tabId, btnEl) {
 
 
 function deleteMessage(index) {
-  if (confirm('האם אתה בטוח שברצונך למחוק הודעה זו?')) {
+  if (confirm('Are you sure you want to delete this message?')) {
     let msgs = JSON.parse(localStorage.getItem('contactMessages') || '[]');
     msgs.splice(index, 1);
     localStorage.setItem('contactMessages', JSON.stringify(msgs));
     initAdminDashboard();
-    showToast('ההודעה נמחקה');
+    showToast('Message deleted');
   }
 }
 
@@ -1096,7 +1096,7 @@ function viewMessage(index) {
   if (!m) return;
   currentViewMessageIndex = index;
   document.getElementById('view-msg-name').textContent = m.name;
-  document.getElementById('view-msg-phone').textContent = 'טלפון: ' + (m.phone || 'לא הוזן');
+  document.getElementById('view-msg-phone').textContent = 'Phone: ' + (m.phone || 'Not provided');
   document.getElementById('view-msg-date').textContent = m.date;
   document.getElementById('view-msg-body').textContent = m.body;
   document.getElementById('message-view-modal').classList.add('active');
@@ -1109,24 +1109,24 @@ function closeMessageViewModal() {
 
 function deleteMessageFromModal() {
   if (currentViewMessageIndex >= 0) {
-    if (confirm('האם אתה בטוח שברצונך למחוק הודעה זו?')) {
+    if (confirm('Are you sure you want to delete this message?')) {
       let msgs = JSON.parse(localStorage.getItem('contactMessages') || '[]');
       msgs.splice(currentViewMessageIndex, 1);
       localStorage.setItem('contactMessages', JSON.stringify(msgs));
       initAdminDashboard();
       closeMessageViewModal();
-      showToast('ההודעה נמחקה');
+      showToast('Message deleted');
     }
   }
 }
 
 function deleteArticle(id) {
-  if (confirm('האם אתה בטוח שברצונך למחוק כתבה זו?')) {
+  if (confirm('Are you sure you want to delete this article?')) {
     newsArticles = newsArticles.filter(a => a.id !== id);
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
     initAdminDashboard();
     renderNewsLayout();
-    showToast('נמחק בהצלחה');
+    showToast('Deleted successfully');
   }
 }
 
@@ -1134,12 +1134,12 @@ function openArticleEditor() {
   document.getElementById('admin-editor').classList.remove('hidden');
   const editorTitle = document.getElementById('admin-editor').querySelector('h3');
   
-  editorTitle.textContent = 'יצירת כתבה חדשה';
+  editorTitle.textContent = 'Create New Article';
   document.getElementById('edit-id').value = '';
   document.getElementById('edit-title').value = '';
   document.getElementById('edit-category').value = '';
-  document.getElementById('edit-author').value = 'מערכת החדשות';
-  document.getElementById('edit-time').value = 'היום, 12:00';
+  document.getElementById('edit-author').value = 'News Desk';
+  document.getElementById('edit-time').value = 'Today, 12:00';
   document.getElementById('edit-image').value = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=800';
   document.getElementById('edit-snippet').value = '';
   document.getElementById('edit-content').value = '';
@@ -1155,7 +1155,7 @@ function editArticle(id) {
   if (!a) return;
 
   document.getElementById('admin-editor').classList.remove('hidden');
-  document.getElementById('admin-editor').querySelector('h3').textContent = 'עריכת כתבה';
+  document.getElementById('admin-editor').querySelector('h3').textContent = 'Edit Article';
   
   document.getElementById('edit-id').value = a.id;
   document.getElementById('edit-title').value = a.title || '';
@@ -1199,7 +1199,7 @@ function saveAdminArticle() {
   };
 
   if(!articleObj.title) {
-    showToast('יש למלא כותרת');
+    showToast('Please fill in title');
     return;
   }
 
@@ -1216,11 +1216,11 @@ function saveAdminArticle() {
     const idx = newsArticles.findIndex(a => a.id === Number(idValue));
     if (idx !== -1) {
       newsArticles[idx] = articleObj;
-      showToast('עודכן בהצלחה');
+      showToast('Updated successfully');
     }
   } else {
     newsArticles.unshift(articleObj);
-    showToast('נוצר בהצלחה');
+    showToast('Created successfully');
   }
 
   localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
@@ -1290,7 +1290,7 @@ function handleImageUpload(event) {
   if (!file) return;
 
   // Show a loading toast
-  showToast('מעבד תמונה...');
+  showToast('Processing image...');
 
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -1314,7 +1314,7 @@ function handleImageUpload(event) {
       // Compress to 70% quality JPEG => Greatly saves LocalStorage space
       const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
       document.getElementById('edit-image').value = compressedDataUrl;
-      showToast('התמונה מוכנה! ✅');
+      showToast('Image ready! ✅');
     };
     img.src = e.target.result;
   };
@@ -1323,7 +1323,7 @@ function handleImageUpload(event) {
 
 // ========== STORE MANAGEMENT ==========
 function renderStoreLayout() {
-  const c = JSON.parse(localStorage.getItem('storeConfig')) || { title: 'התוכנה המקצועית שלי', version: 'גרסה 1.0', desc: 'קבל גישה לכלים המתקדמים ביותר עם התוכנה שלנו. כלי חובה לכל מקצוען שמחפש לייעל עבודה ולחסוך זמן.', image: '', downloadLink: '', youtube: '' };
+  const c = JSON.parse(localStorage.getItem('storeConfig')) || { title: 'My Professional Software', version: 'Version 1.0', desc: 'Access the most advanced tools with our software. A must-have tool for every professional looking to streamline work and save time.', image: '', downloadLink: '', youtube: '' };
   const contentArea = document.getElementById('store-content-area');
   
   if (!contentArea) return;
@@ -1358,11 +1358,11 @@ function renderStoreLayout() {
           <div class="btn-platform-container" style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; width: 100%;">
             <button class="btn-download-mac" onclick="downloadStorePlatform('Mac')" style="padding: 20px 48px; font-size: 1.2rem; border-radius: 20px; flex: 1; max-width: 320px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
               <span class="platform-icon" style="font-size: 1.5rem;"></span>
-              להורדה ל-Mac
+              Download for Mac
             </button>
             <button class="btn-download-android" onclick="downloadStorePlatform('Android')" style="padding: 20px 48px; font-size: 1.2rem; border-radius: 20px; flex: 1; max-width: 320px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 15px 35px rgba(52, 199, 89, 0.15);">
               <span class="platform-icon" style="font-size: 1.5rem;">🤖</span>
-              להורדה ל-Android
+              Download for Android
             </button>
           </div>
         </div>
@@ -1384,7 +1384,7 @@ function saveStoreConfig() {
   localStorage.setItem('storeConfig', JSON.stringify(config));
   
   renderStoreLayout();
-  showToast('הגדרות פרויקט 11 נשמרו בהצלחה!');
+  showToast('Project 11 settings saved successfully!');
 }
 
 function handleStoreImageUpload(event) {
@@ -1410,7 +1410,7 @@ function handleStoreImageUpload(event) {
       ctx.drawImage(img, 0, 0, width, height);
       const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
       document.getElementById('store-edit-image').value = compressedDataUrl;
-      showToast('התמונה מוכנה! ✅');
+      showToast('Image ready! ✅');
     };
     img.src = e.target.result;
   };
@@ -1418,7 +1418,7 @@ function handleStoreImageUpload(event) {
 }
 
 function downloadStorePlatform(platform) {
-  showToast(`⚡ מכין הורדה עבור ${platform}...`);
+  showToast(`⚡ Preparing download for ${platform}...`);
   
   const link = document.createElement('a');
   const baseUrl = 'https://pub-572449ca23df42e8b074673b3720fb60.r2.dev';
@@ -1438,7 +1438,7 @@ function downloadStorePlatform(platform) {
   setTimeout(() => {
     link.click();
     document.body.removeChild(link);
-    showToast('✅ ההורדה החלה!');
+    showToast('✅ Download started!');
   }, 1000);
 }
 
@@ -1447,7 +1447,7 @@ function downloadStoreSoftware() {
 }
 
 // ========== PDF STORE ==========
-const typeEmoji = { 'PDF': '📄', 'תוכנה': '🖥️', 'סרטון': '📹', 'קובץ': '📁', 'מדריך': '📚' };
+const typeEmoji = { 'PDF': '📄', 'Software': '🖥️', 'Video': '📹', 'File': '📁', 'Guide': '📚' };
 
 let pdfStoreItems = []; // Global list synced from Firebase
 
@@ -1481,7 +1481,7 @@ function renderPdfStoreGrid() {
     .filter(item => isAdmin || item.approved !== false);
   
   if (visibleItems.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#86868b; font-size:1.1rem;">אין גרפים מאושרים עדיין. המנהל יאשר בקרוב!</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#86868b; font-size:1.1rem;">No approved graphs yet. Admin will approve soon!</div>';
     return;
   }
   grid.innerHTML = visibleItems.map((item) => {
@@ -1497,7 +1497,7 @@ function renderPdfStoreGrid() {
         </div>
         <div style="display:flex; flex-direction:column; gap:2px; flex-grow:1;">
           <div class="pdf-card-title">${escHtml(item.title)}</div>
-          <div class="pdf-card-date" style="color:#ff9500; font-size:0.75rem; font-weight:600;">${item.date ? new Date(item.date).toLocaleDateString('he-IL') : 'הועלה לאחרונה'}</div>
+          <div class="pdf-card-date" style="color:#ff9500; font-size:0.75rem; font-weight:600;">${item.date ? new Date(item.date).toLocaleDateString('en-US') : 'Recently uploaded'}</div>
         </div>
         <div class="pdf-card-ticker-wrapper">
           ${isUserLoggedIn ? `
@@ -1671,19 +1671,19 @@ function inlineRename(element, type, id) {
 
 function addToMyGraphs(id) {
   if (!currentUser || !currentUser.email) {
-    showToast('❌ עליך להתחבר כדי להוסיף גרפים לרשימה');
+    showToast('❌ You must log in to add graphs to your list');
     return;
   }
   
   if (myGraphsList.some(x => x.id === id)) {
-    showToast('ℹ️ הגרף כבר נמצא ברשימה שלך');
+    showToast('ℹ️ This graph is already in your list');
     return;
   }
   
   const item = pdfStoreItems.find(x => x.id === id);
   myGraphsList.push({ id, customName: item ? item.title : id });
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
-  showToast('✅ נוסף לגרפים שלי');
+  showToast('✅ Added to My Graphs');
   renderMyGraphsWatchlist();
   renderSidebarWatchlist();
   syncUserPersonalDataToFirebase();
@@ -1694,7 +1694,7 @@ function removeFromMyGraphs(id) {
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
   renderMyGraphsWatchlist();
   renderSidebarWatchlist();
-  showToast('🗑️ הוסר מהרשימה');
+  showToast('🗑️ Removed from list');
   syncUserPersonalDataToFirebase();
 }
 
@@ -1709,7 +1709,7 @@ function renderMyGraphsWatchlist() {
     container.innerHTML = `
       <div style="text-align:center; padding:60px; color:#86868b;">
         <i class="fas fa-list-ul" style="font-size:3rem; margin-bottom:16px; opacity:0.3;"></i>
-        <p>רשימת המעקב שלך ריקה. הוסף גרפים מעמוד "גרפים ונתונים".</p>
+        <p>Your watchlist is empty. Add graphs from the "Graphs & Data" page.</p>
       </div>
     `;
     return;
@@ -1727,7 +1727,7 @@ function renderMyGraphsWatchlist() {
         <div class="col-actions"></div>
       </div>
       <div class="watchlist-group">
-        <div class="group-title">הבחירות שלי</div>
+        <div class="group-title">My Choices</div>
         ${savedItems.map(item => {
           const savedItem = myGraphsList.find(x => x.id === item.id);
           // Mock data for the TradingView style
@@ -1744,7 +1744,7 @@ function renderMyGraphsWatchlist() {
               <div class="col-symbol">
                 <div class="symbol-icon">${typeEmoji[item.type] || '📊'}</div>
                 <div class="symbol-info">
-                  <span class="symbol-name" ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="לחץ פעמיים לשינוי שם">${escHtml(savedItem.customName || item.title)}</span>
+                  <span class="symbol-name" ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="Double-click to rename">${escHtml(savedItem.customName || item.title)}</span>
                   <span class="symbol-desc">${item.type || 'DATA'}</span>
                 </div>
               </div>
@@ -1790,7 +1790,7 @@ function renderSidebarWatchlist() {
   if (myGraphsList.length === 0) {
     container.innerHTML = `
       <div style="padding: 10px; font-size: 0.75rem; color: #86868b; text-align: center;">
-        אין גרפים שמורים
+        No saved graphs
       </div>
     `;
     return;
@@ -1807,7 +1807,7 @@ function renderSidebarWatchlist() {
       <div style="display:flex; align-items:center; justify-content:space-between;">
         <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')" style="flex:1;">
           <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
-          <span ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="לחץ פעמיים לשינוי שם">${shortName}</span>
+          <span ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="Double-click to rename">${shortName}</span>
         </a>
         <button onclick="removeFromMyGraphs('${item.id}')" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
           <i class="fas fa-times"></i>
@@ -1839,7 +1839,7 @@ function renderSidebarArticles() {
   if (!container) return;
 
   if (myArticlesList.length === 0) {
-    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">אין כתבות שמורות</div>';
+    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">No saved articles</div>';
     return;
   }
 
@@ -1852,7 +1852,7 @@ function renderSidebarArticles() {
     return `
       <div style="display:flex; align-items:center; justify-content:space-between;">
         <a href="#" class="submenu-link" onclick="showArticle(${art.id}); return false;" style="flex:1;">
-          <span ondblclick="event.stopPropagation(); inlineRename(this, 'article', ${art.id})" title="לחץ פעמיים לשינוי שם">${shortName}</span>
+          <span ondblclick="event.stopPropagation(); inlineRename(this, 'article', ${art.id})" title="Double-click to rename">${shortName}</span>
         </a>
         <button onclick="toggleMyArticle(${art.id})" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
           <i class="fas fa-times"></i>
@@ -1866,11 +1866,11 @@ function toggleMyArticle(id, page) {
   const existing = myArticlesList.find(x => x.id === id);
   if (existing) {
     myArticlesList = myArticlesList.filter(art => art.id !== id);
-    showToast('🗑️ הוסר מהכתבות שלי');
+    showToast('🗑️ Removed from My Articles');
   } else {
     const art = newsArticles.find(x => x.id === id);
     myArticlesList.push({ id, customName: art ? art.title : id.toString() });
-    showToast('✅ נוסף לכתבות שלי');
+    showToast('✅ Added to My Articles');
   }
   localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
   renderSidebarArticles();
@@ -1907,7 +1907,7 @@ function renderSidebarPurchases() {
   const userOrders = currentUser?.email ? orders.filter(o => o.email === currentUser.email) : [];
 
   if (userOrders.length === 0) {
-    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">טרם ביצעת רכישות</div>';
+    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">No purchases yet</div>';
     return;
   }
 
@@ -1957,7 +1957,7 @@ function showProductDetailById(id) {
   if (item.model3d) {
     toggle3dBtn.classList.remove('hidden');
     viewer3d.src = item.model3d;
-    toggle3dBtn.innerHTML = '<i class="fas fa-cube"></i> צפה בתלת-מימד (3D)';
+    toggle3dBtn.innerHTML = '<i class="fas fa-cube"></i> View in 3D';
   } else {
     toggle3dBtn.classList.add('hidden');
   }
@@ -1995,9 +1995,9 @@ function showProductDetailById(id) {
         `;
         overlay.innerHTML = `
           <div style="font-size: 3.5rem; margin-bottom: 15px;">🔒</div>
-          <h2 style="font-size: 1.8rem; margin-bottom: 12px; font-weight: 800;">התוכן שמור למנויי פרימיום</h2>
-          <p style="margin-bottom: 25px; font-size: 1.05rem; color: #424245; max-width: 300px;">כדי לצפות בגרף המלא ובניתוח הנתונים, יש להצטרף למסלול הפרימיום שלנו.</p>
-          <button class="btn-primary" onclick="showPage('subscription')" style="background: #0071e3; color: #fff; border: none; padding: 14px 40px; border-radius: 980px; font-weight: 700; cursor: pointer; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(0,113,227,0.3);">✨ הצטרף עכשיו</button>
+          <h2 style="font-size: 1.8rem; margin-bottom: 12px; font-weight: 800;">Content Reserved for Premium Subscribers</h2>
+          <p style="margin-bottom: 25px; font-size: 1.05rem; color: #424245; max-width: 300px;">To view the full graph and data analysis, please join our premium plan.</p>
+          <button class="btn-primary" onclick="showPage('subscription')" style="background: #0071e3; color: #fff; border: none; padding: 14px 40px; border-radius: 980px; font-weight: 700; cursor: pointer; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(0,113,227,0.3);">✨ Join Now</button>
         `;
         mainImg.parentElement.style.position = 'relative';
         mainImg.parentElement.appendChild(overlay);
@@ -2025,8 +2025,8 @@ function showProductDetailById(id) {
   const infoCol = document.querySelector('.product-info-column');
   if (infoCol) {
     const toRemove = Array.from(infoCol.children).filter(child => 
-      child.textContent.includes('איש קשר') || 
-      child.textContent.includes('שלח הודעה') ||
+      child.textContent.includes('Contact') || 
+      child.textContent.includes('Send Message') ||
       child.querySelector('.fa-facebook-messenger')
     );
     toRemove.forEach(el => el.remove());
@@ -2083,19 +2083,19 @@ function renderPdfAdminList() {
   if (!list) return;
   const items = getPdfItems();
   if (items.length === 0) {
-    list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:32px; color:#86868b;">אין פריטים עדיין. לחץ "הוסף פריט".</div>';
+    list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:32px; color:#86868b;">No items yet. Click "Add Item".</div>';
     return;
   }
   list.innerHTML = items.map((item) => `
     <div style="background:#f5f5f7; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:8px; position:relative; border: ${item.approved === false ? '2px solid #f9b233' : '1px solid #eee'};">
-      ${item.approved === false ? '<div style="background:#f9b233; color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:4px; position:absolute; top:8px; right:8px; font-weight:800;">ממתין לאישור</div>' : ''}
+      ${item.approved === false ? '<div style="background:#f9b233; color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:4px; position:absolute; top:8px; right:8px; font-weight:800;">Pending Approval</div>' : ''}
       <div style="font-size:2rem; text-align:center;">${typeEmoji[item.type] || '📄'}</div>
       <div style="font-weight:700; font-size:0.9rem; text-align:center; color:#1d1d1f;">${escHtml(item.title)}</div>
       <div style="font-size:0.8rem; color:#86868b; text-align:center;">${escHtml(item.type)} · ${escHtml(item.price || 'חינם')}</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:4px;">
-        ${item.approved === false ? `<button class="btn-primary" style="padding:4px 10px; font-size:0.78rem; background:#34c759;" onclick="approvePdfItem('${item.id}')">אשר פרסום</button>` : ''}
-        <button class="btn-primary" style="padding:4px 10px; font-size:0.78rem;" onclick="openPdfItemEditorById('${item.id}')">ערוך</button>
-        <button class="remove-btn" style="padding:4px 10px; font-size:0.78rem; border:none; background:transparent; color:#ef4444;" onclick="deletePdfItem('${item.id}')">מחק</button>
+        ${item.approved === false ? `<button class="btn-primary" style="padding:4px 10px; font-size:0.78rem; background:#34c759;" onclick="approvePdfItem('${item.id}')">Approve</button>` : ''}
+        <button class="btn-primary" style="padding:4px 10px; font-size:0.78rem;" onclick="openPdfItemEditorById('${item.id}')">Edit</button>
+        <button class="remove-btn" style="padding:4px 10px; font-size:0.78rem; border:none; background:transparent; color:#ef4444;" onclick="deletePdfItem('${item.id}')">Delete</button>
       </div>
     </div>
   `).join('');
@@ -2104,10 +2104,10 @@ function renderPdfAdminList() {
 async function approvePdfItem(id) {
   try {
     await fbUpdateDoc(fbDoc(fbDb, 'pdfStoreItems', id), { approved: true });
-    showToast('✅ הגרף אושר ופורסם באתר!');
+    showToast('✅ Graph approved and published on the site!');
     syncPdfItemsFromFirebase();
   } catch (e) {
-    showToast('❌ שגיאה באישור הפריט');
+    showToast('❌ Error approving item');
   }
 }
 
@@ -2138,29 +2138,29 @@ async function savePdfItemAdmin() {
     if (id) {
       // Update existing
       await fbUpdateDoc(fbDoc(fbDb, 'pdfStoreItems', id), itemData);
-      showToast('עודכן בהצלחה');
+      showToast('Updated successfully');
     } else {
       // New item
       itemData.approved = true; // Admin added items are approved by default
       await fbAddDoc(fbColl(fbDb, 'pdfStoreItems'), itemData);
-      showToast('נוצר בהצלחה');
+      showToast('Created successfully');
     }
     
     document.getElementById('pdf-item-editor').classList.add('hidden');
     syncPdfItemsFromFirebase();
   } catch (e) {
-    showToast('שגיאה בשמירה');
+    showToast('Error saving');
   }
 }
 
 async function deletePdfItem(id) {
-  if (!confirm('האם למחוק את הפריט לצמיתות?')) return;
+  if (!confirm('Are you sure you want to permanently delete this item?')) return;
   try {
     await fbDeleteDoc(fbDoc(fbDb, 'pdfStoreItems', id));
-    showToast('🗑️ הפריט נמחק בהצלחה');
+    showToast('🗑️ Item deleted successfully');
     syncPdfItemsFromFirebase();
   } catch (e) {
-    showToast('❌ שגיאה במחיקת הפריט');
+    showToast('❌ Error deleting item');
   }
 }
 
@@ -2207,25 +2207,25 @@ function handlePdfFileUpload(event) {
   const statusEl = document.getElementById('pdf-upload-status');
 
   if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-    statusEl.textContent = `❌ הקובץ גדול מדי (${(file.size / 1024 / 1024).toFixed(1)}MB). יש להשתמש בקישור חיצוני לקבצים מעל 5MB.`;
+    statusEl.textContent = `❌ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Please use an external link for files over 5MB.`;
     statusEl.style.color = '#ef4444';
     statusEl.style.display = 'block';
     return;
   }
 
-  statusEl.textContent = '⏳ טוען קובץ...';
+  statusEl.textContent = '⏳ Loading file...';
   statusEl.style.color = '#0071e3';
   statusEl.style.display = 'block';
 
   const reader = new FileReader();
   reader.onload = function(e) {
     document.getElementById('pdf-edit-link').value = e.target.result;
-    statusEl.textContent = `✅ הקובץ "${file.name}" הועלה בהצלחה! (${(file.size / 1024).toFixed(0)}KB)`;
+    statusEl.textContent = `✅ File "${file.name}" uploaded successfully! (${(file.size / 1024).toFixed(0)}KB)`;
     statusEl.style.color = '#22c55e';
-    showToast('הקובץ מוכן! אל תשכח לשמור.');
+    showToast('File ready! Don\'t forget to save.');
   };
   reader.onerror = function() {
-    statusEl.textContent = '❌ שגיאה בטעינת הקובץ. נסה שוב.';
+    statusEl.textContent = '❌ Error loading file. Try again.';
     statusEl.style.color = '#ef4444';
   };
   reader.readAsDataURL(file);
@@ -2235,7 +2235,7 @@ function editPdfItem(index) { openPdfItemEditor(index); }
 
 function savePdfItem() {
   const title = document.getElementById('pdf-edit-title').value.trim();
-  if (!title) { showToast('יש להזין שם פריט'); return; }
+  if (!title) { showToast('Please enter item name'); return; }
   
   const idVal = document.getElementById('pdf-edit-id').value;
   const item = {
@@ -2255,10 +2255,10 @@ function savePdfItem() {
   const items = getPdfItems();
   if (idVal !== '') {
     items[parseInt(idVal)] = item;
-    showToast('הגרף/הקובץ עודכן בהצלחה');
+    showToast('Graph/File updated successfully');
   } else {
     items.unshift(item);
-    showToast('הגרף/הקובץ נוסף בהצלחה');
+    showToast('Graph/File added successfully');
   }
 
   savePdfItems(items);
@@ -2295,7 +2295,7 @@ function handleProductImageUpload(event) {
       ctx.drawImage(img, 0, 0, width, height);
       const dataUri = canvas.toDataURL('image/jpeg', 0.8);
       document.getElementById(`pdf-edit-img${activeImgSlot}`).value = dataUri;
-      showToast(`תמונה ${activeImgSlot} עלתה בהצלחה!`);
+      showToast(`Image ${activeImgSlot} uploaded successfully!`);
     };
     img.src = e.target.result;
   };
@@ -2304,13 +2304,13 @@ function handleProductImageUpload(event) {
 
 
 function deletePdfItem(index) {
-  if (confirm('למחוק פריט זה?')) {
+  if (confirm('Delete this item?')) {
     const items = getPdfItems();
     items.splice(index, 1);
     savePdfItems(items);
     renderPdfAdminList();
     renderPdfStoreGrid();
-    showToast('הפריט נמחק');
+    showToast('Item deleted');
   }
 }
 
@@ -2387,7 +2387,7 @@ function submitContactForm(e) {
   
   // Close modal and show toast
   closeContactModal();
-  showToast('ההודעה נשלחה בהצלחה למערכת! ✅');
+  showToast('Message sent successfully! ✅');
   
   // Clear form
   e.target.reset();
@@ -2411,7 +2411,7 @@ function toggleTheme() {
   body.classList.toggle('dark-theme');
   const isDark = body.classList.contains('dark-theme');
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  showToast(isDark ? '🌙 מצב כהה הופעל' : '☀️ מצב בהיר הופעל');
+  showToast(isDark ? '🌙 Dark mode activated' : '☀️ Light mode activated');
 }
 
 // ========== INIT ==========
@@ -2440,7 +2440,7 @@ function handleProfilePicUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
   
-  showToast('מעבד תמונה...');
+  showToast('Processing image...');
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
@@ -2470,7 +2470,7 @@ function handleProfilePicUpload(event) {
       const b64 = canvas.toDataURL('image/jpeg', 0.8);
       document.getElementById('register-avatar-preview').src = b64;
       document.getElementById('join-profile-pic').value = b64;
-      showToast('✅ התמונה עלתה בהצלחה!');
+      showToast('✅ Image uploaded successfully!');
     };
     img.src = e.target.result;
   };
@@ -2494,7 +2494,7 @@ function setRandomProfilePic() {
   }
   document.getElementById('register-avatar-preview').src = next;
   document.getElementById('join-profile-pic').value = next;
-  showToast('🎲 תמונה רנדומלית נבחרה');
+  showToast('🎲 Random image selected');
 }
 
 function saveUserProfile() {
@@ -2504,20 +2504,20 @@ function saveUserProfile() {
   const profilePic = document.getElementById('join-profile-pic').value;
   
   if (!name || !email || !password) {
-    showToast('❌ נא למלא את כל השדות כדי להירשם');
+    showToast('❌ Please fill in all fields to register');
     return;
   }
 
   // Basic email validation
   if (!email.includes('@') || !email.includes('.')) {
-    showToast('❌ כתובת אימייל לא תקינה');
+    showToast('❌ Invalid email address');
     return;
   }
   
   let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
   
   if (registeredUsers[email]) {
-    showToast('❌ האימייל הזה כבר רשום במערכת', 'error');
+    showToast('❌ This email is already registered', 'error');
     return;
   } else {
     // New user, register
@@ -2528,7 +2528,7 @@ function saveUserProfile() {
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     updateUserUI();
     
-    showToast('✨ ההרשמה בוצעה בהצלחה!', 'success');
+    showToast('✨ Registration successful!', 'success');
     
     setTimeout(() => {
       goBack();
@@ -2537,7 +2537,7 @@ function saveUserProfile() {
 }
 
 function logoutUser() {
-  if (confirm('בטוח שברצונך להתנתק?')) {
+  if (confirm('Are you sure you want to log out?')) {
     currentUser = null;
     isAdmin = false;
     localStorage.removeItem('currentUser');
@@ -2548,7 +2548,7 @@ function logoutUser() {
     } else {
       updateUserUI();
       showPage('home');
-      showToast('👋 התנתקת בהצלחה');
+      showToast('👋 Logged out successfully');
     }
   }
 }
@@ -2558,20 +2558,20 @@ function deleteUser(email) {
 }
 
 function deleteOrder(index) {
-  if (confirm('בטוח שברצונך למחוק הזמנה זו?')) {
+  if (confirm('Are you sure you want to delete this order?')) {
     let orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
     orders.splice(index, 1);
     localStorage.setItem('orderHistory', JSON.stringify(orders));
     initAdminDashboard();
-    showToast('🗑️ ההזמנה נמחקה');
+    showToast('Order deleted');
   }
 }
 
 function clearOrders() {
-  if (confirm('בטוח שברצונך למחוק את כל היסטוריית ההזמנות?')) {
+  if (confirm('Are you sure you want to clear order history?')) {
     localStorage.setItem('orderHistory', '[]');
     initAdminDashboard();
-    showToast('🧹 ההיסטוריה נוקתה');
+    showToast('🧹 History cleared');
   }
 }
 
@@ -2597,7 +2597,7 @@ function updateUserUI() {
       if (badgeEmoji && badgeEmoji.id === 'user-badge-avatar') badgeEmoji.style.display = 'none';
       
       // Since it's admin, we can show a special icon or just the text
-      document.getElementById('user-badge-name').textContent = '🛡️ מנהל מערכת';
+      document.getElementById('user-badge-name').textContent = '🛡️ System Admin';
     } else if (isUserLoggedIn) {
       const avatarImg = document.getElementById('user-badge-avatar');
       avatarImg.style.display = 'block';
@@ -2649,7 +2649,7 @@ function submitComment(type) {
   const text = textarea.value.trim();
   
   if (!text) {
-    showToast('❌ אי אפשר לפרסם תגובה ריקה');
+    showToast('❌ Cannot post an empty comment');
     return;
   }
   
@@ -2660,7 +2660,7 @@ function submitComment(type) {
     userName: currentUser.name,
     userAvatar: currentUser.avatar,
     text: text,
-    date: new Date().toLocaleString('he-IL', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+    date: new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
   };
   
   comments.push(newComment);
@@ -2668,7 +2668,7 @@ function submitComment(type) {
   
   textarea.value = '';
   renderComments(type, targetId);
-  showToast('✅ התגובה פורסמה!');
+  showToast('✅ Comment posted!');
 }
 
 function renderComments(type, targetId) {
@@ -2683,7 +2683,7 @@ function renderComments(type, targetId) {
   const comments = JSON.parse(localStorage.getItem(`comments_${type}_${targetId}`) || '[]');
   
   if (comments.length === 0) {
-    list.innerHTML = `<div style="text-align:center; color:#86868b; padding:20px;">עוד אין תגובות. תהיו הראשונים להגיב!</div>`;
+    list.innerHTML = `<div style="text-align:center; color:#86868b; padding:20px;">No comments yet. Be the first to comment!</div>`;
     return;
   }
   
@@ -2781,12 +2781,12 @@ async function submitModalUserPdf() {
   const desc = document.getElementById('modal-user-pdf-desc').value.trim();
   
   if (!title) {
-    showToast('❌ נא להזין שם לגרף');
+    showToast('❌ Please enter a name for the graph');
     return;
   }
   
   if (selectedUserPdfImages.length === 0) {
-    showToast('❌ נא לבחור לפחות תמונה אחת');
+    showToast('❌ Please select at least one image');
     return;
   }
   
@@ -2801,7 +2801,7 @@ async function submitModalUserPdf() {
     const newItem = {
       title: title,
       desc: desc,
-      type: 'תוכן גולשים',
+      type: 'User Content',
       images: selectedUserPdfImages,
       link: '#',
       approved: false,
@@ -2823,13 +2823,13 @@ async function submitModalUserPdf() {
         loader.style.display = 'none';
         loader.style.pointerEvents = 'none';
         closeUploadGraphModal();
-        showToast('✅ הגרף נשלח לאישור מנהל!');
+        showToast('✅ Graph sent for admin approval!');
         syncPdfItemsFromFirebase();
       }, 200);
     }
   } catch (err) {
     console.error('Upload failed:', err);
-    showToast('❌ העלאה נכשלה, נסה שנית');
+    showToast('❌ Upload failed, try again');
     if (loader) {
       loader.style.display = 'none';
     }
@@ -2862,7 +2862,7 @@ function handleAuthSubmit(type) {
     const password = document.getElementById('login-password').value.trim();
     
     if (!input || !password) {
-      showToast('❌ נא להזין אימייל וסיסמה');
+      showToast('❌ Please enter email and password');
       return;
     }
     
@@ -2875,12 +2875,12 @@ function handleAuthSubmit(type) {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         updateUserUI();
         goBack();
-        showToast(`👋 ברוך שובך, ${userData.name}!`);
+        showToast(`👋 Welcome back, ${userData.name}!`);
       } else {
-        showToast('❌ סיסמה שגויה');
+        showToast('❌ Incorrect password');
       }
     } else {
-      showToast('❌ משתמש לא קיים. אנא הירשם.');
+      showToast('❌ User does not exist. Please register.');
     }
   } else {
     saveUserProfile();
@@ -2917,10 +2917,10 @@ function handleUserArticleImage() {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-
+|
       tempUserArticleImage = canvas.toDataURL('image/jpeg', 0.8);
-      document.getElementById('user-art-image').value = 'תמונה נבחרה בהצלחה ✓';
-      showToast('תמונה נטענה!');
+      document.getElementById('user-art-image').value = 'Image selected successfully ✓';
+      showToast('Image loaded!');
     }
   };
   reader.readAsDataURL(file);
@@ -2941,9 +2941,9 @@ function submitUserArticle(event) {
   } else if (!image) {
     image = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&q=80&w=800'; // fallback
   }
-
+|
   const now = new Date();
-  const timeStr = 'היום, ' + now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
+  const timeStr = 'Today, ' + now.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
 
   const newArticle = {
     id: Date.now(),
@@ -2960,8 +2960,8 @@ function submitUserArticle(event) {
 
   newsArticles.unshift(newArticle);
   localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-
-  showToast('הכתבה נשלחה בהצלחה ותמתין לאישור הנהלה! 🚀');
+|
+  showToast('Article submitted successfully and pending admin approval! 🚀');
   
   event.target.reset();
   tempUserArticleImage = '';
@@ -2975,7 +2975,7 @@ function approveArticle(id) {
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
     initAdminDashboard();
     renderNewsLayout();
-    showToast('הכתבה אושרה ומוצגת באתר!');
+    showToast('Article approved and live on site!');
   }
 }
 
@@ -3006,28 +3006,28 @@ async function loadAliExpressProducts() {
 const shopProducts = [
   {
     id: 'p1',
-    title: 'נעלי ספורט Pro 3D',
-    cat: 'אופנה',
-    desc: 'נעלי ריצה מתקדמות עם טכנולוגיית בלימת זעזועים. סובב אותי כדי לראות את הסוליה!',
-    price: '₪450',
+    title: 'Sports Shoes Pro 3D',
+    cat: 'Fashion',
+    desc: 'Advanced running shoes with shock absorption technology. Rotate to see the sole!',
+    price: '$450',
     img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=600',
-    model3d: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' // דוגמה למודל (אסטרונאוט לצורך המחשה)
+    model3d: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' // Example model (Astronaut for illustration)
   },
   {
     id: 'p2',
-    title: 'כסא מעצבים 360',
-    cat: 'בית',
-    desc: 'כסא ארגונומי המעניק תמיכה מושלמת לגב. עיצוב מינימליסטי יוקרתי.',
-    price: '₪890',
+    title: 'Designer Chair 360',
+    cat: 'Home',
+    desc: 'Ergonomic chair providing perfect back support. Luxury minimalist design.',
+    price: '$890',
     img: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&q=80&w=600',
-    model3d: 'https://modelviewer.dev/shared-assets/models/Chair.glb' // מודל כסא אמיתי
+    model3d: 'https://modelviewer.dev/shared-assets/models/Chair.glb' // Real chair model
   },
   {
     id: 'p3',
-    title: 'אוזניות Studio 3D',
-    cat: 'אלקטרוניקה',
-    desc: 'חווית סאונד היקפית. סובב כדי לראות את הגימור המטאלי.',
-    price: '₪1,200',
+    title: 'Studio Headphones 3D',
+    cat: 'Electronics',
+    desc: 'Immersive sound experience. Rotate to see the metallic finish.',
+    price: '$1,200',
     img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600'
   }
 ];
@@ -3035,50 +3035,50 @@ const shopProducts = [
 const servicesItems = [
   {
     id: 's1',
-    title: 'ייעוץ עסקי 1-on-1',
-    cat: 'ייעוץ',
-    desc: 'פגישת אסטרטגיה אישית של שעה — נמפה ביחד את היעדים, החסמים והצעדים הבאים.',
-    price: '₪350 / שעה',
+    title: 'Business Consulting 1-on-1',
+    cat: 'Consulting',
+    desc: '1-hour strategy session — mapping goals, blockers, and next steps together.',
+    price: '$350 / hour',
     icon: '🎯'
   },
   {
     id: 's2',
-    title: 'בניית אתר אינטרנט',
-    cat: 'דיגיטל',
-    desc: 'אתר תדמית מקצועי, מותאם לנייד, מהיר וידידותי לגוגל. כולל דומיין ואחסון לשנה.',
-    price: 'החל מ-₪2,500',
+    title: 'Website Building',
+    cat: 'Digital',
+    desc: 'Professional website, mobile-responsive, fast and SEO-friendly. Includes domain and hosting for 1 year.',
+    price: 'From $2,500',
     icon: '🌐'
   },
   {
     id: 's3',
-    title: 'ליווי דיגיטלי חודשי',
-    cat: 'ליווי',
-    desc: 'ניהול נוכחות דיגיטלית מלאה — רשתות חברתיות, קמפיינים, ותוכן שיווקי.',
-    price: '₪1,200 / חודש',
+    title: 'Monthly Digital Support',
+    cat: 'Support',
+    desc: 'Full digital presence management — social media, campaigns, and marketing content.',
+    price: '$1,200 / month',
     icon: '📱'
   },
   {
     id: 's4',
-    title: 'עיצוב גרפי לפי דרישה',
-    cat: 'עיצוב',
-    desc: 'לוגואים, באנרים, פוסטים, פליירים — כל מה שאתה צריך כדי להיראות מקצועי.',
-    price: 'מ-₪250 / פרויקט',
+    title: 'On-demand Graphic Design',
+    cat: 'Design',
+    desc: 'Logos, banners, posts, flyers — everything you need to look professional.',
+    price: 'From $250 / project',
     icon: '🎨'
   },
   {
     id: 's5',
-    title: 'כתיבת תוכן שיווקי',
-    cat: 'תוכן',
-    desc: 'מאמרים, פוסטים, תיאורי מוצר ודפי נחיתה שמוכרים. ממוקדי SEO ומותאמים לקהל היעד.',
-    price: '₪180 / פוסט',
+    title: 'Content Writing',
+    cat: 'Content',
+    desc: 'Articles, posts, product descriptions, and landing pages that sell. SEO-focused.',
+    price: '$180 / post',
     icon: '✍️'
   },
   {
     id: 's6',
-    title: 'צילום מקצועי לעסקים',
-    cat: 'צילום',
-    desc: 'צילום מוצרים, אירועים, או פורטרטים עסקיים. כולל עריכה ומשלוח דיגיטלי תוך 48 שעות.',
-    price: 'מ-₪800 / יום',
+    title: 'Business Photography',
+    cat: 'Photography',
+    desc: 'Product, event, or business portrait photography. Includes editing and delivery within 48 hours.',
+    price: 'From $800 / day',
     icon: '📸'
   }
 ];
@@ -3110,7 +3110,7 @@ function renderShopGrid() {
         <p class="shop-card-desc">${p.desc}</p>
         <div class="shop-card-footer">
           <span class="shop-card-price">${p.price}</span>
-          <button class="shop-card-btn" onclick="addToCart('${p.id}', 'product')">+ הוסף לעגלה</button>
+          <button class="shop-card-btn" onclick="addToCart('${p.id}', 'product')">+ Add to Cart</button>
         </div>
       </div>
     </div>
@@ -3129,7 +3129,7 @@ function renderServicesGrid() {
         <p class="service-card-desc">${s.desc}</p>
         <div class="service-card-footer">
           <span class="service-card-price">${s.price}</span>
-          <button class="service-card-btn" onclick="addToCart('${s.id}', 'service')">+ הוסף לעגלה</button>
+          <button class="service-card-btn" onclick="addToCart('${s.id}', 'service')">+ Add to Cart</button>
         </div>
       </div>
     </div>
@@ -3142,7 +3142,7 @@ function openOrderModal(id, type) {
   if (!item) return;
   pendingOrderItem = { ...item, type };
   document.getElementById('order-modal-item').textContent =
-    (type === 'product' ? 'מוצר: ' : 'שירות: ') + item.title + ' — ' + item.price;
+    (type === 'product' ? 'Product: ' : 'Service: ') + item.title + ' — ' + item.price;
   document.getElementById('order-modal').classList.add('active');
 }
 
@@ -3158,7 +3158,7 @@ function submitOrder(event) {
   const name = document.getElementById('order-name').value.trim();
   const phone = document.getElementById('order-phone').value.trim();
   if (!name || !phone) {
-    showToast('נא למלא שם וטלפון', 'error');
+    showToast('Please fill in name and phone', 'error');
     return;
   }
   closeOrderModal();
@@ -3168,7 +3168,7 @@ function submitOrder(event) {
     saveCart();
     updateCartBadge();
   }
-  showToast(`תודה ${name}! ההזמנה התקבלה — ניצור איתך קשר ב-${phone} בקרוב 🚀`);
+  showToast(`Thank you ${name}! Order received — we will contact you at ${phone} soon 🚀`);
 }
 
 // =====================================================================
@@ -3215,7 +3215,7 @@ function addToCart(id, type) {
   }
   saveCart();
   updateCartBadge();
-  showToast('✓ נוסף לעגלה');
+  showToast('✓ Added to cart');
 }
 
 function removeFromCart(id, type) {
@@ -3244,10 +3244,10 @@ function renderCart() {
     container.innerHTML = `
       <div class="cart-empty">
         <div class="cart-empty-icon">🛒</div>
-        <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:6px;">העגלה שלך ריקה</h3>
-        <p style="font-size:0.95rem;">הוסף מוצרים מהחנות או שירותים כדי להמשיך</p>
+        <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:6px;">Your cart is empty</h3>
+        <p style="font-size:0.95rem;">Add products from the shop or services to continue</p>
       </div>`;
-    totalEl.textContent = '₪0';
+    totalEl.textContent = '$0';
     checkoutBtn.style.opacity = '0.4';
     checkoutBtn.style.pointerEvents = 'none';
     return;
@@ -3271,16 +3271,16 @@ function renderCart() {
           <div class="cart-item-price">${item.price}</div>
         </div>
         <div class="cart-item-qty">
-          <button onclick="changeCartQty('${c.id}','${c.type}',-1)" aria-label="פחות">−</button>
+          <button onclick="changeCartQty('${c.id}','${c.type}',-1)" aria-label="decrease">−</button>
           <span>${c.qty}</span>
-          <button onclick="changeCartQty('${c.id}','${c.type}',1)" aria-label="עוד">+</button>
+          <button onclick="changeCartQty('${c.id}','${c.type}',1)" aria-label="increase">+</button>
         </div>
-        <button class="cart-item-remove" onclick="removeFromCart('${c.id}','${c.type}')" title="הסר מהעגלה">×</button>
+        <button class="cart-item-remove" onclick="removeFromCart('${c.id}','${c.type}')" title="Remove from cart">×</button>
       </div>
     `;
   }).join('');
-
-  totalEl.textContent = '₪' + total.toLocaleString('he-IL');
+|
+  totalEl.textContent = '$' + total.toLocaleString('en-US');
   checkoutBtn.style.opacity = '1';
   checkoutBtn.style.pointerEvents = 'auto';
 }
@@ -3358,22 +3358,22 @@ function runPaymentAnimation(summaryLines, total) {
     const itemsEl = document.getElementById('payment-success-items');
     if (itemsEl) {
       itemsEl.innerHTML = summaryLines.join('<br>') +
-        `<br><strong style="color:#1d1d1f;">סה"כ שולם: ₪${parseFloat(total).toLocaleString('he-IL')}</strong>`;
+        `<br><strong style="color:#1d1d1f;">Total Paid: $${parseFloat(total).toLocaleString('en-US')}</strong>`;
     }
 
     // Save order to history for admin
     const orderData = {
-      email: (currentUser && currentUser.email) ? currentUser.email : 'אורח',
+      email: (currentUser && currentUser.email) ? currentUser.email : 'Guest',
       items: summaryLines,
       total: total,
-      date: new Date().toLocaleString('he-IL')
+      date: new Date().toLocaleString('en-US')
     };
     let orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
     orders.unshift(orderData);
     localStorage.setItem('orderHistory', JSON.stringify(orders));
 
     // --- SEND RECEIPT EMAIL ---
-    if (currentUser && currentUser.email && currentUser.email !== 'אורח') {
+    if (currentUser && currentUser.email && currentUser.email !== 'Guest') {
       fetch('/api/send-receipt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3388,7 +3388,7 @@ function runPaymentAnimation(summaryLines, total) {
       .then(data => {
         if (data.success) {
           console.log('Receipt sent successfully');
-          showToast('📧 קבלה נשלחה למייל שלך');
+          showToast('📧 Receipt sent to your email');
         } else {
           console.error('Failed to send receipt:', data.error);
         }
@@ -3480,7 +3480,7 @@ function selectPricingTier(el) {
   el.classList.add('selected');
   
   // Show a toast message for feedback
-  showToast('בחרת במסלול ' + el.querySelector('.tier-name').innerText);
+  showToast('You selected plan ' + el.querySelector('.tier-name').innerText);
 }
 
 // ========== FLOATING SUPPORT DISMISS & DRAG ==========
@@ -3488,7 +3488,7 @@ function dismissSupportWidget() {
   const container = document.getElementById('support-floating-btn-container');
   if (container) container.style.display = 'none';
   closeContactModal();
-  showToast('שירות לקוחות נסגר. הוא יחזור לאחר רענון האתר.');
+  showToast('Customer service closed. It will return after refreshing the site.');
 }
 
 // Draggable Logic for Chat Window
@@ -3546,7 +3546,7 @@ function toggleFeatured(id) {
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
     initAdminDashboard();
     renderNewsLayout(); // Refresh home page if visible
-    showToast(newsArticles[index].isTop ? '🌟 הכתבה נוספה לנבחרות' : '⚪ הכתבה הוסרה מהנבחרות');
+    showToast(newsArticles[index].isTop ? '🌟 Article added to featured' : '⚪ Article removed from featured');
   }
 }
 function openLightbox() {
@@ -3576,12 +3576,12 @@ function toggle3DMode() {
     container3D.classList.remove('hidden');
     container3D.classList.add('active');
     imageWrapper.classList.add('hidden');
-    btn.innerHTML = '<i class="fas fa-image"></i> חזור לתצוגת תמונה';
+    btn.innerHTML = '<i class="fas fa-image"></i> Back to Image View';
   } else {
     container3D.classList.add('hidden');
     container3D.classList.remove('active');
     imageWrapper.classList.remove('hidden');
-    btn.innerHTML = '<i class="fas fa-cube"></i> צפה בתלת-מימד (3D)';
+    btn.innerHTML = '<i class="fas fa-cube"></i> View in 3D';
   }
 }
 
