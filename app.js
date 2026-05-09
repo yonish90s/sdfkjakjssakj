@@ -1477,12 +1477,14 @@ function addToMyGraphs(id) {
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
   showToast('✅ נוסף לגרפים שלי');
   renderMyGraphsWatchlist();
+  renderSidebarWatchlist(); // Sync sidebar
 }
 
 function removeFromMyGraphs(id) {
   myGraphsList = myGraphsList.filter(item => item !== id);
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
   renderMyGraphsWatchlist();
+  renderSidebarWatchlist(); // Sync sidebar
   showToast('🗑️ הוסר מהרשימה');
 }
 
@@ -1548,6 +1550,48 @@ function renderMyGraphsWatchlist() {
   `;
   
   container.innerHTML = html;
+  renderSidebarWatchlist(); // Sync sidebar
+}
+
+function toggleMyGraphsDropdown(event) {
+  if (event) event.preventDefault();
+  const dropdown = document.getElementById('my-graphs-dropdown');
+  const chevron = document.getElementById('my-graphs-chevron');
+  const isHidden = dropdown.style.display === 'none';
+  
+  dropdown.style.display = isHidden ? 'flex' : 'none';
+  if (chevron) {
+    chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+  
+  if (isHidden) {
+    renderSidebarWatchlist();
+    // Navigate to the main page as well
+    showPage('my-graphs');
+  }
+}
+
+function renderSidebarWatchlist() {
+  const container = document.getElementById('my-graphs-dropdown');
+  if (!container) return;
+  
+  if (myGraphsList.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 10px; font-size: 0.75rem; color: #86868b; text-align: center;">
+        אין גרפים שמורים
+      </div>
+    `;
+    return;
+  }
+  
+  const savedItems = pdfStoreItems.filter(item => myGraphsList.includes(item.id));
+  
+  container.innerHTML = savedItems.map(item => `
+    <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')">
+      <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
+      <span>${item.title.length > 15 ? item.title.substring(0, 15) + '...' : item.title}</span>
+    </a>
+  `).join('');
 }
 
 

@@ -4171,3 +4171,43 @@ body.dark-theme .sidebar-ad-box {
   background-color: #2c2c2e !important;
   border: 1px solid #38383a !important;
 }
+
+/* Sidebar Submenu Styles */
+.sidebar-submenu {
+  margin: 5px 15px 15px 0;
+  padding-right: 15px;
+  border-right: 2px solid rgba(0, 113, 227, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.submenu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  color: #515154;
+  text-decoration: none;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.submenu-link:hover {
+  background: rgba(0, 113, 227, 0.05);
+  color: var(--primary);
+}
+
+body.dark-theme .submenu-link {
+  color: #a1a1a6;
+}
+
+body.dark-theme .submenu-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5f5f7;
+}
+
+.sidebar.collapsed .sidebar-submenu {
+  display: none !important;
+}
