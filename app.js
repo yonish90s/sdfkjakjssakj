@@ -1551,12 +1551,19 @@ async function syncUserPersonalDataToFirebase() {
 window.enterFocusMode = function(event, type) {
   if (event) event.stopPropagation();
   const sidebar = document.getElementById('app-sidebar');
+  const targetLink = document.getElementById(`link-${type}`);
+  
+  // Toggle off if already focused on this specific section
+  if (sidebar.classList.contains('focus-mode') && targetLink.classList.contains('focused-link')) {
+    exitFocusMode();
+    return;
+  }
+  
   sidebar.classList.add('focus-mode');
   
   // Remove any previous focused-link class
   document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('focused-link'));
   
-  const targetLink = document.getElementById(`link-${type}`);
   if (targetLink) targetLink.classList.add('focused-link');
   
   // Ensure the submenu is open and rendered
