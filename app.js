@@ -1521,7 +1521,7 @@ function renderMyGraphsWatchlist() {
           const isUp = parseFloat(chgValue) >= 0;
           
           return `
-            <div class="watchlist-row">
+            <div class="watchlist-row" onclick="showProductDetailById('${item.id}')">
               <div class="col-symbol">
                 <div class="symbol-icon">${typeEmoji[item.type] || '📊'}</div>
                 <div class="symbol-info">
@@ -1533,7 +1533,7 @@ function renderMyGraphsWatchlist() {
               <div class="col-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgValue}</div>
               <div class="col-chg-pct ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgPct}%</div>
               <div class="col-actions">
-                <button onclick="removeFromMyGraphs('${item.id}')" class="remove-btn">
+                <button onclick="event.stopPropagation(); removeFromMyGraphs('${item.id}')" class="remove-btn">
                   <i class="fas fa-times"></i>
                 </button>
               </div>
