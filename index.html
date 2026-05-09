@@ -76,38 +76,56 @@
       </div>
 
       <nav class="sidebar-nav">
-        <a href="#" onclick="showPage('home')" class="sidebar-link active">
-          <i class="fas fa-home"></i> <span>ראשי</span>
-        </a>
-        <a href="#" onclick="showPage('store')" class="sidebar-link">
-          <i class="fas fa-shopping-bag"></i> <span>חנות</span>
-        </a>
-        <a href="#" onclick="showPage('pdf-store')" class="sidebar-link">
-          <i class="fas fa-chart-line"></i> <span>גרפים ונתונים</span>
-        </a>
-        <a href="#" onclick="showPage('services')" class="sidebar-link">
-          <i class="fas fa-briefcase"></i> <span>שירותים</span>
-        </a>
-        <a href="#" onclick="showPage('subscription')" class="sidebar-link">
-          <i class="fas fa-crown"></i> <span>מנוי פרימיום</span>
-        </a>
-        <a href="#" id="sidebar-my-graphs" onclick="toggleMyGraphsDropdown(event)" class="sidebar-link" style="display: none;">
-          <i class="fas fa-chart-pie"></i> <span>הגרפים שלי</span>
-          <i class="fas fa-chevron-down" style="margin-right: auto; font-size: 0.8rem; transition: transform 0.3s;" id="my-graphs-chevron"></i>
-        </a>
-        <div id="my-graphs-dropdown" class="sidebar-submenu" style="display: none;"></div>
+          <a href="#" class="sidebar-link active" data-page="home" onclick="showPage('home'); return false;">
+            <i class="fas fa-home"></i>
+            <span>בית</span>
+          </a>
+          <a href="#" class="sidebar-link" data-page="store" onclick="showPage('store'); return false;">
+            <i class="fas fa-shopping-bag"></i>
+            <span>חנות</span>
+          </a>
+          <a href="#" class="sidebar-link" data-page="graphs" onclick="showPage('graphs'); return false;">
+            <i class="fas fa-chart-line"></i>
+            <span>גרפים ונתונים</span>
+          </a>
+          <a href="#" class="sidebar-link" data-page="services" onclick="showPage('services'); return false;">
+            <i class="fas fa-briefcase"></i>
+            <span>שירותים</span>
+          </a>
+          <a href="#" class="sidebar-link" data-page="subscription" onclick="showPage('subscription'); return false;">
+            <i class="fas fa-crown"></i>
+            <span>מנוי פרימיום</span>
+          </a>
 
-        <a href="#" id="sidebar-my-articles" onclick="toggleMyArticlesDropdown(event)" class="sidebar-link" style="display: none;">
-          <i class="fas fa-newspaper"></i> <span>הכתבות שלי</span>
-          <i class="fas fa-chevron-down" style="margin-right: auto; font-size: 0.8rem; transition: transform 0.3s;" id="my-articles-chevron"></i>
-        </a>
-        <div id="my-articles-dropdown" class="sidebar-submenu" style="display: none;"></div>
+          <div class="sidebar-divider"></div>
 
-        <a href="#" id="sidebar-my-purchases" onclick="toggleMyPurchasesDropdown(event)" class="sidebar-link" style="display: none;">
-          <i class="fas fa-bag-shopping"></i> <span>הקניות שלי</span>
-          <i class="fas fa-chevron-down" style="margin-right: auto; font-size: 0.8rem; transition: transform 0.3s;" id="my-purchases-chevron"></i>
-        </a>
-        <div id="my-purchases-dropdown" class="sidebar-submenu" style="display: none;"></div>
+          <!-- Personalized Sections -->
+          <a href="#" class="sidebar-link" data-page="my-graphs" onclick="toggleMyGraphsDropdown(event)">
+            <i class="fas fa-chart-pie"></i>
+            <span>הגרפים שלי</span>
+            <i class="fas fa-chevron-down" id="my-graphs-chevron" style="margin-right: auto; font-size: 0.7rem; transition: transform 0.3s;"></i>
+          </a>
+          <div id="my-graphs-dropdown" class="sidebar-submenu" style="display: none;">
+            <!-- Submenu items -->
+          </div>
+
+          <a href="#" class="sidebar-link" data-page="my-articles" onclick="toggleMyArticlesDropdown(event)">
+            <i class="fas fa-newspaper"></i>
+            <span>הכתבות שלי</span>
+            <i class="fas fa-chevron-down" id="my-articles-chevron" style="margin-right: auto; font-size: 0.7rem; transition: transform 0.3s;"></i>
+          </a>
+          <div id="my-articles-dropdown" class="sidebar-submenu" style="display: none;">
+            <!-- Submenu items -->
+          </div>
+
+          <a href="#" class="sidebar-link" data-page="my-purchases" onclick="toggleMyPurchasesDropdown(event)">
+            <i class="fas fa-shopping-cart"></i>
+            <span>הקניות שלי</span>
+            <i class="fas fa-chevron-down" id="my-purchases-chevron" style="margin-right: auto; font-size: 0.7rem; transition: transform 0.3s;"></i>
+          </a>
+          <div id="my-purchases-dropdown" class="sidebar-submenu" style="display: none;">
+            <!-- Submenu items -->
+          </div>
       </nav>
 
       <!-- Sidebar Ads Section at the Bottom -->

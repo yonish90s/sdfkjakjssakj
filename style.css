@@ -4237,7 +4237,8 @@ body.dark-theme .submenu-link::before {
   background: #424245;
 }
 
-.sidebar.collapsed .sidebar-submenu {
+.sidebar.collapsed .sidebar-submenu,
+.sidebar.collapsed .sidebar-link .fa-chevron-down {
   display: none !important;
 }
 

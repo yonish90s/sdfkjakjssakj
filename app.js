@@ -154,8 +154,16 @@ window.addEventListener('click', (e) => {
 });
 
 // ========== NAVIGATION ==========
-function showPage(page) {
-  if (page === 'checkout') {
+function showPage(pageId) {
+  // Navigation active state logic
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('data-page') === pageId) {
+      link.classList.add('active');
+    }
+  });
+
+  if (pageId === 'checkout') {
     openCheckoutModal();
     return;
   }
@@ -3383,6 +3391,20 @@ function toggleSidebar() {
 
   const isCollapsed = sidebar.classList.contains('collapsed');
   localStorage.setItem('sidebarCollapsed', isCollapsed);
+
+  // Close all submenus when collapsing
+  if (isCollapsed) {
+    const submenus = ['my-graphs-dropdown', 'my-articles-dropdown', 'my-purchases-dropdown'];
+    submenus.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    const chevrons = ['my-graphs-chevron', 'my-articles-chevron', 'my-purchases-chevron'];
+    chevrons.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.transform = 'rotate(0deg)';
+    });
+  }
 
   // Update toggle icon
   if (isCollapsed) {
