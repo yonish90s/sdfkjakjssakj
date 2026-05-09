@@ -19,34 +19,40 @@ const FRONTEND_URL = process.env.FRONTEND_URL
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// --- ML Intent Classifier ---
-const natural = require('natural');
-const classifier = new natural.BayesClassifier();
+// --- ML Intent Classifier (Lazy loaded to prevent cold start crashes) ---
+let classifier = null;
+const getClassifier = () => {
+  if (classifier) return classifier;
+  const natural = require('natural');
+  classifier = new natural.BayesClassifier();
+  
+  classifier.addDocument('מתי אתם פתוחים', 'hours');
+  classifier.addDocument('שעות פעילות', 'hours');
+  classifier.addDocument('מתי אפשר להגיע', 'hours');
+  classifier.addDocument('מתי פתוח', 'hours');
+  classifier.addDocument('זמני פתיחה', 'hours');
 
-classifier.addDocument('מתי אתם פתוחים', 'hours');
-classifier.addDocument('שעות פעילות', 'hours');
-classifier.addDocument('מתי אפשר להגיע', 'hours');
-classifier.addDocument('מתי פתוח', 'hours');
-classifier.addDocument('זמני פתיחה', 'hours');
+  classifier.addDocument('איך יוצרים קשר', 'contact');
+  classifier.addDocument('דברו איתי', 'contact');
+  classifier.addDocument('טלפון', 'contact');
+  classifier.addDocument('מייל', 'contact');
+  classifier.addDocument('איך אפשר לדבר איתכם', 'contact');
 
-classifier.addDocument('איך יוצרים קשר', 'contact');
-classifier.addDocument('דברו איתי', 'contact');
-classifier.addDocument('טלפון', 'contact');
-classifier.addDocument('מייל', 'contact');
-classifier.addDocument('איך אפשר לדבר איתכם', 'contact');
+  classifier.addDocument('לקבוע תור', 'appointment');
+  classifier.addDocument('להזמין פגישה', 'appointment');
+  classifier.addDocument('תור חדש', 'appointment');
+  classifier.addDocument('איך אפשר לקבוע תור', 'appointment');
+  classifier.addDocument('רוצה לקבוע פגישה', 'appointment');
 
-classifier.addDocument('לקבוע תור', 'appointment');
-classifier.addDocument('להזמין פגישה', 'appointment');
-classifier.addDocument('תור חדש', 'appointment');
-classifier.addDocument('איך אפשר לקבוע תור', 'appointment');
-classifier.addDocument('רוצה לקבוע פגישה', 'appointment');
-
-classifier.addDocument('גרפים', 'charts');
-classifier.addDocument('נתונים', 'charts');
-classifier.addDocument('קובץ נתונים', 'charts');
-classifier.addDocument('סטטיסטיקה', 'charts');
-classifier.addDocument('איפה הגרפים', 'charts');
-classifier.train();
+  classifier.addDocument('גרפים', 'charts');
+  classifier.addDocument('נתונים', 'charts');
+  classifier.addDocument('קובץ נתונים', 'charts');
+  classifier.addDocument('סטטיסטיקה', 'charts');
+  classifier.addDocument('איפה הגרפים', 'charts');
+  
+  classifier.train();
+  return classifier;
+};
 
 const intentResponses = {
   hours: 'אנחנו זמינים עבורכם 24/7 באתר שלנו! כל הכתבות והמוצרים זמינים בכל עת.',
@@ -76,8 +82,9 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     const { message, history, systemPrompt } = req.body;
 
     // --- ML INTENT CHECK (Fast Pass) ---
-    const intent = classifier.classify(message);
-    const classifications = classifier.getClassifications(message);
+    const cls = getClassifier();
+    const intent = cls.classify(message);
+    const classifications = cls.getClassifications(message);
     const topScore = classifications[0].value;
 
     // High confidence ML match - return instant answer
@@ -99,6 +106,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
       }
       return res.json({ text: 'סליחה, אני עדיין לומד ולא הבנתי את השאלה. תוכל לבחור אחת מהאפשרויות (1-4) או לנסות לנסח שוב? 😊' });
     }
+
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
