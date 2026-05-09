@@ -1485,30 +1485,28 @@ function renderPdfStoreGrid() {
     return;
   }
   grid.innerHTML = visibleItems.map((item) => {
-    const icon = typeEmoji[item.type] || '📄';
+    const icon = typeEmoji[item.type] || '📊';
     const mainImg = (item.images && item.images.length > 0) ? item.images[0] : '';
     const isUserLoggedIn = !!currentUser && !!currentUser.email;
+    const isSaved = myGraphsList.some(x => x.id === item.id);
     
     return `
-      <div class="pdf-card" style="position:relative;">
-        <div onclick="showProductDetailById('${item.id}')">
-          ${item.isPremium ? `
-            <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#f9b233; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:800; z-index:2; display:flex; align-items:center; gap:4px;">
-              <i class="fas fa-crown"></i> PREMIUM
-            </div>
+      <div class="pdf-card" onclick="showProductDetailById('${item.id}')">
+        <div class="pdf-card-icon">${icon}</div>
+        <div class="pdf-card-title">${escHtml(item.title)}</div>
+        <div class="pdf-card-ticker-wrapper">
+          ${mainImg ? `<img src="${mainImg}" class="pdf-card-ticker-img" alt="ticker" />` : ''}
+          ${isUserLoggedIn ? `
+            <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
+                    onclick="event.stopPropagation(); addToMyGraphs('${item.id}')">
+              <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+            </button>
           ` : ''}
-          ${mainImg ? `<img src="${mainImg}" style="width:100%; aspect-ratio: 1/1; object-fit:cover; margin-bottom:8px;" />` : 
-                      `<div class="pdf-card-icon" style="padding: 40px 0; font-size: 3rem;">${icon}</div>`}
-          <div class="pdf-card-title">${escHtml(item.title)}</div>
         </div>
-        ${isUserLoggedIn ? `
-          <button onclick="addToMyGraphs('${item.id}')" style="position:absolute; bottom:12px; left:12px; background:var(--primary); color:white; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,113,227,0.4); z-index:10;">
-            <i class="fas fa-plus"></i>
-          </button>
-        ` : ''}
       </div>
     `;
   }).join('');
+
 }
 
 // ========== MY GRAPHS WATCHLIST LOGIC ==========
