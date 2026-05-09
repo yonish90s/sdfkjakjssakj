@@ -215,28 +215,28 @@ function showPage(pageId) {
         registerSection.style.display = 'block';
         registerSection.querySelector('h2')?.remove();
       }
-    }
-  }
-}
-      // Maybe add a heading "פרופיל אישי"
     } else {
-      document.getElementById('join-name').value = '';
-      document.getElementById('join-email').value = '';
-      document.getElementById('join-password').value = '';
-      document.getElementById('btn-logout').style.display = 'none';
-      document.querySelector('.auth-tabs').style.display = 'flex';
-      switchAuthTab('login');
+      const joinName = document.getElementById('join-name');
+      const joinEmail = document.getElementById('join-email');
+      if (joinName) joinName.value = '';
+      if (joinEmail) joinEmail.value = '';
+      const logoutBtn = document.getElementById('btn-logout');
+      if (logoutBtn) logoutBtn.style.display = 'none';
+      const authTabs = document.querySelector('.auth-tabs');
+      if (authTabs) authTabs.style.display = 'flex';
+      if (typeof switchAuthTab === 'function') switchAuthTab('login');
     }
   }
-  if (page === 'admin') {
-    if (!isAdmin) {
+
+  if (pageId === 'admin') {
+    if (typeof isAdmin !== 'undefined' && !isAdmin) {
       showPage('admin-login');
       return;
     }
-    initAdminDashboard();
+    if (typeof initAdminDashboard === 'function') initAdminDashboard();
   }
 
-  updateFloatingButtons(page);
+  updateFloatingButtons(pageId);
 }
 
 function updateFloatingButtons(page = null) {
