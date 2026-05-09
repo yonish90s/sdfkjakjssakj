@@ -1516,9 +1516,12 @@ function renderMyGraphsWatchlist() {
         ${savedItems.map(item => {
           // Mock data for the TradingView style
           const lastPrice = (Math.random() * 500 + 50).toFixed(2);
-          const chgValue = (Math.random() * 20 - 10).toFixed(2);
-          const chgPct = (Math.random() * 5 - 2).toFixed(2);
-          const isUp = parseFloat(chgValue) >= 0;
+          const chgRaw = (Math.random() * 20 - 10).toFixed(2);
+          const chgPctRaw = (Math.random() * 5 - 2).toFixed(2);
+          const isUp = parseFloat(chgRaw) >= 0;
+          
+          const chgValue = Math.abs(parseFloat(chgRaw)).toFixed(2);
+          const chgPct = Math.abs(parseFloat(chgPctRaw)).toFixed(2);
           
           return `
             <div class="watchlist-row" onclick="showProductDetailById('${item.id}')">
@@ -1530,8 +1533,8 @@ function renderMyGraphsWatchlist() {
                 </div>
               </div>
               <div class="col-last">${lastPrice}</div>
-              <div class="col-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgValue}</div>
-              <div class="col-chg-pct ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgPct}%</div>
+              <div class="col-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : '-'}${chgValue}</div>
+              <div class="col-chg-pct ${isUp ? 'up' : 'down'}">${isUp ? '+' : '-'}${chgPct}%</div>
               <div class="col-actions">
                 <button onclick="event.stopPropagation(); removeFromMyGraphs('${item.id}')" class="remove-btn">
                   <i class="fas fa-times"></i>
