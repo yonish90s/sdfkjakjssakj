@@ -3854,8 +3854,8 @@ model-viewer {
 
 .sidebar-toggle {
   position: absolute;
-  top: 25px;
-  right: -18px; /* Move slightly more to the right to be more visible */
+  top: 60px; /* Moved down to avoid navbar overlap */
+  right: -18px;
   width: 36px;
   height: 36px;
   background: #0071e3; /* Classic Apple Blue */
