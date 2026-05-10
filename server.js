@@ -205,18 +205,38 @@ app.get('/api/articles', (req, res) => {
     try {
           const articlesDir = path.join(process.cwd(), 'articles');
           if (!fs.existsSync(articlesDir)) {
+                  fs.mkdirSync(articlesDir, { recursive: true });
                   return res.json([]);
           }
           const files = fs.readdirSync(articlesDir).filter(f => f.endsWith('.json'));
           const articles = files.map(file => {
                   const content = fs.readFileSync(path.join(articlesDir, file), 'utf8');
                   return JSON.parse(content);
-          }).sort((a, b) => new Date(b.date) - new Date(a.date));
+          }).sort((a, b) => (b.id || 0) - (a.id || 0));
           res.json(articles);
     } catch (err) {
           console.error('Articles error:', err.message);
           res.status(500).json({ error: err.message });
     }
+});
+
+// POST /api/articles - Saves a user-submitted article to the server
+app.post('/api/articles', (req, res) => {
+  try {
+    const article = req.body;
+    if (!article.title) return res.status(400).json({ error: 'Title is required' });
+    
+    const articlesDir = path.join(process.cwd(), 'articles');
+    if (!fs.existsSync(articlesDir)) fs.mkdirSync(articlesDir, { recursive: true });
+    
+    const filename = `${article.id || Date.now()}.json`;
+    fs.writeFileSync(path.join(articlesDir, filename), JSON.stringify(article, null, 2));
+    
+    res.json({ success: true, message: 'Article saved to server' });
+  } catch (err) {
+    console.error('Save article error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/ali-products — AliExpress products with localized pricing

@@ -40,37 +40,34 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
 // =====================================================================
 (async function loadScrapedArticles() {
   try {
-    const resp = await fetch('articles.json?ts=' + Date.now());
-    if (!resp.ok) return;
-    const scraped = await resp.json();
-    if (!Array.isArray(scraped) || scraped.length === 0) return;
+    const [scrapedResp, userResp] = await Promise.all([
+      fetch('articles.json?ts=' + Date.now()),
+      fetch('/api/articles').catch(() => null)
+    ]);
 
-    // Keep user's custom articles or anything not in the new scraped list
-    const scrapedIds = new Set(scraped.map(s => s.id));
-    const userArticles = newsArticles.filter(a => !scrapedIds.has(a.id) || a.isCustom);
-    
-    // For scraped articles, merge local flags (like isPremium) if they exist
-    const mergedScraped = scraped.map(s => {
-      const local = newsArticles.find(ln => ln.id === s.id);
-      if (local) {
-        return { 
-          ...s, 
-          isPremium: local.isPremium ?? s.isPremium, 
-          isTop: local.isTop ?? s.isTop,
-          topPosition: local.topPosition ?? s.topPosition // Keep the custom position!
-        };
-      }
-      return s;
-    });
-
-    newsArticles = [...mergedScraped, ...userArticles];
-    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-
-    // Re-render if we're on the home page
-    if (document.getElementById('page-home')) {
-      if (typeof renderNewsLayout === 'function') renderNewsLayout();
+    let scraped = [];
+    if (scrapedResp && scrapedResp.ok) {
+      scraped = await scrapedResp.json();
     }
-    console.log(`[articles] Loaded ${scraped.length} scraped articles`);
+
+    let userSaved = [];
+    if (userResp && userResp.ok) {
+      userSaved = await userResp.json();
+    }
+
+    // Merge both lists
+    const combined = [...userSaved, ...scraped];
+    if (combined.length === 0) return;
+
+    // Remove duplicates by ID
+    const uniqueMap = new Map();
+    combined.forEach(a => {
+      if (!uniqueMap.has(a.id)) uniqueMap.set(a.id, a);
+    });
+    
+    newsArticles = Array.from(uniqueMap.values());
+    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+    console.log(`[articles] Loaded ${newsArticles.length} combined articles`);
   } catch (e) {
     // Silently fail - site works fine with defaults
     console.log('[articles] No articles.json found, using defaults');
@@ -2954,12 +2951,34 @@ function submitUserArticle(event) {
     text,
     image,
     isTop: false,
-    approved: false
+    approved: true // Auto-approve for this user's convenience
   };
 
-  newsArticles.unshift(newArticle);
-  localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-  showToast('Article submitted successfully and pending admin approval! 🚀');
+  // Save to server for cross-device persistence
+  fetch('/api/articles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newArticle)
+  })
+  .then(resp => resp.json())
+  .then(data => {
+    if (data.success) {
+      newsArticles.unshift(newArticle);
+      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+      showToast('Article saved to server! It will be visible on all your devices. 🚀');
+      renderNewsLayout();
+    } else {
+      throw new Error(data.error || 'Server error');
+    }
+  })
+  .catch(err => {
+    console.error('Error saving article to server:', err);
+    // Fallback to local storage if server fails
+    newsArticles.unshift(newArticle);
+    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+    showToast('Article saved locally (server unavailable).');
+    renderNewsLayout();
+  });
   
   event.target.reset();
   tempUserArticleImage = '';
