@@ -698,6 +698,22 @@ function renderRecommendations(currentId, category) {
 }
 
 // ========== ADMIN DASHBOARD ==========
+function toggleMobileMenu() {
+  const overlay = document.getElementById('mobile-menu-overlay');
+  if (overlay) {
+    overlay.classList.toggle('active');
+  }
+}
+
+function handleAuthAction() {
+  const user = window.fbAuth?.currentUser;
+  if (user) {
+    logoutUser();
+  } else {
+    openAuthModal('login');
+  }
+}
+
 function adminLogin() {
   const user = document.getElementById('admin-user')?.value;
   const pass = document.getElementById('admin-pass')?.value;

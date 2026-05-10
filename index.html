@@ -150,6 +150,28 @@
         </div>
       </div>
     </div>
+
+    <!-- MOBILE MENU OVERLAY -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay" onclick="toggleMobileMenu()">
+      <div class="mobile-menu-content" onclick="event.stopPropagation()">
+        <div class="mobile-menu-header">
+          <img src="logo.png" alt="Logo" style="height: 30px;">
+          <button class="close-mobile-menu" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="mobile-nav-list">
+          <button onclick="showPage('home'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-newspaper"></i> Articles</button>
+          <button onclick="showPage('pdf-store'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-chart-line"></i> Graphs</button>
+          <button onclick="showPage('store'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-laptop-code"></i> Software Store</button>
+          <button onclick="showPage('shop'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-shopping-bag"></i> Online Shop</button>
+          <button onclick="showPage('services'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-briefcase"></i> Professional Services</button>
+          <button onclick="showPage('appointments'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-calendar-alt"></i> Book Appointment</button>
+          <div class="mobile-menu-divider"></div>
+          <button onclick="showPage('subscription'); toggleMobileMenu()" class="mobile-nav-link premium-link"><i class="fas fa-crown"></i> Go Premium</button>
+          <button onclick="toggleTheme()" class="mobile-nav-link"><i class="fas fa-circle-half-stroke"></i> Switch Theme</button>
+          <button onclick="handleAuthAction()" class="mobile-nav-link auth-btn-mobile"><i class="fas fa-user"></i> <span id="auth-text-mobile">Sign In</span></button>
+        </nav>
+      </div>
+    </div>
   </aside>
 
   <div id="main-wrapper">
@@ -159,6 +181,11 @@
         <div class="apple-logo" onclick="showPage('home')" title="Home">
           <img src="logo.png" alt="Logo" style="height: 32px; width: auto; display: block;" />
         </div>
+
+        <!-- HAMBURGER FOR MOBILE -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <i class="fas fa-bars"></i>
+        </button>
         
         <nav class="apple-nav-links">
           <button onclick="showPage('home')" class="apple-nav-item">Articles</button>
