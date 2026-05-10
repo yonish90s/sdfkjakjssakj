@@ -4038,7 +4038,7 @@ model-viewer {
 
 /* ========== COLLAPSIBLE SIDEBAR ========== */
 :root {
-  --sidebar-width: 260px;
+  --sidebar-width: 280px;
   --sidebar-collapsed-width: 55px; /* Reduced from 70px to bring content closer */
 }
 
@@ -4139,8 +4139,7 @@ model-viewer {
 
 .sidebar-link span {
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-link i {
