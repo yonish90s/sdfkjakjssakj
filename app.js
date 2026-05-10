@@ -1548,7 +1548,7 @@ function renderPdfStoreGrid() {
         <div class="pdf-card-ticker-wrapper">
           ${isUserLoggedIn ? `
             <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
-                    onclick="event.stopPropagation(); addToMyGraphs('${item.id}')">
+                    onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)">
               <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
             </button>
           ` : ''}
@@ -1715,24 +1715,38 @@ function inlineRename(element, type, id) {
   input.select();
 }
 
-function addToMyGraphs(id) {
+function addToMyGraphs(id, btnElement) {
   if (!currentUser || !currentUser.email) {
-    showToast('❌ You must log in to add graphs to your list');
+    showToast('❌ You must log in to manage your list');
     return;
   }
   
-  if (myGraphsList.some(x => x.id === id)) {
-    showToast('ℹ️ This graph is already in your list');
-    return;
+  const index = myGraphsList.findIndex(x => x.id === id);
+  const isAdding = index === -1;
+
+  if (isAdding) {
+    const item = pdfStoreItems.find(x => x.id === id);
+    myGraphsList.push({ id, customName: item ? item.title : id });
+    showToast('✅ Added to My Graphs');
+  } else {
+    myGraphsList.splice(index, 1);
+    showToast('📈 Removed from My Graphs');
   }
-  
-  const item = pdfStoreItems.find(x => x.id === id);
-  myGraphsList.push({ id, customName: item ? item.title : id });
+
+  // Optimistic UI update for instant feedback
+  if (btnElement) {
+    btnElement.classList.toggle('active', isAdding);
+    const icon = btnElement.querySelector('i');
+    if (icon) {
+      icon.className = isAdding ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+    }
+  }
+
   localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
-  showToast('✅ Added to My Graphs');
   renderMyGraphsWatchlist();
   renderSidebarWatchlist();
   syncUserPersonalDataToFirebase();
+  updateSidebarBadges();
 }
 
 function removeFromMyGraphs(id) {
