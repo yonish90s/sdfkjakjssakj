@@ -28,6 +28,17 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
 
 let storedArticles = localStorage.getItem('newsArticles');
 let newsArticles = storedArticles ? JSON.parse(storedArticles) : [...defaultNewsArticles];
+
+// Backup user articles before Firestore sync wipes them
+if (storedArticles && !localStorage.getItem('newsArticles_migrated')) {
+  const userArticles = JSON.parse(storedArticles).filter(a => a.id > 1000000);
+  if (userArticles.length > 0) {
+    localStorage.setItem('newsArticles_localBackup', JSON.stringify(userArticles));
+    localStorage.setItem('newsArticles_migrated', 'true');
+    console.log(`[Backup] Backed up ${userArticles.length} articles for migration.`);
+  }
+}
+
 if (!storedArticles) {
   localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
 }
@@ -67,6 +78,19 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
         localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
         renderNewsLayout();
         console.log(`[Firestore] Synced ${firestoreArticles.length} articles.`);
+
+        // ONE-TIME MIGRATION: If local articles exist that are NOT in Firestore, upload them
+        const storedLocal = JSON.parse(localStorage.getItem('newsArticles_localBackup') || '[]');
+        if (storedLocal.length > 0) {
+          const { addDoc, collection } = window.fbFirestore;
+          storedLocal.forEach(localArt => {
+            if (!firestoreArticles.some(f => f.id === localArt.id)) {
+              addDoc(collection(window.db, "articles"), localArt);
+              console.log(`[Migration] Uploading article ${localArt.id} to Cloud`);
+            }
+          });
+          localStorage.removeItem('newsArticles_localBackup');
+        }
       });
   });
 })();
@@ -796,20 +820,23 @@ function initAdminDashboard() {
     }
   }
 
-  list.innerHTML = newsArticles.map(a => `
-    <tr style="${a.approved === false ? 'background-color: #fff8e1;' : ''}">
-      <td>${a.id}</td>
-      <td><strong>${escHtml(a.title)}</strong> ${a.isTop ? '🌟' : ''} ${a.approved === false ? '<span style="color:#d97706; font-size:0.8rem; margin-right:8px; background:#fef3c7; padding:2px 6px; border-radius:4px;">Pending</span>' : ''}</td>
-      <td>${escHtml(a.category)}</td>
-      <td>${escHtml(a.author)}</td>
-      <td style="display:flex; gap:8px;">
-        <button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem; background: #0071e3;" onclick="editArticle(${a.id})">Edit</button>
-        ${a.approved === false ? `<button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem;" onclick="approveArticle(${a.id})">Approve</button>` : ''}
-        <button class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem; border: 1px solid #d2d2d7;" onclick="toggleFeatured(${a.id})">${a.isTop ? 'Remove Featured' : 'Make Featured'}</button>
-        <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent;" onclick="deleteArticle(${a.id})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
+  const articlesList = document.getElementById('admin-articles-list');
+  if (articlesList) {
+    articlesList.innerHTML = newsArticles.map(a => `
+      <tr style="${a.approved === false ? 'background-color: #fff8e1;' : ''}">
+        <td>${a.id}</td>
+        <td><strong>${escHtml(a.title)}</strong> ${a.isTop ? '🌟' : ''} ${a.approved === false ? '<span style="color:#d97706; font-size:0.8rem; margin-right:8px; background:#fef3c7; padding:2px 6px; border-radius:4px;">Pending</span>' : ''}</td>
+        <td>${escHtml(a.category)}</td>
+        <td>${escHtml(a.author)}</td>
+        <td style="display:flex; gap:8px;">
+          <button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem; background: #0071e3;" onclick="editArticle(${a.id})">Edit</button>
+          ${a.approved === false ? `<button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem;" onclick="approveArticle(${a.id})">Approve</button>` : ''}
+          <button class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem; border: 1px solid #d2d2d7;" onclick="toggleFeatured(${a.id})">${a.isTop ? 'Remove Featured' : 'Make Featured'}</button>
+          <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent;" onclick="deleteArticle(${a.id})">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
 
   // FEATURED ARTICLES LIST
   const featuredList = document.getElementById('admin-featured-articles-list');
@@ -1133,11 +1160,19 @@ function deleteMessageFromModal() {
 
 function deleteArticle(id) {
   if (confirm('Are you sure you want to delete this article?')) {
+    const art = newsArticles.find(a => a.id === id);
+    if (art && art.firestoreId && window.db && window.fbFirestore) {
+      const { doc, deleteDoc } = window.fbFirestore;
+      deleteDoc(doc(window.db, "articles", art.firestoreId))
+        .then(() => showToast('🗑️ Deleted from Cloud'))
+        .catch(err => console.error("Firestore delete error:", err));
+    }
+    
     newsArticles = newsArticles.filter(a => a.id !== id);
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
     initAdminDashboard();
     renderNewsLayout();
-    showToast('Deleted successfully');
+    showToast('🗑️ Article deleted');
   }
 }
 
@@ -3575,11 +3610,24 @@ function dismissSupportWidget() {
 function toggleFeatured(id) {
   const index = newsArticles.findIndex(a => a.id === id);
   if (index !== -1) {
-    newsArticles[index].isTop = !newsArticles[index].isTop;
+    const art = newsArticles[index];
+    art.isTop = !art.isTop;
+    if (art.isTop && !art.topPosition) {
+       art.topPosition = 'center';
+    }
+    
+    if (art.firestoreId && window.db && window.fbFirestore) {
+      const { doc, updateDoc } = window.fbFirestore;
+      updateDoc(doc(window.db, "articles", art.firestoreId), { 
+        isTop: art.isTop,
+        topPosition: art.topPosition || 'center'
+      });
+    }
+
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
     initAdminDashboard();
-    renderNewsLayout(); // Refresh home page if visible
-    showToast(newsArticles[index].isTop ? '🌟 Article added to featured' : '⚪ Article removed from featured');
+    renderNewsLayout();
+    showToast(art.isTop ? '🌟 Added to featured' : '➖ Removed from featured');
   }
 }
 function openLightbox() {
