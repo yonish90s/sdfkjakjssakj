@@ -1532,7 +1532,7 @@ body.dark-theme .toast {
   gap: 12px;
   padding: 0 24px 60px;
   max-width: 900px;
-  margin: 0 auto;
+  margin-left: 0;
 }
 
 .pdf-card {
