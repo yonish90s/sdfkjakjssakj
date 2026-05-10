@@ -38,40 +38,37 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
 // Auto-fetch scraped articles from articles.json (populated by agent)
 // User-added articles (id < 1000) are preserved; scraped ones use id >= 1000
 // =====================================================================
-(async function loadScrapedArticles() {
-  try {
-    const [scrapedResp, userResp] = await Promise.all([
-      fetch('articles.json?ts=' + Date.now()),
-      fetch('/api/articles').catch(() => null)
-    ]);
-
-    let scraped = [];
-    if (scrapedResp && scrapedResp.ok) {
-      scraped = await scrapedResp.json();
-    }
-
-    let userSaved = [];
-    if (userResp && userResp.ok) {
-      userSaved = await userResp.json();
-    }
-
-    // Merge both lists
-    const combined = [...userSaved, ...scraped];
-    if (combined.length === 0) return;
-
-    // Remove duplicates by ID
-    const uniqueMap = new Map();
-    combined.forEach(a => {
-      if (!uniqueMap.has(a.id)) uniqueMap.set(a.id, a);
-    });
-    
-    newsArticles = Array.from(uniqueMap.values());
-    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-    console.log(`[articles] Loaded ${newsArticles.length} combined articles`);
-  } catch (e) {
-    // Silently fail - site works fine with defaults
-    console.log('[articles] No articles.json found, using defaults');
+// Real-time Articles Sync from Firestore
+(function initArticlesSync() {
+  if (!window.db || !window.fbFirestore) {
+    console.warn('[Firestore] Not initialized yet, retrying...');
+    setTimeout(initArticlesSync, 500);
+    return;
   }
+
+  const { collection, onSnapshot, query, orderBy } = window.fbFirestore;
+  const q = query(collection(window.db, "articles"), orderBy("id", "desc"));
+
+  onSnapshot(q, (snapshot) => {
+    const firestoreArticles = snapshot.docs.map(doc => ({ ...doc.data(), firestoreId: doc.id }));
+    
+    // Merge with defaults/scraped if needed, but Firestore takes precedence for user articles
+    // For now, let's just combine them
+    fetch('articles.json?ts=' + Date.now())
+      .then(r => r.json())
+      .catch(() => [])
+      .then(scraped => {
+        const combined = [...firestoreArticles, ...scraped];
+        const uniqueMap = new Map();
+        combined.forEach(a => {
+          if (!uniqueMap.has(a.id)) uniqueMap.set(a.id, a);
+        });
+        newsArticles = Array.from(uniqueMap.values());
+        localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+        renderNewsLayout();
+        console.log(`[Firestore] Synced ${firestoreArticles.length} articles.`);
+      });
+  });
 })();
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
 // Cleanup obsolete data
@@ -2941,6 +2938,13 @@ function submitUserArticle(event) {
   const now = new Date();
   const timeStr = 'Today, ' + now.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
 
+  // Auto-assign position if it's one of the first few articles
+  const userArticlesCount = newsArticles.filter(a => a.id > 1700000000000).length;
+  let topPosition = '';
+  if (userArticlesCount === 0) topPosition = 'center';
+  else if (userArticlesCount === 1) topPosition = 'right';
+  else if (userArticlesCount === 2) topPosition = 'left';
+
   const newArticle = {
     id: Date.now(),
     title,
@@ -2950,35 +2954,32 @@ function submitUserArticle(event) {
     snippet: excerpt,
     text,
     image,
-    isTop: false,
-    approved: true // Auto-approve for this user's convenience
+    isTop: topPosition !== '',
+    topPosition: topPosition,
+    approved: true
   };
 
-  // Save to server for cross-device persistence
-  fetch('/api/articles', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newArticle)
-  })
-  .then(resp => resp.json())
-  .then(data => {
-    if (data.success) {
-      newsArticles.unshift(newArticle);
-      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-      showToast('Article saved to server! It will be visible on all your devices. 🚀');
-      renderNewsLayout();
-    } else {
-      throw new Error(data.error || 'Server error');
-    }
-  })
-  .catch(err => {
-    console.error('Error saving article to server:', err);
-    // Fallback to local storage if server fails
+  // Save to Firestore
+  if (window.db && window.fbFirestore) {
+    const { collection, addDoc } = window.fbFirestore;
+    addDoc(collection(window.db, "articles"), newArticle)
+      .then(() => {
+        showToast('Article saved to Cloud! Visible on all devices. 🚀');
+      })
+      .catch(err => {
+        console.error('Firestore save error:', err);
+        showToast('Error saving to Cloud. Saved locally only.');
+        // Fallback
+        newsArticles.unshift(newArticle);
+        localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+        renderNewsLayout();
+      });
+  } else {
+    // Fallback if Firebase not ready
     newsArticles.unshift(newArticle);
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-    showToast('Article saved locally (server unavailable).');
     renderNewsLayout();
-  });
+  }
   
   event.target.reset();
   tempUserArticleImage = '';

@@ -1963,11 +1963,15 @@ body.dark-theme .sidebar-card p {
 
   /* Navbar Mobile: Horizontal Scroll Style (App Store like) */
   .navbar-apple {
-    height: 64px;
+    height: 70px;
     padding: 0 16px;
     position: sticky;
     top: 0;
     z-index: 1000;
+    background: var(--bg-nav);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
   }
   
   .nav-inner-apple {
@@ -3827,21 +3831,27 @@ body.dark-theme #ai-chat-input {
 @media (max-width: 600px) {
   .featured-top-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    padding: 0 8px;
-    margin-bottom: 24px;
+    gap: 8px;
+    padding: 0 12px;
+    margin: 16px auto 24px;
   }
-  .featured-card { min-height: 180px; border-radius: 12px; }
-  .featured-card.center { min-height: 180px; }
+  .featured-card { min-height: 220px; border-radius: 16px; }
+  .featured-card.center { min-height: 220px; }
   .featured-card.center .featured-title, .featured-title { 
-    font-size: 0.75rem; 
-    line-height: 1.1;
+    font-size: 0.85rem; 
+    line-height: 1.2;
+    font-weight: 700;
   }
-  .featured-overlay { padding: 8px; gap: 4px; }
-  .featured-tag { font-size: 0.6rem; padding: 2px 6px; }
+  .featured-overlay { 
+    padding: 12px; 
+    gap: 6px; 
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 40%, transparent);
+  }
+  .featured-tag { font-size: 0.65rem; padding: 3px 8px; }
   
   .news-sidebar { display: none !important; }
-  .main-news-layout { gap: 0; }
+  .main-news-layout { gap: 0; margin-top: 20px; }
+  #page-home { padding-top: 10px; }
 }
 
 /* Radio Button Styling for Admin */

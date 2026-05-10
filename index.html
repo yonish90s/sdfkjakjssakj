@@ -25,8 +25,13 @@
 <!-- Firebase auth guard: hide page until auth state is confirmed -->
 <script>document.documentElement.style.visibility='hidden';</script>
 <script type="module">
-  import { auth } from './firebase-config.js';
+  import { auth, db } from './firebase-config.js';
   import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+  import { collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+  window.fbAuth = auth;
+  window.db = db;
+  window.fbFirestore = { collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, onSnapshot };
 
   onAuthStateChanged(auth, (user) => {
     const isGuest = localStorage.getItem('isGuest') === 'true';
