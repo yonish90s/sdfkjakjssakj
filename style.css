@@ -4134,6 +4134,13 @@ model-viewer {
   border-radius: 12px;
   transition: all 0.2s;
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-link span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-link i {
@@ -4513,13 +4520,14 @@ body.dark-theme .meta-bookmark-btn.active {
 
 /* Focus Mode Styles */
 .focus-toggle {
-  margin-right: 8px;
+  margin-left: 8px;
   font-size: 0.85rem;
   opacity: 0.4;
   cursor: pointer;
   transition: all 0.2s;
   padding: 4px;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .focus-toggle:hover {
