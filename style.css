@@ -1570,11 +1570,16 @@ body.dark-theme .toast {
 }
 
 .pdf-card-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #ffffff;
-  flex-grow: 1;
-  margin: 0;
+  color: var(--text-main);
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-transform: lowercase;
+}
+
+.pdf-card-date {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .pdf-card-ticker-wrapper {
@@ -1606,8 +1611,12 @@ body.dark-theme .toast {
   justify-content: center;
 }
 
-.pdf-card-bookmark-btn:hover, .pdf-card-bookmark-btn.active {
-  color: var(--primary);
+.pdf-card-bookmark-btn:hover {
+  color: #f9b233;
+  transform: scale(1.1);
+}
+.pdf-card-bookmark-btn.active {
+  color: #f9b233 !important;
   transform: scale(1.1);
 }
 

@@ -1541,9 +1541,9 @@ function renderPdfStoreGrid() {
         <div class="pdf-card-icon">
           ${mainImg ? `<img src="${mainImg}" style="width:100%; height:100%; object-fit:cover; border-radius:10px;" alt="thumb" />` : icon}
         </div>
-        <div style="display:flex; flex-direction:column; gap:2px; flex-grow:1;">
+        <div style="display:flex; flex-direction:column; gap:2px; flex-grow:1; text-align: center;">
           <div class="pdf-card-title">${escHtml(item.title)}</div>
-          <div class="pdf-card-date" style="color:#ff9500; font-size:0.75rem; font-weight:600;">${item.date ? new Date(item.date).toLocaleDateString('en-US') : 'Recently uploaded'}</div>
+          <div class="pdf-card-date">${item.date ? new Date(item.date).toLocaleDateString('en-US') : 'Recently uploaded'}</div>
         </div>
         <div class="pdf-card-ticker-wrapper">
           ${isUserLoggedIn ? `
