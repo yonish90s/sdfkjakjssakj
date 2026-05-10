@@ -4129,12 +4129,14 @@ model-viewer {
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
+  padding-right: 60px; /* Space for actions */
   color: #515154;
   text-decoration: none;
   border-radius: 12px;
   transition: all 0.2s;
   white-space: nowrap;
   overflow: hidden;
+  position: relative;
 }
 
 .sidebar-link span {
@@ -4518,8 +4520,17 @@ body.dark-theme .meta-bookmark-btn.active {
 }
 
 /* Focus Mode Styles */
+.sidebar-link-actions {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .focus-toggle {
-  margin-left: 8px;
   font-size: 0.85rem;
   opacity: 0.4;
   cursor: pointer;
