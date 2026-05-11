@@ -1520,6 +1520,17 @@ function renderStoreLayout() {
           </div>
         `).join('')}
       </div>
+
+      <div class="store-consulting-section">
+        <div class="consulting-content">
+          <h2 class="consulting-title">Business Consulting 1-on-1</h2>
+          <p class="consulting-desc">1-hour strategy session — mapping goals, blockers, and next steps together.</p>
+          <div class="consulting-footer">
+            <div class="consulting-price">$350 / hour</div>
+            <button class="consulting-add-btn" onclick="redirectToPayment(350, 'Business Consulting 1-on-1')">+ Add to Cart</button>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
