@@ -1,5 +1,8 @@
 // Server-side logic for the digital products store
+require('dotenv').config();
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const { Resend } = require('resend');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -228,8 +231,6 @@ app.post('/api/verify-otp', (req, res) => {
 });
 
 // GET /api/articles - Returns all articles from the articles directory
-const fs = require('fs');
-const path = require('path');
 
 app.get('/api/articles', (req, res) => {
     try {

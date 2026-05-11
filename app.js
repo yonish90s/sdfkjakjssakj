@@ -131,6 +131,57 @@ const articleReviews = [
   }
 ];
 
+const servicesItems = [
+  {
+    id: 's1',
+    title: 'Business Consulting 1-on-1',
+    cat: 'Consulting',
+    desc: '1-hour strategy session — mapping goals, blockers, and next steps together.',
+    price: '$350 / hour',
+    icon: '🎯'
+  },
+  {
+    id: 's2',
+    title: 'Website Building',
+    cat: 'Digital',
+    desc: 'Professional website, mobile-responsive, fast and SEO-friendly. Includes domain and hosting for 1 year.',
+    price: 'From $2,500',
+    icon: '🌐'
+  },
+  {
+    id: 's3',
+    title: 'Monthly Digital Support',
+    cat: 'Support',
+    desc: 'Full digital presence management — social media, campaigns, and marketing content.',
+    price: '$1,200 / month',
+    icon: '📱'
+  },
+  {
+    id: 's4',
+    title: 'On-demand Graphic Design',
+    cat: 'Design',
+    desc: 'Logos, banners, posts, flyers — everything you need to look professional.',
+    price: 'From $250 / project',
+    icon: '🎨'
+  },
+  {
+    id: 's5',
+    title: 'Content Writing',
+    cat: 'Content',
+    desc: 'Articles, posts, product descriptions, and landing pages that sell. SEO-focused.',
+    price: '$180 / post',
+    icon: '✍️'
+  },
+  {
+    id: 's6',
+    title: 'Business Photography',
+    cat: 'Photography',
+    desc: 'Product, event, or business portrait photography. Includes editing and delivery within 48 hours.',
+    price: 'From $800 / day',
+    icon: '📸'
+  }
+];
+
 // =====================================================================
 // Auto-fetch scraped articles from articles.json (populated by agent)
 // User-added articles (id < 1000) are preserved; scraped ones use id >= 1000
@@ -146,38 +197,57 @@ const articleReviews = [
   const { collection, onSnapshot, query, orderBy } = window.fbFirestore;
   const q = query(collection(window.db, "articles"), orderBy("id", "desc"));
 
-  onSnapshot(q, (snapshot) => {
+  onSnapshot(q, async (snapshot) => {
     const firestoreArticles = snapshot.docs.map(doc => ({ ...doc.data(), firestoreId: doc.id }));
     
-    // Merge with defaults/scraped if needed, but Firestore takes precedence for user articles
-    // For now, let's just combine them
-    fetch('articles.json?ts=' + Date.now())
-      .then(r => r.json())
-      .catch(() => [])
-      .then(scraped => {
-        const combined = [...firestoreArticles, ...scraped];
-        const uniqueMap = new Map();
-        combined.forEach(a => {
-          if (!uniqueMap.has(a.id)) uniqueMap.set(a.id, a);
-        });
-        newsArticles = Array.from(uniqueMap.values());
-        localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-        renderNewsLayout();
-        console.log(`[Firestore] Synced ${firestoreArticles.length} articles.`);
+    try {
+      // 1. Fetch from static JSON (scraped/defaults)
+      const scrapedR = await fetch('articles.json?ts=' + Date.now());
+      const scraped = await scrapedR.json().catch(() => []);
 
-        // ONE-TIME MIGRATION: If local articles exist that are NOT in Firestore, upload them
-        const storedLocal = JSON.parse(localStorage.getItem('newsArticles_localBackup') || '[]');
-        if (storedLocal.length > 0) {
-          const { addDoc, collection } = window.fbFirestore;
-          storedLocal.forEach(localArt => {
-            if (!firestoreArticles.some(f => f.id === localArt.id)) {
-              addDoc(collection(window.db, "articles"), localArt);
-              console.log(`[Migration] Uploading article ${localArt.id} to Cloud`);
-            }
-          });
-          localStorage.removeItem('newsArticles_localBackup');
+      // 2. Fetch from local server API (articles/ folder)
+      const localR = await fetch('/api/articles');
+      const local = await localR.json().catch(() => []);
+
+      // Normalization helper
+      const normalize = (a) => {
+        if (!a.id && a.title) {
+          // Simple hash for ID if missing (from local files)
+          a.id = Math.abs(a.title.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0)) % 1000000;
+        }
+        if (!a.time && a.date) a.time = a.date;
+        if (!a.image && a.sourceUrl) a.image = a.sourceUrl;
+        return a;
+      };
+
+      const combined = [...firestoreArticles, ...scraped, ...local.map(normalize)];
+      const uniqueMap = new Map();
+      combined.forEach(a => {
+        if (a && a.id && !uniqueMap.has(a.id)) {
+          uniqueMap.set(a.id, a);
         }
       });
+
+      newsArticles = Array.from(uniqueMap.values()).sort((a, b) => (b.id || 0) - (a.id || 0));
+      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+      renderNewsLayout();
+      console.log(`[Articles] Synced ${newsArticles.length} articles (Firestore: ${firestoreArticles.length}, API: ${local.length}).`);
+
+      // ONE-TIME MIGRATION: If local articles exist that are NOT in Firestore, upload them
+      const storedLocal = JSON.parse(localStorage.getItem('newsArticles_localBackup') || '[]');
+      if (storedLocal.length > 0) {
+        const { addDoc, collection: col } = window.fbFirestore;
+        storedLocal.forEach(localArt => {
+          if (!firestoreArticles.some(f => f.id === localArt.id)) {
+            addDoc(col(window.db, "articles"), localArt);
+            console.log(`[Migration] Uploading article ${localArt.id} to Cloud`);
+          }
+        });
+        localStorage.removeItem('newsArticles_localBackup');
+      }
+    } catch (err) {
+      console.error('[Articles] Sync error:', err);
+    }
   });
 })();
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
@@ -297,6 +367,7 @@ function showPage(pageId) {
   if (pageId === 'store') renderStoreLayout();
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
+  if (pageId === 'services') renderServicesGrid();
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
@@ -1349,7 +1420,7 @@ function editArticle(id) {
 
 
 
-function saveAdminArticle() {
+async function saveAdminArticle() {
   const idValue = document.getElementById('edit-id').value;
   const topPos = document.querySelector('input[name="topPos"]:checked').value;
   
@@ -1373,6 +1444,29 @@ function saveAdminArticle() {
     return;
   }
 
+  // --- PERSIST TO SERVER/CLOUD ---
+  try {
+    if (window.db && window.fbFirestore) {
+      const { collection, addDoc, doc, updateDoc } = window.fbFirestore;
+      const existing = newsArticles.find(x => x.id === articleObj.id);
+      if (existing && existing.firestoreId) {
+        await updateDoc(doc(window.db, "articles", existing.firestoreId), articleObj);
+      } else {
+        await addDoc(collection(window.db, "articles"), articleObj);
+      }
+    }
+    // Parallel save to local server disk as fallback/redundancy
+    await fetch('/api/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(articleObj)
+    });
+    showToast('✅ Saved successfully to Cloud');
+  } catch (err) {
+    console.error('[Admin] Save error:', err);
+    showToast('⚠️ Saved locally only (Cloud error)', 'error');
+  }
+
   // If assigning to a top position, remove that position from others
   if (articleObj.topPosition) {
     newsArticles.forEach(a => {
@@ -1386,11 +1480,9 @@ function saveAdminArticle() {
     const idx = newsArticles.findIndex(a => a.id === Number(idValue));
     if (idx !== -1) {
       newsArticles[idx] = articleObj;
-      showToast('Updated successfully');
     }
   } else {
     newsArticles.unshift(articleObj);
-    showToast('Created successfully');
   }
 
   localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
@@ -3325,58 +3417,26 @@ const shopProducts = [
   }
 ];
 
-const servicesItems = [
-  {
-    id: 's1',
-    title: 'Business Consulting 1-on-1',
-    cat: 'Consulting',
-    desc: '1-hour strategy session — mapping goals, blockers, and next steps together.',
-    price: '$350 / hour',
-    icon: '🎯'
-  },
-  {
-    id: 's2',
-    title: 'Website Building',
-    cat: 'Digital',
-    desc: 'Professional website, mobile-responsive, fast and SEO-friendly. Includes domain and hosting for 1 year.',
-    price: 'From $2,500',
-    icon: '🌐'
-  },
-  {
-    id: 's3',
-    title: 'Monthly Digital Support',
-    cat: 'Support',
-    desc: 'Full digital presence management — social media, campaigns, and marketing content.',
-    price: '$1,200 / month',
-    icon: '📱'
-  },
-  {
-    id: 's4',
-    title: 'On-demand Graphic Design',
-    cat: 'Design',
-    desc: 'Logos, banners, posts, flyers — everything you need to look professional.',
-    price: 'From $250 / project',
-    icon: '🎨'
-  },
-  {
-    id: 's5',
-    title: 'Content Writing',
-    cat: 'Content',
-    desc: 'Articles, posts, product descriptions, and landing pages that sell. SEO-focused.',
-    price: '$180 / post',
-    icon: '✍️'
-  },
-  {
-    id: 's6',
-    title: 'Business Photography',
-    cat: 'Photography',
-    desc: 'Product, event, or business portrait photography. Includes editing and delivery within 48 hours.',
-    price: 'From $800 / day',
-    icon: '📸'
-  }
-];
-
 let pendingOrderItem = null;
+
+function renderServicesGrid() {
+  const grid = document.getElementById('services-grid');
+  if (!grid) return;
+  grid.innerHTML = servicesItems.map(s => `
+    <div class="service-card" style="background:#fff; border-radius:16px; border:1px solid var(--border-subtle); padding:24px; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow-soft);">
+      <div style="font-size:3rem;">${s.icon}</div>
+      <div>
+        <span style="font-size:0.75rem; font-weight:800; color:#0071e3; text-transform:uppercase; letter-spacing:0.05em;">${s.cat}</span>
+        <h3 style="font-size:1.4rem; font-weight:800; margin:4px 0 8px;">${s.title}</h3>
+        <p style="color:#86868b; font-size:1rem; line-height:1.5; margin-bottom:16px;">${s.desc}</p>
+      </div>
+      <div style="margin-top:auto; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:900; font-size:1.2rem; color:#1d1d1f;">${s.price}</span>
+        <button class="btn-primary" style="padding:10px 20px; border-radius:980px;" onclick="addToCart('${s.id}', 'service')">+ Add</button>
+      </div>
+    </div>
+  `).join('');
+}
 
 function renderShopGrid() {
   const grid = document.getElementById('shop-grid');
