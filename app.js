@@ -758,13 +758,13 @@ async function redirectToPayment(amount, productName) {
     if (!response.ok) throw new Error('Network response was not ok');
 
     // The webhook should return the payment URL as plain text or JSON
-    const paymentUrl = await response.text();
+    const paymentUrl = (await response.text()).trim();
 
     if (paymentUrl && paymentUrl.startsWith('http')) {
       window.location.href = paymentUrl;
     } else {
-      console.error('Invalid payment URL received:', paymentUrl);
-      alert('Error: Could not generate payment link. Please try again.');
+      console.error('Invalid response from Make:', paymentUrl);
+      alert('שגיאה: המערכת לא החזירה קישור תקין. התשובה שהתקבלה: ' + paymentUrl + '\n\nודא שהוספת מודול Webhook Response ב-Make שמחזיר את הקישור.');
     }
   } catch (error) {
     console.error('Payment Error:', error);
