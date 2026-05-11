@@ -730,7 +730,7 @@ function toggleMobileMenu() {
 }
 
 // ========== PAYMENT SYSTEM (GROW via Make) ==========
-const MAKE_WEBHOOK_URL = 'https://hook.make.com/your_unique_id'; // REPLACE THIS WITH YOUR REAL WEBHOOK ID
+const MAKE_WEBHOOK_URL = 'https://uwish58fmlccfjiauowgwkp8bhcn9d6f@hook.eu1.make.com';
 
 async function redirectToPayment(amount, productName) {
   if (!currentUser) {
