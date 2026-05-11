@@ -48,10 +48,10 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
 let adminIsBlocked = false;
 
 const store3dProducts = [
-  { id: 'ios-26', title: 'iOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/ios_26_3d_mockup_1778504606370.png' },
-  { id: 'ipados-26', title: 'iPadOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/ipados_26_3d_mockup_1778504627144.png' },
-  { id: 'watchos-26', title: 'watchOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/watchos_26_3d_mockup_1778504652731.png' },
-  { id: 'macos-26', title: 'macOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/macos_26_3d_mockup_1778504676382.png' }
+  { id: 'ios-26', title: 'iOS 26', image: 'assets/ios-26.png' },
+  { id: 'ipados-26', title: 'iPadOS 26', image: 'assets/ipados-26.png' },
+  { id: 'watchos-26', title: 'watchOS 26', image: 'assets/watchos-26.png' },
+  { id: 'macos-26', title: 'macOS 26', image: 'assets/macos-26.png' }
 ];
 
 // ========== REVIEWS DATA ==========
