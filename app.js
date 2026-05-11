@@ -540,7 +540,7 @@ function renderNewsLayout(page = 1) {
             <span class="meta-sep">|</span> 
             <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
             <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
-              onclick="event.stopPropagation(); toggleMyArticle(${a.id}, ${page});"
+              onclick="event.stopPropagation(); toggleMyArticle(${a.id}, this);"
               style="margin-right: auto; flex-shrink: 0;"
               title="${isSaved ? 'Remove from My Articles' : 'Save to My Articles'}">
               <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
@@ -2006,7 +2006,7 @@ function toggleMyArticle(id, btn) {
   if (btn && btn.classList) {
     btn.classList.toggle('active', isAdding);
     const icon = btn.querySelector('i');
-    const textSpan = btn.querySelector('span');
+    const textSpan = btn.querySelector('span'); // PDP button has a span
     if (icon) {
       icon.className = isAdding ? 'fas fa-bookmark' : 'far fa-bookmark';
     }
