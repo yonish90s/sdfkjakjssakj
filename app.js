@@ -594,8 +594,8 @@ function showArticle(id) {
         <button class="btn-save-article ${myArticlesList.includes(a.id) ? 'active' : ''}" 
           onclick="toggleMyArticle(${a.id});" 
           style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark" style="color:${myArticlesList.includes(a.id) ? '#f9b233' : 'inherit'};"></i>
-          ${myArticlesList.includes(a.id) ? 'Saved' : 'Save for later'}
+          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
+          <span>${myArticlesList.includes(a.id) ? 'Saved' : 'Save for later'}</span>
         </button>
       </div>
       <h1 class="article-title-main" id="inline-title">${escHtml(a.title)}</h1>

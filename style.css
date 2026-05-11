@@ -4524,6 +4524,11 @@ body.dark-theme .meta-bookmark-btn.active {
   color: #f9b233;
 }
 
+.btn-save-article.active {
+  color: #f9b233 !important;
+  border-color: #f9b233 !important;
+}
+
 .btn-save-article.active i {
   color: #f9b233 !important;
 }
