@@ -1220,44 +1220,9 @@ function saveAdminAds() {
 }
 
 function renderAdsSidebar() {
+  // Disabled as per user request to remove all Ad Space blocks
   const adContainers = document.querySelectorAll('.public-sidebar-ad');
-  if (adContainers.length === 0) return;
-  
-  const ads = JSON.parse(localStorage.getItem('siteAds') || '[]');
-  
-  adContainers.forEach(adContainer => {
-    if (ads.length === 0) {
-      adContainer.style.background = '#fff';
-      adContainer.style.padding = '24px';
-      adContainer.style.border = '1px solid var(--border-subtle)';
-      adContainer.style.boxShadow = 'var(--shadow-soft)';
-      adContainer.style.borderRadius = '16px';
-
-      adContainer.innerHTML = `
-        <h3 style="font-size:1.4rem; font-weight:800; margin-bottom:12px;">Ad Space</h3>
-        <p style="color:var(--text-muted); font-size:1rem; margin-bottom:24px; line-height: 1.5;">Great opportunity to reach thousands of daily readers. Contact us for a competitive quote.</p>
-        <button class="btn-primary" style="margin-top:auto; width:100%; border-radius:980px;" onclick="openContactModal()">Advertise with us</button>
-      `;
-      return;
-    }
-
-    adContainer.style.background = 'transparent';
-    adContainer.style.padding = '0';
-    adContainer.style.border = 'none';
-    adContainer.style.boxShadow = 'none';
-
-    let html = `<div style="display: flex; flex-direction: column; gap: 24px;">`;
-    ads.forEach(ad => {
-      const inner = `<img src="${ad.img}" style="width: 100%; height: auto; border-radius: 16px; object-fit: cover; display: block; box-shadow: var(--shadow-soft); cursor: ${ad.link ? 'pointer' : 'default'};">`;
-      if (ad.link) {
-        html += `<a href="${ad.link.startsWith('http') ? ad.link : 'https://' + ad.link}" target="_blank" style="display:block;">${inner}</a>`;
-      } else {
-        html += `<div>${inner}</div>`;
-      }
-    });
-    html += `</div>`;
-    adContainer.innerHTML = html;
-  });
+  adContainers.forEach(c => c.style.display = 'none');
 }
 
 function switchAdminTab(tabId, btnEl) {
