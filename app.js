@@ -531,7 +531,7 @@ function renderNewsLayout(page = 1) {
   feedList.innerHTML = pageArticles.map(a => {
     const isSaved = myArticlesList.some(x => x.id === a.id);
     return `
-      <div class="feed-item ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
+      <div class="feed-item" onclick="showArticle(${a.id})">
         <div class="feed-image" style="background-image: url('${a.image}')"></div>
         <div class="feed-content">
           <h2 class="feed-title">${escHtml(a.title)}</h2>
