@@ -5003,6 +5003,58 @@ body.dark-theme .article-card-snippet {
   object-fit: contain;
 }
 
+.store-3d-info {
+  padding: 30px;
+  text-align: right;
+  background: rgba(255,255,255,0.02);
+}
+
+.store-card-title {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.store-card-desc {
+  color: #a1a1a6;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.store-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.store-card-price {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.store-card-add-btn {
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 980px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-card-add-btn:hover {
+  background: #f5f5f7;
+  transform: scale(1.05);
+}
+
 .store-consulting-section {
   max-width: 1200px;
   margin: 100px auto 0;

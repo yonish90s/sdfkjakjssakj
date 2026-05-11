@@ -48,10 +48,34 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
 let adminIsBlocked = false;
 
 const store3dProducts = [
-  { id: 'quantum-os', title: 'Quantum OS', image: 'assets/quantum-os.png' },
-  { id: 'infinity-pad', title: 'Infinity Pad', image: 'assets/infinity-pad.png' },
-  { id: 'orbit-watch', title: 'Orbit Watch', image: 'assets/orbit-watch.png' },
-  { id: 'apex-desktop', title: 'Apex Desktop', image: 'assets/apex-desktop.png' }
+  { 
+    id: 'quantum-os', 
+    title: 'Quantum OS', 
+    price: 100,
+    desc: 'The next generation of mobile computing. AI-integrated, fluid, and secure.',
+    image: 'assets/quantum-os.png' 
+  },
+  { 
+    id: 'infinity-pad', 
+    title: 'Infinity Pad', 
+    price: 150,
+    desc: 'Unleash your creativity with the most powerful tablet ever made.',
+    image: 'assets/infinity-pad.png' 
+  },
+  { 
+    id: 'orbit-watch', 
+    title: 'Orbit Watch', 
+    price: 80,
+    desc: 'Your health and connectivity, elegantly wrapped around your wrist.',
+    image: 'assets/orbit-watch.png' 
+  },
+  { 
+    id: 'apex-desktop', 
+    title: 'Apex Desktop', 
+    price: 300,
+    desc: 'Ultimate performance for professionals. Speed and power.',
+    image: 'assets/apex-desktop.png' 
+  }
 ];
 
 // ========== REVIEWS DATA ==========
@@ -1512,9 +1536,19 @@ function renderStoreLayout() {
     <div class="store-3d-wrapper">
       <div class="store-3d-grid">
         ${store3dProducts.map(p => `
-          <div class="store-3d-card" onclick="redirectToPayment(100, '${p.title}')">
+          <div class="store-3d-card">
             <div class="store-3d-visual">
               <img src="${p.image}" alt="${p.title}">
+            </div>
+            <div class="store-3d-info">
+              <h3 class="store-card-title">${p.title}</h3>
+              <p class="store-card-desc">${p.desc}</p>
+              <div class="store-card-footer">
+                <span class="store-card-price">$${p.price}</span>
+                <button class="store-card-add-btn" onclick="redirectToPayment(${p.price}, '${p.title}')">
+                  <i class="fas fa-cart-plus"></i> Add to Cart
+                </button>
+              </div>
             </div>
           </div>
         `).join('')}
