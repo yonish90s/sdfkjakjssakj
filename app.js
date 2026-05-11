@@ -47,6 +47,13 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
 
 let adminIsBlocked = false;
 
+const store3dProducts = [
+  { id: 'ios-26', title: 'iOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/ios_26_3d_mockup_1778504606370.png' },
+  { id: 'ipados-26', title: 'iPadOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/ipados_26_3d_mockup_1778504627144.png' },
+  { id: 'watchos-26', title: 'watchOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/watchos_26_3d_mockup_1778504652731.png' },
+  { id: 'macos-26', title: 'macOS 26', image: '/Users/yoni/.gemini/antigravity/brain/5e12249b-c77b-4ed5-a3a3-79af4abc00de/macos_26_3d_mockup_1778504676382.png' }
+];
+
 // ========== REVIEWS DATA ==========
 const videoReviews = [
   { 
@@ -1466,49 +1473,20 @@ function handleImageUpload(event) {
 
 // ========== STORE MANAGEMENT ==========
 function renderStoreLayout() {
-  const c = JSON.parse(localStorage.getItem('storeConfig')) || { title: 'My Professional Software', version: 'Version 1.0', desc: 'Access the most advanced tools with our software. A must-have tool for every professional looking to streamline work and save time.', image: '', downloadLink: '', youtube: '' };
   const contentArea = document.getElementById('store-content-area');
-  
   if (!contentArea) return;
 
-  const youtubeId = getYouTubeId(c.youtube);
-  
   contentArea.innerHTML = `
-    <!-- Content (Main Store Box) -->
-    <div style="display: flex; justify-content: center; width: 100%; margin-top: 40px;">
-      <div style="display: flex; flex-direction: column; gap: 48px; background: #ffffff; border-radius: 48px; padding: 64px; border: 1px solid var(--border-subtle); box-shadow: 0 20px 60px rgba(0,0,0,0.05); align-items: center; max-width: 1100px; width: 100%; text-align: center;">
-        
-        <!-- Top Section: Details -->
-        <div class="store-details" style="width: 100%; max-width: 800px;">
-          <div class="store-badge" style="font-size: 0.9rem; color: #0071e3; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 16px; background: rgba(0, 113, 227, 0.1); display: inline-block; padding: 8px 24px; border-radius: 980px;" id="store-render-version">${escHtml(c.version)}</div>
-          <h1 class="store-title" style="font-size: 4rem; font-weight: 800; margin-bottom: 24px; color: #1d1d1f; letter-spacing: -0.04em; line-height: 1.1;" id="store-render-title">${escHtml(c.title)}</h1>
-          <p class="store-desc" style="font-size: 1.4rem; color: #86868b; line-height: 1.6; margin-bottom: 0; white-space: pre-wrap; max-width: 700px; margin-left: auto; margin-right: auto;" id="store-render-desc">${escHtml(c.desc)}</p>
-        </div>
-
-        <!-- Middle Section: Visual (Wide Image or YouTube) -->
-        <div class="store-visual" style="width: 100%; position: relative; aspect-ratio: 16/9; background: #f5f5f7; border-radius: 32px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 30px 80px rgba(0,0,0,0.12);">
-          ${youtubeId ? `
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border: none;"></iframe>
-          ` : (c.image ? `
-            <img src="${c.image}" class="store-main-image" style="display: block; width: 100%; height: 100%; object-fit: cover;">
-          ` : `
-            <div class="store-emoji" style="font-size: 10rem; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1));">🚀</div>
-          `)}
-        </div>
-
-        <!-- Bottom Section: Download Buttons -->
-        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 32px;">
-          <div class="btn-platform-container" style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; width: 100%;">
-            <button class="btn-download-mac" onclick="downloadStorePlatform('Mac')" style="padding: 20px 48px; font-size: 1.2rem; border-radius: 20px; flex: 1; max-width: 320px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
-              <span class="platform-icon" style="font-size: 1.5rem;"></span>
-              Download for Mac
-            </button>
-            <button class="btn-download-android" onclick="downloadStorePlatform('Android')" style="padding: 20px 48px; font-size: 1.2rem; border-radius: 20px; flex: 1; max-width: 320px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 15px 35px rgba(52, 199, 89, 0.15);">
-              <span class="platform-icon" style="font-size: 1.5rem;">🤖</span>
-              Download for Android
-            </button>
+    <div class="store-3d-wrapper">
+      <div class="store-3d-grid">
+        ${store3dProducts.map(p => `
+          <div class="store-3d-card" onclick="redirectToPayment(100, '${p.title}')">
+            <h2 class="store-3d-title">${p.title}</h2>
+            <div class="store-3d-visual">
+              <img src="${p.image}" alt="${p.title}">
+            </div>
           </div>
-        </div>
+        `).join('')}
       </div>
     </div>
   `;

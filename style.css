@@ -4894,3 +4894,63 @@ body.dark-theme .video-card {
   max-width: 900px;
   margin: 0 auto;
 }
+/* 3D STORE GALLERY STYLES */
+.store-3d-wrapper {
+  background: #000;
+  min-height: 100vh;
+  padding: 80px 20px;
+  border-radius: 48px;
+  margin-top: 40px;
+}
+
+.store-3d-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.store-3d-card {
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.store-3d-card:hover {
+  transform: scale(1.02);
+}
+
+.store-3d-title {
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+  letter-spacing: -0.02em;
+}
+
+.store-3d-visual {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.store-3d-visual img {
+  width: 100%;
+  height: auto;
+  max-width: 500px;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .store-3d-grid {
+    grid-template-columns: 1fr;
+    gap: 80px;
+  }
+  .store-3d-title {
+    font-size: 2rem;
+  }
+}
