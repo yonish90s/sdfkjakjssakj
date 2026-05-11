@@ -2611,6 +2611,7 @@ function renderVideoReviews() {
   grid.innerHTML = videoReviews.map(v => `
     <div class="video-card" onclick="showReviewDetail(${v.id}, 'video')">
       <div class="video-thumbnail" style="background-image: url('${v.thumbnail}')">
+        <div class="video-brand"><span></span> Developer</div>
         <div class="video-duration">${v.duration}</div>
         <div class="play-overlay"><i class="fas fa-play"></i></div>
       </div>
