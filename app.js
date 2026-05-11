@@ -591,11 +591,11 @@ function showArticle(id) {
     <header class="article-header">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <div class="article-category">${escHtml(a.category)}</div>
-        <button class="btn-save-article ${myArticlesList.includes(a.id) ? 'active' : ''}" 
-          onclick="toggleMyArticle(${a.id});" 
+        <button class="btn-save-article ${myArticlesList.some(x => x.id === a.id) ? 'active' : ''}" 
+          onclick="toggleMyArticle(${a.id}, this);" 
           style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-          <i class="${myArticlesList.includes(a.id) ? 'fas' : 'far'} fa-bookmark"></i>
-          <span>${myArticlesList.includes(a.id) ? 'Saved' : 'Save for later'}</span>
+          <i class="${myArticlesList.some(x => x.id === a.id) ? 'fas' : 'far'} fa-bookmark"></i>
+          <span>${myArticlesList.some(x => x.id === a.id) ? 'Saved' : 'Save for later'}</span>
         </button>
       </div>
       <h1 class="article-title-main" id="inline-title">${escHtml(a.title)}</h1>
@@ -1998,23 +1998,39 @@ function renderSidebarArticles() {
   }).join('');
 }
 
-function toggleMyArticle(id, page) {
-  const existing = myArticlesList.find(x => x.id === id);
-  if (existing) {
-    myArticlesList = myArticlesList.filter(art => art.id !== id);
+function toggleMyArticle(id, btn) {
+  const existingIndex = myArticlesList.findIndex(x => x.id === id);
+  const isAdding = existingIndex === -1;
+
+  // Optimistic UI Update
+  if (btn && btn.classList) {
+    btn.classList.toggle('active', isAdding);
+    const icon = btn.querySelector('i');
+    const textSpan = btn.querySelector('span');
+    if (icon) {
+      icon.className = isAdding ? 'fas fa-bookmark' : 'far fa-bookmark';
+    }
+    if (textSpan) {
+      textSpan.textContent = isAdding ? 'Saved' : 'Save for later';
+    }
+  }
+
+  if (!isAdding) {
+    myArticlesList.splice(existingIndex, 1);
     showToast('🗑️ Removed from My Articles');
   } else {
     const art = newsArticles.find(x => x.id === id);
     myArticlesList.push({ id, customName: art ? art.title : id.toString() });
     showToast('✅ Added to My Articles');
   }
+
   localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
   renderSidebarArticles();
   syncUserPersonalDataToFirebase();
-  if (page) renderNewsLayout(page);
-  else if (!existing) {
-    const a = newsArticles.find(x => x.id === id);
-    if (a) showArticle(id);
+
+  // If no btn provided (from other contexts), we might need to re-render
+  if (!btn && (typeof currentArticleId !== 'undefined' && currentArticleId === id)) {
+    showArticle(id);
   }
 }
 
