@@ -48,31 +48,40 @@ let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 
 let adminIsBlocked = false;
 
 const store3dProducts = [
-  { id: 'ios-26', title: 'iOS 26', image: 'assets/ios-26.png' },
-  { id: 'ipados-26', title: 'iPadOS 26', image: 'assets/ipados-26.png' },
-  { id: 'watchos-26', title: 'watchOS 26', image: 'assets/watchos-26.png' },
-  { id: 'macos-26', title: 'macOS 26', image: 'assets/macos-26.png' }
+  { id: 'quantum-os', title: 'Quantum OS', image: 'assets/quantum-os.png' },
+  { id: 'infinity-pad', title: 'Infinity Pad', image: 'assets/infinity-pad.png' },
+  { id: 'orbit-watch', title: 'Orbit Watch', image: 'assets/orbit-watch.png' },
+  { id: 'apex-desktop', title: 'Apex Desktop', image: 'assets/apex-desktop.png' }
 ];
 
 // ========== REVIEWS DATA ==========
 const videoReviews = [
   { 
     id: 1, 
-    title: 'Apple M5 Chip: Everything You Need to Know', 
+    title: 'Q&A: Neural Processing Unit', 
+    subtitle: 'Meet with Team',
+    duration: '15:20',
     youtubeId: 'dQw4w9WgXcQ', 
     thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800',
-    description: 'An in-depth look at the next generation of Apple Silicon. We analyze performance, efficiency, and real-world benchmarks.',
-    author: 'Tech Guru',
-    date: 'May 10, 2024'
+    description: 'An in-depth look at the next generation of hardware acceleration.'
   },
   { 
     id: 2, 
-    title: 'iOS 18 Features Leak: The Biggest Update Ever?', 
+    title: 'Prepare your app for Accessibility', 
+    subtitle: 'Tech Talks',
+    duration: '34:50',
     youtubeId: 'dQw4w9WgXcQ', 
     thumbnail: 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&q=80&w=800',
-    description: 'Exploring the rumored AI features and redesign coming to the iPhone this year.',
-    author: 'Mobile News',
-    date: 'May 08, 2024'
+    description: 'Exploring the latest features in inclusive design.'
+  },
+  { 
+    id: 3, 
+    title: 'Accelerate your workloads', 
+    subtitle: 'Performance Lab',
+    duration: '24:15',
+    youtubeId: 'dQw4w9WgXcQ', 
+    thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
+    description: 'Optimization techniques for massive data sets.'
   }
 ];
 
@@ -2579,11 +2588,12 @@ function renderReviews() {
   grid.innerHTML = videoReviews.map(v => `
     <div class="video-card" onclick="showReviewDetail(${v.id})">
       <div class="video-thumbnail" style="background-image: url('${v.thumbnail}')">
+        <div class="video-duration">${v.duration}</div>
         <div class="play-overlay"><i class="fas fa-play"></i></div>
       </div>
       <div class="video-info">
         <h3 class="video-title">${v.title}</h3>
-        <p class="video-meta">${v.author} • ${v.date}</p>
+        <p class="video-subtitle">${v.subtitle}</p>
       </div>
     </div>
   `).join('');
