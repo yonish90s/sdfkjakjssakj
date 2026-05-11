@@ -1513,7 +1513,6 @@ function renderStoreLayout() {
       <div class="store-3d-grid">
         ${store3dProducts.map(p => `
           <div class="store-3d-card" onclick="redirectToPayment(100, '${p.title}')">
-            <h2 class="store-3d-title">${p.title}</h2>
             <div class="store-3d-visual">
               <img src="${p.image}" alt="${p.title}">
             </div>
