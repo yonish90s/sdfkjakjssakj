@@ -3410,11 +3410,6 @@ function renderShopGrid() {
   `).join('');
 }
 
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
 
 function openOrderModal(id, type) {
   const list = type === 'product' ? shopProducts : servicesItems;
