@@ -4994,6 +4994,8 @@ body.dark-theme .article-card-snippet {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  border-radius: 32px;
 }
 
 .store-3d-visual img {
@@ -5004,55 +5006,58 @@ body.dark-theme .article-card-snippet {
 }
 
 .store-3d-info {
-  padding: 30px;
-  text-align: right;
-  background: rgba(255,255,255,0.02);
+  padding: 40px 20px;
+  text-align: center;
 }
 
 .store-card-title {
   color: #fff;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
 }
 
 .store-card-desc {
   color: #a1a1a6;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.5;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
+  font-weight: 400;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .store-card-footer {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 16px;
 }
 
 .store-card-price {
   color: #fff;
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .store-card-add-btn {
   background: #fff;
   color: #000;
   border: none;
-  padding: 10px 24px;
+  padding: 12px 32px;
   border-radius: 980px;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .store-card-add-btn:hover {
   background: #f5f5f7;
   transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(255,255,255,0.1);
 }
 
 .store-consulting-section {
