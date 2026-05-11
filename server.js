@@ -7,11 +7,17 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const PORT = process.env.PORT || 4242;
 
+// Enable trust proxy for Vercel to correctly identify client IPs
+app.set('trust proxy', 1);
+
 // --- Rate Limiting (Security) ---
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 3, // Limit each IP to 3 attempts per window
-  message: { status: 'error', message: 'Too many login attempts from this IP, please try again in 15 minutes.' },
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 2, // Limit each IP to 2 attempts per day
+  message: { 
+    status: 'error', 
+    message: 'Too many login attempts. Your IP address has been temporarily blocked for 24 hours for security reasons.' 
+  },
   standardHeaders: true,
   legacyHeaders: false,
 });
