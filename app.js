@@ -2861,8 +2861,8 @@ function handleModalFileSelection(event) {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1000;
-        const MAX_HEIGHT = 1000;
+        const MAX_WIDTH = 2500;
+        const MAX_HEIGHT = 2500;
         let width = img.width;
         let height = img.height;
 
@@ -2883,7 +2883,7 @@ function handleModalFileSelection(event) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedB64 = canvas.toDataURL('image/jpeg', 0.7);
+        const compressedB64 = canvas.toDataURL('image/jpeg', 1.0);
         selectedUserPdfImages.push(compressedB64);
         renderModalPreviews();
       };
