@@ -2,9 +2,19 @@
 const express = require('express');
 const { Resend } = require('resend');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const PORT = process.env.PORT || 4242;
+
+// --- Rate Limiting (Security) ---
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Limit each IP to 3 attempts per window
+  message: { status: 'error', message: 'Too many login attempts from this IP, please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // SDK Helpers (Initialize only when needed to prevent crashes)
 const getStripe = () => require('stripe')(process.env.STRIPE_SECRET_KEY || '');
@@ -18,6 +28,20 @@ const FRONTEND_URL = process.env.FRONTEND_URL
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// --- Admin Login API ---
+app.post('/api/admin-login', loginLimiter, (req, res) => {
+  const { user, pass } = req.body;
+  // Use environment variables for production! (Hardcoded 1/1 for now as per current site logic)
+  const ADMIN_USER = process.env.ADMIN_USER || '1';
+  const ADMIN_PASS = process.env.ADMIN_PASS || '1';
+
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    res.json({ status: 'success', message: 'Admin logged in' });
+  } else {
+    res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+  }
+});
 
 // --- ML Intent Classifier (Lazy loaded to prevent cold start crashes) ---
 let classifier = null;
