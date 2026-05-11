@@ -297,7 +297,6 @@ function showPage(pageId) {
   if (pageId === 'store') renderStoreLayout();
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
-  if (pageId === 'services') renderServicesGrid();
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
@@ -3411,19 +3410,6 @@ function renderShopGrid() {
   `).join('');
 }
 
-function renderServicesGrid() {
-  const grid = document.getElementById('services-grid');
-  if (!grid) return;
-  grid.innerHTML = servicesItems.map(s => `
-    <div class="service-card">
-      <div class="service-card-image">${s.icon}</div>
-      <div class="service-card-body">
-        <span class="service-card-cat">${s.cat}</span>
-        <h3 class="service-card-title">${s.title}</h3>
-        <p class="service-card-desc">${s.desc}</p>
-        <div class="service-card-footer">
-          <span class="service-card-price">${s.price}</span>
-          <button class="service-card-btn" onclick="addToCart('${s.id}', 'service')">+ Add to Cart</button>
         </div>
       </div>
     </div>
