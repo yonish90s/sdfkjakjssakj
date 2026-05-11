@@ -1,16 +1,13 @@
 {
   "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["articles/**", "aliexpress_products.json"]
-      }
-    }
+    { "src": "api/index.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "api/index.js" },
+    { "src": "/", "dest": "/index.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
