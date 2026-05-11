@@ -4802,3 +4802,95 @@ body.dark-theme .article-card-title {
 body.dark-theme .article-card-snippet {
   color: #a1a1a6;
 }
+/* VIDEO REVIEWS STYLES */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.video-card {
+  background: #fbfbfd;
+  border-radius: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+body.dark-theme .video-card {
+  background: #1c1c1e;
+  border-color: rgba(255,255,255,0.05);
+}
+
+.video-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.video-thumbnail {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-overlay {
+  width: 60px;
+  height: 60px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d1d1f;
+  font-size: 1.5rem;
+  opacity: 0;
+  transition: all 0.3s;
+  transform: scale(0.8);
+}
+
+.video-card:hover .play-overlay {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.video-info {
+  padding: 20px;
+}
+
+.video-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.video-meta {
+  color: #86868b;
+  font-size: 0.9rem;
+}
+
+.video-embed-wrapper {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 32px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  background: #000;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+}
+
+.video-embed-wrapper iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.review-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+}

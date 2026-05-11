@@ -45,9 +45,29 @@ if (!storedArticles) {
 
 let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 : 1;
 
-// Admin Security Variables
-let adminLoginAttempts = 0;
 let adminIsBlocked = false;
+
+// ========== REVIEWS DATA ==========
+const videoReviews = [
+  { 
+    id: 1, 
+    title: 'Apple M5 Chip: Everything You Need to Know', 
+    youtubeId: 'dQw4w9WgXcQ', 
+    thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800',
+    description: 'An in-depth look at the next generation of Apple Silicon. We analyze performance, efficiency, and real-world benchmarks.',
+    author: 'Tech Guru',
+    date: 'May 10, 2024'
+  },
+  { 
+    id: 2, 
+    title: 'iOS 18 Features Leak: The Biggest Update Ever?', 
+    youtubeId: 'dQw4w9WgXcQ', 
+    thumbnail: 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&q=80&w=800',
+    description: 'Exploring the rumored AI features and redesign coming to the iPhone this year.',
+    author: 'Mobile News',
+    date: 'May 08, 2024'
+  }
+];
 
 // =====================================================================
 // Auto-fetch scraped articles from articles.json (populated by agent)
@@ -219,6 +239,7 @@ function showPage(pageId) {
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
+  if (pageId === 'reviews') renderReviews();
   
   if (pageId === 'join') {
     if (typeof currentUser !== 'undefined' && currentUser) {
@@ -2073,7 +2094,14 @@ function renderSidebarPurchases() {
   });
 
   container.innerHTML = purchasedItems.map(item => `
-    <a href="#" class="submenu-link" onclick="showPage('store'); return false;">
+    <a href="#" class="sidebar-link" onclick="showPage('reviews'); return false;" data-page="reviews">
+      <div class="sidebar-link-content">
+        <i class="fa-solid fa-play"></i>
+        <span>סקירה</span>
+      </div>
+    </a>
+
+    <a href="#" class="sidebar-link" onclick="showPage('graphs'); return false;" data-page="graphs">
       ${item.name}
     </a>
   `).join('');
@@ -2562,8 +2590,49 @@ function toggleTheme() {
   const body = document.body;
   body.classList.toggle('dark-theme');
   const isDark = body.classList.contains('dark-theme');
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
   showToast(isDark ? '🌙 Dark mode activated' : '☀️ Light mode activated');
+}
+
+// ========== REVIEWS LOGIC ==========
+function renderReviews() {
+  const grid = document.getElementById('reviews-grid');
+  if (!grid) return;
+
+  grid.innerHTML = videoReviews.map(v => `
+    <div class="video-card" onclick="showReviewDetail(${v.id})">
+      <div class="video-thumbnail" style="background-image: url('${v.thumbnail}')">
+        <div class="play-overlay"><i class="fas fa-play"></i></div>
+      </div>
+      <div class="video-info">
+        <h3 class="video-title">${v.title}</h3>
+        <p class="video-meta">${v.author} • ${v.date}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showReviewDetail(id) {
+  const v = videoReviews.find(x => x.id === id);
+  if (!v) return;
+
+  const content = document.getElementById('review-detail-content');
+  content.innerHTML = `
+    <div class="review-detail-container">
+      <div class="video-embed-wrapper">
+        <iframe src="https://www.youtube.com/embed/${v.youtubeId}" frameborder="0" allowfullscreen></iframe>
+      </div>
+      <div class="review-text-content">
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;">${v.title}</h1>
+        <div style="display: flex; gap: 15px; color: #86868b; margin-bottom: 24px;">
+          <span>By ${v.author}</span>
+          <span>•</span>
+          <span>${v.date}</span>
+        </div>
+        <p style="font-size: 1.15rem; line-height: 1.6; color: var(--text-main);">${v.description}</p>
+      </div>
+    </div>
+  `;
+  showPage('review-detail');
 }
 
 // ========== INIT ==========
