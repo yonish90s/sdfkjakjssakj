@@ -45,6 +45,10 @@ if (!storedArticles) {
 
 let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 : 1;
 
+// Admin Security Variables
+let adminLoginAttempts = 0;
+let adminIsBlocked = false;
+
 // =====================================================================
 // Auto-fetch scraped articles from articles.json (populated by agent)
 // User-added articles (id < 1000) are preserved; scraped ones use id >= 1000
@@ -782,15 +786,28 @@ function handleAuthAction() {
 }
 
 function adminLogin() {
+  if (adminIsBlocked) {
+    showToast('❌ Account blocked due to multiple failed attempts. Refresh the page to try again.');
+    return;
+  }
+
   const user = document.getElementById('admin-user')?.value;
   const pass = document.getElementById('admin-pass')?.value;
+
   if (user === '1' && pass === '1') {
+    adminLoginAttempts = 0;
     localStorage.setItem('isAdmin', 'true');
     isAdmin = true;
     showToast('✅ Admin logged in successfully');
     showPage('admin');
   } else {
-    showToast('❌ Invalid username or password');
+    adminLoginAttempts++;
+    if (adminLoginAttempts >= 2) {
+      adminIsBlocked = true;
+      showToast('⚠️ Security Alert: Too many failed attempts. You are now blocked.');
+    } else {
+      showToast(`❌ Invalid credentials. (${adminLoginAttempts}/2 attempts)`);
+    }
   }
 }
 
