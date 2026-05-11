@@ -4544,12 +4544,13 @@ body.dark-theme .meta-bookmark-btn.active {
 }
 
 .btn-save-article.active {
-  color: #f9b233 !important;
+  background: #f9b233 !important;
+  color: #ffffff !important;
   border-color: #f9b233 !important;
 }
 
 .btn-save-article.active i {
-  color: #f9b233 !important;
+  color: #ffffff !important;
 }
 
 /* Focus Mode Styles */
