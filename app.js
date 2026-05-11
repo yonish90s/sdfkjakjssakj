@@ -729,6 +729,49 @@ function toggleMobileMenu() {
   }
 }
 
+// ========== PAYMENT SYSTEM (GROW via Make) ==========
+const MAKE_WEBHOOK_URL = 'https://hook.make.com/your_unique_id'; // REPLACE THIS WITH YOUR REAL WEBHOOK ID
+
+async function redirectToPayment(amount, productName) {
+  if (!currentUser) {
+    showToast('❌ Please sign in to purchase a plan');
+    openAuthModal('login');
+    return;
+  }
+
+  showToast('🔄 Preparing secure payment...', 3000);
+  
+  try {
+    const response = await fetch(MAKE_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: amount,
+        productName: productName,
+        customerEmail: currentUser.email,
+        customerName: currentUser.displayName || currentUser.name,
+        timestamp: new Date().toISOString(),
+        siteUrl: window.location.origin
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    // The webhook should return the payment URL as plain text or JSON
+    const paymentUrl = await response.text();
+
+    if (paymentUrl && paymentUrl.startsWith('http')) {
+      window.location.href = paymentUrl;
+    } else {
+      console.error('Invalid payment URL received:', paymentUrl);
+      alert('Error: Could not generate payment link. Please try again.');
+    }
+  } catch (error) {
+    console.error('Payment Error:', error);
+    showToast('❌ Error connecting to payment provider');
+  }
+}
+
 function handleAuthAction() {
   const user = window.fbAuth?.currentUser;
   if (user) {
