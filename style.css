@@ -4950,3 +4950,69 @@ body.dark-theme .article-card-snippet {
     font-size: 2rem;
   }
 }
+
+/* ARTICLE REVIEWS STYLES */
+.article-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+}
+
+.article-review-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-subtle);
+}
+
+.article-review-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.article-review-thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-size: cover;
+  background-position: center;
+}
+
+.article-review-info {
+  padding: 24px;
+}
+
+.article-review-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.article-review-desc {
+  color: #86868b;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-review-meta {
+  font-size: 0.85rem;
+  color: #86868b;
+  font-weight: 600;
+}
+
+.review-article-hero {
+  width: 100%;
+  height: 500px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 32px;
+  margin-bottom: 40px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+}

@@ -85,6 +85,28 @@ const videoReviews = [
   }
 ];
 
+// ========== ARTICLE REVIEWS DATA ==========
+const articleReviews = [
+  {
+    id: 101,
+    title: 'The Future of Quantum OS: A Deep Dive',
+    date: 'May 11, 2024',
+    author: 'Chief Editor',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+    description: 'We explore how Quantum OS is redefining the mobile experience with AI-first architecture and futuristic design language.',
+    content: 'Full review content here...'
+  },
+  {
+    id: 102,
+    title: 'Infinity Pad: The Only Tablet You Need?',
+    date: 'May 09, 2024',
+    author: 'Tech Analyst',
+    thumbnail: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=800',
+    description: 'Is the Infinity Pad truly a laptop replacement? We put it to the test in real-world professional workflows.',
+    content: 'Full review content here...'
+  }
+];
+
 // =====================================================================
 // Auto-fetch scraped articles from articles.json (populated by agent)
 // User-added articles (id < 1000) are preserved; scraped ones use id >= 1000
@@ -255,7 +277,8 @@ function showPage(pageId) {
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
-  if (pageId === 'reviews') renderReviews();
+  if (pageId === 'video-reviews') renderVideoReviews();
+  if (pageId === 'article-reviews') renderArticleReviews();
   
   if (pageId === 'join') {
     if (typeof currentUser !== 'undefined' && currentUser) {
@@ -2581,12 +2604,12 @@ function toggleTheme() {
 }
 
 // ========== REVIEWS LOGIC ==========
-function renderReviews() {
+function renderVideoReviews() {
   const grid = document.getElementById('reviews-grid');
   if (!grid) return;
 
   grid.innerHTML = videoReviews.map(v => `
-    <div class="video-card" onclick="showReviewDetail(${v.id})">
+    <div class="video-card" onclick="showReviewDetail(${v.id}, 'video')">
       <div class="video-thumbnail" style="background-image: url('${v.thumbnail}')">
         <div class="video-duration">${v.duration}</div>
         <div class="play-overlay"><i class="fas fa-play"></i></div>
@@ -2599,27 +2622,66 @@ function renderReviews() {
   `).join('');
 }
 
-function showReviewDetail(id) {
-  const v = videoReviews.find(x => x.id === id);
-  if (!v) return;
+function renderArticleReviews() {
+  const grid = document.getElementById('article-reviews-grid');
+  if (!grid) return;
 
-  const content = document.getElementById('review-detail-content');
-  content.innerHTML = `
-    <div class="review-detail-container">
-      <div class="video-embed-wrapper">
-        <iframe src="https://www.youtube.com/embed/${v.youtubeId}" frameborder="0" allowfullscreen></iframe>
-      </div>
-      <div class="review-text-content">
-        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;">${v.title}</h1>
-        <div style="display: flex; gap: 15px; color: #86868b; margin-bottom: 24px;">
-          <span>By ${v.author}</span>
-          <span>•</span>
-          <span>${v.date}</span>
-        </div>
-        <p style="font-size: 1.15rem; line-height: 1.6; color: var(--text-main);">${v.description}</p>
+  grid.innerHTML = articleReviews.map(a => `
+    <div class="article-review-card" onclick="showReviewDetail(${a.id}, 'article')">
+      <div class="article-review-thumb" style="background-image: url('${a.thumbnail}')"></div>
+      <div class="article-review-info">
+        <h3 class="article-review-title">${a.title}</h3>
+        <p class="article-review-desc">${a.description}</p>
+        <div class="article-review-meta">By ${a.author} • ${a.date}</div>
       </div>
     </div>
-  `;
+  `).join('');
+}
+
+function showReviewDetail(id, type) {
+  const v = type === 'video' ? videoReviews.find(x => x.id === id) : articleReviews.find(x => x.id === id);
+  if (!v) return;
+
+  const backBtn = document.getElementById('review-back-btn');
+  if (backBtn) backBtn.setAttribute('onclick', `showPage('${type === 'video' ? 'video-reviews' : 'article-reviews'}')`);
+
+  const content = document.getElementById('review-detail-content');
+  
+  if (type === 'video') {
+    content.innerHTML = `
+      <div class="review-detail-container">
+        <div class="video-embed-wrapper">
+          <iframe src="https://www.youtube.com/embed/${v.youtubeId}" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <div class="review-text-content">
+          <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;">${v.title}</h1>
+          <div style="display: flex; gap: 15px; color: #86868b; margin-bottom: 24px;">
+            <span>By ${v.author || v.subtitle}</span>
+            <span>•</span>
+            <span>${v.date || ''}</span>
+          </div>
+          <p style="font-size: 1.15rem; line-height: 1.6; color: var(--text-main);">${v.description}</p>
+        </div>
+      </div>
+    `;
+  } else {
+    content.innerHTML = `
+      <div class="review-detail-container">
+        <div class="review-article-hero" style="background-image: url('${v.thumbnail}');"></div>
+        <div class="review-text-content">
+          <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 24px; letter-spacing: -0.04em;">${v.title}</h1>
+          <div style="display: flex; gap: 15px; color: #86868b; margin-bottom: 40px; font-weight: 600;">
+            <span>By ${v.author}</span>
+            <span>•</span>
+            <span>${v.date}</span>
+          </div>
+          <div class="review-body-text" style="font-size: 1.25rem; line-height: 1.7; color: var(--text-main); max-width: 800px;">
+            ${v.description}<br><br>${v.content}
+          </div>
+        </div>
+      </div>
+    `;
+  }
   showPage('review-detail');
 }
 
