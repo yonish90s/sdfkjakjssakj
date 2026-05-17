@@ -26,6 +26,8 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
   ? 'http://localhost:4242' 
   : window.location.origin;
 
+const MAKE_WEBHOOK_URL = 'https://hook.make.com/xxxxxx';
+
 let storedArticles = localStorage.getItem('newsArticles');
 let newsArticles = storedArticles ? JSON.parse(storedArticles) : [...defaultNewsArticles];
 
@@ -3640,7 +3642,7 @@ function checkoutCart() {
   }).filter(Boolean);
 
   closeCartModal();
-  runPaymentAnimation(summaryLines, total);
+  runRealPayment(summaryLines, total);
 }
 
 // =====================================================================
@@ -3650,6 +3652,69 @@ function checkoutCart() {
 function closePaymentModal() {
   const modal = document.getElementById('payment-modal');
   if (modal) modal.classList.remove('active');
+}
+
+async function runRealPayment(summaryLines, total) {
+  const modal = document.getElementById('payment-modal');
+  if (!modal) return;
+
+  // Show the loading state with premium animation
+  document.getElementById('payment-step-form').style.display = 'none';
+  document.getElementById('payment-step-anim').style.display = 'block';
+  modal.classList.add('active');
+
+  const spinner = document.getElementById('pay-phase-spinner');
+  const success = document.getElementById('pay-phase-success');
+  const track   = spinner.querySelector('.pay-spinner-track');
+
+  spinner.style.display = 'block';
+  success.style.display = 'none';
+
+  // Start the background animation
+  const startTime = performance.now();
+  function animateSpinner(now) {
+    const t = Math.min((now - startTime) / 3000, 0.95); // Fill up to 95% while waiting
+    const deg = t * 360;
+    track.style.background = `conic-gradient(#0071e3 ${deg}deg, #e8e8ed ${deg}deg)`;
+    if (t < 0.95 && spinner.style.display !== 'none') {
+      requestAnimationFrame(animateSpinner);
+    }
+  }
+  requestAnimationFrame(animateSpinner);
+
+  try {
+    const payload = {
+      amount: total,
+      customer_name: (currentUser && currentUser.name) ? currentUser.name : 'Guest Customer',
+      email: (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com',
+      items: summaryLines,
+      timestamp: new Date().toISOString()
+    };
+
+    const response = await fetch(MAKE_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Payment service unavailable');
+
+    const data = await response.json();
+    
+    if (data.payment_url) {
+      // Complete the animation quickly then redirect
+      track.style.background = `conic-gradient(#0071e3 360deg, #e8e8ed 360deg)`;
+      setTimeout(() => {
+        window.location.href = data.payment_url;
+      }, 500);
+    } else {
+      throw new Error('Could not generate payment link');
+    }
+  } catch (err) {
+    console.error('Payment Error:', err);
+    closePaymentModal();
+    showToast('Payment Error: ' + err.message, 'error');
+  }
 }
 
 function runPaymentAnimation(summaryLines, total) {

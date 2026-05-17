@@ -5135,3 +5135,22 @@ body.dark-theme .article-card-snippet {
   margin-bottom: 40px;
   box-shadow: 0 30px 60px rgba(0,0,0,0.2);
 }
+
+/* Logo Entrance Animation */
+@keyframes slideInRightLogo {
+  0% {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.apple-logo, 
+.sidebar-logo, 
+.mobile-menu-header img {
+  animation: slideInRightLogo 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
