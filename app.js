@@ -678,10 +678,9 @@ function renderNewsLayout(page = 1) {
   if (page === 1) {
     const featuredCarousel = document.getElementById('featured-carousel-container');
     if (featuredCarousel) {
-      displayFeatured = filteredArticles.filter(a => a.topPosition && a.approved !== false);
-      if (displayFeatured.length === 0) {
-        displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 3);
-      }
+      // Automatically populate carousel with the latest 8 articles so newest appear first
+      // and push older ones to the side for the user to swipe through.
+      displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 8);
 
       if (displayFeatured.length > 0) {
         featuredCarousel.style.display = 'block';
