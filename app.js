@@ -26,7 +26,6 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
   ? 'http://localhost:4242' 
   : window.location.origin;
 
-const MAKE_WEBHOOK_URL = 'https://hook.make.com/xxxxxx';
 
 let storedArticles = localStorage.getItem('newsArticles');
 let newsArticles = storedArticles ? JSON.parse(storedArticles) : [...defaultNewsArticles];
