@@ -678,9 +678,13 @@ function renderNewsLayout(page = 1) {
   if (page === 1) {
     const featuredCarousel = document.getElementById('featured-carousel-container');
     if (featuredCarousel) {
-      // Automatically populate carousel with the latest 8 articles so newest appear first
-      // and push older ones to the side for the user to swipe through.
-      displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 8);
+      if (currentCategory === 'הכל') {
+        // Show carousel only on the main 'All' page
+        displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 8);
+      } else {
+        // Hide carousel and show a simple list when a specific category is selected
+        displayFeatured = [];
+      }
 
       if (displayFeatured.length > 0) {
         featuredCarousel.style.display = 'block';
