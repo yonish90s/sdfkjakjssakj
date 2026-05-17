@@ -635,6 +635,18 @@ function goBack() {
 // ========== RENDER NEWS ==========
 let currentPage = 1;
 const ARTICLES_PER_PAGE = 10;
+let currentCategory = 'הכל';
+
+const categoryEmojis = {
+  'Computers': '💻',
+  'Security': '🔒',
+  'Smartwatches': '⌚',
+  'Google': '🌐',
+  'Hardware': '⚙️',
+  'Apps': '📱',
+  'Artificial Intelligence': '🤖',
+  'AI': '🤖'
+};
 
 function renderNewsLayout(page = 1) {
   currentPage = page;
@@ -645,40 +657,59 @@ function renderNewsLayout(page = 1) {
   // Only return if at least the main feed list is missing
   if(!feedList) return;
 
-  // Featured 3-column top grid only on first page
-  if (page === 1) {
-    const artRight = newsArticles.find(a => a.topPosition === 'right' && a.approved !== false);
-    const artCenter = newsArticles.find(a => a.topPosition === 'center' && a.approved !== false);
-    const artLeft = newsArticles.find(a => a.topPosition === 'left' && a.approved !== false);
-
-    const renderFeaturedCard = (a, className) => {
-      if (!a) return `<div class="featured-card ${className}" style="background:#f5f5f7; display:flex; align-items:center; justify-content:center; color:#86868b; font-weight:600; font-size:0.9rem;">No article in this position</div>`;
-      const isSaved = myArticlesList.some(x => x.id === a.id);
-      return `
-        <div class="featured-card ${className} ${isSaved ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
-          <img src="${a.image}" alt="${escHtml(a.title)}">
-          <div class="featured-overlay">
-            <span class="featured-tag">${escHtml(a.category)}</span>
-            ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
-            <div class="featured-title">${escHtml(a.title)}</div>
-          </div>
-        </div>
-      `;
-    };
-
-    const featuredGrid = document.getElementById('featured-top-grid');
-    if (featuredGrid) {
-      featuredGrid.innerHTML = `
-        <div class="featured-col">${renderFeaturedCard(artRight, 'right')}</div>
-        <div class="featured-col">${renderFeaturedCard(artCenter, 'center')}</div>
-        <div class="featured-col">${renderFeaturedCard(artLeft, 'left')}</div>
-      `;
-    }
-    // Hide old topGrid if it exists
-    if (topGrid) topGrid.style.display = 'none';
+  // 1. Render Category Filter Bar
+  const categoryBar = document.getElementById('category-filter-bar');
+  if (categoryBar) {
+    const categories = ['הכל', ...new Set(newsArticles.map(a => a.category).filter(Boolean))];
+    categoryBar.innerHTML = categories.map(cat => {
+      const isSelected = currentCategory === cat;
+      const emoji = categoryEmojis[cat] ? categoryEmojis[cat] + ' ' : '';
+      return `<button class="category-pill ${isSelected ? 'active' : ''}" onclick="filterCategory('${escHtml(cat)}')">${emoji}${escHtml(cat)}</button>`;
+    }).join('');
   }
 
-  const feedArticles = newsArticles.filter(x => !x.topPosition && x.approved !== false);
+  // Filter articles based on currentCategory
+  const filteredArticles = currentCategory === 'הכל' 
+    ? newsArticles 
+    : newsArticles.filter(a => a.category === currentCategory);
+
+  // 2. Render Featured Carousel (Only on page 1)
+  let displayFeatured = [];
+  if (page === 1) {
+    const featuredCarousel = document.getElementById('featured-carousel-container');
+    if (featuredCarousel) {
+      displayFeatured = filteredArticles.filter(a => a.topPosition && a.approved !== false);
+      if (displayFeatured.length === 0) {
+        displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 3);
+      }
+
+      if (displayFeatured.length > 0) {
+        featuredCarousel.style.display = 'block';
+        featuredCarousel.innerHTML = `
+          <div class="carousel-track-wrapper">
+            <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
+            <div class="carousel-track" id="main-carousel-track">
+              ${displayFeatured.map(a => `
+                <div class="carousel-slide featured-card ${myArticlesList.some(x => x.id === a.id) ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
+                  <img src="${a.image}" alt="${escHtml(a.title)}">
+                  <div class="featured-overlay">
+                    <span class="featured-tag">${escHtml(a.category)}</span>
+                    ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
+                    <div class="featured-title">${escHtml(a.title)}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
+          </div>
+        `;
+      } else {
+        featuredCarousel.style.display = 'none';
+      }
+    }
+  }
+
+  const feedArticles = filteredArticles.filter(a => !displayFeatured.includes(a) && a.approved !== false);
   const totalPages = Math.max(1, Math.ceil(feedArticles.length / ARTICLES_PER_PAGE));
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
@@ -731,8 +762,16 @@ function renderNewsLayout(page = 1) {
 }
 
 function filterCategory(cat) {
-  // Logic not fully implemented since this is a UI prototype
-  alert('Filtering by: ' + cat);
+  currentCategory = cat;
+  renderNewsLayout(1);
+}
+
+function scrollCarousel(direction) {
+  const track = document.getElementById('main-carousel-track');
+  if (track) {
+    const scrollAmount = track.clientWidth * 0.8; // Scroll 80% of container width
+    track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+  }
 }
 
 function showArticle(id) {
