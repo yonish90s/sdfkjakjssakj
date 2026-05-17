@@ -4117,7 +4117,23 @@ model-viewer {
 }
 
 .sidebar.collapsed .sidebar-toggle {
-  transform: rotate(180deg);
+  transform: none; /* No rotation */
+  width: 6px;
+  height: 60px;
+  border-radius: 10px;
+  right: -3px; /* Stick halfway out the edge */
+  border: none;
+  background: #4a4a4f; /* Subtle gray line */
+  box-shadow: none;
+}
+
+.sidebar.collapsed .sidebar-toggle:hover {
+  background: #0071e3; /* Light up on hover */
+  transform: scaleY(1.1);
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+  display: none; /* Hide the arrow icon */
 }
 
 .sidebar-inner {
