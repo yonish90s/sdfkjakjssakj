@@ -683,7 +683,7 @@ function renderNewsLayout(page = 1) {
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
 
-  feedList.innerHTML = pageArticles.map(a => {
+  const htmlContent = pageArticles.map(a => {
     const isSaved = myArticlesList.some(x => x.id === a.id);
     return `
       <div class="feed-item" onclick="showArticle(${a.id})">
@@ -708,21 +708,15 @@ function renderNewsLayout(page = 1) {
     `;
   }).join('');
 
+  if (page === 1) {
+    feedList.innerHTML = htmlContent;
+  } else {
+    feedList.insertAdjacentHTML('beforeend', htmlContent);
+  }
 
-  // Render pagination buttons
+  // Hide pagination for infinite scroll
   if (paginationEl) {
-    if (totalPages <= 1) {
-      paginationEl.innerHTML = '';
-    } else {
-      paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
-        <button onclick="renderNewsLayout(${p}); window.scrollTo({top:0,behavior:'smooth'});"
-          style="padding: 8px 16px; border-radius: 980px; border: 1px solid ${p === page ? '#0071e3' : '#ccc'};
-          background: ${p === page ? '#0071e3' : '#fff'}; color: ${p === page ? '#fff' : '#1d1d1f'};
-          font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">
-          ${p}
-        </button>
-      `).join('');
-    }
+    paginationEl.style.display = 'none';
   }
   
   // Render Ads on Home
@@ -730,6 +724,23 @@ function renderNewsLayout(page = 1) {
     renderAdsSidebar();
   }
 }
+
+// Infinite Scroll Listener
+window.addEventListener('scroll', () => {
+  const homePage = document.getElementById('page-home');
+  if (!homePage || !homePage.classList.contains('active')) return;
+
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+    const feedArticles = newsArticles.filter(x => !x.topPosition && x.approved !== false);
+    const totalPages = Math.ceil(feedArticles.length / ARTICLES_PER_PAGE);
+    
+    if (currentPage < totalPages && !window.isLoadingNextPage) {
+      window.isLoadingNextPage = true;
+      renderNewsLayout(currentPage + 1);
+      setTimeout(() => window.isLoadingNextPage = false, 500); // debounce
+    }
+  }
+});
 
 function filterCategory(cat) {
   // Logic not fully implemented since this is a UI prototype
