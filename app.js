@@ -4361,11 +4361,14 @@ document.addEventListener('DOMContentLoaded', () => {
 const PREDEFINED_GROUPS = [
   { id: 'tech-talk', name: 'Tech Talk', desc: 'Discuss the latest in technology, AI, and development.', icon: 'fa-laptop-code', color: '#0071e3' },
   { id: 'trading-strategies', name: 'Trading Strategies', desc: 'Share and discuss trading strategies, graphs, and market trends.', icon: 'fa-chart-line', color: '#34c759' },
-  { id: 'general-chat', name: 'General Chat', desc: 'A place for general discussions, networking, and off-topic conversations.', icon: 'fa-comments', color: '#ff9500' }
+  { id: 'general-chat', name: 'General Chat', desc: 'A place for general discussions, networking, and off-topic conversations.', icon: 'fa-comments', color: '#ff9500' },
+  { id: 'marketplace', name: 'Marketplace', desc: 'Buy and sell items, services, or software. Make offers directly to sellers!', icon: 'fa-store', color: '#af52de' }
 ];
 
 let currentGroupId = null;
 let currentPostId = null;
+let currentPostAuthorEmail = null;
+let currentPostTitle = null;
 
 function renderGroups() {
   const container = document.getElementById('groups-grid');
@@ -4540,6 +4543,19 @@ window.openPost = async function(postId) {
       document.getElementById('post-content').textContent = data.content;
       document.getElementById('post-author').textContent = data.author;
       document.getElementById('post-date').textContent = new Date(data.timestamp).toLocaleString();
+      
+      currentPostAuthorEmail = data.authorEmail;
+      currentPostTitle = data.title;
+      
+      const actionsContainer = document.getElementById('post-actions-container');
+      if (actionsContainer) {
+        if (currentGroupId === 'marketplace' && currentUser && currentUser.email !== data.authorEmail) {
+          actionsContainer.style.display = 'block';
+        } else {
+          actionsContainer.style.display = 'none';
+        }
+      }
+      
     } else {
       document.getElementById('post-title').textContent = 'Post not found';
       commentsContainer.innerHTML = '';
@@ -4629,6 +4645,159 @@ window.submitComment = async function() {
     input.disabled = false;
   }
 };
+
+window.openMakeOfferModal = function() {
+  if (!currentUser || !currentUser.email) {
+    showToast('Please sign in to make an offer.', 'error');
+    openAuthModal('login');
+    return;
+  }
+  document.getElementById('make-offer-modal').classList.add('active');
+  document.getElementById('offer-amount').value = '';
+  document.getElementById('offer-message').value = '';
+};
+
+window.closeMakeOfferModal = function() {
+  document.getElementById('make-offer-modal').classList.remove('active');
+};
+
+window.submitOffer = async function() {
+  if (!currentUser || !currentUser.email) return;
+  if (!currentPostId || !currentPostAuthorEmail) return;
+  
+  const amount = document.getElementById('offer-amount').value.trim();
+  const message = document.getElementById('offer-message').value.trim();
+  const btn = document.getElementById('btn-submit-offer');
+  
+  if (!amount) {
+    showToast('Please enter an offer amount.', 'error');
+    return;
+  }
+  
+  const originalText = btn.textContent;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  
+  try {
+    const offersRef = window.fbColl(window.fbDb, 'offers');
+    await window.fbAddDoc(offersRef, {
+      postId: currentPostId,
+      postTitle: currentPostTitle || 'Marketplace Item',
+      sellerEmail: currentPostAuthorEmail,
+      buyerName: currentUser.name || 'Anonymous',
+      buyerEmail: currentUser.email,
+      offerAmount: Number(amount),
+      message: message,
+      timestamp: new Date().toISOString(),
+      status: 'pending'
+    });
+    
+    closeMakeOfferModal();
+    showToast('Offer sent successfully!', 'success');
+  } catch (err) {
+    console.error('Error submitting offer:', err);
+    if (err.message && err.message.includes('permission')) {
+      alert('Firebase Security Error: You do not have permission to write to the "offers" collection. Please update your Firebase Rules.');
+    } else {
+      alert('Failed to send offer: ' + err.message);
+    }
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+};
+
+// =====================================================================
+// INBOX TABS (RECEIPTS & OFFERS)
+// =====================================================================
+window.switchInboxTab = function(tab) {
+  const tabReceipts = document.getElementById('tab-receipts');
+  const tabOffers = document.getElementById('tab-offers');
+  const containerReceipts = document.getElementById('notifications-container');
+  const containerOffers = document.getElementById('offers-container');
+  
+  if (tab === 'receipts') {
+    tabReceipts.style.background = '#2c2c2e';
+    tabReceipts.style.color = '#fff';
+    tabOffers.style.background = 'transparent';
+    tabOffers.style.color = '#86868b';
+    containerReceipts.style.display = 'flex';
+    containerOffers.style.display = 'none';
+  } else {
+    tabOffers.style.background = '#2c2c2e';
+    tabOffers.style.color = '#fff';
+    tabReceipts.style.background = 'transparent';
+    tabReceipts.style.color = '#86868b';
+    containerOffers.style.display = 'flex';
+    containerReceipts.style.display = 'none';
+    renderOffers();
+  }
+};
+
+async function renderOffers() {
+  const container = document.getElementById('offers-container');
+  if (!container) return;
+
+  if (!currentUser || !currentUser.email || !window.fbGetDocs) {
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:#86868b;">Please sign in to view offers.</div>';
+    return;
+  }
+
+  container.innerHTML = '<div style="text-align:center; padding:20px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> Loading offers...</div>';
+  
+  try {
+    const offersRef = window.fbColl(window.fbDb, 'offers');
+    const q = window.fbQuery(offersRef, window.fbWhere('sellerEmail', '==', currentUser.email));
+    const snapshot = await window.fbGetDocs(q);
+    
+    if (snapshot.empty) {
+      container.innerHTML = '<div style="text-align:center; padding:30px; color:#86868b;">No offers received yet.</div>';
+      return;
+    }
+    
+    // Sort in memory
+    const docs = [];
+    snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+    docs.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
+    
+    let html = '';
+    docs.forEach(doc => {
+      const data = doc.data;
+      const dateStr = new Date(data.timestamp).toLocaleString();
+      
+      html += `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div>
+              <div style="font-size:0.8rem; color:#af52de; font-weight:700; text-transform:uppercase; margin-bottom:4px;">New Offer</div>
+              <h3 style="font-size:1.1rem; font-weight:700; color:#f5f5f7; margin:0;">${data.postTitle}</h3>
+            </div>
+            <div style="font-size:1.2rem; font-weight:800; color:#34c759;">$${data.offerAmount}</div>
+          </div>
+          <div style="font-size:0.9rem; color:#a1a1aa; background:#2c2c2e; padding:10px; border-radius:8px; margin-bottom:12px;">
+            <strong>From:</strong> ${data.buyerName} (${data.buyerEmail})<br>
+            ${data.message ? `<div style="margin-top:6px; font-style:italic;">"${data.message}"</div>` : ''}
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
+            <div style="display:flex; gap:8px;">
+              <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:0.85rem; font-weight:600; cursor:pointer;">Contact Buyer</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error loading offers:', err);
+    if (err.message && err.message.includes('permission')) {
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444; font-size:0.9rem;">Firebase Security Error: You do not have permission to read the "offers" collection. Update Firebase Rules.</div>';
+    } else {
+      container.innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load offers.</div>';
+    }
+  }
+}
 
 // =====================================================================
 // COOKIE CONSENT LOGIC

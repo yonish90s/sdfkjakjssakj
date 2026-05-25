@@ -501,6 +501,9 @@
           <span id="post-date">Date</span>
         </div>
         <div id="post-content" style="font-size:1.05rem; line-height:1.6; color:#e5e5ea; white-space:pre-wrap;">Post Content</div>
+        <div id="post-actions-container" style="margin-top: 24px; display:none;">
+          <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:10px 24px; font-weight:700;"><i class="fas fa-hand-holding-usd" style="margin-right:8px;"></i>Make an Offer</button>
+        </div>
       </div>
       
       <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 16px;">Comments (<span id="comments-count">0</span>)</h3>
@@ -536,6 +539,26 @@
     </div>
     
     <button id="btn-submit-post" class="btn-primary" onclick="submitPost()" style="width:100%; padding:14px; font-size:1rem;">Post to Group</button>
+  </div>
+</div>
+
+<!-- MAKE OFFER MODAL -->
+<div id="make-offer-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <button class="modal-close" onclick="closeMakeOfferModal()">✕</button>
+    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 24px;">Make an Offer</h2>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Offer Amount ($)</label>
+      <input type="number" id="offer-amount" placeholder="e.g. 50" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:1rem;outline:none;font-family:inherit;box-sizing:border-box;">
+    </div>
+    
+    <div style="margin-bottom:24px;">
+      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Message</label>
+      <textarea id="offer-message" placeholder="Hi, I'm interested in buying this..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:0.95rem;outline:none;font-family:inherit;min-height:100px;resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    
+    <button id="btn-submit-offer" class="btn-primary" onclick="submitOffer()" style="width:100%; padding:14px; font-size:1rem;">Send Offer</button>
   </div>
 </div>
 
@@ -1403,16 +1426,25 @@
 
 <!-- NOTIFICATIONS DRAWER -->
 <div id="notifications-drawer" class="bottom-drawer">
-  <div class="bottom-drawer-header">
-    <div style="display:flex; align-items:baseline; gap:12px;">
-      <h2 style="font-size:1.4rem; font-weight:800; margin:0; color:#f5f5f7;">Inbox & Receipts</h2>
-    </div>
-    <div style="display:flex; gap:12px;">
+  <div class="bottom-drawer-header" style="flex-direction:column; align-items:stretch; gap:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="font-size:1.4rem; font-weight:800; margin:0; color:#f5f5f7;">Inbox</h2>
       <button onclick="toggleNotificationsDrawer()" style="background:none; border:none; font-size:2rem; cursor:pointer; color:#86868b; line-height:1; padding:0; transition:color 0.2s;">&times;</button>
     </div>
+    
+    <!-- TABS -->
+    <div style="display:flex; background:#1c1c1e; border-radius:8px; padding:4px;">
+      <button id="tab-receipts" onclick="switchInboxTab('receipts')" style="flex:1; padding:8px 0; border:none; border-radius:6px; background:#2c2c2e; color:#fff; font-weight:600; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Receipts</button>
+      <button id="tab-offers" onclick="switchInboxTab('offers')" style="flex:1; padding:8px 0; border:none; border-radius:6px; background:transparent; color:#86868b; font-weight:600; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Offers</button>
+    </div>
   </div>
+  
   <div id="notifications-container" style="display:flex; flex-direction:column; gap:16px; padding-bottom: 30px; overflow-y:auto; max-height: 60vh;">
     <!-- Receipts injected here -->
+  </div>
+  
+  <div id="offers-container" style="display:none; flex-direction:column; gap:16px; padding-bottom: 30px; overflow-y:auto; max-height: 60vh;">
+    <!-- Offers injected here -->
   </div>
 </div>
 
