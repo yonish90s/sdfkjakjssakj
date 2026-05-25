@@ -301,6 +301,7 @@ body {
   pointer-events: none;
 }
 
+.apple-dropdown:hover .apple-dropdown-content,
 .apple-dropdown.active .apple-dropdown-content {
   display: block;
   opacity: 1;
@@ -348,6 +349,7 @@ body.dark-theme .apple-dropdown-item:hover {
   transition: transform 0.3s;
 }
 
+.apple-dropdown:hover .dropdown-trigger i,
 .apple-dropdown.active .dropdown-trigger i {
   transform: rotate(180deg);
 }
@@ -378,6 +380,7 @@ body.dark-theme .apple-dropdown-item:hover {
   pointer-events: none;
 }
 
+.apple-dropdown:hover .apple-dropdown-content.mega-menu,
 .apple-dropdown.active .apple-dropdown-content.mega-menu {
   display: flex;
   opacity: 1;
@@ -5624,6 +5627,7 @@ body.light-theme .location-chevron {
   gap: 4px;
 }
 
+.location-selector:hover .location-dropdown-content,
 .location-dropdown-content.show {
   display: flex;
   animation: fadeIn 0.2s ease;
