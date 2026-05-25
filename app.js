@@ -3723,6 +3723,13 @@ function toggleNotificationsDrawer() {
   if (drawer.classList.contains('active')) {
     drawer.classList.remove('active');
   } else {
+    const badge = document.getElementById('notifications-badge');
+    if (badge && currentUser && currentUser.email) {
+      badge.style.display = 'none';
+      if (badge.dataset.total) {
+        localStorage.setItem(`readReceipts_${currentUser.email}`, badge.dataset.total);
+      }
+    }
     renderNotifications();
     drawer.classList.add('active');
   }
@@ -3753,8 +3760,11 @@ async function renderNotifications() {
     }
 
     if (badge) {
-      badge.textContent = snapshot.size;
-      badge.style.display = snapshot.size > 0 ? 'flex' : 'none';
+      const readCount = parseInt(localStorage.getItem(`readReceipts_${currentUser.email}`) || '0', 10);
+      const unread = snapshot.size - readCount;
+      badge.dataset.total = snapshot.size;
+      badge.textContent = unread > 0 ? unread : '';
+      badge.style.display = unread > 0 ? 'flex' : 'none';
     }
 
     let html = '';
@@ -3883,6 +3893,7 @@ async function runRealPayment(summaryLines, total) {
         closePaymentModal();
         shoppingCart = [];
         saveCart();
+        updateCartBadge();
         renderCart();
         showToast('Payment Successful! Receipt sent to ' + email, 'success');
         if (currentUser && currentUser.email) {
