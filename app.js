@@ -543,7 +543,50 @@ function submitBookingDirect() {
   document.getElementById('book-phone-direct').value = '';
   document.getElementById('book-request-direct').value = '';
   
+  startAppointmentCountdown(day, selectedTime);
   initBookingWidget(); // Refresh grid to remove booked slot
+}
+
+let appointmentCountdownInterval = null;
+function startAppointmentCountdown(dayName, timeStr) {
+  if (appointmentCountdownInterval) clearInterval(appointmentCountdownInterval);
+  
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const targetDay = days.indexOf(dayName);
+  if (targetDay === -1) return;
+  
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  
+  function updateTimer() {
+    const now = new Date();
+    const currentDay = now.getDay();
+    let daysUntil = targetDay - currentDay;
+    
+    if (daysUntil < 0 || (daysUntil === 0 && (now.getHours() > hours || (now.getHours() === hours && now.getMinutes() >= minutes)))) {
+      daysUntil += 7; // Next week
+    }
+    
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + daysUntil);
+    targetDate.setHours(hours, minutes, 0, 0);
+    
+    const diffMs = targetDate - now;
+    if (diffMs <= 0) {
+      document.getElementById('booking-countdown-timer').textContent = "00:00:00";
+      clearInterval(appointmentCountdownInterval);
+      return;
+    }
+    
+    const h = Math.floor(diffMs / (1000 * 60 * 60));
+    const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diffMs % (1000 * 60)) / 1000);
+    
+    document.getElementById('booking-countdown-timer').textContent = 
+      `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+  
+  updateTimer();
+  appointmentCountdownInterval = setInterval(updateTimer, 1000);
 }
 
 function resetBookingView() {
@@ -3824,8 +3867,22 @@ async function renderNotifications() {
     snapshot.forEach(doc => {
       const data = doc.data();
       const dateStr = new Date(data.timestamp).toLocaleString();
-      const itemsHtml = data.items ? data.items.map(i => `<div style="font-size:0.85rem; color:#a1a1aa; padding:4px 0;">&bull; ${i}</div>`).join('') : '';
-      const shortTitle = data.items && data.items.length > 0 ? data.items[0].split('×')[0] + (data.items.length > 1 ? ' + more...' : '') : 'Order Confirmation';
+      const itemsHtml = data.items ? data.items.map(i => {
+        if (typeof i === 'string') {
+          return `<div style="font-size:0.85rem; color:#a1a1aa; padding:4px 0;">&bull; ${i}</div>`;
+        } else {
+          return `
+            <div style="display:flex; align-items:center; gap:12px; margin-top:8px; padding-bottom:8px; border-bottom:1px solid #1c1c1e;">
+              ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#1c1c1e; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
+              <div style="font-size:0.85rem; color:#e5e5ea; flex:1;">${i.text}</div>
+            </div>
+          `;
+        }
+      }).join('') : '';
+      
+      const firstItem = data.items && data.items.length > 0 ? data.items[0] : null;
+      const firstItemText = firstItem ? (typeof firstItem === 'string' ? firstItem : firstItem.text) : '';
+      const shortTitle = firstItemText ? firstItemText.split('×')[0] + (data.items.length > 1 ? ' + more...' : '') : 'Order Confirmation';
       
       html += `
         <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="const d = this.querySelector('.receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
@@ -3877,9 +3934,12 @@ function checkoutCart() {
   const summaryLines = shoppingCart.map(c => {
     const list = c.type === 'product' ? shopProducts : servicesItems;
     const item = list.find(x => x.id === c.id);
-    if (!item) return '';
+    if (!item) return null;
     total += parsePrice(item.price) * c.qty;
-    return `${item.title} × ${c.qty} — ${item.price}`;
+    return {
+      text: `${item.title} × ${c.qty} — ${item.price}`,
+      image: item.image || item.image_url || ''
+    };
   }).filter(Boolean);
 
   const drawer = document.getElementById('cart-drawer');
@@ -3939,10 +3999,11 @@ async function runRealPayment(summaryLines, total) {
 
     // 1. Send email receipt via backend API
     try {
+      const emailItemsText = summaryLines.map(i => i.text);
       await fetch(`${SERVER_URL}/api/send-receipt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name, items: summaryLines, total })
+        body: JSON.stringify({ email, name, items: emailItemsText, total })
       });
     } catch (emailErr) {
       console.error('Error sending email receipt:', emailErr);
@@ -4019,17 +4080,19 @@ function runPaymentAnimation(summaryLines, total) {
 
   function showSuccess() {
     spinner.style.display = 'none';
+    
+    const emailItemsText = summaryLines.map(i => i.text);
 
     const itemsEl = document.getElementById('payment-success-items');
     if (itemsEl) {
-      itemsEl.innerHTML = summaryLines.join('<br>') +
+      itemsEl.innerHTML = emailItemsText.join('<br>') +
         `<br><strong style="color:#1d1d1f;">Total Paid: $${parseFloat(total).toLocaleString('en-US')}</strong>`;
     }
 
     // Save order to history for admin
     const orderData = {
       email: (currentUser && currentUser.email) ? currentUser.email : 'Guest',
-      items: summaryLines,
+      items: emailItemsText,
       total: total,
       date: new Date().toLocaleString('en-US')
     };
@@ -4045,7 +4108,7 @@ function runPaymentAnimation(summaryLines, total) {
         body: JSON.stringify({
           email: currentUser.email,
           name: currentUser.name,
-          items: summaryLines,
+          items: emailItemsText,
           total: total
         })
       })
