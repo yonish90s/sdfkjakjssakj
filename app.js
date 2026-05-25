@@ -4414,7 +4414,8 @@ window.openGroup = async function(groupId) {
   
   try {
     const postsRef = window.fbColl(window.fbDb, 'posts');
-    const q = window.fbQuery(postsRef, window.fbWhere('groupId', '==', groupId), window.fbOrderBy('timestamp', 'desc'));
+    // Removed orderBy to avoid composite index requirement
+    const q = window.fbQuery(postsRef, window.fbWhere('groupId', '==', groupId));
     const snapshot = await window.fbGetDocs(q);
     
     if (snapshot.empty) {
@@ -4422,9 +4423,14 @@ window.openGroup = async function(groupId) {
       return;
     }
     
+    // Sort in memory
+    const docs = [];
+    snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+    docs.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
+    
     let html = '';
-    snapshot.forEach(doc => {
-      const data = doc.data();
+    docs.forEach(doc => {
+      const data = doc.data;
       const dateStr = new Date(data.timestamp).toLocaleString();
       html += `
         <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="openPost('${doc.id}')">
@@ -4495,7 +4501,11 @@ window.submitPost = async function() {
     openGroup(currentGroupId); // Refresh list
   } catch (err) {
     console.error('Error creating post:', err);
-    showToast('Failed to create post.', 'error');
+    if (err.message && err.message.includes('permission')) {
+      alert('Firebase Security Error: You do not have permission to write to the "posts" collection. Please update your Firebase Rules to allow read/write to /posts.');
+    } else {
+      alert('Failed to create post: ' + err.message);
+    }
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
@@ -4538,7 +4548,8 @@ window.openPost = async function(postId) {
     
     // 2. Fetch Comments
     const commentsRef = window.fbColl(window.fbDb, 'comments');
-    const q = window.fbQuery(commentsRef, window.fbWhere('postId', '==', postId), window.fbOrderBy('timestamp', 'asc'));
+    // Removed orderBy to avoid composite index requirement
+    const q = window.fbQuery(commentsRef, window.fbWhere('postId', '==', postId));
     const snapshot = await window.fbGetDocs(q);
     
     document.getElementById('comments-count').textContent = snapshot.size;
@@ -4548,9 +4559,14 @@ window.openPost = async function(postId) {
       return;
     }
     
+    // Sort in memory
+    const docs = [];
+    snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+    docs.sort((a, b) => new Date(a.data.timestamp) - new Date(b.data.timestamp));
+    
     let html = '';
-    snapshot.forEach(doc => {
-      const data = doc.data();
+    docs.forEach(doc => {
+      const data = doc.data;
       const dateStr = new Date(data.timestamp).toLocaleString();
       html += `
         <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
@@ -4604,7 +4620,11 @@ window.submitComment = async function() {
     openPost(currentPostId); // Refresh comments
   } catch (err) {
     console.error('Error posting comment:', err);
-    showToast('Failed to post reply.', 'error');
+    if (err.message && err.message.includes('permission')) {
+      alert('Firebase Security Error: You do not have permission to write to the "comments" collection. Please update your Firebase Rules.');
+    } else {
+      alert('Failed to post reply: ' + err.message);
+    }
   } finally {
     input.disabled = false;
   }
