@@ -3771,20 +3771,41 @@ async function renderNotifications() {
     snapshot.forEach(doc => {
       const data = doc.data();
       const dateStr = new Date(data.timestamp).toLocaleString();
-      const itemsHtml = data.items ? data.items.map(i => `<div style="font-size:0.85rem; color:#a1a1aa;">&bull; ${i}</div>`).join('') : '';
+      const itemsHtml = data.items ? data.items.map(i => `<div style="font-size:0.85rem; color:#a1a1aa; padding:4px 0;">&bull; ${i}</div>`).join('') : '';
+      const shortTitle = data.items && data.items.length > 0 ? data.items[0].split('×')[0] + (data.items.length > 1 ? ' + more...' : '') : 'Order Confirmation';
       
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-            <div style="font-weight:700; color:#f5f5f7;">Receipt #${doc.id.slice(0, 8).toUpperCase()}</div>
-            <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="const d = this.querySelector('.receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="display:flex; align-items:flex-start; gap:12px;">
+              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #0071e3, #0a84ff); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; flex-shrink:0;">
+                <i class="fas fa-envelope-open-text"></i>
+              </div>
+              <div>
+                <div style="font-weight:700; color:#f5f5f7; font-size:0.95rem; margin-bottom:2px;">Project 11</div>
+                <div style="font-weight:600; color:#e5e5ea; font-size:0.85rem; margin-bottom:2px;">Order Receipt #${doc.id.slice(0, 6).toUpperCase()}</div>
+                <div style="font-size:0.8rem; color:#86868b; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical;">${shortTitle}</div>
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:#86868b; white-space:nowrap; margin-top:2px;">${dateStr.split(',')[0]}</div>
           </div>
-          <div style="margin-bottom:12px;">
-            ${itemsHtml}
-          </div>
-          <div style="border-top:1px dashed #3a3a3c; padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:600; color:#86868b;">Total</span>
-            <span style="font-weight:800; color:#fff; font-size:1.1rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
+          
+          <div class="receipt-details" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid #2c2c2e;">
+            <div style="font-size:0.9rem; color:#e5e5ea; margin-bottom:16px; line-height:1.5;">
+              Hi ${data.customer_name || 'Customer'},<br><br>
+              Thank you for your purchase! We have successfully processed your payment. Below are the details of your transaction:
+            </div>
+            <div style="background:#000; border-radius:8px; padding:12px; margin-bottom:16px; border:1px solid #1c1c1e;">
+              <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Order Summary</div>
+              ${itemsHtml}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1c1e; padding:12px; border-radius:8px; border:1px solid #3a3a3c;">
+              <span style="font-weight:600; color:#86868b; font-size:0.9rem;">Total Paid</span>
+              <span style="font-weight:800; color:#0071e3; font-size:1.2rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
+            </div>
+            <div style="text-align:center; margin-top:16px;">
+              <p style="font-size:0.75rem; color:#86868b;">Transaction completed on ${dateStr}</p>
+            </div>
           </div>
         </div>
       `;
