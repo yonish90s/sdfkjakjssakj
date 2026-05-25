@@ -3676,7 +3676,7 @@ function renderCart() {
     total += itemPrice * c.qty;
     const imageEl = c.type === 'product' && item.img
       ? `<img src="${item.img}" alt="" style="width:100%; height:100%; object-fit:cover;">`
-      : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
+      : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
     
     return `
       <div class="bottom-drawer-item">
