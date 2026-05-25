@@ -4351,4 +4351,261 @@ document.addEventListener('DOMContentLoaded', () => {
   const textEl = document.getElementById('selected-location-text');
   if (textEl) textEl.textContent = currentLocation.nameHeb;
   fetchWeatherForCapital();
+  renderGroups();
 });
+
+// =====================================================================
+// GROUPS & FORUMS LOGIC
+// =====================================================================
+
+const PREDEFINED_GROUPS = [
+  { id: 'tech-talk', name: 'Tech Talk', desc: 'Discuss the latest in technology, AI, and development.', icon: 'fa-laptop-code', color: '#0071e3' },
+  { id: 'trading-strategies', name: 'Trading Strategies', desc: 'Share and discuss trading strategies, graphs, and market trends.', icon: 'fa-chart-line', color: '#34c759' },
+  { id: 'general-chat', name: 'General Chat', desc: 'A place for general discussions, networking, and off-topic conversations.', icon: 'fa-comments', color: '#ff9500' }
+];
+
+let currentGroupId = null;
+let currentPostId = null;
+
+function renderGroups() {
+  const container = document.getElementById('groups-grid');
+  if (!container) return;
+  
+  let html = '';
+  PREDEFINED_GROUPS.forEach(g => {
+    html += `
+      <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:24px; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; gap:16px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='${g.color}'" onmouseout="this.style.transform='none'; this.style.borderColor='#2c2c2e'" onclick="openGroup('${g.id}')">
+        <div style="width:48px; height:48px; border-radius:12px; background:${g.color}20; color:${g.color}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+          <i class="fas ${g.icon}"></i>
+        </div>
+        <div>
+          <h3 style="font-size:1.4rem; font-weight:800; color:#f5f5f7; margin-bottom:8px;">${g.name}</h3>
+          <p style="color:#86868b; font-size:0.95rem; line-height:1.5;">${g.desc}</p>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+window.showGroupsList = function() {
+  document.getElementById('groups-list-view').style.display = 'block';
+  document.getElementById('group-detail-view').style.display = 'none';
+  document.getElementById('post-detail-view').style.display = 'none';
+  currentGroupId = null;
+  currentPostId = null;
+};
+
+window.openGroup = async function(groupId) {
+  const group = PREDEFINED_GROUPS.find(g => g.id === groupId);
+  if (!group) return;
+  
+  currentGroupId = groupId;
+  document.getElementById('groups-list-view').style.display = 'none';
+  document.getElementById('post-detail-view').style.display = 'none';
+  document.getElementById('group-detail-view').style.display = 'block';
+  
+  document.getElementById('group-title').textContent = group.name;
+  document.getElementById('group-desc').textContent = group.desc;
+  
+  const container = document.getElementById('group-posts-container');
+  container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> Loading discussions...</div>';
+  
+  try {
+    const postsRef = window.fbColl(window.fbDb, 'posts');
+    const q = window.fbQuery(postsRef, window.fbWhere('groupId', '==', groupId), window.fbOrderBy('timestamp', 'desc'));
+    const snapshot = await window.fbGetDocs(q);
+    
+    if (snapshot.empty) {
+      container.innerHTML = '<div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#86868b;">No posts yet. Be the first to start a discussion!</div>';
+      return;
+    }
+    
+    let html = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const dateStr = new Date(data.timestamp).toLocaleString();
+      html += `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="openPost('${doc.id}')">
+          <h3 style="font-size:1.2rem; font-weight:700; color:#f5f5f7; margin-bottom:8px;">${data.title}</h3>
+          <div style="font-size:0.95rem; color:#a1a1aa; margin-bottom:12px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${data.content}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#86868b;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i class="fas fa-user-circle"></i> ${data.author}
+            </div>
+            <div>${dateStr.split(',')[0]}</div>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error loading posts:', err);
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">Failed to load discussions. Please try again.</div>';
+  }
+};
+
+window.openCreatePostModal = function() {
+  if (!currentUser || !currentUser.email) {
+    showToast('Please sign in to create a post.', 'error');
+    openAuthModal('login');
+    return;
+  }
+  document.getElementById('create-post-modal').classList.add('active');
+  document.getElementById('new-post-title').value = '';
+  document.getElementById('new-post-content').value = '';
+};
+
+window.closeCreatePostModal = function() {
+  document.getElementById('create-post-modal').classList.remove('active');
+};
+
+window.submitPost = async function() {
+  if (!currentUser || !currentUser.email) return;
+  if (!currentGroupId) return;
+  
+  const title = document.getElementById('new-post-title').value.trim();
+  const content = document.getElementById('new-post-content').value.trim();
+  const btn = document.getElementById('btn-submit-post');
+  
+  if (!title || !content) {
+    showToast('Please enter both title and content.', 'error');
+    return;
+  }
+  
+  const originalText = btn.textContent;
+  btn.textContent = 'Posting...';
+  btn.disabled = true;
+  
+  try {
+    const postsRef = window.fbColl(window.fbDb, 'posts');
+    await window.fbAddDoc(postsRef, {
+      groupId: currentGroupId,
+      title: title,
+      content: content,
+      author: currentUser.name || 'Anonymous',
+      authorEmail: currentUser.email,
+      timestamp: new Date().toISOString()
+    });
+    
+    closeCreatePostModal();
+    showToast('Post created successfully!', 'success');
+    openGroup(currentGroupId); // Refresh list
+  } catch (err) {
+    console.error('Error creating post:', err);
+    showToast('Failed to create post.', 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+};
+
+window.openPost = async function(postId) {
+  currentPostId = postId;
+  document.getElementById('group-detail-view').style.display = 'none';
+  document.getElementById('post-detail-view').style.display = 'block';
+  
+  const backBtn = document.getElementById('post-back-btn');
+  backBtn.onclick = () => openGroup(currentGroupId);
+  
+  document.getElementById('post-title').textContent = 'Loading...';
+  document.getElementById('post-content').textContent = '';
+  document.getElementById('post-author').textContent = '';
+  document.getElementById('post-date').textContent = '';
+  
+  const commentsContainer = document.getElementById('post-comments-container');
+  commentsContainer.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div>';
+  document.getElementById('comments-count').textContent = '0';
+  
+  try {
+    // 1. Fetch Post details
+    const postDocRef = window.fbDoc(window.fbDb, 'posts', postId);
+    const postSnap = await window.fbGetDoc(postDocRef);
+    
+    if (postSnap.exists()) {
+      const data = postSnap.data();
+      document.getElementById('post-title').textContent = data.title;
+      document.getElementById('post-content').textContent = data.content;
+      document.getElementById('post-author').textContent = data.author;
+      document.getElementById('post-date').textContent = new Date(data.timestamp).toLocaleString();
+    } else {
+      document.getElementById('post-title').textContent = 'Post not found';
+      commentsContainer.innerHTML = '';
+      return;
+    }
+    
+    // 2. Fetch Comments
+    const commentsRef = window.fbColl(window.fbDb, 'comments');
+    const q = window.fbQuery(commentsRef, window.fbWhere('postId', '==', postId), window.fbOrderBy('timestamp', 'asc'));
+    const snapshot = await window.fbGetDocs(q);
+    
+    document.getElementById('comments-count').textContent = snapshot.size;
+    
+    if (snapshot.empty) {
+      commentsContainer.innerHTML = '<div style="color:#86868b; font-size:0.95rem; padding:16px; text-align:center;">No comments yet. Be the first to reply!</div>';
+      return;
+    }
+    
+    let html = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const dateStr = new Date(data.timestamp).toLocaleString();
+      html += `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:0.85rem; color:#86868b;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:24px; height:24px; border-radius:50%; background:#2c2c2e; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fas fa-user" style="font-size:0.7rem;"></i></div>
+              <span style="font-weight:600; color:#e5e5ea;">${data.author}</span>
+            </div>
+            <div>${dateStr}</div>
+          </div>
+          <div style="font-size:0.95rem; color:#d1d1d6; line-height:1.5; white-space:pre-wrap;">${data.content}</div>
+        </div>
+      `;
+    });
+    
+    commentsContainer.innerHTML = html;
+  } catch (err) {
+    console.error('Error loading post:', err);
+    commentsContainer.innerHTML = '<div style="color:#ef4444; padding:16px;">Failed to load comments.</div>';
+  }
+};
+
+window.submitComment = async function() {
+  if (!currentUser || !currentUser.email) {
+    showToast('Please sign in to comment.', 'error');
+    openAuthModal('login');
+    return;
+  }
+  
+  if (!currentPostId) return;
+  
+  const input = document.getElementById('new-comment-input');
+  const content = input.value.trim();
+  
+  if (!content) return;
+  
+  input.disabled = true;
+  
+  try {
+    const commentsRef = window.fbColl(window.fbDb, 'comments');
+    await window.fbAddDoc(commentsRef, {
+      postId: currentPostId,
+      content: content,
+      author: currentUser.name || 'Anonymous',
+      authorEmail: currentUser.email,
+      timestamp: new Date().toISOString()
+    });
+    
+    input.value = '';
+    showToast('Reply posted!', 'success');
+    openPost(currentPostId); // Refresh comments
+  } catch (err) {
+    console.error('Error posting comment:', err);
+    showToast('Failed to post reply.', 'error');
+  } finally {
+    input.disabled = false;
+  }
+};

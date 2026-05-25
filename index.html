@@ -211,6 +211,7 @@
         <nav class="apple-nav-links">
           <button onclick="showPage('home')" class="apple-nav-item">Articles</button>
           <button onclick="showPage('pdf-store')" class="apple-nav-item">Graphs</button>
+          <button onclick="showPage('groups')" class="apple-nav-item">Groups</button>
           
           <div class="apple-dropdown" id="nav-dropdown">
             <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)">
@@ -290,6 +291,7 @@
       <div class="nav-secondary-apple">
         <button onclick="showPage('home')" class="sec-nav-item">Articles</button>
         <button onclick="showPage('pdf-store')" class="sec-nav-item">Graphs</button>
+        <button onclick="showPage('groups')" class="sec-nav-item">Groups</button>
         <button onclick="showPage('store')" class="sec-nav-item">Software</button>
         <button onclick="showPage('appointments')" class="sec-nav-item">Booking</button>
         <button onclick="showPage('shop')" class="sec-nav-item">Shop</button>
@@ -459,6 +461,84 @@
 </div>
 
 <!-- PDF STORE PAGE -->
+<!-- GROUPS & FORUMS PAGE -->
+<div id="page-groups" class="page" style="display:none;">
+  <div class="apple-container" style="max-width:900px;">
+    
+    <!-- Groups List View -->
+    <div id="groups-list-view">
+      <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">Community Groups</h2>
+      <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 32px;">Join discussions, share strategies, and connect with the community.</p>
+      <div id="groups-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;">
+        <!-- Groups injected by JS -->
+      </div>
+    </div>
+
+    <!-- Specific Group View -->
+    <div id="group-detail-view" style="display:none;">
+      <button onclick="showGroupsList()" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-left"></i> Back to Groups</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+        <div>
+          <h2 id="group-title" style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px;">Group Name</h2>
+          <p id="group-desc" style="color: #86868b; font-size: 1rem;">Group description</p>
+        </div>
+        <button class="btn-primary" onclick="openCreatePostModal()" style="border-radius:980px;"><i class="fas fa-pen"></i> New Post</button>
+      </div>
+      <div id="group-posts-container" style="display:flex; flex-direction:column; gap:16px;">
+        <!-- Posts injected by JS -->
+      </div>
+    </div>
+
+    <!-- Specific Post View -->
+    <div id="post-detail-view" style="display:none;">
+      <button id="post-back-btn" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-left"></i> Back to Group</button>
+      <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:24px; margin-bottom:24px;">
+        <h2 id="post-title" style="font-size: 2rem; font-weight: 800; margin-bottom: 12px;">Post Title</h2>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; color:#86868b; font-size:0.9rem;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#2c2c2e; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fas fa-user"></i></div>
+          <span id="post-author" style="font-weight:600; color:#f5f5f7;">Author Name</span>
+          <span>&bull;</span>
+          <span id="post-date">Date</span>
+        </div>
+        <div id="post-content" style="font-size:1.05rem; line-height:1.6; color:#e5e5ea; white-space:pre-wrap;">Post Content</div>
+      </div>
+      
+      <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 16px;">Comments (<span id="comments-count">0</span>)</h3>
+      <div id="post-comments-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+        <!-- Comments injected by JS -->
+      </div>
+      
+      <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:16px;">
+        <textarea id="new-comment-input" placeholder="Write a comment..." style="width:100%; background:transparent; border:none; color:#fafafa; font-size:0.95rem; font-family:inherit; resize:vertical; min-height:80px; outline:none; margin-bottom:12px;"></textarea>
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="btn-primary" onclick="submitComment()" style="border-radius:980px; padding:8px 20px;">Reply</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- CREATE POST MODAL -->
+<div id="create-post-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 600px;">
+    <button class="modal-close" onclick="closeCreatePostModal()">✕</button>
+    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 24px;">Create New Post</h2>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Title</label>
+      <input type="text" id="new-post-title" placeholder="What's on your mind?" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:1rem;outline:none;font-family:inherit;box-sizing:border-box;">
+    </div>
+    
+    <div style="margin-bottom:24px;">
+      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Content</label>
+      <textarea id="new-post-content" placeholder="Share your thoughts, questions, or strategies..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:0.95rem;outline:none;font-family:inherit;min-height:150px;resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    
+    <button id="btn-submit-post" class="btn-primary" onclick="submitPost()" style="width:100%; padding:14px; font-size:1rem;">Post to Group</button>
+  </div>
+</div>
+
 <div id="page-pdf-store" class="page">
   <div class="main-news-layout" style="padding-top: 40px;">
     <div class="news-main" style="flex: 1;">
@@ -1912,7 +1992,7 @@
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-  import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, setDoc, getDoc, where } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
   
   // Expose to global window for app.js
   window.fbDb = db;
@@ -1926,6 +2006,7 @@
   window.fbGetDoc = getDoc;
   window.fbQuery = query;
   window.fbOrderBy = orderBy;
+  window.fbWhere = where;
 
   let mMode='login',mEmail='',mPw='',mName='',mTimer=null;
   const overlay=document.getElementById('auth-modal-overlay');
