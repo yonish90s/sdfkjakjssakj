@@ -3021,6 +3021,54 @@ function clearOrders() {
   }
 }
 
+async function handleDailyWallet() {
+  if (!currentUser || !currentUser.email) {
+    const el = document.getElementById('user-wallet-balance');
+    if (el) el.style.display = 'none';
+    return;
+  }
+  
+  const el = document.getElementById('user-wallet-balance');
+  if (el) el.style.display = 'flex';
+  
+  if (!window.fbDoc || !window.fbDb) return;
+  
+  const today = new Date().toISOString().split('T')[0];
+  const localClaimKey = `wallet_claim_${currentUser.email}`;
+  
+  try {
+    const userRef = window.fbDoc(window.fbDb, 'userData', currentUser.email);
+    const docSnap = await window.fbGetDoc(userRef);
+    
+    let walletBalance = 0;
+    let lastClaimDate = '';
+    
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      walletBalance = data.walletBalance || 0;
+      lastClaimDate = data.lastClaimDate || '';
+    }
+    
+    if (lastClaimDate !== today && localStorage.getItem(localClaimKey) !== today) {
+      walletBalance += 10;
+      lastClaimDate = today;
+      await window.fbSetDoc(userRef, {
+        walletBalance,
+        lastClaimDate
+      }, { merge: true });
+      localStorage.setItem(localClaimKey, today);
+      showToast('קיבלת 10₪ במזומן לארנק יומי! 🎁', 'success');
+    } else {
+      localStorage.setItem(localClaimKey, today);
+    }
+    
+    const amtEl = document.getElementById('wallet-amount');
+    if (amtEl) amtEl.textContent = walletBalance;
+  } catch(err) {
+    console.error('Wallet error:', err);
+  }
+}
+
 function updateUserUI() {
   const btnJoin = document.getElementById('btn-join');
   const profileBadge = document.getElementById('user-profile-badge');
@@ -3049,6 +3097,7 @@ function updateUserUI() {
       avatarImg.style.display = 'block';
       avatarImg.src = currentUser.avatar || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200&h=200';
       document.getElementById('user-badge-name').textContent = currentUser.name;
+      handleDailyWallet();
     }
     
     // Update comment inputs for users
@@ -3077,6 +3126,9 @@ function updateUserUI() {
     
     document.querySelectorAll('[id$="-comment-input-area"]').forEach(el => el.style.display = 'none');
     document.querySelectorAll('[id$="-comment-join-prompt"]').forEach(el => el.style.display = 'block');
+    
+    const wEl = document.getElementById('user-wallet-balance');
+    if (wEl) wEl.style.display = 'none';
     
     // Hide "My Graphs" for guests/logged-out
     const myGraphsLink = document.getElementById('link-my-graphs');
