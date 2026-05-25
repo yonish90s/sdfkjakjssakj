@@ -123,29 +123,21 @@
 
           <!-- Personalized Sections -->
 
-          <a href="#" class="sidebar-link" id="link-my-graphs" data-page="my-graphs" onclick="toggleMyGraphsDropdown(event)">
+          <a href="#" class="sidebar-link" id="link-my-graphs" onclick="toggleSavedDrawer('graphs'); return false;">
             <i class="fas fa-chart-pie"></i>
             <span>My Graphs</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-graphs')" title="Focus Mode"></i>
-              <i class="fas fa-chevron-down" id="my-graphs-chevron" style="font-size: 0.7rem; transition: transform 0.3s;"></i>
             </div>
           </a>
-          <div id="my-graphs-dropdown" class="sidebar-submenu" style="display: none;">
-            <!-- Submenu items -->
-          </div>
 
-          <a href="#" class="sidebar-link" id="link-my-articles" data-page="my-articles" onclick="toggleMyArticlesDropdown(event)">
+          <a href="#" class="sidebar-link" id="link-my-articles" onclick="toggleSavedDrawer('articles'); return false;">
             <i class="fas fa-newspaper"></i>
             <span>My Articles</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-articles')" title="Focus Mode"></i>
-              <i class="fas fa-chevron-down" id="my-articles-chevron" style="font-size: 0.7rem; transition: transform 0.3s;"></i>
             </div>
           </a>
-          <div id="my-articles-dropdown" class="sidebar-submenu" style="display: none;">
-            <!-- Submenu items -->
-          </div>
 
           <a href="#" class="sidebar-link" id="link-my-purchases" data-page="my-purchases" onclick="toggleMyPurchasesDropdown(event)">
             <i class="fas fa-shopping-cart"></i>
@@ -1277,8 +1269,8 @@
 </div>
 
 <!-- SHOPPING CART DRAWER -->
-<div id="cart-drawer" class="cart-drawer">
-  <div class="cart-drawer-header">
+<div id="cart-drawer" class="bottom-drawer">
+  <div class="bottom-drawer-header">
     <div style="display:flex; align-items:baseline; gap:12px;">
       <h2 style="font-size:1.4rem; font-weight:800; margin:0; color:#f5f5f7;">My Items</h2>
       <span id="cart-total" style="font-size:1.1rem; color:#86868b; font-weight:600;">$0</span>
@@ -1289,7 +1281,23 @@
     </div>
   </div>
 
-  <div id="cart-items" class="cart-drawer-grid">
+  <div id="cart-items" class="bottom-drawer-grid">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- SAVED ITEMS DRAWER -->
+<div id="saved-items-drawer" class="bottom-drawer">
+  <div class="bottom-drawer-header">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <h2 id="saved-items-title" style="font-size:1.4rem; font-weight:800; margin:0; color:#f5f5f7;">Saved Items</h2>
+    </div>
+    <div style="display:flex; gap:12px;">
+      <button onclick="toggleSavedDrawer()" style="background:none; border:none; font-size:2rem; cursor:pointer; color:#86868b; line-height:1; padding:0; transition:color 0.2s;">&times;</button>
+    </div>
+  </div>
+
+  <div id="saved-items-container" class="bottom-drawer-grid">
     <!-- Populated by JS -->
   </div>
 </div>

@@ -5684,8 +5684,8 @@ body.light-theme .location-chevron {
   color: #0ea5e9;
 }
 
-/* ========== CART DRAWER ========== */
-.cart-drawer {
+/* ========== BOTTOM DRAWER (CART / SAVED ITEMS) ========== */
+.bottom-drawer {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -5703,11 +5703,11 @@ body.light-theme .location-chevron {
   flex-direction: column;
 }
 
-.cart-drawer.active {
+.bottom-drawer.active {
   transform: translateY(0);
 }
 
-.cart-drawer-header {
+.bottom-drawer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -5715,7 +5715,7 @@ body.light-theme .location-chevron {
   border-bottom: 1px solid #333;
 }
 
-.cart-drawer-grid {
+.bottom-drawer-grid {
   padding: 24px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -5724,7 +5724,7 @@ body.light-theme .location-chevron {
   align-items: start;
 }
 
-.cart-drawer-item {
+.bottom-drawer-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -5733,7 +5733,7 @@ body.light-theme .location-chevron {
   width: 100%;
 }
 
-.cart-drawer-item-img {
+.bottom-drawer-item-img {
   width: 100%;
   aspect-ratio: 1;
   background: #2a2a2a;
@@ -5744,14 +5744,14 @@ body.light-theme .location-chevron {
   position: relative;
 }
 
-.cart-drawer-item-img img {
+.bottom-drawer-item-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 12px;
 }
 
-.cart-drawer-item-qty {
+.bottom-drawer-item-qty {
   position: absolute;
   bottom: -6px;
   right: -6px;
@@ -5768,7 +5768,7 @@ body.light-theme .location-chevron {
   border: 2px solid #1a1a1a;
 }
 
-.cart-drawer-item-title {
+.bottom-drawer-item-title {
   font-size: 0.75rem;
   color: #a1a1a6;
   text-align: center;
@@ -5778,7 +5778,7 @@ body.light-theme .location-chevron {
   width: 100%;
 }
 
-.cart-drawer-item-remove {
+.bottom-drawer-item-remove {
   position: absolute;
   top: -6px;
   left: -6px;
@@ -5798,11 +5798,11 @@ body.light-theme .location-chevron {
   transition: opacity 0.2s;
 }
 
-.cart-drawer-item:hover .cart-drawer-item-remove {
+.bottom-drawer-item:hover .bottom-drawer-item-remove {
   opacity: 1;
 }
 
-.cart-drawer-empty {
+.bottom-drawer-empty {
   grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
@@ -5810,3 +5810,4 @@ body.light-theme .location-chevron {
   justify-content: center;
   padding: 40px 0;
 }
+

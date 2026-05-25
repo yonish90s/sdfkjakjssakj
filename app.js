@@ -2114,99 +2114,85 @@ function renderMyGraphsWatchlist() {
   renderSidebarWatchlist(); // Sync sidebar
 }
 
-function toggleMyGraphsDropdown(event) {
-  if (event) event.preventDefault();
-  const dropdown = document.getElementById('my-graphs-dropdown');
-  const chevron = document.getElementById('my-graphs-chevron');
-  const isHidden = dropdown.style.display === 'none';
+// ========== SAVED ITEMS DRAWER LOGIC ==========
+let currentSavedDrawerType = 'articles'; // 'articles' or 'graphs'
+
+function toggleSavedDrawer(type) {
+  const drawer = document.getElementById('saved-items-drawer');
+  if (!drawer) return;
   
-  dropdown.style.display = isHidden ? 'flex' : 'none';
-  if (chevron) {
-    chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-  }
-  
-  if (isHidden) {
-    renderSidebarWatchlist();
+  if (drawer.classList.contains('active') && (currentSavedDrawerType === type || !type)) {
+    drawer.classList.remove('active');
+  } else {
+    if (type) currentSavedDrawerType = type;
+    renderSavedDrawer();
+    drawer.classList.add('active');
   }
 }
 
-function renderSidebarWatchlist() {
-  const container = document.getElementById('my-graphs-dropdown');
-  if (!container) return;
+function renderSavedDrawer() {
+  const container = document.getElementById('saved-items-container');
+  const titleEl = document.getElementById('saved-items-title');
+  if (!container || !titleEl) return;
   
-  if (myGraphsList.length === 0) {
-    container.innerHTML = `
-      <div style="padding: 10px; font-size: 0.75rem; color: #86868b; text-align: center;">
-        No saved graphs
-      </div>
-    `;
-    return;
+  let itemsHtml = '';
+  
+  if (currentSavedDrawerType === 'graphs') {
+    titleEl.textContent = 'Saved Graphs';
+    if (myGraphsList.length === 0) {
+      itemsHtml = `
+        <div class="bottom-drawer-empty">
+          <i class="fas fa-chart-pie" style="font-size:3rem; margin-bottom:12px; color:#86868b;"></i>
+          <div style="font-size:1.1rem; font-weight:600; color:#86868b;">No saved graphs</div>
+        </div>`;
+    } else {
+      const graphIds = myGraphsList.map(x => x.id);
+      const savedItems = pdfStoreItems.filter(item => graphIds.includes(item.id));
+      itemsHtml = savedItems.map(item => {
+        const savedItem = myGraphsList.find(x => x.id === item.id);
+        const displayName = savedItem.customName || item.title;
+        return `
+          <div class="bottom-drawer-item" onclick="showProductDetailById('${item.id}'); toggleSavedDrawer();" style="cursor:pointer;">
+            <div class="bottom-drawer-item-img">
+              <i class="fas fa-chart-pie" style="font-size:2rem; color:#fff;"></i>
+            </div>
+            <div class="bottom-drawer-item-title">${displayName}</div>
+            <button class="bottom-drawer-item-remove" onclick="event.stopPropagation(); removeFromMyGraphs('${item.id}'); renderSavedDrawer();" title="Remove">&times;</button>
+          </div>
+        `;
+      }).join('');
+    }
+  } else if (currentSavedDrawerType === 'articles') {
+    titleEl.textContent = 'Saved Articles';
+    if (myArticlesList.length === 0) {
+      itemsHtml = `
+        <div class="bottom-drawer-empty">
+          <i class="fas fa-newspaper" style="font-size:3rem; margin-bottom:12px; color:#86868b;"></i>
+          <div style="font-size:1.1rem; font-weight:600; color:#86868b;">No saved articles</div>
+        </div>`;
+    } else {
+      const artIds = myArticlesList.map(x => x.id);
+      const items = newsArticles.filter(art => artIds.includes(art.id));
+      itemsHtml = items.map(art => {
+        const savedItem = myArticlesList.find(x => x.id === art.id);
+        const displayName = savedItem.customName || art.title;
+        const imgEl = art.imageUrl 
+          ? `<img src="${art.imageUrl}" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` 
+          : `<i class="fas fa-newspaper" style="font-size:2rem; color:#fff;"></i>`;
+        return `
+          <div class="bottom-drawer-item" onclick="showArticle(${art.id}); toggleSavedDrawer();" style="cursor:pointer;">
+            <div class="bottom-drawer-item-img">
+              ${imgEl}
+            </div>
+            <div class="bottom-drawer-item-title">${displayName}</div>
+            <button class="bottom-drawer-item-remove" onclick="event.stopPropagation(); toggleMyArticle(${art.id}); renderSavedDrawer();" title="Remove">&times;</button>
+          </div>
+        `;
+      }).join('');
+    }
   }
   
-  const graphIds = myGraphsList.map(x => x.id);
-  const savedItems = pdfStoreItems.filter(item => graphIds.includes(item.id));
-  
-  container.innerHTML = savedItems.map(item => {
-    const savedItem = myGraphsList.find(x => x.id === item.id);
-    const displayName = savedItem.customName || item.title;
-    const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
-    return `
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <a href="#" class="submenu-link" onclick="event.preventDefault(); showProductDetailById('${item.id}')" style="flex:1;">
-          <i class="fas fa-chart-bar" style="font-size: 0.7rem; opacity: 0.7;"></i>
-          <span ondblclick="event.stopPropagation(); inlineRename(this, 'graph', '${item.id}')" title="Double-click to rename">${shortName}</span>
-        </a>
-        <button onclick="removeFromMyGraphs('${item.id}')" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    `;
-  }).join('');
-}
-
-// ========== MY ARTICLES LOGIC ==========
-function toggleMyArticlesDropdown(event) {
-  if (event) event.preventDefault();
-  const dropdown = document.getElementById('my-articles-dropdown');
-  const chevron = document.getElementById('my-articles-chevron');
-  const isHidden = dropdown.style.display === 'none';
-  
-  dropdown.style.display = isHidden ? 'flex' : 'none';
-  if (chevron) {
-    chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-  }
-  
-  if (isHidden) {
-    renderSidebarArticles();
-  }
-}
-
-function renderSidebarArticles() {
-  const container = document.getElementById('my-articles-dropdown');
-  if (!container) return;
-
-  if (myArticlesList.length === 0) {
-    container.innerHTML = '<div style="padding:10px 45px; font-size:0.8rem; color:#86868b;">No saved articles</div>';
-    return;
-  }
-
-  const artIds = myArticlesList.map(x => x.id);
-  const items = newsArticles.filter(art => artIds.includes(art.id));
-  container.innerHTML = items.map(art => {
-    const savedItem = myArticlesList.find(x => x.id === art.id);
-    const displayName = savedItem.customName || art.title;
-    const shortName = displayName.length > 20 ? displayName.substring(0, 20) + '...' : displayName;
-    return `
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <a href="#" class="submenu-link" onclick="showArticle(${art.id}); return false;" style="flex:1;">
-          <span ondblclick="event.stopPropagation(); inlineRename(this, 'article', ${art.id})" title="Double-click to rename">${shortName}</span>
-        </a>
-        <button onclick="toggleMyArticle(${art.id})" style="background:none; border:none; color:#ff3b30; padding:10px; cursor:pointer; font-size:0.8rem;">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    `;
-  }).join('');
+  container.innerHTML = itemsHtml;
 }
 
 function toggleMyArticle(id, btn) {
