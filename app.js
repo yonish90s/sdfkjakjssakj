@@ -750,6 +750,7 @@ function renderNewsLayout(page = 1) {
             <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
           </div>
         `;
+        startCarouselAutoScroll();
       } else {
         featuredCarousel.style.display = 'none';
       }
@@ -813,11 +814,29 @@ function filterCategory(cat) {
   renderNewsLayout(1);
 }
 
-function scrollCarousel(direction) {
+let carouselInterval = null;
+
+function startCarouselAutoScroll() {
+  if (carouselInterval) clearInterval(carouselInterval);
+  carouselInterval = setInterval(() => {
+    scrollCarousel(1, true);
+  }, 30000);
+}
+
+function scrollCarousel(direction, isAuto = false) {
   const track = document.getElementById('main-carousel-track');
   if (track) {
     const scrollAmount = track.clientWidth * 0.8; // Scroll 80% of container width
-    track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    
+    // If we've reached the end and trying to scroll right, loop back to start
+    if (direction === 1 && track.scrollLeft + track.clientWidth >= track.scrollWidth - 10) {
+      track.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+    
+    // Reset timer when user manually interacts
+    if (!isAuto) startCarouselAutoScroll();
   }
 }
 
