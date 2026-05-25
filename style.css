@@ -1564,7 +1564,7 @@ body.dark-theme .toast {
   position: relative;
   overflow: hidden;
   text-align: right;
-  min-height: 80px;
+  height: 90px;
 }
 
 .pdf-card:hover {
