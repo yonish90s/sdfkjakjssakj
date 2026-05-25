@@ -504,8 +504,9 @@
           <span id="post-date">Date</span>
         </div>
         <div id="post-content" style="font-size:1.05rem; line-height:1.6; color:#e5e5ea; white-space:pre-wrap;">Post Content</div>
-        <div id="post-actions-container" style="margin-top: 24px; display:none;">
+        <div id="post-actions-container" style="margin-top: 24px; display:none; gap:12px;">
           <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:10px 24px; font-weight:700;"><i class="fas fa-hand-holding-usd" style="margin-right:8px;"></i>Make an Offer</button>
+          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:10px 24px; font-weight:700; background:#2c2c2e; color:#fff;"><i class="fas fa-envelope" style="margin-right:8px;"></i>Message Seller</button>
         </div>
       </div>
       
@@ -1461,6 +1462,7 @@
     <div style="display:flex; background:#1c1c1e; border-radius:8px; padding:4px;">
       <button id="tab-receipts" onclick="switchInboxTab('receipts')" style="flex:1; padding:8px 0; border:none; border-radius:6px; background:#2c2c2e; color:#fff; font-weight:600; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Receipts</button>
       <button id="tab-offers" onclick="switchInboxTab('offers')" style="flex:1; padding:8px 0; border:none; border-radius:6px; background:transparent; color:#86868b; font-weight:600; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Offers</button>
+      <button id="tab-messages" onclick="switchInboxTab('messages')" style="flex:1; padding:8px 0; border:none; border-radius:6px; background:transparent; color:#86868b; font-weight:600; font-size:0.9rem; cursor:pointer; transition:background 0.2s;">Messages</button>
     </div>
   </div>
   
@@ -1470,6 +1472,26 @@
   
   <div id="offers-container" style="display:none; flex-direction:column; gap:16px; padding-bottom: 30px; overflow-y:auto; max-height: 60vh;">
     <!-- Offers injected here -->
+  </div>
+  
+  <div id="messages-container" style="display:none; flex-direction:column; gap:16px; padding-bottom: 30px; overflow-y:auto; max-height: 60vh;">
+    <!-- Messages injected here -->
+  </div>
+</div>
+
+<!-- SEND MESSAGE MODAL -->
+<div id="send-message-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <button class="modal-close" onclick="closeSendMessageModal()">✕</button>
+    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Message Seller</h2>
+    <p id="send-message-seller-name" style="color: #86868b; font-size: 0.95rem; margin-bottom: 24px;">To: Seller</p>
+    
+    <div style="margin-bottom:24px;">
+      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Message</label>
+      <textarea id="private-message-content" placeholder="Type your message here..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:0.95rem;outline:none;font-family:inherit;min-height:120px;resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    
+    <button id="btn-submit-message" class="btn-primary" onclick="submitPrivateMessage()" style="width:100%; padding:14px; font-size:1rem;">Send Message</button>
   </div>
 </div>
 

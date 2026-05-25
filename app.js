@@ -4616,7 +4616,7 @@ window.openPost = async function(postId) {
       const actionsContainer = document.getElementById('post-actions-container');
       if (actionsContainer) {
         if (currentGroupId === 'marketplace' && currentUser && currentUser.email !== data.authorEmail) {
-          actionsContainer.style.display = 'block';
+          actionsContainer.style.display = 'flex';
         } else {
           actionsContainer.style.display = 'none';
         }
@@ -4785,29 +4785,94 @@ window.submitOffer = async function() {
 };
 
 // =====================================================================
-// INBOX TABS (RECEIPTS & OFFERS)
+// PRIVATE MESSAGING LOGIC
+// =====================================================================
+window.openSendMessageModal = function() {
+  if (!currentUser || !currentUser.email) {
+    showToast('Please sign in to send a message.', 'error');
+    openAuthModal('login');
+    return;
+  }
+  document.getElementById('send-message-modal').classList.add('active');
+  document.getElementById('private-message-content').value = '';
+  document.getElementById('send-message-seller-name').textContent = `To: ${currentPostAuthorEmail}`;
+};
+
+window.closeSendMessageModal = function() {
+  document.getElementById('send-message-modal').classList.remove('active');
+};
+
+window.submitPrivateMessage = async function() {
+  if (!currentUser || !currentUser.email) return;
+  if (!currentPostId || !currentPostAuthorEmail) return;
+  
+  const content = document.getElementById('private-message-content').value.trim();
+  const btn = document.getElementById('btn-submit-message');
+  
+  if (!content) {
+    showToast('Please write a message.', 'error');
+    return;
+  }
+  
+  const originalText = btn.textContent;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  
+  try {
+    const messagesRef = window.fbColl(window.fbDb, 'messages');
+    await window.fbAddDoc(messagesRef, {
+      postId: currentPostId,
+      postTitle: currentPostTitle || 'Marketplace Item',
+      receiverEmail: currentPostAuthorEmail,
+      senderName: currentUser.name || 'Anonymous',
+      senderEmail: currentUser.email,
+      content: content,
+      timestamp: new Date().toISOString(),
+      read: false
+    });
+    
+    closeSendMessageModal();
+    showToast('Message sent successfully!', 'success');
+  } catch (err) {
+    console.error('Error sending message:', err);
+    alert('Failed to send message: ' + err.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+};
+
+// =====================================================================
+// INBOX TABS (RECEIPTS, OFFERS & MESSAGES)
 // =====================================================================
 window.switchInboxTab = function(tab) {
   const tabReceipts = document.getElementById('tab-receipts');
   const tabOffers = document.getElementById('tab-offers');
+  const tabMessages = document.getElementById('tab-messages');
+  
   const containerReceipts = document.getElementById('notifications-container');
   const containerOffers = document.getElementById('offers-container');
+  const containerMessages = document.getElementById('messages-container');
+  
+  // Reset all
+  [tabReceipts, tabOffers, tabMessages].forEach(t => {
+    if(t) { t.style.background = 'transparent'; t.style.color = '#86868b'; }
+  });
+  [containerReceipts, containerOffers, containerMessages].forEach(c => {
+    if(c) { c.style.display = 'none'; }
+  });
   
   if (tab === 'receipts') {
-    tabReceipts.style.background = '#2c2c2e';
-    tabReceipts.style.color = '#fff';
-    tabOffers.style.background = 'transparent';
-    tabOffers.style.color = '#86868b';
-    containerReceipts.style.display = 'flex';
-    containerOffers.style.display = 'none';
-  } else {
-    tabOffers.style.background = '#2c2c2e';
-    tabOffers.style.color = '#fff';
-    tabReceipts.style.background = 'transparent';
-    tabReceipts.style.color = '#86868b';
-    containerOffers.style.display = 'flex';
-    containerReceipts.style.display = 'none';
+    if(tabReceipts) { tabReceipts.style.background = '#2c2c2e'; tabReceipts.style.color = '#fff'; }
+    if(containerReceipts) { containerReceipts.style.display = 'flex'; }
+  } else if (tab === 'offers') {
+    if(tabOffers) { tabOffers.style.background = '#2c2c2e'; tabOffers.style.color = '#fff'; }
+    if(containerOffers) { containerOffers.style.display = 'flex'; }
     renderOffers();
+  } else if (tab === 'messages') {
+    if(tabMessages) { tabMessages.style.background = '#2c2c2e'; tabMessages.style.color = '#fff'; }
+    if(containerMessages) { containerMessages.style.display = 'flex'; }
+    renderMessages();
   }
 };
 
@@ -4874,6 +4939,69 @@ async function renderOffers() {
     } else {
       container.innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load offers.</div>';
     }
+  }
+}
+
+async function renderMessages() {
+  const container = document.getElementById('messages-container');
+  if (!container) return;
+  
+  if (!currentUser || !currentUser.email) {
+    container.innerHTML = '<div style="padding:40px; text-align:center; color:#86868b;">Please sign in to view your messages.</div>';
+    return;
+  }
+  
+  container.innerHTML = '<div style="padding:40px; text-align:center; color:#86868b;"><i class="fas fa-circle-notch fa-spin"></i> Loading...</div>';
+  
+  try {
+    const messagesRef = window.fbColl(window.fbDb, 'messages');
+    const q = window.fbQuery(messagesRef, window.fbWhere('receiverEmail', '==', currentUser.email));
+    
+    // We cannot reliably sort locally without fetching all, but getDocs will return all for this user
+    const msgSnap = await window.fbGetDocs(q);
+    
+    if (msgSnap.empty) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:60px 20px;">
+          <div style="font-size:3rem; color:#2c2c2e; margin-bottom:16px;"><i class="fas fa-envelope-open-text"></i></div>
+          <h3 style="font-size:1.2rem; color:#fafafa; margin-bottom:8px;">No messages yet</h3>
+          <p style="color:#86868b; font-size:0.95rem;">When users send you private messages, they will appear here.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let messages = [];
+    msgSnap.forEach(doc => {
+      messages.push({ id: doc.id, ...doc.data() });
+    });
+    
+    messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    let html = '';
+    messages.forEach(data => {
+      const dateStr = new Date(data.timestamp).toLocaleString();
+      const subject = `Re: ${encodeURIComponent(data.postTitle || 'Item inquiry')}`;
+      const mailtoLink = `mailto:${data.senderEmail}?subject=${subject}`;
+      
+      html += `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:20px; text-align:left;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div>
+              <div style="font-size:1.1rem; font-weight:700; color:#fafafa;">${data.postTitle}</div>
+              <div style="font-size:0.85rem; color:#86868b;">From: ${data.senderName}</div>
+            </div>
+            <a href="${mailtoLink}" class="btn-primary" style="text-decoration:none; padding:6px 12px; border-radius:6px; font-size:0.85rem;"><i class="fas fa-reply" style="margin-right:6px;"></i>Reply</a>
+          </div>
+          <div style="font-size:0.95rem; color:#e4e4e7; background:#2c2c2e; padding:12px; border-radius:8px; margin-bottom:12px; white-space:pre-wrap;">${data.content}</div>
+          <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error loading messages:', err);
+    container.innerHTML = '<div style="color:#ef4444; padding:20px; text-align:center;">Failed to load messages.</div>';
   }
 }
 
