@@ -4623,7 +4623,7 @@ window.openGroup = async function(groupId) {
       const imageHtml = data.image ? `<img src="${data.image}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-bottom:12px;">` : '';
       const buttonsHtml = currentGroupId === 'marketplace' ? `
         <div style="display:flex; gap:10px; margin-top:16px; border-top:1px solid #2c2c2e; padding-top:16px;">
-          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal(); else alert('Feature coming soon!');" style="flex:1; background:#fbbf24; color:#000; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Submit Offer</button>
+          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}', '${data.authorEmail || ''}', '${(data.title || '').replace(/'/g, "\\'").replace(/\"/g, "&quot;")}'); else alert('Feature coming soon!');" style="flex:1; background:#fbbf24; color:#000; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Submit Offer</button>
           <button onclick="event.stopPropagation(); alert('Messaging feature coming soon!');" style="flex:1; background:#3b82f6; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Send Message</button>
         </div>
       ` : '';
@@ -4873,7 +4873,10 @@ window.submitComment = async function() {
   }
 };
 
-window.openMakeOfferModal = function() {
+window.openMakeOfferModal = function(postId, authorEmail, postTitle) {
+  if (postId) currentPostId = postId;
+  if (authorEmail) currentPostAuthorEmail = authorEmail;
+  if (postTitle) currentPostTitle = postTitle;
   if (!currentUser || !currentUser.email) {
     showToast('Please sign in to make an offer.', 'error');
     openAuthModal('login');
