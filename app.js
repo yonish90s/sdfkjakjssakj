@@ -2176,8 +2176,8 @@ function renderSavedDrawer() {
       itemsHtml = items.map(art => {
         const savedItem = myArticlesList.find(x => x.id === art.id);
         const displayName = savedItem.customName || art.title;
-        const imgEl = art.imageUrl 
-          ? `<img src="${art.imageUrl}" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` 
+        const imgEl = art.image 
+          ? `<img src="${art.image}" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` 
           : `<i class="fas fa-newspaper" style="font-size:2rem; color:#fff;"></i>`;
         return `
           <div class="bottom-drawer-item" onclick="showArticle(${art.id}); toggleSavedDrawer();" style="cursor:pointer;">
