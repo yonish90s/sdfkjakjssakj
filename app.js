@@ -3667,10 +3667,9 @@ function renderCart() {
 
   if (shoppingCart.length === 0) {
     container.innerHTML = `
-      <div class="cart-empty">
-        <div class="cart-empty-icon">🛒</div>
-        <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:6px;">Your cart is empty</h3>
-        <p style="font-size:0.95rem;">Add products from the shop or services to continue</p>
+      <div class="cart-drawer-empty">
+        <i class="fas fa-bag-shopping" style="font-size:3rem; margin-bottom:12px; color:#86868b;"></i>
+        <div style="font-size:1.1rem; font-weight:600; color:#86868b;">Your cart is empty</div>
       </div>`;
     totalEl.textContent = '$0';
     checkoutBtn.style.opacity = '0.4';
@@ -3686,36 +3685,35 @@ function renderCart() {
     const itemPrice = parsePrice(item.price);
     total += itemPrice * c.qty;
     const imageEl = c.type === 'product' && item.img
-      ? `<img src="${item.img}" alt="">`
-      : `<span>${item.icon || '💼'}</span>`;
+      ? `<img src="${item.img}" alt="" style="width:100%; height:100%; object-fit:cover;">`
+      : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
+    
     return `
-      <div class="cart-item">
-        <div class="cart-item-img">${imageEl}</div>
-        <div class="cart-item-info">
-          <div class="cart-item-title">${item.title}</div>
-          <div class="cart-item-price">${item.price}</div>
+      <div class="cart-drawer-item">
+        <div class="cart-drawer-item-img">
+          ${imageEl}
+          <div class="cart-drawer-item-qty">${c.qty}</div>
         </div>
-        <div class="cart-item-qty">
-          <button onclick="changeCartQty('${c.id}','${c.type}',-1)" aria-label="decrease">−</button>
-          <span>${c.qty}</span>
-          <button onclick="changeCartQty('${c.id}','${c.type}',1)" aria-label="increase">+</button>
-        </div>
-        <button class="cart-item-remove" onclick="removeFromCart('${c.id}','${c.type}')" title="Remove from cart">×</button>
+        <div class="cart-drawer-item-title">${item.title}</div>
+        <button class="cart-drawer-item-remove" onclick="removeFromCart('${c.id}','${c.type}')" title="Remove">&times;</button>
       </div>
     `;
   }).join('');
+  
   totalEl.textContent = '$' + total.toLocaleString('en-US');
   checkoutBtn.style.opacity = '1';
   checkoutBtn.style.pointerEvents = 'auto';
 }
 
-function openCartModal() {
-  renderCart();
-  document.getElementById('cart-modal').classList.add('active');
-}
-
-function closeCartModal() {
-  document.getElementById('cart-modal').classList.remove('active');
+function toggleCartDrawer() {
+  const drawer = document.getElementById('cart-drawer');
+  if (!drawer) return;
+  if (drawer.classList.contains('active')) {
+    drawer.classList.remove('active');
+  } else {
+    renderCart();
+    drawer.classList.add('active');
+  }
 }
 
 function checkoutCart() {

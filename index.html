@@ -248,7 +248,7 @@
             </div>
           </div>
 
-          <button onclick="toggleCart()" class="apple-nav-item cart-nav-btn" title="My Cart" style="position:relative;">
+          <button onclick="toggleCartDrawer()" class="apple-nav-item cart-nav-btn" title="My Cart" style="position:relative;">
             <i class="fas fa-bag-shopping" style="font-size:1.1rem;"></i>
             <span id="cart-badge" class="cart-badge" style="display:none;">0</span>
           </button>
@@ -1276,28 +1276,21 @@
   </div>
 </div>
 
-<!-- SHOPPING CART MODAL -->
-<div id="cart-modal" class="modal-overlay modal-sidebar-right">
-  <div class="modal-content cart-modal-content" style="max-height: 100vh; display:flex; flex-direction:column;">
-    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom: 2px solid #f5f5f7; margin-bottom: 16px;">
-      <h2 style="font-size:1.6rem; font-weight:800; margin:0;">🛒 Your Cart</h2>
-      <button onclick="closeCartModal()" style="background:none; border:none; font-size:1.6rem; cursor:pointer; color:#86868b; line-height:1; padding:0;">×</button>
+<!-- SHOPPING CART DRAWER -->
+<div id="cart-drawer" class="cart-drawer">
+  <div class="cart-drawer-header">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <h2 style="font-size:1.4rem; font-weight:800; margin:0; color:#f5f5f7;">My Items</h2>
+      <span id="cart-total" style="font-size:1.1rem; color:#86868b; font-weight:600;">$0</span>
     </div>
+    <div style="display:flex; gap:12px;">
+      <button id="cart-checkout-btn" class="btn-primary" onclick="checkoutCart()" style="padding:8px 24px; border-radius:980px; font-weight:700; font-size:0.95rem;">Checkout</button>
+      <button onclick="toggleCartDrawer()" style="background:none; border:none; font-size:2rem; cursor:pointer; color:#86868b; line-height:1; padding:0; transition:color 0.2s;">&times;</button>
+    </div>
+  </div>
 
-    <div id="cart-items" style="flex:1; overflow-y:auto; min-height: 200px; margin: 0 -8px; padding: 0 8px;">
-      <!-- Populated by JS -->
-    </div>
-
-    <div id="cart-summary" style="border-top: 2px solid #f5f5f7; padding-top: 16px; margin-top: 16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-        <span style="font-size:1rem; color:#86868b; font-weight:600;">Total</span>
-        <span id="cart-total" style="font-size:1.6rem; font-weight:900; color:#1d1d1f;">$0</span>
-      </div>
-      <div style="display:flex; gap:10px;">
-        <button class="btn-secondary" onclick="closeCartModal()" style="flex:1; height:50px; border-radius:12px; font-weight:700;">Continue Shopping</button>
-        <button id="cart-checkout-btn" class="btn-primary" onclick="checkoutCart()" style="flex:2; height:50px; border-radius:12px; font-weight:800; font-size:1.05rem;">Checkout &rarr;</button>
-      </div>
-    </div>
+  <div id="cart-items" class="cart-drawer-grid">
+    <!-- Populated by JS -->
   </div>
 </div>
 
