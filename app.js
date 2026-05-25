@@ -1735,7 +1735,7 @@ function renderStoreLayout() {
               <p class="store-modern-desc">${p.desc}</p>
               <div class="store-modern-footer">
                 <span class="store-modern-price">$${p.price}</span>
-                <button class="store-modern-add-btn" onclick="redirectToPayment(${p.price}, '${p.title}')">
+                <button class="store-modern-add-btn" onclick="addToCart('${p.id}', 'store3d')">
                   <i class="fas fa-plus"></i>
                 </button>
               </div>
@@ -3772,14 +3772,20 @@ function renderCart() {
 
   let total = 0;
   container.innerHTML = shoppingCart.map(c => {
-    const list = c.type === 'product' ? shopProducts : servicesItems;
+    const list = c.type === 'product' ? shopProducts : (c.type === 'store3d' ? store3dProducts : servicesItems);
     const item = list.find(x => x.id === c.id);
     if (!item) return '';
     const itemPrice = parsePrice(item.price);
     total += itemPrice * c.qty;
-    const imageEl = c.type === 'product' && item.img
-      ? `<img src="${item.img}" alt="" style="width:100%; height:100%; object-fit:cover;">`
-      : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
+    
+    let imageEl = '';
+    if (c.type === 'product' && item.img) {
+      imageEl = `<img src="${item.img}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
+    } else if (c.type === 'store3d' && item.image) {
+      imageEl = `<img src="${item.image}" alt="" style="width:100%; height:100%; object-fit:cover; background:#fff;">`;
+    } else {
+      imageEl = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
+    }
     
     return `
       <div class="bottom-drawer-item">
@@ -3932,13 +3938,13 @@ function checkoutCart() {
   if (shoppingCart.length === 0) return;
   let total = 0;
   const summaryLines = shoppingCart.map(c => {
-    const list = c.type === 'product' ? shopProducts : servicesItems;
+    const list = c.type === 'product' ? shopProducts : (c.type === 'store3d' ? store3dProducts : servicesItems);
     const item = list.find(x => x.id === c.id);
     if (!item) return null;
     total += parsePrice(item.price) * c.qty;
     return {
       text: `${item.title} × ${c.qty} — ${item.price}`,
-      image: item.image || item.image_url || ''
+      image: item.image || item.img || item.image_url || ''
     };
   }).filter(Boolean);
 
