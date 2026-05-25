@@ -3890,6 +3890,46 @@ async function renderNotifications() {
       const firstItemText = firstItem ? (typeof firstItem === 'string' ? firstItem : firstItem.text) : '';
       const shortTitle = firstItemText ? firstItemText.split('×')[0] + (data.items.length > 1 ? ' + more...' : '') : 'Order Confirmation';
       
+      const orderTime = new Date(data.timestamp).getTime();
+      const now = Date.now();
+      const minutesSinceOrder = (now - orderTime) / (1000 * 60);
+      
+      let step = 1; // Ordered
+      if (minutesSinceOrder > 5) step = 2; // Shipped
+      if (minutesSinceOrder > 15) step = 3; // Arrived
+      
+      const step1Color = step >= 1 ? '#34c759' : '#3a3a3c';
+      const step2Color = step >= 2 ? '#34c759' : '#3a3a3c';
+      const step3Color = step >= 3 ? '#34c759' : '#3a3a3c';
+      const line1Color = step >= 2 ? '#34c759' : '#3a3a3c';
+      const line2Color = step >= 3 ? '#34c759' : '#3a3a3c';
+      
+      const trackerHtml = `
+        <div style="margin-bottom: 24px; background:#000; border-radius:8px; padding:16px; border:1px solid #1c1c1e;">
+          <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Order Tracker</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; position:relative; padding:0 10px;">
+            <div style="position:absolute; top:12px; left:30px; right:30px; height:2px; background:#3a3a3c; z-index:1;"></div>
+            <div style="position:absolute; top:12px; left:30px; width:calc(50% - 30px); height:2px; background:${line1Color}; z-index:2; transition: background 0.3s;"></div>
+            <div style="position:absolute; top:12px; left:50%; width:calc(50% - 30px); height:2px; background:${line2Color}; z-index:2; transition: background 0.3s;"></div>
+            
+            <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
+              <div style="font-size:0.7rem; color:${step >= 1 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Ordered</div>
+            </div>
+            
+            <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
+              <div style="font-size:0.7rem; color:${step >= 2 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Shipped</div>
+            </div>
+            
+            <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
+              <div style="font-size:0.7rem; color:${step >= 3 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Arrived</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
       html += `
         <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="const d = this.querySelector('.receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -3907,6 +3947,7 @@ async function renderNotifications() {
           </div>
           
           <div class="receipt-details" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid #2c2c2e;">
+            ${trackerHtml}
             <div style="font-size:0.9rem; color:#e5e5ea; margin-bottom:16px; line-height:1.5;">
               Hi ${data.customer_name || 'Customer'},<br><br>
               Thank you for your purchase! We have successfully processed your payment. Below are the details of your transaction:
