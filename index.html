@@ -210,11 +210,13 @@
     <!-- APPLE GLOBAL NAVBAR -->
     <header class="navbar-apple">
       <div class="nav-inner-apple">
-        <div class="apple-logo" onclick="showPage('home')" title="Home">
-          <img src="logo.png" alt="Logo" style="height: 32px; width: auto; display: block;" />
-        </div>
-        <div id="user-wallet-balance" style="display:none; align-items:center; color:#34c759; font-weight:700; margin-left: 12px; background:#1c1c1e; padding:6px 12px; border-radius:980px; font-size:0.9rem; border:1px solid #2c2c2e; cursor:default;" title="Daily Wallet Balance">
-          <i class="fas fa-wallet" style="margin-right:6px; color:#a1a1aa;"></i>₪<span id="wallet-amount">0</span>
+        <div style="display:flex; align-items:center; gap: 16px;">
+          <div class="apple-logo" onclick="showPage('home')" title="Home">
+            <img src="logo.png" alt="Logo" style="height: 32px; width: auto; display: block;" />
+          </div>
+          <div id="user-wallet-balance" style="display:none; align-items:center; color:#34c759; font-weight:700; background:#1c1c1e; padding:6px 12px; border-radius:980px; font-size:0.9rem; border:1px solid #2c2c2e; cursor:default;" title="Daily Wallet Balance">
+            <i class="fas fa-wallet" style="margin-right:6px; color:#a1a1aa;"></i>₪<span id="wallet-amount">0</span>
+          </div>
         </div>
 
         <!-- HAMBURGER FOR MOBILE -->
