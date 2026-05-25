@@ -3626,6 +3626,10 @@ function addToCart(id, type) {
   }
   saveCart();
   updateCartBadge();
+  const drawer = document.getElementById('cart-drawer');
+  if (drawer && drawer.classList.contains('active')) {
+    renderCart();
+  }
   showToast('✓ Added to cart');
 }
 
@@ -3653,7 +3657,7 @@ function renderCart() {
 
   if (shoppingCart.length === 0) {
     container.innerHTML = `
-      <div class="cart-drawer-empty">
+      <div class="bottom-drawer-empty">
         <i class="fas fa-bag-shopping" style="font-size:3rem; margin-bottom:12px; color:#86868b;"></i>
         <div style="font-size:1.1rem; font-weight:600; color:#86868b;">Your cart is empty</div>
       </div>`;
@@ -3675,13 +3679,13 @@ function renderCart() {
       : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
     
     return `
-      <div class="cart-drawer-item">
-        <div class="cart-drawer-item-img">
+      <div class="bottom-drawer-item">
+        <div class="bottom-drawer-item-img">
           ${imageEl}
-          <div class="cart-drawer-item-qty">${c.qty}</div>
+          <div class="bottom-drawer-item-qty">${c.qty}</div>
         </div>
-        <div class="cart-drawer-item-title">${item.title}</div>
-        <button class="cart-drawer-item-remove" onclick="removeFromCart('${c.id}','${c.type}')" title="Remove">&times;</button>
+        <div class="bottom-drawer-item-title">${item.title}</div>
+        <button class="bottom-drawer-item-remove" onclick="removeFromCart('${c.id}','${c.type}')" title="Remove">&times;</button>
       </div>
     `;
   }).join('');
