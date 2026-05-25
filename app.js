@@ -3840,43 +3840,55 @@ async function runRealPayment(summaryLines, total) {
   requestAnimationFrame(animateSpinner);
 
   try {
+    const email = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
+    const name = (currentUser && currentUser.name) ? currentUser.name : 'Guest Customer';
+
     const payload = {
       amount: total,
-      customer_name: (currentUser && currentUser.name) ? currentUser.name : 'Guest Customer',
-      email: (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com',
+      customer_name: name,
+      email: email,
       items: summaryLines,
       timestamp: new Date().toISOString()
     };
 
-    const response = await fetch(MAKE_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) throw new Error('Payment service unavailable');
-
-    const data = await response.json();
-    
-    if (data.payment_url) {
-      // Save receipt to Firestore before redirecting
-      if (currentUser && currentUser.email && window.fbAddDoc) {
-        try {
-          const receiptsRef = window.fbColl(window.fbDb, `userData/${currentUser.email}/receipts`);
-          await window.fbAddDoc(receiptsRef, payload);
-        } catch (e) {
-          console.error('Failed to write receipt:', e);
-        }
-      }
-
-      // Complete the animation quickly then redirect
-      track.style.background = `conic-gradient(#0071e3 360deg, #e8e8ed 360deg)`;
-      setTimeout(() => {
-        window.location.href = data.payment_url;
-      }, 500);
-    } else {
-      throw new Error('Could not generate payment link');
+    // 1. Send email receipt via backend API
+    try {
+      await fetch(`${SERVER_URL}/api/send-receipt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, items: summaryLines, total })
+      });
+    } catch (emailErr) {
+      console.error('Error sending email receipt:', emailErr);
     }
+
+    // 2. Save receipt to Firestore
+    if (currentUser && currentUser.email && window.fbAddDoc) {
+      try {
+        const receiptsRef = window.fbColl(window.fbDb, `userData/${currentUser.email}/receipts`);
+        await window.fbAddDoc(receiptsRef, payload);
+      } catch (e) {
+        console.error('Failed to write receipt to Firestore:', e);
+      }
+    }
+
+    // 3. Complete animation & show success
+    track.style.background = `conic-gradient(#0071e3 360deg, #e8e8ed 360deg)`;
+    setTimeout(() => {
+      spinner.style.display = 'none';
+      success.style.display = 'flex';
+      setTimeout(() => {
+        closePaymentModal();
+        shoppingCart = [];
+        saveCart();
+        renderCart();
+        showToast('Payment Successful! Receipt sent to ' + email, 'success');
+        if (currentUser && currentUser.email) {
+          renderNotifications();
+        }
+      }, 2000);
+    }, 500);
+
   } catch (err) {
     console.error('Payment Error:', err);
     closePaymentModal();
