@@ -4628,18 +4628,27 @@ window.openGroup = async function(groupId) {
       const data = doc.data;
       const dateStr = new Date(data.timestamp).toLocaleString();
       const priceTagHtml = data.price != null ? `<div style="display:inline-block; margin-top:8px; background:#34c759; color:#fff; font-weight:700; padding:4px 10px; border-radius:8px; font-size:0.8rem;">₪${data.price.toLocaleString()}</div>` : '';
+      const imageHtml = data.image ? `<img src="${data.image}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-bottom:12px;">` : '';
+      const buttonsHtml = currentGroupId === 'marketplace' ? `
+        <div style="display:flex; gap:10px; margin-top:16px; border-top:1px solid #2c2c2e; padding-top:16px;">
+          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal(); else alert('Feature coming soon!');" style="flex:1; background:#fbbf24; color:#000; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Submit Offer</button>
+          <button onclick="event.stopPropagation(); alert('Messaging feature coming soon!');" style="flex:1; background:#3b82f6; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Send Message</button>
+        </div>
+      ` : '';
       
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="openPost('${doc.id}')">
-          <h3 style="font-size:1.2rem; font-weight:700; color:#f5f5f7; margin-bottom:8px;">${data.title}</h3>
-          <div style="font-size:0.95rem; color:#a1a1aa; margin-bottom:12px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${data.content}</div>
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; margin-bottom:16px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="openPost('${doc.id}')">
+          <h3 style="font-size:1.2rem; font-weight:700; color:#f5f5f7; margin-bottom:12px;">${data.title}</h3>
+          ${imageHtml}
+          <div style="font-size:0.95rem; color:#a1a1aa; margin-bottom:12px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${data.content}</div>
           ${priceTagHtml}
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#86868b; margin-top:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#86868b; margin-top:12px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <i class="fas fa-user-circle"></i> ${data.authorName || data.author}
+              <i class="fas fa-user-circle"></i> ${data.authorName || data.author || 'Anonymous'}
             </div>
             <div>${dateStr.split(',')[0]}</div>
           </div>
+          ${buttonsHtml}
         </div>
       `;
     });
@@ -4681,6 +4690,7 @@ window.submitPost = async function() {
   const content = document.getElementById('new-post-content').value.trim();
   const priceInput = document.getElementById('new-post-price');
   const price = (currentGroupId === 'marketplace' && priceInput && priceInput.value) ? Number(priceInput.value) : null;
+  const imageInput = document.getElementById('new-post-image');
   const btn = document.getElementById('btn-submit-post');
   
   if (!title || !content) {
@@ -4693,6 +4703,17 @@ window.submitPost = async function() {
   btn.disabled = true;
   
   try {
+    let base64Image = null;
+    if (imageInput && imageInput.files && imageInput.files[0]) {
+      const file = imageInput.files[0];
+      base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+    }
+
     const postsRef = window.fbColl(window.fbDb, 'posts');
     const postData = {
       groupId: currentGroupId,
@@ -4707,8 +4728,16 @@ window.submitPost = async function() {
     if (price !== null) {
       postData.price = price;
     }
+    if (base64Image) {
+      postData.image = base64Image;
+    }
     await window.fbAddDoc(postsRef, postData);
     
+    document.getElementById('new-post-title').value = '';
+    document.getElementById('new-post-content').value = '';
+    if (priceInput) priceInput.value = '';
+    if (imageInput) imageInput.value = '';
+
     closeCreatePostModal();
     showToast('Post created successfully!', 'success');
     openGroup(currentGroupId); // Refresh list
