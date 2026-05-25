@@ -4843,10 +4843,7 @@ window.submitPrivateMessage = async function() {
   }
 };
 
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
-};
+
 
 // =====================================================================
 // STOCK EXCHANGE LOGIC
