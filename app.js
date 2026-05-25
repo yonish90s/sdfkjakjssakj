@@ -4629,3 +4629,31 @@ window.submitComment = async function() {
     input.disabled = false;
   }
 };
+
+// =====================================================================
+// COOKIE CONSENT LOGIC
+// =====================================================================
+window.acceptCookies = function() {
+  localStorage.setItem('cookieConsent', 'true');
+  const banner = document.getElementById('cookie-consent-banner');
+  if (banner) {
+    banner.style.display = 'none';
+  }
+};
+
+window.showPrivacyPolicy = function() {
+  alert('מדיניות פרטיות: אנו משתמשים בעוגיות כדי לשפר את חווית המשתמש באתר, לשמור את המידע שלך בעגלת הקניות ולספק תכנים מותאמים אישית. המידע נשמר בצורה מאובטחת ולא מועבר לצדדים שלישיים ללא אישור מפורש.');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hasConsent = localStorage.getItem('cookieConsent');
+  if (!hasConsent) {
+    const banner = document.getElementById('cookie-consent-banner');
+    if (banner) {
+      // Delay showing it slightly for better UX
+      setTimeout(() => {
+        banner.style.display = 'block';
+      }, 1000);
+    }
+  }
+});
