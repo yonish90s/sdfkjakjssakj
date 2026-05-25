@@ -1882,6 +1882,7 @@ async function syncUserPersonalDataToFirebase() {
     await window.fbSetDoc(userDocRef, {
       myGraphsList,
       myArticlesList,
+      shoppingCart,
       updatedAt: new Date().toISOString()
     }, { merge: true });
   } catch (err) {
@@ -1941,10 +1942,16 @@ async function loadUserPersonalDataFromFirebase() {
       const data = docSnap.data();
       if (data.myGraphsList) myGraphsList = data.myGraphsList;
       if (data.myArticlesList) myArticlesList = data.myArticlesList;
+      if (data.shoppingCart) shoppingCart = data.shoppingCart;
+      
       localStorage.setItem('myGraphsList', JSON.stringify(myGraphsList));
       localStorage.setItem('myArticlesList', JSON.stringify(myArticlesList));
+      localStorage.setItem('shoppingCart', JSON.stringify(shoppingCart));
+      
       renderSidebarWatchlist();
       renderSidebarArticles();
+      renderCart();
+      renderNotifications();
       if (document.getElementById('page-my-graphs') && document.getElementById('page-my-graphs').classList.contains('active')) {
         renderMyGraphsWatchlist();
       }
@@ -3587,12 +3594,11 @@ function submitOrder(event) {
 // SHOPPING CART — Store and Services
 // =====================================================================
 
-// Cart is always empty on page load (fresh session)
-let shoppingCart = [];
-localStorage.removeItem('shoppingCart');
+let shoppingCart = JSON.parse(localStorage.getItem('shoppingCart') || '[]');
 
 function saveCart() {
   localStorage.setItem('shoppingCart', JSON.stringify(shoppingCart));
+  syncUserPersonalDataToFirebase();
 }
 
 function parsePrice(priceStr) {
@@ -3707,6 +3713,80 @@ function toggleCartDrawer() {
   }
 }
 
+// =====================================================================
+// NOTIFICATIONS & RECEIPTS
+// =====================================================================
+
+function toggleNotificationsDrawer() {
+  const drawer = document.getElementById('notifications-drawer');
+  if (!drawer) return;
+  if (drawer.classList.contains('active')) {
+    drawer.classList.remove('active');
+  } else {
+    renderNotifications();
+    drawer.classList.add('active');
+  }
+}
+
+async function renderNotifications() {
+  const container = document.getElementById('notifications-container');
+  const badge = document.getElementById('notifications-badge');
+  if (!container) return;
+
+  if (!currentUser || !currentUser.email || !window.fbGetDocs) {
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:#86868b;">Please sign in to view receipts.</div>';
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = '<div style="text-align:center; padding:20px; color:#86868b;">Loading receipts...</div>';
+  
+  try {
+    const receiptsRef = window.fbColl(window.fbDb, `userData/${currentUser.email}/receipts`);
+    const q = window.fbQuery(receiptsRef, window.fbOrderBy('timestamp', 'desc'));
+    const snapshot = await window.fbGetDocs(q);
+    
+    if (snapshot.empty) {
+      container.innerHTML = '<div style="text-align:center; padding:30px; color:#86868b;">No receipts found.</div>';
+      if (badge) badge.style.display = 'none';
+      return;
+    }
+
+    if (badge) {
+      badge.textContent = snapshot.size;
+      badge.style.display = snapshot.size > 0 ? 'flex' : 'none';
+    }
+
+    let html = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const dateStr = new Date(data.timestamp).toLocaleString();
+      const itemsHtml = data.items ? data.items.map(i => `<div style="font-size:0.85rem; color:#a1a1aa;">&bull; ${i}</div>`).join('') : '';
+      
+      html += `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div style="font-weight:700; color:#f5f5f7;">Receipt #${doc.id.slice(0, 8).toUpperCase()}</div>
+            <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
+          </div>
+          <div style="margin-bottom:12px;">
+            ${itemsHtml}
+          </div>
+          <div style="border-top:1px dashed #3a3a3c; padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; color:#86868b;">Total</span>
+            <span style="font-weight:800; color:#fff; font-size:1.1rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error fetching receipts:', err);
+    container.innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;">Failed to load receipts.</div>';
+  }
+}
+
 function checkoutCart() {
   if (shoppingCart.length === 0) return;
   let total = 0;
@@ -3779,6 +3859,16 @@ async function runRealPayment(summaryLines, total) {
     const data = await response.json();
     
     if (data.payment_url) {
+      // Save receipt to Firestore before redirecting
+      if (currentUser && currentUser.email && window.fbAddDoc) {
+        try {
+          const receiptsRef = window.fbColl(window.fbDb, `userData/${currentUser.email}/receipts`);
+          await window.fbAddDoc(receiptsRef, payload);
+        } catch (e) {
+          console.error('Failed to write receipt:', e);
+        }
+      }
+
       // Complete the animation quickly then redirect
       track.style.background = `conic-gradient(#0071e3 360deg, #e8e8ed 360deg)`;
       setTimeout(() => {
