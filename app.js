@@ -1630,21 +1630,69 @@ function renderStoreLayout() {
   const contentArea = document.getElementById('store-content-area');
   if (!contentArea) return;
 
+  const categories = [
+    { name: 'Snacks', icon: '🍿', color: '#ffccbc' },
+    { name: 'Breakfast', icon: '🥞', color: '#ffe0b2' },
+    { name: 'Drinks', icon: '🥤', color: '#b3e5fc' },
+    { name: 'Coffee', icon: '☕', color: '#d7ccc8' },
+    { name: 'Canned', icon: '🥫', color: '#f8bbd0' },
+    { name: 'Fruits', icon: '🍎', color: '#ffcdd2' },
+    { name: 'Sauces', icon: '🫙', color: '#ffe082' },
+    { name: 'Vegetables', icon: '🥦', color: '#c8e6c9' }
+  ];
+
   contentArea.innerHTML = `
-    <div class="store-3d-wrapper">
-      <div class="store-3d-grid">
-        ${store3dProducts.map(p => `
-          <div class="store-3d-card">
-            <div class="store-3d-visual">
-              <img src="${p.image}" alt="${p.title}">
+    <div class="store-container-modern">
+      
+      <!-- Banners -->
+      <div class="store-banners-grid">
+        <div class="store-banner-card" style="background: linear-gradient(135deg, #184e27, #0b2e13); color: white;">
+          <div class="store-banner-content">
+            <h2 style="font-weight: 800; font-size: 1.5rem; line-height: 1.2; margin-bottom: 12px; text-transform: uppercase;">MEAL PLAN WITH<br>GROCERY STORE</h2>
+            <button class="store-banner-btn">Shop Now</button>
+          </div>
+          <div class="store-banner-img">
+            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400" alt="Groceries">
+          </div>
+        </div>
+        <div class="store-banner-card" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">
+          <div class="store-banner-content">
+            <h2 style="font-weight: 800; font-size: 1.5rem; line-height: 1.2; margin-bottom: 12px; text-transform: uppercase;">MAKING THE MOST OF<br>YOUR GROCERY</h2>
+            <button class="store-banner-btn">Learn More</button>
+          </div>
+          <div class="store-banner-img">
+            <img src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=400" alt="Fresh Food">
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="store-categories-scroll">
+        ${categories.map(c => `
+          <div class="store-category-item">
+            <div class="store-category-icon-box" style="background-color: ${c.color};">
+              <span class="store-category-icon">${c.icon}</span>
             </div>
-            <div class="store-3d-info">
-              <h3 class="store-card-title">${p.title}</h3>
-              <p class="store-card-desc">${p.desc}</p>
-              <div class="store-card-footer">
-                <span class="store-card-price">$${p.price}</span>
-                <button class="store-card-add-btn" onclick="redirectToPayment(${p.price}, '${p.title}')">
-                  <i class="fas fa-cart-plus"></i> Add to Cart
+            <span class="store-category-name">${c.name}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Products Grid -->
+      <div class="store-modern-grid">
+        ${store3dProducts.map(p => `
+          <div class="store-modern-card">
+            <div class="store-modern-image">
+              <img src="${p.image}" alt="${p.title}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=300'">
+              <button class="store-modern-fav-btn"><i class="fa-regular fa-heart"></i></button>
+            </div>
+            <div class="store-modern-info">
+              <h3 class="store-modern-title">${p.title}</h3>
+              <p class="store-modern-desc">${p.desc}</p>
+              <div class="store-modern-footer">
+                <span class="store-modern-price">$${p.price}</span>
+                <button class="store-modern-add-btn" onclick="redirectToPayment(${p.price}, '${p.title}')">
+                  <i class="fas fa-plus"></i>
                 </button>
               </div>
             </div>
