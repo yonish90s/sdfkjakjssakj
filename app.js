@@ -374,6 +374,7 @@ function showPage(pageId) {
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
   if (pageId === 'video-reviews') renderVideoReviews();
   if (pageId === 'article-reviews') renderArticleReviews();
+  if (pageId === 'exchange') initExchange();
   
   if (pageId === 'join') {
     if (typeof currentUser !== 'undefined' && currentUser) {
@@ -4839,6 +4840,243 @@ window.submitPrivateMessage = async function() {
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
+  }
+};
+
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+};
+
+// =====================================================================
+// STOCK EXCHANGE LOGIC
+// =====================================================================
+
+let currentTradeStock = null;
+let currentTradePrice = 0;
+let userOwnedShares = 0;
+
+window.initExchange = async function() {
+  if (!currentUser || !currentUser.email) {
+    showToast('Please sign in to access the Stock Exchange.', 'error');
+    showPage('home');
+    openAuthModal('login');
+    return;
+  }
+  
+  document.getElementById('exchange-wallet-balance').textContent = `₪${(currentUser.walletBalance || 0).toLocaleString()}`;
+  
+  await seedStocksIfNeeded();
+  await renderMarket();
+  await renderPortfolio();
+};
+
+async function seedStocksIfNeeded() {
+  try {
+    const stocksRef = window.fbColl(window.fbDb, 'stocks');
+    const snap = await window.fbGetDocs(window.fbQuery(stocksRef, window.fbLimit ? window.fbLimit(1) : undefined));
+    if (snap.empty) {
+      const initialStocks = [
+        { name: 'Apple Inc.', symbol: 'AAPL', currentPrice: 1500, description: 'Global tech giant' },
+        { name: 'Yoni Store', symbol: 'YONI', currentPrice: 200, description: 'E-commerce platform' },
+        { name: 'Forum Tech', symbol: 'FRM', currentPrice: 50, description: 'Community network solutions' }
+      ];
+      for (const st of initialStocks) {
+        await window.fbAddDoc(stocksRef, st);
+      }
+    }
+  } catch(e) {
+    console.log('Seeding skipped or failed:', e);
+  }
+}
+
+async function renderMarket() {
+  const container = document.getElementById('market-container');
+  if (!container) return;
+  container.innerHTML = '<div style="color:#86868b;"><i class="fas fa-spinner fa-spin"></i> Loading market...</div>';
+  
+  try {
+    const stocksRef = window.fbColl(window.fbDb, 'stocks');
+    const snap = await window.fbGetDocs(stocksRef);
+    
+    if (snap.empty) {
+      container.innerHTML = '<div style="color:#86868b;">No stocks available.</div>';
+      return;
+    }
+    
+    let html = '';
+    snap.forEach(doc => {
+      const s = { id: doc.id, ...doc.data() };
+      html += `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:20px; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openTradeModal('${s.id}', '${s.name}', '${s.symbol}', ${s.currentPrice})">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div>
+              <div style="font-size:0.8rem; background:#2c2c2e; color:#fff; display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700; margin-bottom:6px;">${s.symbol}</div>
+              <h3 style="font-size:1.2rem; font-weight:800; color:#fafafa; margin:0;">${s.name}</h3>
+            </div>
+            <div style="font-size:1.4rem; font-weight:800; color:#34c759;">₪${Math.round(s.currentPrice).toLocaleString()}</div>
+          </div>
+          <p style="font-size:0.9rem; color:#86868b; margin-bottom:16px;">${s.description}</p>
+          <button class="btn-primary" style="width:100%; padding:8px; border-radius:8px; font-size:0.9rem;">Trade <i class="fas fa-arrow-right" style="margin-left:6px;"></i></button>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div style="color:#ef4444;">Failed to load market.</div>';
+    console.error(e);
+  }
+}
+
+async function renderPortfolio() {
+  const container = document.getElementById('portfolio-container');
+  const emptyMsg = document.getElementById('portfolio-empty');
+  if (!container || !currentUser) return;
+  
+  try {
+    const portRef = window.fbColl(window.fbDb, 'portfolios');
+    const q = window.fbQuery(portRef, window.fbWhere('userEmail', '==', currentUser.email));
+    const snap = await window.fbGetDocs(q);
+    
+    if (snap.empty) {
+      container.innerHTML = '';
+      emptyMsg.style.display = 'block';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+    
+    // Need to fetch current prices to calculate value
+    const stocksRef = window.fbColl(window.fbDb, 'stocks');
+    const stocksSnap = await window.fbGetDocs(stocksRef);
+    const stockPrices = {};
+    stocksSnap.forEach(d => stockPrices[d.id] = { name: d.data().name, price: d.data().currentPrice });
+    
+    let html = '';
+    snap.forEach(doc => {
+      const p = doc.data();
+      if (p.shares <= 0) return;
+      const stock = stockPrices[p.stockId];
+      if (!stock) return;
+      const totalVal = p.shares * stock.price;
+      
+      html += `
+        <div style="background:#2c2c2e; border:1px solid #3a3a3c; border-radius:12px; padding:16px;">
+          <h4 style="font-size:1.1rem; color:#fafafa; margin-bottom:4px;">${stock.name}</h4>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
+            <span style="color:#86868b;">Shares Owned:</span>
+            <span style="color:#0a84ff; font-weight:700;">${p.shares}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span style="color:#86868b;">Current Value:</span>
+            <span style="color:#34c759; font-weight:700;">₪${Math.round(totalVal).toLocaleString()}</span>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    console.error('Failed to load portfolio:', e);
+  }
+}
+
+window.openTradeModal = async function(stockId, name, symbol, price) {
+  currentTradeStock = stockId;
+  currentTradePrice = price;
+  
+  document.getElementById('stock-trade-modal').classList.add('active');
+  document.getElementById('trade-stock-name').textContent = name;
+  document.getElementById('trade-stock-symbol').textContent = symbol;
+  document.getElementById('trade-stock-price').textContent = `₪${Math.round(price).toLocaleString()}`;
+  document.getElementById('trade-wallet-balance').textContent = `₪${(currentUser.walletBalance || 0).toLocaleString()}`;
+  
+  // Fetch owned shares
+  userOwnedShares = 0;
+  try {
+    const portRef = window.fbColl(window.fbDb, 'portfolios');
+    const q = window.fbQuery(portRef, window.fbWhere('userEmail', '==', currentUser.email), window.fbWhere('stockId', '==', stockId));
+    const snap = await window.fbGetDocs(q);
+    if (!snap.empty) {
+      userOwnedShares = snap.docs[0].data().shares;
+    }
+  } catch(e) {}
+  
+  document.getElementById('trade-shares-owned').textContent = userOwnedShares;
+  document.getElementById('trade-quantity-slider').value = 1;
+  document.getElementById('trade-quantity-input').value = 1;
+  updateTradeTotal();
+};
+
+window.closeTradeModal = function() {
+  document.getElementById('stock-trade-modal').classList.remove('active');
+};
+
+window.updateTradeTotal = function() {
+  const qty = parseInt(document.getElementById('trade-quantity-input').value) || 0;
+  const total = qty * currentTradePrice;
+  document.getElementById('trade-total-value').textContent = `₪${Math.round(total).toLocaleString()}`;
+};
+
+window.executeTrade = async function(action) {
+  if (!currentUser) return;
+  const qty = parseInt(document.getElementById('trade-quantity-input').value);
+  if (!qty || qty <= 0) return showToast('Invalid quantity', 'error');
+  
+  const totalCost = qty * currentTradePrice;
+  
+  const btnBuy = document.getElementById('btn-trade-buy');
+  const btnSell = document.getElementById('btn-trade-sell');
+  btnBuy.disabled = true; btnSell.disabled = true;
+  
+  try {
+    // Check constraints
+    if (action === 'buy') {
+      if ((currentUser.walletBalance || 0) < totalCost) {
+        throw new Error('Insufficient wallet balance');
+      }
+    } else if (action === 'sell') {
+      if (userOwnedShares < qty) {
+        throw new Error('You do not own enough shares to sell');
+      }
+    }
+    
+    // Update Wallet
+    const userRef = window.fbDoc(window.fbDb, 'userData', currentUser.email);
+    let newBalance = currentUser.walletBalance || 0;
+    if (action === 'buy') newBalance -= totalCost;
+    else newBalance += totalCost;
+    await window.fbUpdateDoc(userRef, { walletBalance: newBalance });
+    currentUser.walletBalance = newBalance;
+    
+    // Update Portfolio
+    const portRef = window.fbColl(window.fbDb, 'portfolios');
+    const q = window.fbQuery(portRef, window.fbWhere('userEmail', '==', currentUser.email), window.fbWhere('stockId', '==', currentTradeStock));
+    const snap = await window.fbGetDocs(q);
+    
+    let newShares = userOwnedShares;
+    if (action === 'buy') newShares += qty;
+    else newShares -= qty;
+    
+    if (snap.empty) {
+      await window.fbAddDoc(portRef, { userEmail: currentUser.email, stockId: currentTradeStock, shares: newShares });
+    } else {
+      await window.fbUpdateDoc(snap.docs[0].ref, { shares: newShares });
+    }
+    
+    // Dynamic Pricing - Update Global Stock Price (+0.5% per share bought, -0.5% per share sold)
+    const stockRef = window.fbDoc(window.fbDb, 'stocks', currentTradeStock);
+    let priceModifier = 1 + (action === 'buy' ? 0.005 : -0.005) * qty;
+    let newPrice = currentTradePrice * priceModifier;
+    if (newPrice < 10) newPrice = 10; // Floor price
+    await window.fbUpdateDoc(stockRef, { currentPrice: newPrice });
+    
+    showToast(`Successfully ${action === 'buy' ? 'bought' : 'sold'} ${qty} shares!`, 'success');
+    closeTradeModal();
+    initExchange(); // Refresh exchange UI
+    updateUserUI(); // Update global navbar wallet display
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    btnBuy.disabled = false; btnSell.disabled = false;
   }
 };
 

@@ -182,9 +182,10 @@
         <nav class="mobile-nav-list">
           <button onclick="showPage('home'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-newspaper"></i> Articles</button>
           <button onclick="showPage('pdf-store'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-chart-line"></i> Graphs</button>
+          <button onclick="showPage('groups'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-users"></i> Groups</button>
+          <button onclick="showPage('exchange'); toggleMobileMenu()" class="mobile-nav-link" style="color:#34c759;"><i class="fas fa-chart-line"></i> Exchange</button>
           <button onclick="showPage('store'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-laptop-code"></i> Software Store</button>
           <button onclick="showPage('shop'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-shopping-bag"></i> Online Shop</button>
-          <button onclick="showPage('appointments'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-calendar-alt"></i> Book Appointment</button>
           <button onclick="showPage('appointments'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-calendar-alt"></i> Book Appointment</button>
           <div class="mobile-menu-divider"></div>
           <button onclick="showPage('subscription'); toggleMobileMenu()" class="mobile-nav-link premium-link"><i class="fas fa-crown"></i> Go Premium</button>
@@ -211,10 +212,11 @@
           <i class="fas fa-bars"></i>
         </button>
         
-        <nav class="apple-nav-links">
-          <button onclick="showPage('home')" class="apple-nav-item">Articles</button>
-          <button onclick="showPage('pdf-store')" class="apple-nav-item">Graphs</button>
-          <button onclick="showPage('groups')" class="apple-nav-item">Groups</button>
+          <nav class="apple-nav-links">
+            <button onclick="showPage('home')" class="apple-nav-item">Articles</button>
+            <button onclick="showPage('pdf-store')" class="apple-nav-item">Graphs</button>
+            <button onclick="showPage('groups')" class="apple-nav-item">Groups</button>
+            <button onclick="showPage('exchange')" class="apple-nav-item" style="color: #34c759; font-weight:600;"><i class="fas fa-chart-line" style="margin-right:6px;"></i>Exchange</button>
           
           <div class="apple-dropdown" id="nav-dropdown">
             <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)">
@@ -523,6 +525,37 @@
       </div>
     </div>
     
+    </div>
+    
+  </div>
+</div>
+
+<!-- EXCHANGE VIEW -->
+<div id="page-exchange" class="page" style="display:none;">
+  <div class="content-wrapper">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h1 class="page-title" style="margin-bottom:0;">Stock Exchange</h1>
+      <div style="background:#1c1c1e; border:1px solid #2c2c2e; padding:10px 20px; border-radius:980px; display:flex; align-items:center; gap:8px;">
+        <i class="fas fa-wallet" style="color:#a1a1aa;"></i>
+        <span style="color:#86868b; font-size:0.9rem;">Wallet:</span>
+        <span id="exchange-wallet-balance" style="color:#34c759; font-weight:800; font-size:1.1rem;">₪0</span>
+      </div>
+    </div>
+    
+    <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:24px; margin-bottom:32px;">
+      <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:16px;"><i class="fas fa-briefcase" style="margin-right:8px; color:#0a84ff;"></i>My Portfolio</h2>
+      <div id="portfolio-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+        <!-- Portfolio injected by JS -->
+      </div>
+      <div id="portfolio-empty" style="text-align:center; padding:20px; color:#86868b; display:none;">
+        You don't own any shares yet. Buy some from the market below!
+      </div>
+    </div>
+    
+    <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:16px;"><i class="fas fa-globe" style="margin-right:8px; color:#af52de;"></i>Market</h2>
+    <div id="market-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px;">
+      <!-- Market stocks injected by JS -->
+    </div>
   </div>
 </div>
 
@@ -1492,6 +1525,47 @@
     </div>
     
     <button id="btn-submit-message" class="btn-primary" onclick="submitPrivateMessage()" style="width:100%; padding:14px; font-size:1rem;">Send Message</button>
+  </div>
+</div>
+
+<!-- STOCK TRADE MODAL -->
+<div id="stock-trade-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 460px;">
+    <button class="modal-close" onclick="closeTradeModal()">✕</button>
+    <div style="text-align:center; margin-bottom:24px;">
+      <div id="trade-stock-symbol" style="background:#2c2c2e; color:#fff; display:inline-block; padding:4px 12px; border-radius:8px; font-size:0.8rem; font-weight:700; margin-bottom:8px;">SYMBOL</div>
+      <h2 id="trade-stock-name" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Company Name</h2>
+      <div style="font-size:1.2rem; color:#a1a1aa;">Current Price: <span id="trade-stock-price" style="color:#f5f5f7; font-weight:700;">₪0</span></div>
+    </div>
+    
+    <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; margin-bottom:24px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem;">
+        <span style="color:#86868b;">Wallet Balance:</span>
+        <span id="trade-wallet-balance" style="color:#34c759; font-weight:700;">₪0</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:16px; font-size:0.9rem;">
+        <span style="color:#86868b;">Shares Owned:</span>
+        <span id="trade-shares-owned" style="color:#0a84ff; font-weight:700;">0</span>
+      </div>
+      
+      <div style="margin-bottom:8px;">
+        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Quantity</label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <input type="range" id="trade-quantity-slider" min="1" max="100" step="1" value="1" style="flex:1; cursor:pointer;" oninput="updateTradeTotal()">
+          <input type="number" id="trade-quantity-input" value="1" min="1" style="width:80px; background:transparent; border:none; border-bottom:2px solid #0a84ff; color:#fff; font-size:1.2rem; font-weight:700; text-align:center; outline:none;" oninput="document.getElementById('trade-quantity-slider').value = this.value; updateTradeTotal()">
+        </div>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid #2c2c2e;">
+        <span style="color:#86868b; font-size:0.9rem;">Total Value:</span>
+        <span id="trade-total-value" style="font-size:1.4rem; font-weight:800; color:#fafafa;">₪0</span>
+      </div>
+    </div>
+    
+    <div style="display:flex; gap:12px;">
+      <button id="btn-trade-buy" class="btn-primary" onclick="executeTrade('buy')" style="flex:1; padding:14px; font-size:1rem; background:#34c759;"><i class="fas fa-arrow-down" style="margin-right:6px;"></i>Buy</button>
+      <button id="btn-trade-sell" class="btn-primary" onclick="executeTrade('sell')" style="flex:1; padding:14px; font-size:1rem; background:#ef4444;"><i class="fas fa-arrow-up" style="margin-right:6px;"></i>Sell</button>
+    </div>
   </div>
 </div>
 
