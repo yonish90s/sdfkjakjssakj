@@ -2757,7 +2757,7 @@ function submitContactForm(e) {
 // ========== THEME LOGIC ==========
 function initTheme() {
   const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') {
+  if (savedTheme !== 'light') {
     document.body.classList.add('dark-theme');
   }
 }
@@ -2766,6 +2766,7 @@ function toggleTheme() {
   const body = document.body;
   body.classList.toggle('dark-theme');
   const isDark = body.classList.contains('dark-theme');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
   showToast(isDark ? '🌙 Dark mode activated' : '☀️ Light mode activated');
 }
 
