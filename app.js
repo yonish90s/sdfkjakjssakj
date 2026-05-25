@@ -4487,13 +4487,16 @@ window.openGroup = async function(groupId) {
     docs.forEach(doc => {
       const data = doc.data;
       const dateStr = new Date(data.timestamp).toLocaleString();
+      const priceTagHtml = data.price != null ? `<div style="display:inline-block; margin-top:8px; background:#34c759; color:#fff; font-weight:700; padding:4px 10px; border-radius:8px; font-size:0.8rem;">₪${data.price.toLocaleString()}</div>` : '';
+      
       html += `
         <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="openPost('${doc.id}')">
           <h3 style="font-size:1.2rem; font-weight:700; color:#f5f5f7; margin-bottom:8px;">${data.title}</h3>
           <div style="font-size:0.95rem; color:#a1a1aa; margin-bottom:12px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${data.content}</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#86868b;">
+          ${priceTagHtml}
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#86868b; margin-top:8px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <i class="fas fa-user-circle"></i> ${data.author}
+              <i class="fas fa-user-circle"></i> ${data.authorName || data.author}
             </div>
             <div>${dateStr.split(',')[0]}</div>
           </div>
@@ -4517,6 +4520,13 @@ window.openCreatePostModal = function() {
   document.getElementById('create-post-modal').classList.add('active');
   document.getElementById('new-post-title').value = '';
   document.getElementById('new-post-content').value = '';
+  
+  const priceContainer = document.getElementById('new-post-price-container');
+  if (priceContainer) {
+    priceContainer.style.display = (currentGroupId === 'marketplace') ? 'block' : 'none';
+  }
+  const priceInput = document.getElementById('new-post-price');
+  if (priceInput) priceInput.value = '';
 };
 
 window.closeCreatePostModal = function() {
@@ -4529,6 +4539,8 @@ window.submitPost = async function() {
   
   const title = document.getElementById('new-post-title').value.trim();
   const content = document.getElementById('new-post-content').value.trim();
+  const priceInput = document.getElementById('new-post-price');
+  const price = (currentGroupId === 'marketplace' && priceInput && priceInput.value) ? Number(priceInput.value) : null;
   const btn = document.getElementById('btn-submit-post');
   
   if (!title || !content) {
@@ -4542,25 +4554,27 @@ window.submitPost = async function() {
   
   try {
     const postsRef = window.fbColl(window.fbDb, 'posts');
-    await window.fbAddDoc(postsRef, {
+    const postData = {
       groupId: currentGroupId,
+      authorEmail: currentUser.email,
+      authorName: currentUser.name || 'Anonymous',
+      authorAvatar: currentUser.avatar || '',
       title: title,
       content: content,
-      author: currentUser.name || 'Anonymous',
-      authorEmail: currentUser.email,
-      timestamp: new Date().toISOString()
-    });
+      timestamp: new Date().toISOString(),
+      likes: 0
+    };
+    if (price !== null) {
+      postData.price = price;
+    }
+    await window.fbAddDoc(postsRef, postData);
     
     closeCreatePostModal();
     showToast('Post created successfully!', 'success');
     openGroup(currentGroupId); // Refresh list
   } catch (err) {
     console.error('Error creating post:', err);
-    if (err.message && err.message.includes('permission')) {
-      alert('Firebase Security Error: You do not have permission to write to the "posts" collection. Please update your Firebase Rules to allow read/write to /posts.');
-    } else {
-      alert('Failed to create post: ' + err.message);
-    }
+    alert('Failed to create post: ' + err.message);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
@@ -4593,7 +4607,7 @@ window.openPost = async function(postId) {
       const data = postSnap.data();
       document.getElementById('post-title').textContent = data.title;
       document.getElementById('post-content').textContent = data.content;
-      document.getElementById('post-author').textContent = data.author;
+      document.getElementById('post-author').textContent = data.authorName || data.author;
       document.getElementById('post-date').textContent = new Date(data.timestamp).toLocaleString();
       
       currentPostAuthorEmail = data.authorEmail;
@@ -4705,11 +4719,12 @@ window.openMakeOfferModal = function() {
     return;
   }
   document.getElementById('make-offer-modal').classList.add('active');
+  
   const slider = document.getElementById('offer-amount-slider');
-  if (slider) {
-    slider.value = 0;
-    document.getElementById('offer-amount-display').textContent = '0 ₪';
-  }
+  const input = document.getElementById('offer-amount-input');
+  if (slider) slider.value = 0;
+  if (input) input.value = 0;
+  
   document.getElementById('offer-message').value = '';
   clearSignature();
 };

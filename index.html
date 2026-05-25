@@ -536,6 +536,11 @@
       <input type="text" id="new-post-title" placeholder="What's on your mind?" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:1rem;outline:none;font-family:inherit;box-sizing:border-box;">
     </div>
     
+    <div style="margin-bottom:16px; display:none;" id="new-post-price-container">
+      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Asking Price (₪) - Optional</label>
+      <input type="number" id="new-post-price" placeholder="e.g. 500" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:1rem;outline:none;font-family:inherit;box-sizing:border-box;">
+    </div>
+    
     <div style="margin-bottom:24px;">
       <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Content</label>
       <textarea id="new-post-content" placeholder="Share your thoughts, questions, or strategies..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:0.95rem;outline:none;font-family:inherit;min-height:150px;resize:vertical;box-sizing:border-box;"></textarea>
@@ -553,10 +558,13 @@
     
     <div style="margin-bottom:20px;">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-        <label style="font-size:0.9rem;color:#a1a1aa; font-weight:600;">Offer Amount (₪)</label>
-        <span id="offer-amount-display" style="font-size:1.4rem; font-weight:800; color:#34c759;">0 ₪</span>
+        <label style="font-size:0.9rem;color:#a1a1aa; font-weight:600;">Offer Amount</label>
+        <div style="display:flex; align-items:center;">
+          <input type="number" id="offer-amount-input" value="0" style="width:120px; font-size:1.4rem; font-weight:800; color:#34c759; background:transparent; border:none; border-bottom:2px solid #34c759; text-align:right; outline:none; font-family:inherit;" oninput="document.getElementById('offer-amount-slider').value = this.value">
+          <span style="font-size:1.4rem; font-weight:800; color:#34c759; margin-left:6px;">₪</span>
+        </div>
       </div>
-      <input type="range" id="offer-amount-slider" min="0" max="10000" step="10" value="0" style="width:100%; cursor:pointer;" oninput="document.getElementById('offer-amount-display').textContent = Number(this.value).toLocaleString() + ' ₪'">
+      <input type="range" id="offer-amount-slider" min="0" max="10000" step="10" value="0" style="width:100%; cursor:pointer;" oninput="document.getElementById('offer-amount-input').value = this.value">
     </div>
     
     <div style="margin-bottom:20px;">
