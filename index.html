@@ -551,14 +551,28 @@
     <button class="modal-close" onclick="closeMakeOfferModal()">✕</button>
     <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 24px;">Make an Offer</h2>
     
-    <div style="margin-bottom:16px;">
-      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Offer Amount ($)</label>
-      <input type="number" id="offer-amount" placeholder="e.g. 50" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:1rem;outline:none;font-family:inherit;box-sizing:border-box;">
+    <div style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+        <label style="font-size:0.9rem;color:#a1a1aa; font-weight:600;">Offer Amount (₪)</label>
+        <span id="offer-amount-display" style="font-size:1.4rem; font-weight:800; color:#34c759;">0 ₪</span>
+      </div>
+      <input type="range" id="offer-amount-slider" min="0" max="10000" step="10" value="0" style="width:100%; cursor:pointer;" oninput="document.getElementById('offer-amount-display').textContent = Number(this.value).toLocaleString() + ' ₪'">
+    </div>
+    
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:0.9rem;color:#a1a1aa;margin-bottom:6px;font-weight:600;">Message</label>
+      <textarea id="offer-message" placeholder="Hi, I'm interested in buying this..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:0.95rem;outline:none;font-family:inherit;min-height:80px;resize:vertical;box-sizing:border-box;"></textarea>
     </div>
     
     <div style="margin-bottom:24px;">
-      <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Message</label>
-      <textarea id="offer-message" placeholder="Hi, I'm interested in buying this..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:12px 14px;color:#fafafa;font-size:0.95rem;outline:none;font-family:inherit;min-height:100px;resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <label style="font-size:0.9rem;color:#a1a1aa; font-weight:600;">Contract Signature <span style="color:#ef4444;">*</span></label>
+        <button onclick="clearSignature()" style="background:none; border:none; color:#0a84ff; font-size:0.8rem; cursor:pointer;">Clear</button>
+      </div>
+      <div style="background:#fff; border-radius:12px; overflow:hidden; border:2px solid #27272a;">
+        <canvas id="signature-pad" width="460" height="150" style="width:100%; display:block; touch-action:none;"></canvas>
+      </div>
+      <p style="font-size:0.75rem; color:#86868b; margin-top:6px;">By signing, you agree to the terms of this offer.</p>
     </div>
     
     <button id="btn-submit-offer" class="btn-primary" onclick="submitOffer()" style="width:100%; padding:14px; font-size:1rem;">Send Offer</button>

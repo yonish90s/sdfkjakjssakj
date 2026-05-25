@@ -4705,8 +4705,13 @@ window.openMakeOfferModal = function() {
     return;
   }
   document.getElementById('make-offer-modal').classList.add('active');
-  document.getElementById('offer-amount').value = '';
+  const slider = document.getElementById('offer-amount-slider');
+  if (slider) {
+    slider.value = 0;
+    document.getElementById('offer-amount-display').textContent = '0 ₪';
+  }
   document.getElementById('offer-message').value = '';
+  clearSignature();
 };
 
 window.closeMakeOfferModal = function() {
@@ -4717,14 +4722,18 @@ window.submitOffer = async function() {
   if (!currentUser || !currentUser.email) return;
   if (!currentPostId || !currentPostAuthorEmail) return;
   
-  const amount = document.getElementById('offer-amount').value.trim();
+  const slider = document.getElementById('offer-amount-slider');
+  const amount = slider ? slider.value : '0';
   const message = document.getElementById('offer-message').value.trim();
   const btn = document.getElementById('btn-submit-offer');
   
-  if (!amount) {
-    showToast('Please enter an offer amount.', 'error');
+  if (isSignatureBlank) {
+    showToast('Please sign the contract to submit your offer.', 'error');
     return;
   }
+  
+  const canvas = document.getElementById('signature-pad');
+  const signatureData = canvas.toDataURL('image/png');
   
   const originalText = btn.textContent;
   btn.textContent = 'Sending...';
@@ -4740,6 +4749,7 @@ window.submitOffer = async function() {
       buyerEmail: currentUser.email,
       offerAmount: Number(amount),
       message: message,
+      signatureData: signatureData,
       timestamp: new Date().toISOString(),
       status: 'pending'
     });
@@ -4829,6 +4839,7 @@ async function renderOffers() {
           <div style="font-size:0.9rem; color:#a1a1aa; background:#2c2c2e; padding:10px; border-radius:8px; margin-bottom:12px;">
             <strong>From:</strong> ${data.buyerName} (${data.buyerEmail})<br>
             ${data.message ? `<div style="margin-top:6px; font-style:italic;">"${data.message}"</div>` : ''}
+            ${data.signatureData ? `<div style="margin-top:12px; border-top:1px dashed #4a4a4c; padding-top:8px;"><strong style="font-size:0.8rem;">Contract Signature:</strong><br><img src="${data.signatureData}" style="max-height:60px; background:#fff; border-radius:4px; margin-top:4px;"></div>` : ''}
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
@@ -4877,4 +4888,82 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
     }
   }
+});
+
+// =====================================================================
+// SIGNATURE PAD LOGIC
+// =====================================================================
+let signatureCtx;
+let isDrawing = false;
+let isSignatureBlank = true;
+
+function initSignaturePad() {
+  const canvas = document.getElementById('signature-pad');
+  if (!canvas) return;
+  
+  signatureCtx = canvas.getContext('2d');
+  
+  signatureCtx.fillStyle = '#ffffff';
+  signatureCtx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  signatureCtx.lineWidth = 3;
+  signatureCtx.lineCap = 'round';
+  signatureCtx.strokeStyle = '#000000';
+  
+  const getPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    // Scale coordinates based on actual display size
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  };
+
+  const startDraw = (e) => {
+    e.preventDefault();
+    isDrawing = true;
+    isSignatureBlank = false;
+    const pos = getPos(e);
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(pos.x, pos.y);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    signatureCtx.lineTo(pos.x, pos.y);
+    signatureCtx.stroke();
+  };
+
+  const endDraw = (e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+    isDrawing = false;
+  };
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseout', endDraw);
+  
+  canvas.addEventListener('touchstart', startDraw, {passive: false});
+  canvas.addEventListener('touchmove', draw, {passive: false});
+  canvas.addEventListener('touchend', endDraw, {passive: false});
+}
+
+window.clearSignature = function() {
+  const canvas = document.getElementById('signature-pad');
+  if (!canvas || !signatureCtx) return;
+  signatureCtx.fillStyle = '#ffffff';
+  signatureCtx.fillRect(0, 0, canvas.width, canvas.height);
+  isSignatureBlank = true;
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSignaturePad();
 });
