@@ -3798,7 +3798,9 @@ function checkoutCart() {
     return `${item.title} × ${c.qty} — ${item.price}`;
   }).filter(Boolean);
 
-  closeCartModal();
+  const drawer = document.getElementById('cart-drawer');
+  if (drawer) drawer.classList.remove('active');
+  
   runRealPayment(summaryLines, total);
 }
 
