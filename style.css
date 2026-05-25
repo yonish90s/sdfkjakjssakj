@@ -5556,3 +5556,130 @@ body.dark-theme .store-modern-add-btn {
   background: var(--primary);
   color: white;
 }
+
+/* ========== LOCATION SELECTOR ========== */
+.location-selector {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 980px;
+  transition: opacity 0.2s;
+  user-select: none;
+}
+
+.location-selector:hover {
+  opacity: 0.8;
+}
+
+.location-chevron {
+  color: #0ea5e9;
+  font-size: 0.85rem;
+}
+
+.location-text {
+  color: #0ea5e9;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.location-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0b1426;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0ea5e9;
+  font-size: 1.1rem;
+}
+
+body.light-theme .location-icon-circle {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+body.light-theme .location-text,
+body.light-theme .location-chevron {
+  color: #0369a1;
+}
+
+.location-dropdown-content {
+  display: none;
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  min-width: 160px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  z-index: 1000;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.location-dropdown-content.show {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.location-item {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  padding: 10px 16px;
+  text-align: right;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.location-item:hover {
+  background: var(--bg-glass-hover);
+}
+
+/* ========== WEATHER WIDGET ========== */
+.sidebar-weather-widget {
+  margin: 10px 20px 20px;
+  padding: 16px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.weather-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weather-capital {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.weather-temp {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.weather-icon-container {
+  font-size: 2.2rem;
+  color: #0ea5e9;
+}

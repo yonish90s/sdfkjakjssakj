@@ -4137,3 +4137,93 @@ function toggleSidebar() {
     }
   }
 })();
+
+// ========== LOCATION & WEATHER WIDGET ==========
+let currentLocation = JSON.parse(localStorage.getItem('userLocation')) || {
+  id: 'Israel',
+  nameHeb: 'ישראל',
+  lat: 31.7683,
+  lon: 35.2137,
+  capitalHeb: 'ירושלים'
+};
+
+function toggleLocationDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('location-dropdown-menu');
+  if (menu) {
+    menu.classList.toggle('show');
+  }
+}
+
+function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
+  currentLocation = { id, nameHeb, lat, lon, capitalHeb };
+  localStorage.setItem('userLocation', JSON.stringify(currentLocation));
+  
+  // Update UI text
+  const textEl = document.getElementById('selected-location-text');
+  if (textEl) textEl.textContent = nameHeb;
+  
+  // Fetch weather for new location
+  fetchWeatherForCapital();
+  
+  // Close menu
+  const menu = document.getElementById('location-dropdown-menu');
+  if (menu) menu.classList.remove('show');
+}
+
+async function fetchWeatherForCapital() {
+  const widget = document.getElementById('sidebar-weather-widget');
+  if (!widget) return;
+  
+  const capitalEl = document.getElementById('weather-capital');
+  const tempEl = document.getElementById('weather-temp');
+  const iconEl = document.getElementById('weather-icon');
+  
+  if (capitalEl) capitalEl.textContent = currentLocation.capitalHeb;
+  if (tempEl) tempEl.textContent = '...';
+  
+  widget.style.display = 'flex'; // show widget
+  
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current_weather=true`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data && data.current_weather) {
+      const temp = Math.round(data.current_weather.temperature);
+      const code = data.current_weather.weathercode;
+      
+      if (tempEl) tempEl.textContent = `${temp}°C`;
+      
+      // Determine icon based on WMO Weather interpretation codes
+      let iconClass = 'fas fa-sun'; // default clear
+      if (code >= 1 && code <= 3) iconClass = 'fas fa-cloud-sun'; // partly cloudy
+      if (code >= 45 && code <= 48) iconClass = 'fas fa-smog'; // fog
+      if (code >= 51 && code <= 67) iconClass = 'fas fa-cloud-rain'; // rain
+      if (code >= 71 && code <= 77) iconClass = 'fas fa-snowflake'; // snow
+      if (code >= 80 && code <= 82) iconClass = 'fas fa-cloud-showers-heavy'; // showers
+      if (code >= 95 && code <= 99) iconClass = 'fas fa-bolt'; // thunderstorm
+      
+      if (iconEl) iconEl.className = iconClass;
+    }
+  } catch (err) {
+    console.error("Error fetching weather:", err);
+    if (tempEl) tempEl.textContent = 'N/A';
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const selector = document.querySelector('.location-selector');
+  if (selector && !selector.contains(e.target)) {
+    const menu = document.getElementById('location-dropdown-menu');
+    if (menu) menu.classList.remove('show');
+  }
+});
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  const textEl = document.getElementById('selected-location-text');
+  if (textEl) textEl.textContent = currentLocation.nameHeb;
+  fetchWeatherForCapital();
+});
