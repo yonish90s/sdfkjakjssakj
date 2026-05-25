@@ -1748,6 +1748,22 @@ function renderStoreLayout() {
               <span class="store-category-name">${c.name}</span>
             </div>
           `).join('')}
+          ${categories.map(c => `
+            <div class="store-category-item">
+              <div class="store-category-icon-box" style="background-color: ${c.color};">
+                <span class="store-category-icon">${c.icon}</span>
+              </div>
+              <span class="store-category-name">${c.name}</span>
+            </div>
+          `).join('')}
+          ${categories.map(c => `
+            <div class="store-category-item">
+              <div class="store-category-icon-box" style="background-color: ${c.color};">
+                <span class="store-category-icon">${c.icon}</span>
+              </div>
+              <span class="store-category-name">${c.name}</span>
+            </div>
+          `).join('')}
         </div>
       </div>
 

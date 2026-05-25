@@ -5397,7 +5397,7 @@ body.dark-theme .article-card-snippet {
 
 @keyframes scrollCategories {
   0% { transform: translateX(0); }
-  100% { transform: translateX(calc(-50% - 10px)); }
+  100% { transform: translateX(calc(-25% - 5px)); }
 }
 
 .store-category-item {
