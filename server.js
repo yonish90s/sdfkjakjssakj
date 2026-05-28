@@ -7,6 +7,8 @@ const { Resend } = require('resend');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const cron = require('node-cron');
+const { collectStockNews } = require('./agent/hebrew_stock_agent');
 const app = express();
 const PORT = process.env.PORT || 4242;
 
@@ -491,6 +493,12 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`   Frontend expected at: ${FRONTEND_URL}`);
   });
 }
+
+// ── כתבות שוק ההון בעברית – כל יום ב-05:00 שעון ישראל ──────────────────────
+cron.schedule('0 5 * * *', () => {
+  collectStockNews().catch(err => console.error('[Cron] שגיאה:', err.message));
+}, { timezone: 'Asia/Jerusalem' });
+console.log('📅 Stock news cron scheduled: daily at 05:00 Asia/Jerusalem');
 
 module.exports = app;
 // Force Redeploy Mon May 11 19:45:00 IDT 2026

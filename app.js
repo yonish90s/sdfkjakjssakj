@@ -680,6 +680,13 @@ function goBack() {
 let currentPage = 1;
 const ARTICLES_PER_PAGE = 10;
 let currentCategory = 'הכל';
+let currentLocation = JSON.parse(localStorage.getItem('userLocation')) || {
+  id: 'Israel',
+  nameHeb: 'ישראל',
+  lat: 31.7683,
+  lon: 35.2137,
+  capitalHeb: 'ירושלים'
+};
 
 const categoryEmojis = {
   'Computers': '💻',
@@ -689,8 +696,19 @@ const categoryEmojis = {
   'Hardware': '⚙️',
   'Apps': '📱',
   'Artificial Intelligence': '🤖',
-  'AI': '🤖'
+  'AI': '🤖',
+  'שוק ההון': '📈'
 };
+
+function isHebrewArticle(a) {
+  if (a.lang) return a.lang === 'he';
+  return /[֐-׿]/.test((a.title || '') + (a.category || ''));
+}
+
+function getLocationArticles() {
+  if (currentLocation.id === 'Israel') return newsArticles.filter(isHebrewArticle);
+  return newsArticles.filter(a => !isHebrewArticle(a));
+}
 
 function renderNewsLayout(page = 1) {
   currentPage = page;
@@ -702,9 +720,10 @@ function renderNewsLayout(page = 1) {
   if(!feedList) return;
 
   // 1. Render Category Filter Bar
+  const locationArticles = getLocationArticles();
   const categoryBar = document.getElementById('category-filter-bar');
   if (categoryBar) {
-    const categories = ['הכל', ...new Set(newsArticles.map(a => a.category).filter(Boolean))];
+    const categories = ['הכל', ...new Set(locationArticles.map(a => a.category).filter(Boolean))];
     categoryBar.innerHTML = categories.map(cat => {
       const isSelected = currentCategory === cat;
       const emoji = categoryEmojis[cat] ? categoryEmojis[cat] + ' ' : '';
@@ -713,9 +732,9 @@ function renderNewsLayout(page = 1) {
   }
 
   // Filter articles based on currentCategory
-  const filteredArticles = currentCategory === 'הכל' 
-    ? newsArticles 
-    : newsArticles.filter(a => a.category === currentCategory);
+  const filteredArticles = currentCategory === 'הכל'
+    ? locationArticles
+    : locationArticles.filter(a => a.category === currentCategory);
 
   // 2. Render Featured Carousel (Only on page 1)
   let displayFeatured = [];
@@ -4448,13 +4467,6 @@ function toggleSidebar() {
 })();
 
 // ========== LOCATION & WEATHER WIDGET ==========
-let currentLocation = JSON.parse(localStorage.getItem('userLocation')) || {
-  id: 'Israel',
-  nameHeb: 'ישראל',
-  lat: 31.7683,
-  lon: 35.2137,
-  capitalHeb: 'ירושלים'
-};
 
 function toggleLocationDropdown(e) {
   if (e) e.stopPropagation();
@@ -4467,14 +4479,18 @@ function toggleLocationDropdown(e) {
 function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
   currentLocation = { id, nameHeb, lat, lon, capitalHeb };
   localStorage.setItem('userLocation', JSON.stringify(currentLocation));
-  
+
   // Update UI text
   const textEl = document.getElementById('selected-location-text');
   if (textEl) textEl.textContent = nameHeb;
-  
+
   // Fetch weather for new location
   fetchWeatherForCapital();
-  
+
+  // Re-render articles for the selected region
+  currentCategory = 'הכל';
+  renderNewsLayout(1);
+
   // Close menu
   const menu = document.getElementById('location-dropdown-menu');
   if (menu) menu.classList.remove('show');

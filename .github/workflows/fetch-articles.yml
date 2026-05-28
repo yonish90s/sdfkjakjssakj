@@ -1,6 +1,6 @@
 name: Fetch Articles Daily
 
-# Every day at 02:00 UTC
+# Every day at 02:00 UTC = 05:00 Israel time (Asia/Jerusalem)
 # Can also be run manually from the "Run workflow" button
 on:
   schedule:
@@ -17,6 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # ── English articles (Python scraper) ────────────────────────────────
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -24,17 +25,34 @@ jobs:
           cache: "pip"
           cache-dependency-path: "agent/requirements.txt"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r agent/requirements.txt
 
-      - name: Run article scraper
+      - name: Run English article scraper
         run: python agent/scrape_articles.py
 
-      - name: Commit updated articles.json (if changed)
+      # ── Hebrew stock articles (Node.js agent) ────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Run Hebrew stock news agent
+        run: node agent/hebrew_stock_agent.js
+
+      # ── Commit everything ────────────────────────────────────────────────
+      - name: Commit updated articles (if changed)
         run: |
           git config user.name  "article-agent[bot]"
           git config user.email "article-agent@users.noreply.github.com"
-                    git add articles.json && git add -f agent/.seen.json
+          git add articles.json
+          git add -f agent/.seen.json 2>/dev/null || true
+          git add -f agent/.seen_hebrew.json 2>/dev/null || true
+          git add articles/
           if git diff --cached --quiet; then
             echo "No new articles - nothing to commit."
           else
