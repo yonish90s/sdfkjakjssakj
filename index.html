@@ -2292,6 +2292,40 @@
     </div>
   </div>
 
+  <!-- FLOATING AD WIDGET -->
+  <div id="floating-ad-card" class="floating-ad-card">
+    <button class="ad-close-btn" onclick="closeFloatingAd()">✕</button>
+    <div class="ad-card-inner">
+      <div class="ad-image-container">
+        <img src="assets/floating_ad_banner.png" alt="Special Offer">
+      </div>
+      <div class="ad-content-container">
+        <span class="ad-badge">מבצע מיוחד ✨</span>
+        <h3 class="ad-title">כרטיס Quant Premium</h3>
+        <p class="ad-desc">הצטרפו היום למסלול הפרימיום הבלעדי וקבלו גישה לכל הנתונים, הגרפים והניתוחים המתקדמים ביותר!</p>
+        <button class="ad-cta-btn" onclick="showPage('subscription'); closeFloatingAd();">הצטרף עכשיו 👑</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showFloatingAd() {
+      if (sessionStorage.getItem('floatingAdClosed')) return;
+      const ad = document.getElementById('floating-ad-card');
+      if (ad) ad.classList.add('active');
+    }
+    
+    function closeFloatingAd() {
+      const ad = document.getElementById('floating-ad-card');
+      if (ad) ad.classList.remove('active');
+      sessionStorage.setItem('floatingAdClosed', 'true');
+    }
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(showFloatingAd, 1500);
+    });
+  </script>
+
   <script src="app.js?v=6"></script>
 </body>
 </html>
