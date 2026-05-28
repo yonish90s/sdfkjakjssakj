@@ -702,7 +702,12 @@ const categoryEmojis = {
 
 function isHebrewArticle(a) {
   if (a.lang) return a.lang === 'he';
-  return /[֐-׿]/.test((a.title || '') + (a.category || ''));
+  const text = (a.title || '') + (a.category || '');
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c >= 0x0590 && c <= 0x05FF) return true;
+  }
+  return false;
 }
 
 function getLocationArticles() {
