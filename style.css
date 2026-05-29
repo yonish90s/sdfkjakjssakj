@@ -4113,6 +4113,7 @@ model-viewer {
 }
 
 .sidebar-toggle {
+  display: none !important;
   position: absolute;
   top: 80px; /* Moved further down to ensure it's below the navbar in all states */
   right: -18px;
