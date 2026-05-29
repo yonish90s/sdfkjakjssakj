@@ -1699,16 +1699,8 @@ function getYouTubeId(url) {
 }
 
 function showToast(msg, type = '') {
-  const toast = document.getElementById('toast');
-  if (!toast) {
-    alert(msg);
-    return;
-  }
-  toast.textContent = msg;
-  toast.className = 'toast show'; // Reset and show
-  if (type) toast.classList.add(type);
-  
-  setTimeout(() => toast.classList.remove('show'), 3000);
+  // Disabled as per user request to remove all toast notifications from the site
+  return;
 }
 
 function escHtml(str) {
