@@ -4532,6 +4532,11 @@ function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
   currentCategory = 'הכל';
   renderNewsLayout(1);
 
+  // Update cookie consent banner language dynamically
+  if (window.updateCookieBannerLanguage) {
+    window.updateCookieBannerLanguage();
+  }
+
   // Close menu
   const menu = document.getElementById('location-dropdown-menu');
   if (menu) menu.classList.remove('show');
@@ -5512,22 +5517,66 @@ window.acceptCookies = function() {
   localStorage.setItem('cookieConsent', 'true');
   const banner = document.getElementById('cookie-consent-banner');
   if (banner) {
-    banner.style.display = 'none';
+    banner.style.opacity = '0';
+    banner.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      banner.style.display = 'none';
+    }, 400);
   }
 };
 
 window.showPrivacyPolicy = function() {
-  alert('מדיניות פרטיות: אנו משתמשים בעוגיות כדי לשפר את חווית המשתמש באתר, לשמור את המידע שלך בעגלת הקניות ולספק תכנים מותאמים אישית. המידע נשמר בצורה מאובטחת ולא מועבר לצדדים שלישיים ללא אישור מפורש.');
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  if (isHeb) {
+    alert('מדיניות פרטיות: אנו משתמשים בעוגיות כדי לשפר את חווית המשתמש באתר, לשמור את המידע שלך בעגלת הקניות ולספק תכנים מותאמים אישית. המידע נשמר בצורה מאובטחת ולא מועבר לצדדים שלישיים ללא אישור מפורש.');
+  } else {
+    alert('Privacy Policy: We use cookies to improve your user experience, save your shopping cart items, and provide personalized content. Your data is stored securely and never shared with third parties without your explicit consent.');
+  }
+};
+
+window.updateCookieBannerLanguage = function() {
+  const banner = document.getElementById('cookie-consent-banner');
+  if (!banner) return;
+
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const textEl = document.getElementById('cookie-consent-text');
+  const acceptBtn = document.getElementById('cookie-accept-btn');
+  const privacyBtn = document.getElementById('cookie-privacy-btn');
+
+  if (isHeb) {
+    banner.style.direction = 'rtl';
+    if (textEl) textEl.textContent = 'אנחנו משתמשים בעוגיות לשיפור חוויית הגלישה באתר. בלחיצה על "הסכמה" את/ה מאשר/ת שימוש בעוגיות.';
+    if (acceptBtn) acceptBtn.textContent = 'הסכמה';
+    if (privacyBtn) privacyBtn.textContent = 'מדיניות פרטיות';
+  } else {
+    banner.style.direction = 'ltr';
+    if (textEl) textEl.textContent = 'We use cookies to improve your browsing experience. By clicking "Accept", you agree to our use of cookies.';
+    if (acceptBtn) acceptBtn.textContent = 'Accept';
+    if (privacyBtn) privacyBtn.textContent = 'Privacy Policy';
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   const hasConsent = localStorage.getItem('cookieConsent');
+  
+  // Make sure styling supports smooth animation initially
+  const banner = document.getElementById('cookie-consent-banner');
+  if (banner) {
+    banner.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    banner.style.opacity = '0';
+    banner.style.transform = 'translateY(20px)';
+  }
+
+  updateCookieBannerLanguage();
+
   if (!hasConsent) {
-    const banner = document.getElementById('cookie-consent-banner');
     if (banner) {
-      // Delay showing it slightly for better UX
       setTimeout(() => {
         banner.style.display = 'block';
+        // Force reflow
+        banner.offsetHeight;
+        banner.style.opacity = '1';
+        banner.style.transform = 'translateY(0)';
       }, 1000);
     }
   }
