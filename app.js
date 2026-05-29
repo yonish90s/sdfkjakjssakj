@@ -4491,20 +4491,20 @@ function toggleSidebar() {
   }
 }
 
-// Restore sidebar state on load
+// Restore sidebar state on load (default to expanded)
 (function initSidebar() {
-  const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-  if (isCollapsed) {
-    const sidebar = document.getElementById('app-sidebar');
-    const mainWrapper = document.getElementById('main-wrapper');
-    const toggleBtn = document.getElementById('sidebar-toggle').querySelector('i');
-    
-    if (sidebar) sidebar.classList.add('collapsed');
-    if (mainWrapper) mainWrapper.classList.add('sidebar-collapsed');
-    if (toggleBtn) {
-      toggleBtn.classList.remove('fa-chevron-right');
-      toggleBtn.classList.add('fa-chevron-left');
-    }
+  localStorage.setItem('sidebarCollapsed', 'false');
+  
+  const sidebar = document.getElementById('app-sidebar');
+  const mainWrapper = document.getElementById('main-wrapper');
+  const toggleBtnEl = document.getElementById('sidebar-toggle');
+  const toggleBtn = toggleBtnEl ? toggleBtnEl.querySelector('i') : null;
+  
+  if (sidebar) sidebar.classList.remove('collapsed');
+  if (mainWrapper) mainWrapper.classList.remove('sidebar-collapsed');
+  if (toggleBtn) {
+    toggleBtn.classList.remove('fa-chevron-left');
+    toggleBtn.classList.add('fa-chevron-right');
   }
 })();
 
