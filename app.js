@@ -29,6 +29,7 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
 
 let storedArticles = localStorage.getItem('newsArticles');
 let newsArticles = storedArticles ? JSON.parse(storedArticles) : [...defaultNewsArticles];
+let searchQuery = '';
 
 // Backup user articles before Firestore sync wipes them
 if (storedArticles && !localStorage.getItem('newsArticles_migrated')) {
@@ -757,20 +758,33 @@ function renderNewsLayout(page = 1) {
   }
 
   // Filter articles based on currentCategory
-  const filteredArticles = currentCategory === 'הכל'
+  let filteredArticles = currentCategory === 'הכל'
     ? locationArticles
     : locationArticles.filter(a => a.category === currentCategory);
+
+  // Apply search query filter if active
+  if (searchQuery && searchQuery.trim() !== '') {
+    const queryLower = searchQuery.toLowerCase().trim();
+    filteredArticles = filteredArticles.filter(a => {
+      const titleMatch = (a.title || '').toLowerCase().includes(queryLower);
+      const snippetMatch = (a.snippet || '').toLowerCase().includes(queryLower);
+      const categoryMatch = (a.category || '').toLowerCase().includes(queryLower);
+      const authorMatch = (a.author || '').toLowerCase().includes(queryLower);
+      const contentMatch = (a.content || '').toLowerCase().includes(queryLower);
+      return titleMatch || snippetMatch || categoryMatch || authorMatch || contentMatch;
+    });
+  }
 
   // 2. Render Featured Carousel (Only on page 1)
   let displayFeatured = [];
   if (page === 1) {
     const featuredCarousel = document.getElementById('featured-carousel-container');
     if (featuredCarousel) {
-      if (currentCategory === 'הכל') {
+      if (currentCategory === 'הכל' && (!searchQuery || searchQuery.trim() === '')) {
         // Show carousel only on the main 'All' page
         displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 8);
       } else {
-        // Hide carousel and show a simple list when a specific category is selected
+        // Hide carousel and show a simple list when a specific category is selected or searching
         displayFeatured = [];
       }
 
@@ -806,30 +820,40 @@ function renderNewsLayout(page = 1) {
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
 
-  feedList.innerHTML = pageArticles.map(a => {
-    const isSaved = myArticlesList.some(x => x.id === a.id);
-    return `
-      <div class="feed-item" onclick="showArticle(${a.id})">
-        <div class="feed-image" style="background-image: url('${a.image}')"></div>
-        <div class="feed-content">
-          <h2 class="feed-title">${escHtml(a.title)}</h2>
-          <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
-            <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
-            <span class="meta-sep">|</span> 
-            <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
-            <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
-              onclick="event.stopPropagation(); toggleMyArticle(${a.id}, this);"
-              style="margin-right: auto; flex-shrink: 0;"
-              title="${isSaved ? 'Remove from My Articles' : 'Save to My Articles'}">
-              <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
-            </button>
-          </div>
-          ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
-          ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
-        </div>
+  if (pageArticles.length === 0) {
+    feedList.innerHTML = `
+      <div style="text-align: center; padding: 60px 20px; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+        <i class="fas fa-search" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px; opacity: 0.6;"></i>
+        <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">לא נמצאו כתבות</h3>
+        <p style="font-size: 1rem; color: var(--text-muted);">נסה לחפש מונח אחר או בדוק שגיאות כתיב</p>
       </div>
     `;
-  }).join('');
+  } else {
+    feedList.innerHTML = pageArticles.map(a => {
+      const isSaved = myArticlesList.some(x => x.id === a.id);
+      return `
+        <div class="feed-item" onclick="showArticle(${a.id})">
+          <div class="feed-image" style="background-image: url('${a.image}')"></div>
+          <div class="feed-content">
+            <h2 class="feed-title">${escHtml(a.title)}</h2>
+            <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
+              <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
+              <span class="meta-sep">|</span> 
+              <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
+              <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
+                onclick="event.stopPropagation(); toggleMyArticle(${a.id}, this);"
+                style="margin-right: auto; flex-shrink: 0;"
+                title="${isSaved ? 'Remove from My Articles' : 'Save to My Articles'}">
+                <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
+              </button>
+            </div>
+            ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
+            ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
   // Render pagination buttons
   if (paginationEl) {
@@ -5549,3 +5573,21 @@ window.clearSignature = function() {
 document.addEventListener('DOMContentLoaded', () => {
   initSignaturePad();
 });
+
+// ========== ARTICLE SEARCH FUNCTIONALITY ==========
+window.handleSearchInput = function(event) {
+  searchQuery = event.target.value;
+  const activePage = document.querySelector('.page.active');
+  if (!activePage || activePage.id !== 'page-home') {
+    showPage('home');
+  } else {
+    renderNewsLayout(1);
+  }
+};
+
+window.clearSearchAndShowHome = function() {
+  searchQuery = '';
+  const searchInput = document.getElementById('navbar-search-input');
+  if (searchInput) searchInput.value = '';
+  showPage('home');
+};

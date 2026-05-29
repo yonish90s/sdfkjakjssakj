@@ -107,7 +107,7 @@
       </div>
 
       <nav class="sidebar-nav">
-          <a href="#" class="sidebar-link active" data-page="home" onclick="showPage('home'); return false;">
+          <a href="#" class="sidebar-link active" data-page="home" onclick="clearSearchAndShowHome(); return false;">
             <i class="fas fa-home"></i>
             <span>כתבות</span>
           </a>
@@ -216,7 +216,7 @@
             <i class="fas fa-indent"></i>
           </button>
           <!-- Company Logo with Crown & soki Name -->
-          <div class="soki-logo" onclick="showPage('home')" title="soki Home">
+          <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home">
             <i class="fas fa-crown soki-logo-crown"></i>
             <span class="soki-logo-text">soki</span>
           </div>
@@ -231,7 +231,7 @@
         </button>
         
           <nav class="apple-nav-links">
-            <button onclick="showPage('home')" class="apple-nav-item">Articles</button>
+            <button onclick="clearSearchAndShowHome()" class="apple-nav-item">Articles</button>
             <button onclick="showPage('pdf-store')" class="apple-nav-item">Graphs</button>
             <button onclick="showPage('groups')" class="apple-nav-item">Groups</button>
             <button onclick="showPage('exchange')" class="apple-nav-item" style="color: #34c759; font-weight:600;"><i class="fas fa-chart-line" style="margin-right:6px;"></i>Exchange</button>
@@ -254,6 +254,12 @@
             </div>
           </div>
         </nav>
+
+        <!-- Search bar -->
+        <div class="apple-search-wrapper">
+          <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" />
+          <i class="fas fa-search search-icon"></i>
+        </div>
 
         <div class="apple-nav-actions">
           <!-- Location Selector -->
