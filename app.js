@@ -3099,6 +3099,9 @@ function saveUserProfile() {
     currentUser = { name, email, avatar: profilePic };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     updateUserUI();
+    if (typeof window.syncCurrentUserProfileToFirestore === 'function') {
+      window.syncCurrentUserProfileToFirestore();
+    }
     
     showToast('✨ Registration successful!', 'success');
     
@@ -3498,6 +3501,9 @@ function handleAuthSubmit(type) {
         currentUser = { name: userData.name, email: input, avatar: userData.avatar };
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         updateUserUI();
+        if (typeof window.syncCurrentUserProfileToFirestore === 'function') {
+          window.syncCurrentUserProfileToFirestore();
+        }
         goBack();
         showToast(`👋 Welcome back, ${userData.name}!`);
       } else {
@@ -3902,21 +3908,8 @@ function toggleCartDrawer() {
 // =====================================================================
 
 function toggleNotificationsDrawer() {
-  const drawer = document.getElementById('notifications-drawer');
-  if (!drawer) return;
-  if (drawer.classList.contains('active')) {
-    drawer.classList.remove('active');
-  } else {
-    const badge = document.getElementById('notifications-badge');
-    if (badge && currentUser && currentUser.email) {
-      badge.style.display = 'none';
-      if (badge.dataset.total) {
-        localStorage.setItem(`readReceipts_${currentUser.email}`, badge.dataset.total);
-      }
-    }
-    renderNotifications();
-    drawer.classList.add('active');
-  }
+  // Disabled as per user request to use the Messages/Alerts Hub page instead
+  return;
 }
 
 async function renderNotifications() {
@@ -5682,83 +5675,74 @@ window.clearSearchAndShowHome = function() {
 // =====================================================================
 // MESSAGES & ALERTS HUB SYSTEM
 // =====================================================================
-const MOCK_CONVERSATIONS = {
-  he: [
-    {
-      id: 'ronit',
-      name: 'רונית לוי (Tech Lead)',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120&h=120',
-      status: 'online',
-      lastMessageTime: '10:42',
-      messages: [
-        { sender: 'them', text: 'היי, ראית את הניתוח האחרון על מניית אנבידיה? הדוח הכספי שלהם מטורף.', time: '10:30' },
-        { sender: 'me', text: 'כן, בדיוק קראתי עכשיו באתר. נראה שיש שם עוד פוטנציאל לעלייה.', time: '10:35' },
-        { sender: 'them', text: 'לגמרי! לדעתי פריצת רמת ההתנגדות הנוכחית תוביל לשיא חדש.', time: '10:42' }
-      ]
-    },
-    {
-      id: 'guy',
-      name: 'גיא שטרן (אנליסט בכיר)',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120&h=120',
-      status: 'online',
-      lastMessageTime: 'אתמול',
-      messages: [
-        { sender: 'them', text: 'שלום, אשמח לדעת אם הצלחת להוריד את קובץ ה-PDF של סקירת השוק.', time: '15:10' },
-        { sender: 'me', text: 'כן, הורדתי אותו דרך ה-PDF Store. סקירה מעולה!', time: '15:24' },
-        { sender: 'them', text: 'שמח לשמוע! אם יש לך שאלות על הגרפים של הניתוח הטכני, אני כאן.', time: '15:30' }
-      ]
-    },
-    {
-      id: 'support',
-      name: 'תמיכת Soki',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
-      status: 'online',
-      lastMessageTime: '2 ימים',
-      messages: [
-        { sender: 'them', text: 'שלום! ברוך הבא למערכת ההודעות המאובטחת של Soki. כיצד אוכל לעזור לך היום?', time: '09:00' }
-      ]
-    }
-  ],
-  en: [
-    {
-      id: 'ronit',
-      name: 'Ronit Levy (Tech Lead)',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120&h=120',
-      status: 'online',
-      lastMessageTime: '10:42 AM',
-      messages: [
-        { sender: 'them', text: 'Hi, did you see the latest analysis on NVIDIA? Their financial report is insane.', time: '10:30 AM' },
-        { sender: 'me', text: 'Yes, I just read it on the site. Looks like there is still room to grow.', time: '10:35 AM' },
-        { sender: 'them', text: 'Absolutely! I think breaking the current resistance level will lead to new highs.', time: '10:42 AM' }
-      ]
-    },
-    {
-      id: 'guy',
-      name: 'Guy Stern (Senior Analyst)',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120&h=120',
-      status: 'online',
-      lastMessageTime: 'Yesterday',
-      messages: [
-        { sender: 'them', text: 'Hello, I wanted to see if you managed to download the PDF market overview.', time: '03:10 PM' },
-        { sender: 'me', text: 'Yes, I downloaded it from the PDF Store. Fantastic overview!', time: '03:24 PM' },
-        { sender: 'them', text: 'Glad to hear! If you have any questions on the technical analysis graphs, feel free to ask.', time: '03:30 PM' }
-      ]
-    },
-    {
-      id: 'support',
-      name: 'Soki Support',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
-      status: 'online',
-      lastMessageTime: '2 days ago',
-      messages: [
-        { sender: 'them', text: 'Hello! Welcome to the secure Soki messaging hub. How can I help you today?', time: '09:00 AM' }
-      ]
-    }
-  ]
-};
-
 let activeChatUserId = null;
 let currentChatTab = 'chat'; // 'chat' or 'alerts'
+let currentAlertFilter = 'all'; // 'all', 'system', 'order', 'offer'
+let chatRefreshInterval = null;
+
+// Unified function to sync user profile to Firestore
+window.syncCurrentUserProfileToFirestore = function() {
+  if (!currentUser || !currentUser.email) return;
+  if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+    const userDocRef = window.fbDoc(window.fbDb, 'users', currentUser.email);
+    window.fbSetDoc(userDocRef, {
+      name: currentUser.name || currentUser.email.split('@')[0],
+      email: currentUser.email,
+      avatar: currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+      online: true,
+      lastActive: new Date().toISOString()
+    }, { merge: true }).catch(err => console.error("Firestore user sync error:", err));
+  }
+};
+
+// Fetch real registered users from localStorage & Firestore
+async function fetchRealChatUsers() {
+  let usersMap = {};
+  
+  // 1. Load from localStorage registeredUsers
+  try {
+    const localUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    Object.keys(localUsers).forEach(email => {
+      usersMap[email] = {
+        id: email,
+        name: localUsers[email].name,
+        avatar: localUsers[email].avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+        status: 'online',
+        lastActive: new Date().toISOString()
+      };
+    });
+  } catch(e) {
+    console.error(e);
+  }
+  
+  // 2. Load from Firestore 'users' collection
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const usersRef = window.fbColl(window.fbDb, 'users');
+      const qSnap = await window.fbGetDocs(usersRef);
+      qSnap.forEach(doc => {
+        const data = doc.data();
+        const email = doc.id;
+        usersMap[email] = {
+          id: email,
+          name: data.name || email,
+          avatar: data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+          status: 'online',
+          lastActive: data.lastActive || new Date().toISOString()
+        };
+      });
+    } catch (err) {
+      console.error("Error loading chat users from Firestore:", err);
+    }
+  }
+  
+  // 3. Filter out currently logged-in user
+  if (currentUser && currentUser.email) {
+    delete usersMap[currentUser.email];
+  }
+  
+  return Object.values(usersMap);
+}
 
 window.switchMessagesTab = function(tab) {
   currentChatTab = tab;
@@ -5780,57 +5764,87 @@ window.switchMessagesTab = function(tab) {
     const pane = document.getElementById('notifications-tab-pane');
     if (pane) pane.classList.add('active');
     
-    // Mark all alerts as read
-    const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
-    alerts.forEach(a => a.read = true);
-    localStorage.setItem('system_alerts', JSON.stringify(alerts));
+    // Mark all system alerts as read
+    try {
+      const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+      alerts.forEach(a => a.read = true);
+      localStorage.setItem('system_alerts', JSON.stringify(alerts));
+    } catch(e) {}
+    
     window.updateMessagesBadge();
     window.renderNotifications();
   }
 };
 
-window.initMessagesSystem = function() {
+window.initMessagesSystem = async function() {
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const langKey = isHeb ? 'he' : 'en';
   
-  let userChats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`));
-  if (!userChats) {
-    userChats = MOCK_CONVERSATIONS[langKey];
-    localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(userChats));
-  }
-
-  // Populate system alerts list if empty
-  let alerts = JSON.parse(localStorage.getItem('system_alerts'));
-  if (!alerts) {
-    alerts = [
-      {
-        id: 'w1',
-        message: isHeb ? '👋 ברוכים הבאים למרכז ההתראות והעדכונים החדש שלך!' : '👋 Welcome to your new Alerts and Updates center!',
-        type: 'success',
-        timestamp: '10:00',
-        read: false
-      },
-      {
-        id: 'w2',
-        message: isHeb ? '🔒 כל השיחות ומערכות ההתראות מוצפנות ומאובטחות מקומית.' : '🔒 All chat conversations and system logs are encrypted and secured locally.',
-        type: 'info',
-        timestamp: '09:30',
-        read: false
-      }
-    ];
-    localStorage.setItem('system_alerts', JSON.stringify(alerts));
-  }
-
-  window.renderChatUsersList();
+  // Ensure profile is synced to Firestore on active chat usage
+  window.syncCurrentUserProfileToFirestore();
+  
+  // Update Languages
+  window.updateMessagesLanguage();
+  
+  // Render Left User List
+  await window.renderChatUsersList();
+  
+  // Pre-load Alerts
   window.renderNotifications();
   window.updateMessagesBadge();
-  window.updateMessagesLanguage();
 
-  // Open the first active chat by default if available
-  if (userChats && userChats.length > 0 && !activeChatUserId) {
-    window.selectChatUser(userChats[0].id);
+  // Load first chat if none is active
+  const users = await fetchRealChatUsers();
+  if (users.length > 0 && !activeChatUserId) {
+    window.selectChatUser(users[0].id);
   }
+
+  // Set up background refresh interval for real-time community chat feel
+  if (chatRefreshInterval) clearInterval(chatRefreshInterval);
+  chatRefreshInterval = setInterval(async () => {
+    const activePage = document.querySelector('.page.active');
+    if (activePage && activePage.id === 'page-messages') {
+      await window.renderChatUsersList();
+      if (activeChatUserId) {
+        await syncActiveChatSilent(activeChatUserId);
+      }
+    } else {
+      clearInterval(chatRefreshInterval);
+      chatRefreshInterval = null;
+    }
+  }, 4000);
 };
+
+// Silent refresh of active chat conversation stream
+async function syncActiveChatSilent(userId) {
+  if (!currentUser || !currentUser.email || !window.fbGetDoc || !window.fbDb) return;
+  const roomId = [currentUser.email, userId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  try {
+    const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+    const docSnap = await window.fbGetDoc(chatDocRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      let dbMessages = data.messages || [];
+      const currentLocal = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+      
+      if (dbMessages.length !== currentLocal.length) {
+        dbMessages.forEach(m => {
+          if (m.senderEmail === userId) m.read = true;
+        });
+        localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
+        window.renderMessagesStream(dbMessages);
+        
+        // Write read state back to Firestore
+        await window.fbSetDoc(chatDocRef, {
+          participants: [currentUser.email, userId],
+          messages: dbMessages,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        window.updateMessagesBadge();
+      }
+    }
+  } catch(e) {}
+}
 
 window.updateMessagesLanguage = function() {
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
@@ -5874,64 +5888,70 @@ window.updateMessagesLanguage = function() {
   if (alertsClear) alertsClear.textContent = isHeb ? 'נקה הכל' : 'Clear All';
 };
 
-window.renderChatUsersList = function() {
+window.renderChatUsersList = async function() {
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const langKey = isHeb ? 'he' : 'en';
   const container = document.getElementById('messages-user-list');
   if (!container) return;
 
-  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  if (!currentUser || !currentUser.email) {
+    container.innerHTML = `<div style="text-align:center; padding:20px; color:#86868b; font-size:0.85rem;">Please log in to chat</div>`;
+    return;
+  }
+
+  const users = await fetchRealChatUsers();
   
-  if (chats.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:20px; color:#86868b; font-size:0.85rem;">No active chats</div>`;
+  if (users.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:20px; color:#86868b; font-size:0.85rem;">${isHeb ? 'אין משתמשים רשומים נוספים' : 'No other registered users'}</div>`;
     return;
   }
 
   container.innerHTML = '';
-  chats.forEach(chat => {
-    const lastMsgObj = chat.messages[chat.messages.length - 1];
-    const lastMsgText = lastMsgObj ? lastMsgObj.text : '';
-    const lastMsgTime = lastMsgObj ? lastMsgObj.time : chat.lastMessageTime;
+  users.forEach(user => {
+    const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+    const messages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+    
+    const lastMsgObj = messages[messages.length - 1];
+    const lastMsgText = lastMsgObj ? lastMsgObj.text : (isHeb ? 'אין הודעות' : 'No messages');
+    const lastMsgTime = lastMsgObj ? lastMsgObj.time : '';
 
-    const hasUnread = lastMsgObj && lastMsgObj.sender === 'them' && activeChatUserId !== chat.id;
+    const unreadCount = messages.filter(m => m.senderEmail === user.id && !m.read).length;
+    const hasUnread = unreadCount > 0;
 
     const div = document.createElement('div');
-    div.className = `chat-user-item ${activeChatUserId === chat.id ? 'active' : ''}`;
-    div.onclick = () => window.selectChatUser(chat.id);
+    div.className = `chat-user-item ${activeChatUserId === user.id ? 'active' : ''}`;
+    div.onclick = () => window.selectChatUser(user.id);
     
     div.innerHTML = `
-      <div class="chat-user-avatar-wrap">
-        <img src="${chat.avatar}" class="chat-user-avatar" alt="${chat.name}">
-        <span class="chat-user-status" style="background-color: ${chat.status === 'online' ? '#34c759' : '#86868b'}"></span>
+      <div class="chat-user-avatar-wrap" style="flex-shrink:0;">
+        <img src="${user.avatar}" class="chat-user-avatar" alt="${user.name}">
+        <span class="chat-user-status" style="background-color: #34c759; flex-shrink:0;"></span>
       </div>
-      <div class="chat-user-info">
-        <div class="chat-user-name-row">
-          <span class="chat-user-name">${chat.name}</span>
-          <span class="chat-user-time">${lastMsgTime}</span>
+      <div class="chat-user-info" style="flex:1; min-width:0;">
+        <div class="chat-user-name-row" style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="chat-user-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;">${user.name}</span>
+          <span class="chat-user-time" style="font-size:0.75rem; color:#86868b; white-space:nowrap;">${lastMsgTime}</span>
         </div>
-        <div class="chat-user-lastmsg" style="${hasUnread ? 'color:#fff; font-weight:700;' : ''}">
+        <div class="chat-user-lastmsg" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${hasUnread ? 'color:#fff; font-weight:700;' : 'color:#86868b;'}">
           ${lastMsgText}
         </div>
       </div>
-      ${hasUnread ? '<span style="width:8px; height:8px; background-color:#0071e3; border-radius:50%; margin-left:auto;"></span>' : ''}
+      ${hasUnread ? '<span style="width:8px; height:8px; background-color:#ff3b30; border-radius:50%; flex-shrink:0; display:inline-block; margin-left:8px;"></span>' : ''}
     `;
     container.appendChild(div);
   });
 };
 
-window.selectChatUser = function(userId) {
+window.selectChatUser = async function(userId) {
   activeChatUserId = userId;
   
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const langKey = isHeb ? 'he' : 'en';
-  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
-  const chat = chats.find(c => c.id === userId);
-
-  if (!chat) return;
+  const users = await fetchRealChatUsers();
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
 
   document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
-  window.renderChatUsersList();
-
+  await window.renderChatUsersList();
+  
   const placeholder = document.getElementById('chat-placeholder-view');
   const activeView = document.getElementById('chat-active-view');
   if (placeholder) placeholder.style.display = 'none';
@@ -5939,10 +5959,54 @@ window.selectChatUser = function(userId) {
 
   const avatarImg = document.getElementById('chat-active-avatar');
   const nameEl = document.getElementById('chat-active-name');
-  if (avatarImg) avatarImg.src = chat.avatar;
-  if (nameEl) nameEl.textContent = chat.name;
+  if (avatarImg) avatarImg.src = user.avatar;
+  if (nameEl) nameEl.textContent = user.name;
 
-  window.renderMessagesStream(chat.messages);
+  const roomId = [currentUser.email, userId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  let localMessages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+
+  // Display instantly from cache
+  window.renderMessagesStream(localMessages);
+
+  // Clear unreads locally
+  localMessages.forEach(m => {
+    if (m.senderEmail === userId) m.read = true;
+  });
+  localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMessages));
+  
+  await window.renderChatUsersList();
+  window.updateMessagesBadge();
+
+  // Fetch / Sync with Firestore
+  if (window.fbGetDoc && window.fbDb) {
+    try {
+      const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+      const docSnap = await window.fbGetDoc(chatDocRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        let dbMessages = data.messages || [];
+        
+        dbMessages.forEach(m => {
+          if (m.senderEmail === userId) m.read = true;
+        });
+        
+        localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
+        window.renderMessagesStream(dbMessages);
+        
+        // Write read state to cloud
+        await window.fbSetDoc(chatDocRef, {
+          participants: [currentUser.email, userId],
+          messages: dbMessages,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        await window.renderChatUsersList();
+        window.updateMessagesBadge();
+      }
+    } catch (err) {
+      console.error("Firestore select sync error:", err);
+    }
+  }
 };
 
 window.renderMessagesStream = function(messages) {
@@ -5955,7 +6019,7 @@ window.renderMessagesStream = function(messages) {
   }
 
   messages.forEach(msg => {
-    const isMe = msg.sender === 'me';
+    const isMe = msg.senderEmail === currentUser.email;
     const div = document.createElement('div');
     div.className = `chat-bubble ${isMe ? 'chat-bubble-sent' : 'chat-bubble-received'}`;
     
@@ -5971,100 +6035,67 @@ window.renderMessagesStream = function(messages) {
   }, 50);
 };
 
-window.sendMessageToActiveUser = function() {
+window.sendMessageToActiveUser = async function() {
   const inputEl = document.getElementById('chat-message-input');
   if (!inputEl) return;
   const messageText = inputEl.value.trim();
   if (!messageText) return;
 
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const langKey = isHeb ? 'he' : 'en';
+  const roomId = [currentUser.email, activeChatUserId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
   
-  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
-  const chatIndex = chats.findIndex(c => c.id === activeChatUserId);
-  if (chatIndex === -1) return;
+  let localMessages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+  
+  const timeString = new Date().toLocaleTimeString(isHeb ? 'he-IL' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+  const newMsg = {
+    senderEmail: currentUser.email,
+    text: messageText,
+    time: timeString,
+    read: false
+  };
 
-  const now = new Date();
-  const timeString = now.toLocaleTimeString(isHeb ? 'he-IL' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+  localMessages.push(newMsg);
+  localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMessages));
 
-  const newMsg = { sender: 'me', text: messageText, time: timeString };
-  chats[chatIndex].messages.push(newMsg);
-  chats[chatIndex].lastMessageTime = timeString;
-  localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(chats));
-
-  window.renderMessagesStream(chats[chatIndex].messages);
-  window.renderChatUsersList();
+  window.renderMessagesStream(localMessages);
+  await window.renderChatUsersList();
   inputEl.value = '';
 
-  const activeUserId = activeChatUserId;
-  setTimeout(() => {
-    const currentChats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
-    const index = currentChats.findIndex(c => c.id === activeUserId);
-    if (index === -1) return;
-
-    let mockReplyText = '';
-    
-    if (activeUserId === 'ronit') {
-      const replies = isHeb ? [
-        "מעולה! אני בדיוק מסיימת לערוך את הניתוח הטכנולוגי הבא שלנו שיועלה מחר. כדאי לך לעקוב!",
-        "לגמרי מסכימה. שוק הבינה המלאכותית ממשיך להוכיח שהוא מנוע הצמיחה המרכזי של השנה.",
-        "נשמע מצוין, תודה על השיתוף!"
-      ] : [
-        "Awesome! I'm just wrapping up our next technical analysis to be published tomorrow. Make sure to watch out for it!",
-        "Totally agree. The AI sector continues to prove it's the core growth driver of the year.",
-        "Sounds great, thanks for sharing!"
-      ];
-      mockReplyText = replies[Math.floor(Math.random() * replies.length)];
-    } else if (activeUserId === 'guy') {
-      const replies = isHeb ? [
-        "נכון מאוד, הגרפים מראים פה תנועת מחיר מעניינת. נמשיך לעקוב אחרי המסחר השבוע.",
-        "תודה, שמח שזה עזר לך! אני ממליץ להוריד גם את הקבצים החדשים שנוספו השבוע ב-PDF Store."
-      ] : [
-        "Very true, the graphs are showing a really interesting price action here. Let's keep a close eye on the market this week.",
-        "Thanks, glad it helped! I highly recommend checking out the new files we added to the PDF Store this week."
-      ];
-      mockReplyText = replies[Math.floor(Math.random() * replies.length)];
-    } else if (activeUserId === 'support') {
-      const replies = isHeb ? [
-        "פנייתך התקבלה בהצלחה. נציג מטעמנו יחזור אליך בהקדם! לכל שאלה נוספת, אנא בקר בעמוד התמיכה.",
-        "שמחנו לעזור! אם תרצה לשפר את חווית הגלישה שלך, מומלץ לבדוק את מסלולי ה-Premium שלנו."
-      ] : [
-        "Your inquiry has been successfully received. A representative will get back to you shortly! For any other queries, feel free to ask.",
-        "Happy to help! If you wish to upgrade your experience, we recommend checking out our Premium plans."
-      ];
-      mockReplyText = replies[Math.floor(Math.random() * replies.length)];
-    } else {
-      mockReplyText = isHeb ? "הודעתך התקבלה בהצלחה בקהילה." : "Your message was successfully sent to the community.";
+  // Save / Sync to Firestore
+  if (window.fbSetDoc && window.fbDb) {
+    try {
+      const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+      await window.fbSetDoc(chatDocRef, {
+        participants: [currentUser.email, activeChatUserId],
+        messages: localMessages,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Firestore send chat error:", err);
     }
-
-    const replyTime = new Date().toLocaleTimeString(isHeb ? 'he-IL' : 'en-US', { hour: '2-digit', minute: '2-digit' });
-    const replyMsg = { sender: 'them', text: mockReplyText, time: replyTime };
-    
-    currentChats[index].messages.push(replyMsg);
-    currentChats[index].lastMessageTime = replyTime;
-    localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(currentChats));
-
-    if (activeChatUserId === activeUserId) {
-      window.renderMessagesStream(currentChats[index].messages);
-    }
-    window.renderChatUsersList();
-    window.updateMessagesBadge();
-  }, 1500);
+  }
 };
 
 window.clearChatHistory = function() {
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const langKey = isHeb ? 'he' : 'en';
-  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
-  const chatIndex = chats.findIndex(c => c.id === activeChatUserId);
-  if (chatIndex === -1) return;
+  if (!activeChatUserId) return;
+  const roomId = [currentUser.email, activeChatUserId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
 
   const confirmMsg = isHeb ? 'האם אתה בטוח שברצונך למחוק את היסטוריית השיחה הנוכחית?' : 'Are you sure you want to clear the current chat history?';
   if (confirm(confirmMsg)) {
-    chats[chatIndex].messages = [];
-    localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(chats));
+    localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify([]));
     window.renderMessagesStream([]);
     window.renderChatUsersList();
+    
+    // Clear in cloud if possible
+    if (window.fbSetDoc && window.fbDb) {
+      const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+      window.fbSetDoc(chatDocRef, {
+        participants: [currentUser.email, activeChatUserId],
+        messages: [],
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(e => console.error(e));
+    }
   }
 };
 
@@ -6086,50 +6117,254 @@ window.filterChatUsers = function() {
 // =====================================================================
 // SYSTEM NOTIFICATIONS CENTER LOGIC
 // =====================================================================
-window.renderNotifications = function() {
+window.setAlertFilter = function(filter) {
+  currentAlertFilter = filter;
+  window.renderNotifications();
+};
+
+window.renderNotifications = async function() {
   const container = document.getElementById('notifications-list');
   if (!container) return;
 
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
+  
+  // 1. Fetch system alerts
+  let systemAlerts = [];
+  try {
+    const rawAlerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+    systemAlerts = rawAlerts.map(a => ({
+      id: a.id,
+      type: 'system',
+      timestamp: a.timeCreated || Date.now(),
+      displayTime: a.timestamp || new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+      message: a.message,
+      read: a.read,
+      alertType: a.type || 'info'
+    }));
+  } catch(e) {
+    console.error(e);
+  }
 
-  if (alerts.length === 0) {
-    container.innerHTML = `
+  // 2. Fetch receipts
+  let receipts = [];
+  if (currentUser && currentUser.email && window.fbGetDocs && window.fbDb) {
+    try {
+      const receiptsRef = window.fbColl(window.fbDb, `userData/${currentUser.email}/receipts`);
+      const q = window.fbQuery(receiptsRef, window.fbOrderBy('timestamp', 'desc'));
+      const snapshot = await window.fbGetDocs(q);
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        receipts.push({
+          id: doc.id,
+          type: 'order',
+          timestamp: new Date(data.timestamp).getTime(),
+          displayTime: new Date(data.timestamp).toLocaleString(isHeb ? 'he-IL' : 'en-US'),
+          data: data
+        });
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  // 3. Fetch offers
+  let offers = [];
+  if (currentUser && currentUser.email && window.fbGetDocs && window.fbDb) {
+    try {
+      const offersRef = window.fbColl(window.fbDb, 'offers');
+      const q = window.fbQuery(offersRef, window.fbWhere('sellerEmail', '==', currentUser.email));
+      const snapshot = await window.fbGetDocs(q);
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        offers.push({
+          id: doc.id,
+          type: 'offer',
+          timestamp: new Date(data.timestamp).getTime(),
+          displayTime: new Date(data.timestamp).toLocaleString(isHeb ? 'he-IL' : 'en-US'),
+          data: data
+        });
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  // 4. Combine & Sort
+  let combined = [
+    ...systemAlerts,
+    ...receipts,
+    ...offers
+  ];
+  combined.sort((a, b) => b.timestamp - a.timestamp);
+
+  // 5. Apply filters
+  if (currentAlertFilter !== 'all') {
+    combined = combined.filter(item => item.type === currentAlertFilter);
+  }
+
+  // 6. Generate Filter bar HTML
+  let html = `
+    <div class="notifications-filter-bar" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06);">
+      <button onclick="window.setAlertFilter('all')" style="background:${currentAlertFilter === 'all' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'הכל' : 'All'}</button>
+      <button onclick="window.setAlertFilter('system')" style="background:${currentAlertFilter === 'system' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'התראות מערכת' : 'System Alerts'}</button>
+      <button onclick="window.setAlertFilter('order')" style="background:${currentAlertFilter === 'order' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'הזמנות' : 'Orders'}</button>
+      <button onclick="window.setAlertFilter('offer')" style="background:${currentAlertFilter === 'offer' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'הצעות מחיר' : 'Offers'}</button>
+    </div>
+  `;
+
+  if (combined.length === 0) {
+    html += `
       <div style="text-align: center; padding: 40px; color: #86868b;">
         <div style="font-size: 3rem; margin-bottom: 12px; opacity: 0.2;"><i class="fas fa-bell-slash"></i></div>
-        <p style="font-size: 0.95rem;">${isHeb ? 'אין לך התראות חדשות. הכל מעודכן!' : 'No new notifications. You are all caught up!'}</p>
+        <p style="font-size: 0.95rem;">${isHeb ? 'אין לך התראות חדשות בסינון זה.' : 'No notifications in this filter.'}</p>
       </div>
     `;
+    container.innerHTML = html;
     return;
   }
 
-  container.innerHTML = '';
-  alerts.forEach(alert => {
-    const isUnread = !alert.read;
-    const div = document.createElement('div');
-    div.className = `notification-item ${isUnread ? 'notification-item-unread' : ''}`;
-    
-    let iconClass = 'fa-bell';
-    if (alert.message.includes('✅') || alert.message.includes('success') || alert.message.includes('הצלחה')) iconClass = 'fa-circle-check';
-    if (alert.message.includes('❌') || alert.message.includes('error') || alert.message.includes('שגיאה')) iconClass = 'fa-circle-xmark';
-    if (alert.message.includes('⚠️') || alert.message.includes('Security') || alert.message.includes('אבטחה')) iconClass = 'fa-triangle-exclamation';
-    if (alert.message.includes('🗑️') || alert.message.includes('deleted')) iconClass = 'fa-trash-alt';
-    if (alert.message.includes('🔒')) iconClass = 'fa-lock';
-    
-    div.innerHTML = `
-      <div class="notification-icon-wrap">
-        <i class="fa-solid ${iconClass}"></i>
-      </div>
-      <div class="notification-content" style="direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
-        <div class="notification-text">${alert.message}</div>
-        <div class="notification-time">${alert.timestamp}</div>
-      </div>
-      <button class="notification-delete-btn" onclick="window.deleteNotification('${alert.id}')" title="Delete">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    `;
-    container.appendChild(div);
+  // 7. Render items
+  combined.forEach(item => {
+    if (item.type === 'system') {
+      const isUnread = !item.read;
+      let iconClass = 'fa-bell';
+      if (item.message.includes('✅') || item.message.includes('success') || item.message.includes('הצלחה')) iconClass = 'fa-circle-check';
+      if (item.message.includes('❌') || item.message.includes('error') || item.message.includes('שגיאה')) iconClass = 'fa-circle-xmark';
+      if (item.message.includes('⚠️') || item.message.includes('Security') || item.message.includes('אבטחה')) iconClass = 'fa-triangle-exclamation';
+      if (item.message.includes('🗑️') || item.message.includes('deleted')) iconClass = 'fa-trash-alt';
+      if (item.message.includes('🔒')) iconClass = 'fa-lock';
+
+      html += `
+        <div class="notification-item ${isUnread ? 'notification-item-unread' : ''}" style="display:flex; align-items:center; gap:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:12px; position:relative;">
+          <div class="notification-icon-wrap" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">
+            <i class="fa-solid ${iconClass}"></i>
+          </div>
+          <div class="notification-content" style="flex:1; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
+            <div class="notification-text" style="font-size:0.95rem; color:#fff;">${item.message}</div>
+            <div class="notification-time" style="font-size:0.8rem; color:#86868b; margin-top:4px;">${item.displayTime}</div>
+          </div>
+          <button class="notification-delete-btn" onclick="window.deleteNotification('${item.id}')" title="Delete" style="background:none; border:none; color:#86868b; cursor:pointer; padding:6px; font-size:1.1rem; flex-shrink:0; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#86868b'">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `;
+    } else if (item.type === 'order') {
+      const data = item.data;
+      const firstItem = data.items && data.items.length > 0 ? data.items[0] : null;
+      const firstItemText = firstItem ? (typeof firstItem === 'string' ? firstItem : firstItem.text) : '';
+      const shortTitle = firstItemText ? firstItemText.split('×')[0] + (data.items.length > 1 ? ' + more...' : '') : 'Order Confirmation';
+      
+      const orderTime = item.timestamp;
+      const now = Date.now();
+      const minutesSinceOrder = (now - orderTime) / (1000 * 60);
+      
+      let step = 1; // Ordered
+      if (minutesSinceOrder > 5) step = 2; // Shipped
+      if (minutesSinceOrder > 15) step = 3; // Arrived
+      
+      const step1Color = step >= 1 ? '#34c759' : '#3a3a3c';
+      const step2Color = step >= 2 ? '#34c759' : '#3a3a3c';
+      const step3Color = step >= 3 ? '#34c759' : '#3a3a3c';
+      const line1Color = step >= 2 ? '#34c759' : '#3a3a3c';
+      const line2Color = step >= 3 ? '#34c759' : '#3a3a3c';
+      
+      const itemsHtml = data.items ? data.items.map(i => {
+        if (typeof i === 'string') {
+          return `<div style="font-size:0.85rem; color:#a1a1aa; padding:4px 0;">&bull; ${i}</div>`;
+        } else {
+          return `
+            <div style="display:flex; align-items:center; gap:12px; margin-top:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06);">
+              ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#1c1c1e; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
+              <div style="font-size:0.85rem; color:#e5e5ea; flex:1;">${i.text}</div>
+            </div>
+          `;
+        }
+      }).join('') : '';
+
+      const trackerHtml = `
+        <div style="margin-bottom: 24px; background:#000; border-radius:8px; padding:16px; border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Order Tracker</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; position:relative; padding:0 10px;">
+            <div style="position:absolute; top:12px; left:30px; right:30px; height:2px; background:#3a3a3c; z-index:1;"></div>
+            <div style="position:absolute; top:12px; left:30px; width:calc(50% - 30px); height:2px; background:${line1Color}; z-index:2; transition: background 0.3s;"></div>
+            <div style="position:absolute; top:12px; left:50%; width:calc(50% - 30px); height:2px; background:${line2Color}; z-index:2; transition: background 0.3s;"></div>
+            
+            <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
+              <div style="font-size:0.7rem; color:${step >= 1 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Ordered</div>
+            </div>
+            <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
+              <div style="font-size:0.7rem; color:${step >= 2 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Shipped</div>
+            </div>
+            <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
+              <div style="font-size:0.7rem; color:${step >= 3 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Arrived</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      html += `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'" onclick="const d = this.querySelector('.hub-receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="display:flex; align-items:flex-start; gap:12px;">
+              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #34c759, #28cd41); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; flex-shrink:0;">
+                <i class="fas fa-receipt"></i>
+              </div>
+              <div style="direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
+                <div style="font-weight:700; color:#fff; font-size:0.95rem; margin-bottom:2px;">Order Confirmation</div>
+                <div style="font-weight:600; color:#a1a1aa; font-size:0.85rem; margin-bottom:2px;">ID: #${item.id.slice(0, 8).toUpperCase()}</div>
+                <div style="font-size:0.85rem; color:#86868b;">${shortTitle}</div>
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:#86868b; white-space:nowrap; margin-top:2px;">${item.displayTime.split(',')[0]}</div>
+          </div>
+          
+          <div class="hub-receipt-details" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
+            ${trackerHtml}
+            <div style="font-size:0.9rem; color:#e5e5ea; margin-bottom:16px; line-height:1.5;">
+              Hi ${data.customer_name || 'Customer'},<br><br>
+              Thank you for your purchase! We have successfully processed your payment. Below are the details of your transaction:
+            </div>
+            <div style="background:#000; border-radius:8px; padding:12px; margin-bottom:16px; border:1px solid #1c1c1e;">
+              <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Order Summary</div>
+              ${itemsHtml}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+              <span style="font-weight:600; color:#86868b; font-size:0.9rem;">Total Paid</span>
+              <span style="font-weight:800; color:#34c759; font-size:1.2rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (item.type === 'offer') {
+      const data = item.data;
+
+      html += `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; direction: ${isHeb ? 'rtl' : 'ltr'};">
+            <div style="text-align: ${isHeb ? 'right' : 'left'};">
+              <div style="font-size:0.75rem; color:#af52de; font-weight:700; text-transform:uppercase; margin-bottom:4px; letter-spacing:1px;">New Offer</div>
+              <h3 style="font-size:1.05rem; font-weight:700; color:#fff; margin:0;">${data.postTitle}</h3>
+            </div>
+            <div style="font-size:1.2rem; font-weight:800; color:#34c759; margin-left:12px;">$${data.offerAmount}</div>
+          </div>
+          <div style="font-size:0.9rem; color:#a1a1aa; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.04); padding:12px; border-radius:8px; margin-bottom:12px; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
+            <strong>From:</strong> ${data.buyerName} (${data.buyerEmail})<br>
+            ${data.message ? `<div style="margin-top:6px; font-style:italic;">"${data.message}"</div>` : ''}
+            ${data.signatureData ? `<div style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;"><strong style="font-size:0.8rem;">Contract Signature:</strong><br><img src="${data.signatureData}" style="max-height:60px; background:#fff; border-radius:4px; margin-top:4px;"></div>` : ''}
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="font-size:0.8rem; color:#86868b;">${item.displayTime}</div>
+            <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:0.85rem; font-weight:600; cursor:pointer; transition: background 0.2s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">Contact Buyer</button>
+          </div>
+        </div>
+      `;
+    }
   });
+
+  container.innerHTML = html;
 };
 
 window.deleteNotification = function(id) {
@@ -6150,21 +6385,27 @@ window.clearAllNotifications = function() {
   }
 };
 
-window.updateMessagesBadge = function() {
+window.updateMessagesBadge = async function() {
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  const langKey = isHeb ? 'he' : 'en';
+  
+  if (!currentUser || !currentUser.email) return;
 
-  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  const users = await fetchRealChatUsers();
   let unreadChats = 0;
-  chats.forEach(chat => {
-    const lastMsgObj = chat.messages[chat.messages.length - 1];
-    if (lastMsgObj && lastMsgObj.sender === 'them' && activeChatUserId !== chat.id) {
+  users.forEach(user => {
+    const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+    const messages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+    const unreadCount = messages.filter(m => m.senderEmail === user.id && !m.read).length;
+    if (unreadCount > 0) {
       unreadChats++;
     }
   });
 
-  const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
-  const unreadAlerts = alerts.filter(a => !a.read).length;
+  let unreadAlerts = 0;
+  try {
+    const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
+    unreadAlerts = alerts.filter(a => !a.read).length;
+  } catch(e) {}
 
   const alertDot = document.getElementById('alerts-unread-dot');
   if (alertDot) {
@@ -6177,21 +6418,25 @@ window.updateMessagesBadge = function() {
   }
 };
 
-// Re-write showToast to output inside the Alerts hub!
 window.showToast = function(msg, type = '') {
-  // Save to local storage for the Alerts center
-  const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+  let alerts = [];
+  try {
+    alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+  } catch(e) {}
+  
   alerts.unshift({
     id: Date.now() + Math.random().toString(),
     message: msg,
     type: type,
     timestamp: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+    timeCreated: Date.now(),
     read: false
   });
-  localStorage.setItem('system_alerts', JSON.stringify(alerts.slice(0, 50))); // Keep last 50
   
-  if (window.updateMessagesBadge) window.updateMessagesBadge();
-  if (window.renderNotifications) window.renderNotifications();
+  localStorage.setItem('system_alerts', JSON.stringify(alerts.slice(0, 50)));
+  
+  window.updateMessagesBadge();
+  window.renderNotifications();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
