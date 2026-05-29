@@ -6519,4 +6519,9 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   }
 }
 
+/* ARTICLE NEW COMMENT PLACEHOLDER */
+#article-new-comment::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
 
