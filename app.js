@@ -4595,12 +4595,57 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Automatic Location Detection based on IP/Timezone
+async function autoDetectLocation() {
+  // If user already has a saved preference, don't overwrite it
+  if (localStorage.getItem('userLocation')) {
+    return;
+  }
+
+  let detectedCountryCode = '';
+
+  // 1. Try IP Geolocation
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    if (data && data.country_code) {
+      detectedCountryCode = data.country_code;
+      console.log('[GeoDetect] Detected country code from IP:', detectedCountryCode);
+    }
+  } catch (err) {
+    console.warn('[GeoDetect] IP Geolocation failed, trying fallback:', err);
+  }
+
+  // 2. Fallback: Check browser timezone
+  if (!detectedCountryCode) {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log('[GeoDetect] Detected timezone:', tz);
+      if (tz && (tz.includes('Jerusalem') || tz.includes('Asia/Jerusalem') || tz.includes('Asia/Gaza') || tz.includes('Asia/Hebron'))) {
+        detectedCountryCode = 'IL';
+      }
+    } catch (e) {
+      console.warn('[GeoDetect] Timezone check failed:', e);
+    }
+  }
+
+  // 3. Set the location based on detected country
+  if (detectedCountryCode === 'IL') {
+    console.log('[GeoDetect] Auto-selecting Hebrew (Israel)');
+    selectLocation('Israel', 'Hebrew', 31.7683, 35.2137, 'ירושלים');
+  } else {
+    console.log('[GeoDetect] Auto-selecting English (USA)');
+    selectLocation('USA', 'English', 38.9072, -77.0369, 'וושינגטון');
+  }
+}
+
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
   const textEl = document.getElementById('selected-location-text');
   if (textEl) textEl.textContent = currentLocation.nameHeb;
   fetchWeatherForCapital();
   renderGroups();
+  autoDetectLocation(); // Run automatic geolocation check!
 });
 
 // =====================================================================
