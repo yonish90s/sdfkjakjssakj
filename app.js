@@ -373,6 +373,7 @@ function showPage(pageId) {
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
+  if (pageId === 'messages') { if (window.initMessagesSystem) window.initMessagesSystem(); }
   if (pageId === 'video-reviews') renderVideoReviews();
   if (pageId === 'article-reviews') renderArticleReviews();
   if (pageId === 'exchange') initExchange();
@@ -5677,3 +5678,526 @@ window.clearSearchAndShowHome = function() {
   if (searchInput) searchInput.value = '';
   showPage('home');
 };
+
+// =====================================================================
+// MESSAGES & ALERTS HUB SYSTEM
+// =====================================================================
+const MOCK_CONVERSATIONS = {
+  he: [
+    {
+      id: 'ronit',
+      name: 'רונית לוי (Tech Lead)',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120&h=120',
+      status: 'online',
+      lastMessageTime: '10:42',
+      messages: [
+        { sender: 'them', text: 'היי, ראית את הניתוח האחרון על מניית אנבידיה? הדוח הכספי שלהם מטורף.', time: '10:30' },
+        { sender: 'me', text: 'כן, בדיוק קראתי עכשיו באתר. נראה שיש שם עוד פוטנציאל לעלייה.', time: '10:35' },
+        { sender: 'them', text: 'לגמרי! לדעתי פריצת רמת ההתנגדות הנוכחית תוביל לשיא חדש.', time: '10:42' }
+      ]
+    },
+    {
+      id: 'guy',
+      name: 'גיא שטרן (אנליסט בכיר)',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120&h=120',
+      status: 'online',
+      lastMessageTime: 'אתמול',
+      messages: [
+        { sender: 'them', text: 'שלום, אשמח לדעת אם הצלחת להוריד את קובץ ה-PDF של סקירת השוק.', time: '15:10' },
+        { sender: 'me', text: 'כן, הורדתי אותו דרך ה-PDF Store. סקירה מעולה!', time: '15:24' },
+        { sender: 'them', text: 'שמח לשמוע! אם יש לך שאלות על הגרפים של הניתוח הטכני, אני כאן.', time: '15:30' }
+      ]
+    },
+    {
+      id: 'support',
+      name: 'תמיכת Soki',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+      status: 'online',
+      lastMessageTime: '2 ימים',
+      messages: [
+        { sender: 'them', text: 'שלום! ברוך הבא למערכת ההודעות המאובטחת של Soki. כיצד אוכל לעזור לך היום?', time: '09:00' }
+      ]
+    }
+  ],
+  en: [
+    {
+      id: 'ronit',
+      name: 'Ronit Levy (Tech Lead)',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120&h=120',
+      status: 'online',
+      lastMessageTime: '10:42 AM',
+      messages: [
+        { sender: 'them', text: 'Hi, did you see the latest analysis on NVIDIA? Their financial report is insane.', time: '10:30 AM' },
+        { sender: 'me', text: 'Yes, I just read it on the site. Looks like there is still room to grow.', time: '10:35 AM' },
+        { sender: 'them', text: 'Absolutely! I think breaking the current resistance level will lead to new highs.', time: '10:42 AM' }
+      ]
+    },
+    {
+      id: 'guy',
+      name: 'Guy Stern (Senior Analyst)',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120&h=120',
+      status: 'online',
+      lastMessageTime: 'Yesterday',
+      messages: [
+        { sender: 'them', text: 'Hello, I wanted to see if you managed to download the PDF market overview.', time: '03:10 PM' },
+        { sender: 'me', text: 'Yes, I downloaded it from the PDF Store. Fantastic overview!', time: '03:24 PM' },
+        { sender: 'them', text: 'Glad to hear! If you have any questions on the technical analysis graphs, feel free to ask.', time: '03:30 PM' }
+      ]
+    },
+    {
+      id: 'support',
+      name: 'Soki Support',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+      status: 'online',
+      lastMessageTime: '2 days ago',
+      messages: [
+        { sender: 'them', text: 'Hello! Welcome to the secure Soki messaging hub. How can I help you today?', time: '09:00 AM' }
+      ]
+    }
+  ]
+};
+
+let activeChatUserId = null;
+let currentChatTab = 'chat'; // 'chat' or 'alerts'
+
+window.switchMessagesTab = function(tab) {
+  currentChatTab = tab;
+  document.querySelectorAll('.messages-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.querySelectorAll('.messages-tab-pane').forEach(pane => {
+    pane.classList.remove('active');
+  });
+
+  if (tab === 'chat') {
+    const btn = document.getElementById('tab-btn-chat');
+    if (btn) btn.classList.add('active');
+    const pane = document.getElementById('messages-tab-pane');
+    if (pane) pane.classList.add('active');
+  } else if (tab === 'alerts') {
+    const btn = document.getElementById('tab-btn-alerts');
+    if (btn) btn.classList.add('active');
+    const pane = document.getElementById('notifications-tab-pane');
+    if (pane) pane.classList.add('active');
+    
+    // Mark all alerts as read
+    const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+    alerts.forEach(a => a.read = true);
+    localStorage.setItem('system_alerts', JSON.stringify(alerts));
+    window.updateMessagesBadge();
+    window.renderNotifications();
+  }
+};
+
+window.initMessagesSystem = function() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const langKey = isHeb ? 'he' : 'en';
+  
+  let userChats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`));
+  if (!userChats) {
+    userChats = MOCK_CONVERSATIONS[langKey];
+    localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(userChats));
+  }
+
+  // Populate system alerts list if empty
+  let alerts = JSON.parse(localStorage.getItem('system_alerts'));
+  if (!alerts) {
+    alerts = [
+      {
+        id: 'w1',
+        message: isHeb ? '👋 ברוכים הבאים למרכז ההתראות והעדכונים החדש שלך!' : '👋 Welcome to your new Alerts and Updates center!',
+        type: 'success',
+        timestamp: '10:00',
+        read: false
+      },
+      {
+        id: 'w2',
+        message: isHeb ? '🔒 כל השיחות ומערכות ההתראות מוצפנות ומאובטחות מקומית.' : '🔒 All chat conversations and system logs are encrypted and secured locally.',
+        type: 'info',
+        timestamp: '09:30',
+        read: false
+      }
+    ];
+    localStorage.setItem('system_alerts', JSON.stringify(alerts));
+  }
+
+  window.renderChatUsersList();
+  window.renderNotifications();
+  window.updateMessagesBadge();
+  window.updateMessagesLanguage();
+
+  // Open the first active chat by default if available
+  if (userChats && userChats.length > 0 && !activeChatUserId) {
+    window.selectChatUser(userChats[0].id);
+  }
+};
+
+window.updateMessagesLanguage = function() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  
+  // Update sidebar link text
+  const sidebarTxt = document.getElementById('sidebar-messages-text');
+  if (sidebarTxt) {
+    sidebarTxt.textContent = isHeb ? 'הודעות' : 'Messages';
+  }
+
+  // Update Messages Page Elements
+  const tabChat = document.getElementById('tab-label-chat');
+  if (tabChat) tabChat.textContent = isHeb ? 'הודעות' : 'Messages';
+
+  const tabAlerts = document.getElementById('tab-label-alerts');
+  if (tabAlerts) tabAlerts.textContent = isHeb ? 'התראות' : 'Alerts';
+
+  const searchInput = document.getElementById('chat-search');
+  if (searchInput) searchInput.placeholder = isHeb ? 'חיפוש שיחות...' : 'Search conversations...';
+
+  const msgInput = document.getElementById('chat-message-input');
+  if (msgInput) msgInput.placeholder = isHeb ? 'כתוב הודעה...' : 'Write a message...';
+
+  const placeholderTitle = document.getElementById('msg-placeholder-title');
+  if (placeholderTitle) placeholderTitle.textContent = isHeb ? 'ההודעות שלך' : 'Your Messages';
+
+  const placeholderDesc = document.getElementById('msg-placeholder-desc');
+  if (placeholderDesc) {
+    placeholderDesc.textContent = isHeb 
+      ? 'בחר שיחה מהרשימה כדי להתחיל להתכתב עם חברי הקהילה של Soki.' 
+      : 'Select a conversation to start direct messaging with members of the Soki community.';
+  }
+
+  const activeStatus = document.getElementById('chat-active-status');
+  if (activeStatus) activeStatus.textContent = isHeb ? 'פעיל כעת' : 'Active now';
+
+  const alertsTitle = document.getElementById('alerts-title');
+  if (alertsTitle) alertsTitle.textContent = isHeb ? 'התראות אחרונות' : 'Recent Alerts';
+
+  const alertsClear = document.getElementById('alerts-clear-btn');
+  if (alertsClear) alertsClear.textContent = isHeb ? 'נקה הכל' : 'Clear All';
+};
+
+window.renderChatUsersList = function() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const langKey = isHeb ? 'he' : 'en';
+  const container = document.getElementById('messages-user-list');
+  if (!container) return;
+
+  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  
+  if (chats.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:20px; color:#86868b; font-size:0.85rem;">No active chats</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  chats.forEach(chat => {
+    const lastMsgObj = chat.messages[chat.messages.length - 1];
+    const lastMsgText = lastMsgObj ? lastMsgObj.text : '';
+    const lastMsgTime = lastMsgObj ? lastMsgObj.time : chat.lastMessageTime;
+
+    const hasUnread = lastMsgObj && lastMsgObj.sender === 'them' && activeChatUserId !== chat.id;
+
+    const div = document.createElement('div');
+    div.className = `chat-user-item ${activeChatUserId === chat.id ? 'active' : ''}`;
+    div.onclick = () => window.selectChatUser(chat.id);
+    
+    div.innerHTML = `
+      <div class="chat-user-avatar-wrap">
+        <img src="${chat.avatar}" class="chat-user-avatar" alt="${chat.name}">
+        <span class="chat-user-status" style="background-color: ${chat.status === 'online' ? '#34c759' : '#86868b'}"></span>
+      </div>
+      <div class="chat-user-info">
+        <div class="chat-user-name-row">
+          <span class="chat-user-name">${chat.name}</span>
+          <span class="chat-user-time">${lastMsgTime}</span>
+        </div>
+        <div class="chat-user-lastmsg" style="${hasUnread ? 'color:#fff; font-weight:700;' : ''}">
+          ${lastMsgText}
+        </div>
+      </div>
+      ${hasUnread ? '<span style="width:8px; height:8px; background-color:#0071e3; border-radius:50%; margin-left:auto;"></span>' : ''}
+    `;
+    container.appendChild(div);
+  });
+};
+
+window.selectChatUser = function(userId) {
+  activeChatUserId = userId;
+  
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const langKey = isHeb ? 'he' : 'en';
+  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  const chat = chats.find(c => c.id === userId);
+
+  if (!chat) return;
+
+  document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
+  window.renderChatUsersList();
+
+  const placeholder = document.getElementById('chat-placeholder-view');
+  const activeView = document.getElementById('chat-active-view');
+  if (placeholder) placeholder.style.display = 'none';
+  if (activeView) activeView.style.display = 'flex';
+
+  const avatarImg = document.getElementById('chat-active-avatar');
+  const nameEl = document.getElementById('chat-active-name');
+  if (avatarImg) avatarImg.src = chat.avatar;
+  if (nameEl) nameEl.textContent = chat.name;
+
+  window.renderMessagesStream(chat.messages);
+};
+
+window.renderMessagesStream = function(messages) {
+  const container = document.getElementById('messages-stream');
+  if (!container) return;
+
+  container.innerHTML = '';
+  if (!messages || messages.length === 0) {
+    return;
+  }
+
+  messages.forEach(msg => {
+    const isMe = msg.sender === 'me';
+    const div = document.createElement('div');
+    div.className = `chat-bubble ${isMe ? 'chat-bubble-sent' : 'chat-bubble-received'}`;
+    
+    div.innerHTML = `
+      <div>${msg.text}</div>
+      <div class="chat-bubble-time">${msg.time}</div>
+    `;
+    container.appendChild(div);
+  });
+
+  setTimeout(() => {
+    container.scrollTop = container.scrollHeight;
+  }, 50);
+};
+
+window.sendMessageToActiveUser = function() {
+  const inputEl = document.getElementById('chat-message-input');
+  if (!inputEl) return;
+  const messageText = inputEl.value.trim();
+  if (!messageText) return;
+
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const langKey = isHeb ? 'he' : 'en';
+  
+  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  const chatIndex = chats.findIndex(c => c.id === activeChatUserId);
+  if (chatIndex === -1) return;
+
+  const now = new Date();
+  const timeString = now.toLocaleTimeString(isHeb ? 'he-IL' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const newMsg = { sender: 'me', text: messageText, time: timeString };
+  chats[chatIndex].messages.push(newMsg);
+  chats[chatIndex].lastMessageTime = timeString;
+  localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(chats));
+
+  window.renderMessagesStream(chats[chatIndex].messages);
+  window.renderChatUsersList();
+  inputEl.value = '';
+
+  const activeUserId = activeChatUserId;
+  setTimeout(() => {
+    const currentChats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+    const index = currentChats.findIndex(c => c.id === activeUserId);
+    if (index === -1) return;
+
+    let mockReplyText = '';
+    
+    if (activeUserId === 'ronit') {
+      const replies = isHeb ? [
+        "מעולה! אני בדיוק מסיימת לערוך את הניתוח הטכנולוגי הבא שלנו שיועלה מחר. כדאי לך לעקוב!",
+        "לגמרי מסכימה. שוק הבינה המלאכותית ממשיך להוכיח שהוא מנוע הצמיחה המרכזי של השנה.",
+        "נשמע מצוין, תודה על השיתוף!"
+      ] : [
+        "Awesome! I'm just wrapping up our next technical analysis to be published tomorrow. Make sure to watch out for it!",
+        "Totally agree. The AI sector continues to prove it's the core growth driver of the year.",
+        "Sounds great, thanks for sharing!"
+      ];
+      mockReplyText = replies[Math.floor(Math.random() * replies.length)];
+    } else if (activeUserId === 'guy') {
+      const replies = isHeb ? [
+        "נכון מאוד, הגרפים מראים פה תנועת מחיר מעניינת. נמשיך לעקוב אחרי המסחר השבוע.",
+        "תודה, שמח שזה עזר לך! אני ממליץ להוריד גם את הקבצים החדשים שנוספו השבוע ב-PDF Store."
+      ] : [
+        "Very true, the graphs are showing a really interesting price action here. Let's keep a close eye on the market this week.",
+        "Thanks, glad it helped! I highly recommend checking out the new files we added to the PDF Store this week."
+      ];
+      mockReplyText = replies[Math.floor(Math.random() * replies.length)];
+    } else if (activeUserId === 'support') {
+      const replies = isHeb ? [
+        "פנייתך התקבלה בהצלחה. נציג מטעמנו יחזור אליך בהקדם! לכל שאלה נוספת, אנא בקר בעמוד התמיכה.",
+        "שמחנו לעזור! אם תרצה לשפר את חווית הגלישה שלך, מומלץ לבדוק את מסלולי ה-Premium שלנו."
+      ] : [
+        "Your inquiry has been successfully received. A representative will get back to you shortly! For any other queries, feel free to ask.",
+        "Happy to help! If you wish to upgrade your experience, we recommend checking out our Premium plans."
+      ];
+      mockReplyText = replies[Math.floor(Math.random() * replies.length)];
+    } else {
+      mockReplyText = isHeb ? "הודעתך התקבלה בהצלחה בקהילה." : "Your message was successfully sent to the community.";
+    }
+
+    const replyTime = new Date().toLocaleTimeString(isHeb ? 'he-IL' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+    const replyMsg = { sender: 'them', text: mockReplyText, time: replyTime };
+    
+    currentChats[index].messages.push(replyMsg);
+    currentChats[index].lastMessageTime = replyTime;
+    localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(currentChats));
+
+    if (activeChatUserId === activeUserId) {
+      window.renderMessagesStream(currentChats[index].messages);
+    }
+    window.renderChatUsersList();
+    window.updateMessagesBadge();
+  }, 1500);
+};
+
+window.clearChatHistory = function() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const langKey = isHeb ? 'he' : 'en';
+  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  const chatIndex = chats.findIndex(c => c.id === activeChatUserId);
+  if (chatIndex === -1) return;
+
+  const confirmMsg = isHeb ? 'האם אתה בטוח שברצונך למחוק את היסטוריית השיחה הנוכחית?' : 'Are you sure you want to clear the current chat history?';
+  if (confirm(confirmMsg)) {
+    chats[chatIndex].messages = [];
+    localStorage.setItem(`chat_history_${langKey}`, JSON.stringify(chats));
+    window.renderMessagesStream([]);
+    window.renderChatUsersList();
+  }
+};
+
+window.filterChatUsers = function() {
+  const query = document.getElementById('chat-search').value.toLowerCase().trim();
+  const userItems = document.querySelectorAll('.chat-user-item');
+  
+  userItems.forEach(item => {
+    const name = item.querySelector('.chat-user-name').textContent.toLowerCase();
+    const lastMsg = item.querySelector('.chat-user-lastmsg').textContent.toLowerCase();
+    if (name.includes(query) || lastMsg.includes(query)) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+};
+
+// =====================================================================
+// SYSTEM NOTIFICATIONS CENTER LOGIC
+// =====================================================================
+window.renderNotifications = function() {
+  const container = document.getElementById('notifications-list');
+  if (!container) return;
+
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
+
+  if (alerts.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #86868b;">
+        <div style="font-size: 3rem; margin-bottom: 12px; opacity: 0.2;"><i class="fas fa-bell-slash"></i></div>
+        <p style="font-size: 0.95rem;">${isHeb ? 'אין לך התראות חדשות. הכל מעודכן!' : 'No new notifications. You are all caught up!'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '';
+  alerts.forEach(alert => {
+    const isUnread = !alert.read;
+    const div = document.createElement('div');
+    div.className = `notification-item ${isUnread ? 'notification-item-unread' : ''}`;
+    
+    let iconClass = 'fa-bell';
+    if (alert.message.includes('✅') || alert.message.includes('success') || alert.message.includes('הצלחה')) iconClass = 'fa-circle-check';
+    if (alert.message.includes('❌') || alert.message.includes('error') || alert.message.includes('שגיאה')) iconClass = 'fa-circle-xmark';
+    if (alert.message.includes('⚠️') || alert.message.includes('Security') || alert.message.includes('אבטחה')) iconClass = 'fa-triangle-exclamation';
+    if (alert.message.includes('🗑️') || alert.message.includes('deleted')) iconClass = 'fa-trash-alt';
+    if (alert.message.includes('🔒')) iconClass = 'fa-lock';
+    
+    div.innerHTML = `
+      <div class="notification-icon-wrap">
+        <i class="fa-solid ${iconClass}"></i>
+      </div>
+      <div class="notification-content" style="direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
+        <div class="notification-text">${alert.message}</div>
+        <div class="notification-time">${alert.timestamp}</div>
+      </div>
+      <button class="notification-delete-btn" onclick="window.deleteNotification('${alert.id}')" title="Delete">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    `;
+    container.appendChild(div);
+  });
+};
+
+window.deleteNotification = function(id) {
+  let alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
+  alerts = alerts.filter(a => a.id !== id);
+  localStorage.setItem('system_alerts', JSON.stringify(alerts));
+  window.renderNotifications();
+  window.updateMessagesBadge();
+};
+
+window.clearAllNotifications = function() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const confirmMsg = isHeb ? 'האם אתה בטוח שברצונך למחוק את כל ההתראות?' : 'Are you sure you want to clear all notifications?';
+  if (confirm(confirmMsg)) {
+    localStorage.setItem('system_alerts', JSON.stringify([]));
+    window.renderNotifications();
+    window.updateMessagesBadge();
+  }
+};
+
+window.updateMessagesBadge = function() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const langKey = isHeb ? 'he' : 'en';
+
+  const chats = JSON.parse(localStorage.getItem(`chat_history_${langKey}`)) || [];
+  let unreadChats = 0;
+  chats.forEach(chat => {
+    const lastMsgObj = chat.messages[chat.messages.length - 1];
+    if (lastMsgObj && lastMsgObj.sender === 'them' && activeChatUserId !== chat.id) {
+      unreadChats++;
+    }
+  });
+
+  const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
+  const unreadAlerts = alerts.filter(a => !a.read).length;
+
+  const alertDot = document.getElementById('alerts-unread-dot');
+  if (alertDot) {
+    alertDot.style.display = unreadAlerts > 0 ? 'inline-block' : 'none';
+  }
+
+  const sidebarDot = document.getElementById('messages-unread-badge');
+  if (sidebarDot) {
+    sidebarDot.style.display = (unreadChats > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
+  }
+};
+
+// Re-write showToast to output inside the Alerts hub!
+window.showToast = function(msg, type = '') {
+  // Save to local storage for the Alerts center
+  const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+  alerts.unshift({
+    id: Date.now() + Math.random().toString(),
+    message: msg,
+    type: type,
+    timestamp: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+    read: false
+  });
+  localStorage.setItem('system_alerts', JSON.stringify(alerts.slice(0, 50))); // Keep last 50
+  
+  if (window.updateMessagesBadge) window.updateMessagesBadge();
+  if (window.renderNotifications) window.renderNotifications();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const activePage = document.querySelector('.page.active');
+  if (activePage && activePage.id === 'page-messages') {
+    window.initMessagesSystem();
+  }
+});
+
