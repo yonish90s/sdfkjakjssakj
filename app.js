@@ -683,7 +683,7 @@ const ARTICLES_PER_PAGE = 10;
 let currentCategory = 'הכל';
 let currentLocation = JSON.parse(localStorage.getItem('userLocation')) || {
   id: 'Israel',
-  nameHeb: 'עברית',
+  nameHeb: 'Hebrew',
   lat: 31.7683,
   lon: 35.2137,
   capitalHeb: 'ירושלים'
@@ -694,17 +694,17 @@ if (currentLocation) {
   if (currentLocation.id !== 'Israel' && currentLocation.id !== 'USA') {
     currentLocation = {
       id: 'Israel',
-      nameHeb: 'עברית',
+      nameHeb: 'Hebrew',
       lat: 31.7683,
       lon: 35.2137,
       capitalHeb: 'ירושלים'
     };
     localStorage.setItem('userLocation', JSON.stringify(currentLocation));
-  } else if (currentLocation.nameHeb === 'ישראל') {
-    currentLocation.nameHeb = 'עברית';
+  } else if (currentLocation.nameHeb === 'ישראל' || currentLocation.nameHeb === 'עברית') {
+    currentLocation.nameHeb = 'Hebrew';
     localStorage.setItem('userLocation', JSON.stringify(currentLocation));
-  } else if (currentLocation.nameHeb === 'ארצות הברית') {
-    currentLocation.nameHeb = 'אנגלית';
+  } else if (currentLocation.nameHeb === 'ארצות הברית' || currentLocation.nameHeb === 'אנגלית') {
+    currentLocation.nameHeb = 'English';
     localStorage.setItem('userLocation', JSON.stringify(currentLocation));
   }
 }
