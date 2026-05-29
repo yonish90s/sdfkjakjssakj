@@ -6305,6 +6305,66 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   color: #ffffff;
 }
 
+/* App Store & Google Play Badges */
+.soki-footer-apps {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.soki-app-badge {
+  display: flex;
+  align-items: center;
+  background: #000000;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  padding: 6px 16px;
+  text-decoration: none;
+  color: #ffffff;
+  transition: background 0.2s, transform 0.2s, border-color 0.2s;
+  min-width: 145px;
+  box-sizing: border-box;
+}
+
+.soki-app-badge:hover {
+  background: #111111;
+  border-color: #555555;
+  transform: translateY(-2px);
+}
+
+.soki-app-badge .app-icon {
+  font-size: 20px;
+  margin-right: 10px;
+  color: #ffffff;
+}
+
+.soki-app-badge .app-img {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.soki-app-badge .app-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.soki-app-badge .app-sub {
+  font-size: 7.5px;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.soki-app-badge .app-main {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .soki-footer-premium {
