@@ -6102,4 +6102,9 @@ body.dark-theme .navbar-sidebar-toggle-btn:hover {
   text-transform: uppercase;
 }
 
+/* Hide weather widget when sidebar is collapsed */
+.sidebar.collapsed .sidebar-weather-widget {
+  display: none !important;
+}
+
 
