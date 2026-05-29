@@ -4308,7 +4308,7 @@ function runPaymentAnimation(summaryLines, total) {
 // Initialize cart badge on page load
 document.addEventListener('DOMContentLoaded', () => {
   updateCartBadge();
-  showWelcomeDealModal();
+  // showWelcomeDealModal(); // Removed as requested by the user
   renderAdsSidebar();
 });
 updateCartBadge();

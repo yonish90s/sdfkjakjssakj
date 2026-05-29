@@ -5,7 +5,8 @@
       "name": "project11",
       "runtimeExecutable": "node",
       "runtimeArgs": ["server.js"],
-      "port": 4242
+      "port": 4242,
+      "autoPort": false
     }
   ]
 }
