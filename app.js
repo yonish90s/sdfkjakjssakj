@@ -4571,11 +4571,12 @@ function toggleSidebar() {
 
 // ========== LOCATION & WEATHER WIDGET ==========
 
-function toggleLocationDropdown(e) {
+function toggleLanguage(e) {
   if (e) e.stopPropagation();
-  const menu = document.getElementById('location-dropdown-menu');
-  if (menu) {
-    menu.classList.toggle('show');
+  if (currentLocation && currentLocation.id === 'Israel') {
+    selectLocation('USA', 'English', 38.9072, -77.0369, 'וושינגטון');
+  } else {
+    selectLocation('Israel', 'Hebrew', 31.7683, 35.2137, 'ירושלים');
   }
 }
 

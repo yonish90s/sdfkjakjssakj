@@ -270,14 +270,9 @@
           </button>
 
           <!-- Location Selector -->
-          <div class="location-selector" onclick="toggleLocationDropdown(event)" style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#a1a1a6;">
+          <div class="location-selector" onclick="toggleLanguage(event)" style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#a1a1a6;" title="Toggle Language">
             <i class="fas fa-globe" style="font-size:1.1rem;"></i>
             <span class="location-text" id="selected-location-text" style="font-size:0.85rem; font-weight:500; color:#a1a1a6;">English</span>
-            <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#a1a1a6; margin-top:2px;"></i>
-            <div id="location-dropdown-menu" class="location-dropdown-content" style="background: #1c1c1e; border: 1px solid #2c2c2e;">
-              <button class="location-item" onclick="selectLocation('Israel', 'Hebrew', 31.7683, 35.2137, 'ירושלים')" style="color:#fff;">Hebrew</button>
-              <button class="location-item" onclick="selectLocation('USA', 'English', 38.9072, -77.0369, 'וושינגטון')" style="color:#fff;">English</button>
-            </div>
           </div>
 
           <!-- Search Bar -->
