@@ -4579,6 +4579,51 @@ function toggleLocationDropdown(e) {
   }
 }
 
+function updateNavbarLanguage() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  
+  const elStores = document.getElementById('nav-text-stores');
+  const elSolutions = document.getElementById('nav-text-solutions');
+  const elSoftware = document.getElementById('nav-text-software');
+  const elAppointment = document.getElementById('nav-text-appointment');
+  const elShop = document.getElementById('nav-text-shop');
+  const elExchange = document.getElementById('nav-text-exchange');
+  const elForum = document.getElementById('nav-text-forum');
+  const elGraphs = document.getElementById('nav-text-graphs');
+  const elSignin = document.getElementById('nav-text-signin');
+  const elLogout = document.getElementById('nav-text-logout');
+  const elPremium = document.getElementById('nav-text-premium');
+  const elLogoSubtext = document.getElementById('nav-logo-subtext');
+
+  if (isHeb) {
+    if (elStores) elStores.textContent = 'החנויות שלנו';
+    if (elSolutions) elSolutions.textContent = 'הפתרונות שלנו';
+    if (elSoftware) elSoftware.textContent = 'חנות תוכנה';
+    if (elAppointment) elAppointment.textContent = 'קביעת פגישה';
+    if (elShop) elShop.textContent = 'חנות אונליין';
+    if (elExchange) elExchange.textContent = 'שער חליפין';
+    if (elForum) elForum.textContent = 'פורום';
+    if (elGraphs) elGraphs.textContent = 'גרפים';
+    if (elSignin) elSignin.textContent = 'התחבר';
+    if (elLogout) elLogout.textContent = 'התנתק';
+    if (elPremium) elPremium.textContent = 'פרימיום';
+    if (elLogoSubtext) elLogoSubtext.textContent = 'מאמרים';
+  } else {
+    if (elStores) elStores.textContent = 'Our Stores';
+    if (elSolutions) elSolutions.textContent = 'Our Solutions';
+    if (elSoftware) elSoftware.textContent = 'Software Store';
+    if (elAppointment) elAppointment.textContent = 'Book Appointment';
+    if (elShop) elShop.textContent = 'Online Shop';
+    if (elExchange) elExchange.textContent = 'Exchange';
+    if (elForum) elForum.textContent = 'Forum';
+    if (elGraphs) elGraphs.textContent = 'Graphs';
+    if (elSignin) elSignin.textContent = 'Sign In';
+    if (elLogout) elLogout.textContent = 'Logout';
+    if (elPremium) elPremium.textContent = 'Premium';
+    if (elLogoSubtext) elLogoSubtext.textContent = 'Articles';
+  }
+}
+
 function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
   currentLocation = { id, nameHeb, lat, lon, capitalHeb };
   localStorage.setItem('userLocation', JSON.stringify(currentLocation));
@@ -4589,6 +4634,9 @@ function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
   } else {
     document.body.classList.remove('rtl-layout');
   }
+
+  // Update dynamic navbar translations
+  updateNavbarLanguage();
 
   // Update UI text
   const textEl = document.getElementById('selected-location-text');
@@ -4713,6 +4761,9 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     document.body.classList.remove('rtl-layout');
   }
+
+  // Initialize navbar language translation on startup
+  updateNavbarLanguage();
 
   const textEl = document.getElementById('selected-location-text');
   if (textEl) textEl.textContent = currentLocation.nameHeb;

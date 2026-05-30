@@ -223,127 +223,115 @@
 
   <div id="main-wrapper">
     <!-- APPLE GLOBAL NAVBAR -->
-    <header class="navbar-apple">
-      <div class="nav-inner-apple">
-        <div style="display:flex; align-items:center; gap: 16px;">
-          <!-- Leftmost Sidebar Toggle Button -->
-          <button class="navbar-sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
-            <i class="fas fa-indent"></i>
-          </button>
-          <!-- Company Logo with Crown & soki Name -->
-          <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home">
-            <i class="fas fa-crown soki-logo-crown"></i>
-            <span class="soki-logo-text">soki</span>
-          </div>
-          <div id="user-wallet-balance" style="display:none; align-items:center; color:#34c759; font-weight:700; background:#1c1c1e; padding:6px 12px; border-radius:980px; font-size:0.9rem; border:1px solid #2c2c2e; cursor:default;" title="Daily Wallet Balance">
-            <i class="fas fa-wallet" style="margin-right:6px; color:#a1a1aa;"></i>₪<span id="wallet-amount">0</span>
-          </div>
-        </div>
-
-        <!-- HAMBURGER FOR MOBILE -->
-        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-          <i class="fas fa-bars"></i>
-        </button>
+    <header class="navbar-apple" style="background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+      <div class="nav-inner-apple" style="display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 24px; max-width: 100%;">
         
-          <nav class="apple-nav-links">
-            <button onclick="clearSearchAndShowHome()" class="apple-nav-item">Articles</button>
-          
-          <div class="apple-dropdown" id="nav-dropdown">
-            <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)">
-              Our Stores <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="apple-dropdown-content mega-menu">
-              <div class="mega-menu-title">Our Solutions</div>
-              <button onclick="showPage('store'); toggleNavDropdown(event)" class="apple-dropdown-item">
-                <i class="fas fa-laptop-code"></i> Software Store
-              </button>
-              <button onclick="showPage('appointments'); toggleNavDropdown(event)" class="apple-dropdown-item">
-                <i class="fas fa-calendar-alt"></i> Book Appointment
-              </button>
-              <button onclick="showPage('shop'); toggleNavDropdown(event)" class="apple-dropdown-item">
-                <i class="fas fa-shopping-bag"></i> Online Shop
-              </button>
-            </div>
-          </div>
-
-          <div class="apple-dropdown" id="nav-more-dropdown">
-            <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)">
-              More <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="apple-dropdown-content mega-menu">
-              <div class="mega-menu-title">Explore Soki</div>
-              <button onclick="showPage('pdf-store'); toggleNavDropdown(event)" class="apple-dropdown-item">
-                <i class="fas fa-chart-line"></i> Graphs
-              </button>
-              <button onclick="showPage('groups'); toggleNavDropdown(event)" class="apple-dropdown-item">
-                <i class="fa-solid fa-comments"></i> Forum
-              </button>
-              <button onclick="showPage('exchange'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color: #34c759; font-weight: 600;">
-                <i class="fas fa-chart-line"></i> Exchange
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        <!-- Search bar -->
-        <div class="apple-search-wrapper">
-          <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" />
-          <i class="fas fa-search search-icon"></i>
-        </div>
-
-        <div class="apple-nav-actions">
-          <!-- Location Selector -->
-          <div class="location-selector" onclick="toggleLocationDropdown(event)">
-            <i class="fas fa-chevron-down location-chevron"></i>
-            <span class="location-text" id="selected-location-text">Hebrew</span>
-            <div class="location-icon-circle">
-              <i class="fas fa-location-dot"></i>
-            </div>
-            
-            <!-- Dropdown Menu -->
-            <div id="location-dropdown-menu" class="location-dropdown-content">
-              <button class="location-item" onclick="selectLocation('Israel', 'Hebrew', 31.7683, 35.2137, 'ירושלים')">Hebrew</button>
-              <button class="location-item" onclick="selectLocation('USA', 'English', 38.9072, -77.0369, 'וושינגטון')">English</button>
-            </div>
-          </div>
-
-
-
-          <button onclick="toggleNotificationsDrawer()" class="apple-nav-item cart-nav-btn" title="Notifications" style="position:relative;">
-            <i class="fas fa-bell" style="font-size:1.1rem;"></i>
-            <span id="notifications-badge" class="cart-badge" style="display:none;background:#ef4444;">0</span>
-          </button>
-
-          <button onclick="toggleSavedDrawer('articles')" class="apple-nav-item cart-nav-btn" title="Saved Articles" style="position:relative;">
-            <i class="fas fa-bookmark" style="font-size:1.1rem;"></i>
-          </button>
-          
-          <button onclick="toggleCartDrawer()" class="apple-nav-item cart-nav-btn" title="My Cart" style="position:relative;">
-            <i class="fas fa-bag-shopping" style="font-size:1.1rem;"></i>
-            <span id="cart-badge" class="cart-badge" style="display:none;">0</span>
-          </button>
-
-          <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.3s;width:40px;height:40px;">
-            <i class="fas fa-circle-half-stroke"></i>
-          </button>
-          
+        <!-- LEFT SIDE: Actions, Buttons, Search -->
+        <div class="nav-left-section" style="display: flex; align-items: center; gap: 14px;">
+          <!-- Sign In / Profile -->
           <div id="user-nav-section" style="display: flex; align-items: center; gap: 8px;">
-            <button class="btn-orange subscription-btn" onclick="showPage('subscription')" style="cursor:pointer;position:relative;z-index:1001;display:flex;align-items:center;gap:6px;">
-              <i class="fas fa-crown" style="color:#f9b233;font-size:0.95rem;"></i> Premium
-            </button>
-            <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.75rem;padding:6px 12px;height:30px;min-height:0;display:flex;align-items:center;gap:6px;">
-              <i class="fas fa-circle-user" style="font-size:1rem;"></i> Sign In
+            <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.8rem; padding:6px 12px; height:32px; border-radius:8px; display:flex; align-items:center; gap:6px; background:#1c1c1e; border:1px solid #3a3a3c; color:#fff; cursor:pointer; font-weight:600;">
+              <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-signin">Sign In</span>
             </button>
             <div id="user-profile-badge" onclick="toggleUserDropdown()" style="display: none; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-main); padding: 4px 10px; border-radius: 980px; align-items: center; gap: 8px;">
               <img id="user-badge-avatar" class="user-avatar-small" src="">
               <span id="user-badge-name" style="font-size: 0.85rem; font-weight: 700;"></span>
             </div>
-            <button id="btn-logout-nav" class="btn-secondary" onclick="logoutUser()" style="display:none;font-size:0.75rem;padding:6px 12px;height:30px;color:#ef4444;border-color:rgba(239,68,68,0.2);background:transparent;display:flex;align-items:center;gap:5px;">
-              <i class="fas fa-circle-user" style="font-size:1rem;"></i> Logout
+            <button id="btn-logout-nav" class="btn-secondary" onclick="logoutUser()" style="display:none; font-size:0.75rem; padding:6px 12px; height:32px; color:#ef4444; border-color:rgba(239,68,68,0.2); background:transparent; display:flex; align-items:center; gap:5px; cursor:pointer;">
+              <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-logout">Logout</span>
             </button>
           </div>
+
+          <!-- Premium Pill -->
+          <button class="btn-orange subscription-btn" onclick="showPage('subscription')" style="cursor:pointer; background: #fb923c; border: none; color: #000; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);">
+            <i class="fas fa-crown" style="color:#000; font-size:0.95rem;"></i> <span id="nav-text-premium">Premium</span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button id="theme-toggle" onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;">
+            <i class="fas fa-circle-half-stroke"></i>
+          </button>
+
+          <!-- Cart Drawer Button -->
+          <button onclick="toggleCartDrawer()" class="cart-nav-btn" title="My Cart" style="background:none; border:none; cursor:pointer; position:relative; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-bag-shopping" style="font-size:1.1rem;"></i>
+            <span id="cart-badge" class="cart-badge" style="display:none; background:#ff3b30; color:#fff; border:none;">0</span>
+          </button>
+
+          <!-- Saved Button -->
+          <button onclick="toggleSavedDrawer('articles')" class="cart-nav-btn" title="Saved Articles" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-bookmark" style="font-size:1.1rem;"></i>
+          </button>
+
+          <!-- Notifications Button -->
+          <button onclick="toggleNotificationsDrawer()" class="cart-nav-btn" title="Notifications" style="background:none; border:none; cursor:pointer; position:relative; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-bell" style="font-size:1.1rem;"></i>
+            <span id="notifications-badge" class="cart-badge" style="display:none; background:#ef4444; color:#fff; border:none;">0</span>
+          </button>
+
+          <!-- Location Selector -->
+          <div class="location-selector" onclick="toggleLocationDropdown(event)" style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#a1a1a6;">
+            <i class="fas fa-globe" style="font-size:1.1rem;"></i>
+            <span class="location-text" id="selected-location-text" style="font-size:0.85rem; font-weight:500; color:#a1a1a6;">English</span>
+            <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#a1a1a6; margin-top:2px;"></i>
+            <div id="location-dropdown-menu" class="location-dropdown-content" style="background: #1c1c1e; border: 1px solid #2c2c2e;">
+              <button class="location-item" onclick="selectLocation('Israel', 'Hebrew', 31.7683, 35.2137, 'ירושלים')" style="color:#fff;">Hebrew</button>
+              <button class="location-item" onclick="selectLocation('USA', 'English', 38.9072, -77.0369, 'וושינגטון')" style="color:#fff;">English</button>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="apple-search-wrapper" style="position:relative; margin-left: 10px;">
+            <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:8px; padding:6px 12px 6px 32px; color:#fff; font-size:0.85rem; width:180px; outline:none; text-align:right;" />
+            <i class="fas fa-search search-icon" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#86868b; font-size:0.85rem;"></i>
+          </div>
         </div>
+
+        <!-- RIGHT SIDE: Navigation and Logo -->
+        <div class="nav-right-section" style="display: flex; align-items: center; gap: 24px;">
+          <!-- Dropdown Our Stores -->
+          <div class="apple-dropdown" id="nav-dropdown" style="position:relative;">
+            <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <span id="nav-text-stores">Our Stores</span> <i class="fas fa-chevron-down" style="font-size:0.75rem; color:#86868b;"></i>
+            </button>
+            <div class="apple-dropdown-content mega-menu" style="background: #1c1c1e; border: 1px solid #2c2c2e;">
+              <div class="mega-menu-title" id="nav-text-solutions" style="color:#86868b;">Our Solutions</div>
+              <button onclick="showPage('store'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color:#fff;">
+                <i class="fas fa-laptop-code"></i> <span id="nav-text-software">Software Store</span>
+              </button>
+              <button onclick="showPage('appointments'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color:#fff;">
+                <i class="fas fa-calendar-alt"></i> <span id="nav-text-appointment">Book Appointment</span>
+              </button>
+              <button onclick="showPage('shop'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color:#fff;">
+                <i class="fas fa-shopping-bag"></i> <span id="nav-text-shop">Online Shop</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Exchange -->
+          <button onclick="showPage('exchange')" class="apple-nav-item" style="color: #10b981; font-weight: 700; font-size:0.9rem; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <span id="nav-text-exchange">Exchange</span> <i class="fas fa-rotate" style="font-size:0.85rem;"></i>
+          </button>
+
+          <!-- Forum -->
+          <button onclick="showPage('groups')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+            <span id="nav-text-forum">Forum</span>
+          </button>
+
+          <!-- Graphs -->
+          <button onclick="showPage('pdf-store')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+            <span id="nav-text-graphs">Graphs</span>
+          </button>
+
+          <!-- SOKI Articles Logo -->
+          <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <span class="soki-logo-text" style="font-weight: 900; font-size: 1.25rem; color: #fff; text-transform: uppercase; letter-spacing: -0.02em;">SOKI <span id="nav-logo-subtext" style="font-weight: 500; color: #a1a1a6; font-size: 0.95rem; text-transform: none; margin-left: 2px;">Articles</span></span>
+            <i class="fas fa-crown" style="color:#f59e0b; font-size:1.1rem; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));"></i>
+          </div>
+        </div>
+
       </div>
+    </header>
 
       <!-- Mobile Secondary Nav (Scrollable) -->
       <div class="nav-secondary-apple">
