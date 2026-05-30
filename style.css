@@ -481,9 +481,11 @@ body.dark-theme .apple-dropdown-content.mega-menu .apple-dropdown-item:hover {
 /* ========== PAGES ========== */
 .page { 
   display: none; 
-  max-width: 1280px; 
+  max-width: 100%; 
+  width: 100%;
   margin: 0 auto; 
-  padding: 60px 24px 100px; 
+  padding: 60px 5% 100px; 
+  box-sizing: border-box;
   animation: fadeIn 0.5s ease-out forwards;
 }
 .page.active { display: block !important; }
