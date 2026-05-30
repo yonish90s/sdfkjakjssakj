@@ -1956,36 +1956,88 @@ function renderPdfStoreGrid() {
     .filter(item => isAdmin || item.approved !== false);
   
   if (visibleItems.length === 0) {
-    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#86868b; font-size:1.1rem;">No approved graphs yet. Admin will approve soon!</div>';
+    grid.innerHTML = '<div style="text-align:center; padding:80px; color:#86868b; font-size:1.1rem; direction:rtl;">אין עדיין גרפים מאושרים. מנהל המערכת יאשר בקרוב!</div>';
     return;
   }
+  
   grid.innerHTML = visibleItems.map((item) => {
     const icon = typeEmoji[item.type] || '📊';
     const mainImg = (item.images && item.images.length > 0) ? item.images[0] : '';
     const isUserLoggedIn = !!currentUser && !!currentUser.email;
     const isSaved = myGraphsList.some(x => x.id === item.id);
+    const dateStr = item.date ? new Date(item.date).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) : 'הועלה לאחרונה';
     
+    // We render a beautiful, highly curated horizontal list item matching the forum design!
+    let cardContent = '';
+    if (mainImg) {
+      cardContent = `
+        <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:stretch; width:100%; direction:rtl; text-align:right;">
+          <!-- Image Container on the right -->
+          <div style="width:220px; min-height:140px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+            <img src="${mainImg}" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+          
+          <!-- Text details on the left -->
+          <div style="flex:1; min-width:280px; display:flex; flex-direction:column; justify-content:space-between; padding:4px 0;">
+            <div>
+              <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:8px; transition:color 0.2s;" class="post-card-title">${escHtml(item.title)}</h3>
+              <p style="color:#86868b; font-size:0.95rem; margin:0;">${item.type || 'ניתוח טכני'}</p>
+            </div>
+            
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
+              <div>${dateStr}</div>
+              
+              <div style="display:flex; align-items:center; gap:12px;">
+                ${isUserLoggedIn ? `
+                  <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
+                          style="background:transparent; border:none; color:${isSaved ? '#ff453a' : '#86868b'}; cursor:pointer; font-size:1.15rem; transition:color 0.2s;"
+                          onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)"
+                          onmouseover="this.style.color='#ff453a'"
+                          onmouseout="this.style.color='${isSaved ? '#ff453a' : '#86868b'}'">
+                    <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      cardContent = `
+        <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%; direction:rtl; text-align:right;">
+          <div>
+            <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:8px; transition:color 0.2s;" class="post-card-title">${escHtml(item.title)}</h3>
+            <p style="color:#86868b; font-size:0.95rem; margin:0;">${item.type || 'ניתוח טכני'}</p>
+          </div>
+          
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
+            <div>${dateStr}</div>
+            
+            <div style="display:flex; align-items:center; gap:12px;">
+              ${isUserLoggedIn ? `
+                <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
+                        style="background:transparent; border:none; color:${isSaved ? '#ff453a' : '#86868b'}; cursor:pointer; font-size:1.15rem; transition:color 0.2s;"
+                        onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)"
+                        onmouseover="this.style.color='#ff453a'"
+                        onmouseout="this.style.color='${isSaved ? '#ff453a' : '#86868b'}'">
+                  <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     return `
-      <div class="pdf-card" onclick="showProductDetailById('${item.id}')">
-        <div class="pdf-card-icon">
-          ${mainImg ? `<img src="${mainImg}" style="width:100%; height:100%; object-fit:cover; border-radius:0;" alt="thumb" />` : icon}
-        </div>
-        <div style="display:flex; flex-direction:column; gap:2px; flex-grow:1; text-align: center; padding: 12px 16px; justify-content: center;">
-          <div class="pdf-card-title">${escHtml(item.title)}</div>
-          <div class="pdf-card-date">${item.date ? new Date(item.date).toLocaleDateString('en-US') : 'Recently uploaded'}</div>
-        </div>
-        <div class="pdf-card-ticker-wrapper" style="padding: 12px 20px 12px 0; display: flex; align-items: center;">
-          ${isUserLoggedIn ? `
-            <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
-                    onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)">
-              <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
-            </button>
-          ` : ''}
-        </div>
+      <div class="premium-post-card" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);" 
+           onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" 
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.transform='none'; this.style.boxShadow='none'" 
+           onclick="showProductDetailById('${item.id}')">
+        ${cardContent}
       </div>
     `;
   }).join('');
-
 }
 
 // ========== MY GRAPHS WATCHLIST LOGIC ==========

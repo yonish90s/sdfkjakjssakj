@@ -712,16 +712,16 @@
 </div>
 
 <div id="page-pdf-store" class="page">
-  <div class="main-news-layout" style="padding-top: 40px;">
+  <div class="main-news-layout" style="padding-top: 40px; direction:rtl; text-align:right;">
     <div class="news-main" style="flex: 1;">
-      <div style="text-align: left; margin-bottom: 40px; padding: 0 24px;">
-    <h2 style="font-size: 2.4rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">📊 Graphs and Data</h2>
-    <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 24px;">Visual analyses, advanced charts, and datasets for direct download</p>
+      <div style="text-align: right; margin-bottom: 40px; padding: 0 24px;">
+    <h2 style="font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px; color:#ffffff;">📊 ניתוחי גרפים ונתונים</h2>
+    <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 24px;">ניתוחים ויזואליים, גרפים מתקדמים ומאגרי נתונים להורדה ישירה.</p>
     <button onclick="openUploadGraphModal()" style="background: var(--primary); color: white; padding: 12px 32px; border-radius: 980px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(0,113,227,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-      <i class="fa-solid fa-cloud-arrow-up"></i> Upload your own
+      <i class="fa-solid fa-cloud-arrow-up"></i> העלה ניתוח משלך
     </button>
   </div>
-  <div id="pdf-store-grid" class="pdf-store-grid">
+  <div id="pdf-store-grid" style="display:flex; flex-direction:column; gap:20px; padding:0 24px;">
     <!-- Populated by JS -->
   </div>
 </div>
