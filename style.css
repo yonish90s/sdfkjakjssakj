@@ -6236,7 +6236,7 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   flex-direction: column;
   justify-content: space-between;
   min-height: 180px;
-  padding-left: 120px;
+  padding-left: 0px;
 }
 
 .soki-footer-brand-col .soki-logo {
