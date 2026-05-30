@@ -443,14 +443,11 @@ function updateFloatingButtons(page = null) {
 
   const isStore = ['store', 'pdf-store', 'shop', 'services', 'appointments', 'product-detail'].includes(page);
   const supportBtn = document.getElementById('support-floating-btn');
-  const cartBtn = document.querySelector('.cart-nav-btn');
   
   if (window.innerWidth <= 768) {
     if (supportBtn) supportBtn.style.display = isStore ? 'flex' : 'none';
-    if (cartBtn) cartBtn.style.display = isStore ? 'flex' : 'none';
   } else {
     if (supportBtn) supportBtn.style.display = 'flex';
-    if (cartBtn) cartBtn.style.display = 'flex';
   }
 }
 
