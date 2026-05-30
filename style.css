@@ -6213,6 +6213,9 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   z-index: 10;
   position: relative;
+  margin-top: 120px; /* Generous spacing so it never squishes content */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .soki-footer-inner {
