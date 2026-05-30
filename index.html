@@ -842,12 +842,13 @@
 </div>
 
 <div id="page-subscription" class="page">
-  <div style="text-align: center; margin-bottom: 60px;">
-    <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">Choose Your Plan</h2>
-    <p style="color: #86868b; font-size: 1.2rem;">Get access to premium content, unlimited downloads and personal support.</p>
-  </div>
+  <div class="apple-container" style="max-width: 1000px; margin: 0 auto; padding: 0 24px;">
+    <div style="text-align: center; margin-bottom: 60px;">
+      <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">Choose Your Plan</h2>
+      <p style="color: #86868b; font-size: 1.2rem;">Get access to premium content, unlimited downloads and personal support.</p>
+    </div>
 
-  <div class="pricing-grid">
+    <div class="pricing-grid">
     <!-- BASIC -->
     <div class="pricing-card" onclick="selectPricingTier(this)">
       <div class="pricing-header">
@@ -916,88 +917,90 @@
 
 <!-- MESSAGES & ALERTS HUB PAGE -->
 <div id="page-messages" class="page">
-  <!-- Tabs Navigation Header -->
-  <div class="messages-tabs-header">
-    <button id="tab-btn-chat" class="messages-tab-btn active" onclick="switchMessagesTab('chat')">
-      <i class="fa-solid fa-comment-dots"></i>
-      <span id="tab-label-chat">Messages</span>
-    </button>
-    <button id="tab-btn-alerts" class="messages-tab-btn" onclick="switchMessagesTab('alerts')">
-      <i class="fa-solid fa-bell"></i>
-      <span id="tab-label-alerts">Alerts</span>
-      <span id="alerts-unread-dot" style="display:none; width: 6px; height: 6px; background-color: #ff3b30; border-radius: 50%; margin-left: 4px; flex-shrink: 0;"></span>
-    </button>
-  </div>
-
-  <!-- Messages Pane (Community Chat) -->
-  <div id="messages-tab-pane" class="messages-tab-pane active messages-container">
-    <!-- Sidebar Users List -->
-    <div class="chat-sidebar">
-      <div class="chat-search-wrap">
-        <input type="text" id="chat-search" class="chat-search-input" placeholder="Search conversations..." oninput="filterChatUsers()">
-      </div>
-      <div id="messages-user-list" class="chat-user-list">
-        <!-- Rendered dynamically in app.js -->
-      </div>
+  <div class="apple-container" style="max-width: 1000px; margin: 0 auto; padding: 0 24px;">
+    <!-- Tabs Navigation Header -->
+    <div class="messages-tabs-header">
+      <button id="tab-btn-chat" class="messages-tab-btn active" onclick="switchMessagesTab('chat')">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span id="tab-label-chat">Messages</span>
+      </button>
+      <button id="tab-btn-alerts" class="messages-tab-btn" onclick="switchMessagesTab('alerts')">
+        <i class="fa-solid fa-bell"></i>
+        <span id="tab-label-alerts">Alerts</span>
+        <span id="alerts-unread-dot" style="display:none; width: 6px; height: 6px; background-color: #ff3b30; border-radius: 50%; margin-left: 4px; flex-shrink: 0;"></span>
+      </button>
     </div>
 
-    <!-- Chat Main Section -->
-    <div id="messages-chat-window" class="chat-main">
-      <!-- Default Placeholder -->
-      <div id="chat-placeholder-view" class="chat-placeholder">
-        <div class="chat-placeholder-icon">
-          <i class="fa-solid fa-comments"></i>
+    <!-- Messages Pane (Community Chat) -->
+    <div id="messages-tab-pane" class="messages-tab-pane active messages-container">
+      <!-- Sidebar Users List -->
+      <div class="chat-sidebar">
+        <div class="chat-search-wrap">
+          <input type="text" id="chat-search" class="chat-search-input" placeholder="Search conversations..." oninput="filterChatUsers()">
         </div>
-        <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; color: #ffffff;" id="msg-placeholder-title">Your Messages</h3>
-        <p style="font-size: 0.95rem; color: #86868b; max-width: 320px;" id="msg-placeholder-desc">Select a conversation to start direct messaging with members of the community.</p>
+        <div id="messages-user-list" class="chat-user-list">
+          <!-- Rendered dynamically in app.js -->
+        </div>
       </div>
 
-      <!-- Active Chat Stream -->
-      <div id="chat-active-view" style="display:none; flex-direction:column; height:100%; width:100%;">
-        <!-- Header -->
-        <div class="chat-header">
-          <div class="chat-header-user">
-            <img id="chat-active-avatar" src="" class="chat-user-avatar" style="width:40px; height:40px;">
+      <!-- Chat Main Section -->
+      <div id="messages-chat-window" class="chat-main">
+        <!-- Default Placeholder -->
+        <div id="chat-placeholder-view" class="chat-placeholder">
+          <div class="chat-placeholder-icon">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; color: #ffffff;" id="msg-placeholder-title">Your Messages</h3>
+          <p style="font-size: 0.95rem; color: #86868b; max-width: 320px;" id="msg-placeholder-desc">Select a conversation to start direct messaging with members of the community.</p>
+        </div>
+
+        <!-- Active Chat Stream -->
+        <div id="chat-active-view" style="display:none; flex-direction:column; height:100%; width:100%;">
+          <!-- Header -->
+          <div class="chat-header">
+            <div class="chat-header-user">
+              <img id="chat-active-avatar" src="" class="chat-user-avatar" style="width:40px; height:40px;">
+              <div>
+                <div id="chat-active-name" class="chat-header-name">User Name</div>
+                <div id="chat-active-status" class="chat-header-status">Active now</div>
+              </div>
+            </div>
             <div>
-              <div id="chat-active-name" class="chat-header-name">User Name</div>
-              <div id="chat-active-status" class="chat-header-status">Active now</div>
+              <button onclick="clearChatHistory()" style="background:transparent; border:none; color:#86868b; cursor:pointer; font-size:0.9rem;" title="Clear Chat History">
+                <i class="fas fa-trash-alt"></i>
+              </button>
             </div>
           </div>
-          <div>
-            <button onclick="clearChatHistory()" style="background:transparent; border:none; color:#86868b; cursor:pointer; font-size:0.9rem;" title="Clear Chat History">
-              <i class="fas fa-trash-alt"></i>
+
+          <!-- Chat Stream -->
+          <div id="messages-stream" class="chat-body">
+            <!-- Injected dynamically in app.js -->
+          </div>
+
+          <!-- Input Bar -->
+          <div class="chat-footer">
+            <div class="chat-input-wrap">
+              <input type="text" id="chat-message-input" class="chat-input" placeholder="Write a message..." onkeydown="if(event.key==='Enter')sendMessageToActiveUser()">
+            </div>
+            <button class="chat-send-btn" onclick="sendMessageToActiveUser()">
+              <i class="fa-solid fa-paper-plane"></i>
             </button>
           </div>
         </div>
-
-        <!-- Chat Stream -->
-        <div id="messages-stream" class="chat-body">
-          <!-- Injected dynamically in app.js -->
-        </div>
-
-        <!-- Input Bar -->
-        <div class="chat-footer">
-          <div class="chat-input-wrap">
-            <input type="text" id="chat-message-input" class="chat-input" placeholder="Write a message..." onkeydown="if(event.key==='Enter')sendMessageToActiveUser()">
-          </div>
-          <button class="chat-send-btn" onclick="sendMessageToActiveUser()">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Notifications / Alerts Pane -->
-  <div id="notifications-tab-pane" class="messages-tab-pane notifications-pane" style="background: rgba(20, 20, 22, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px;">
-    <div class="notifications-header">
-      <h3 style="font-size: 1.4rem; font-weight: 800; color: #ffffff;" id="alerts-title">Recent Alerts</h3>
-      <button onclick="clearAllNotifications()" style="background:rgba(255,255,255,0.06); border:none; border-radius:8px; padding:6px 14px; color:#ffffff; font-size:0.85rem; font-weight:600; cursor:pointer; transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.06)'" id="alerts-clear-btn">
-        Clear All
-      </button>
-    </div>
-    <div id="notifications-list" class="notifications-list">
-      <!-- Alerts Injected dynamically in app.js -->
+    <!-- Notifications / Alerts Pane -->
+    <div id="notifications-tab-pane" class="messages-tab-pane notifications-pane" style="background: rgba(20, 20, 22, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px;">
+      <div class="notifications-header">
+        <h3 style="font-size: 1.4rem; font-weight: 800; color: #ffffff;" id="alerts-title">Recent Alerts</h3>
+        <button onclick="clearAllNotifications()" style="background:rgba(255,255,255,0.06); border:none; border-radius:8px; padding:6px 14px; color:#ffffff; font-size:0.85rem; font-weight:600; cursor:pointer; transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.06)'" id="alerts-clear-btn">
+          Clear All
+        </button>
+      </div>
+      <div id="notifications-list" class="notifications-list">
+        <!-- Alerts Injected dynamically in app.js -->
+      </div>
     </div>
   </div>
 </div>
