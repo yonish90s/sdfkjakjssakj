@@ -5075,8 +5075,15 @@ window.closeCreatePostModal = function() {
 };
 
 window.submitPost = async function() {
-  if (!currentUser || !currentUser.email) return;
-  if (!currentGroupId) return;
+  if (!currentUser || !currentUser.email) {
+    showToast('אנא התחבר כדי לפרסם פוסט בפורום', 'error');
+    openAuthModal('login');
+    return;
+  }
+  if (!currentGroupId) {
+    showToast('שגיאה: לא נבחר פורום לפרסום', 'error');
+    return;
+  }
   
   const title = document.getElementById('new-post-title').value.trim();
   const content = document.getElementById('new-post-content').value.trim();
