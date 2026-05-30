@@ -4090,7 +4090,7 @@ model-viewer {
 
 /* ========== COLLAPSIBLE SIDEBAR ========== */
 :root {
-  --sidebar-width: 280px;
+  --sidebar-width: 220px;
   --sidebar-collapsed-width: 55px; /* Reduced from 70px to bring content closer */
 }
 
@@ -4101,9 +4101,10 @@ model-viewer {
   left: 0;
   height: 100vh;
   width: var(--sidebar-width);
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  border-right: 1px solid var(--border-subtle);
+  background: rgba(13, 15, 18, 0.7); /* Luxurious glassmorphism matching premium dark theme */
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   display: flex;
