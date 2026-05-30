@@ -7100,24 +7100,29 @@ body.rtl-layout .navbar-apple {
   right: var(--sidebar-width) !important;
   left: 0 !important;
   width: calc(100% - var(--sidebar-width)) !important;
+  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 body.rtl-layout.sidebar-collapsed .navbar-apple,
 body.rtl-layout.sidebar-collapsed ~ #main-wrapper .navbar-apple {
-  right: calc(var(--sidebar-collapsed-width) + 25px) !important;
+  right: var(--sidebar-collapsed-width) !important;
   left: 0 !important;
-  width: calc(100% - (var(--sidebar-collapsed-width) + 25px)) !important;
+  width: calc(100% - var(--sidebar-collapsed-width)) !important;
+  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 body.rtl-layout #main-wrapper {
-  margin-right: calc(var(--sidebar-width) + 24px) !important;
+  margin-right: var(--sidebar-width) !important;
   margin-left: 0 !important;
-  transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: calc(100% - var(--sidebar-width)) !important;
+  transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 body.rtl-layout #main-wrapper.sidebar-collapsed {
-  margin-right: calc(var(--sidebar-collapsed-width) + 24px) !important;
+  margin-right: var(--sidebar-collapsed-width) !important;
   margin-left: 0 !important;
+  width: calc(100% - var(--sidebar-collapsed-width)) !important;
+  transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 body.rtl-layout .sidebar-toggle {
