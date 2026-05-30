@@ -319,12 +319,26 @@ function toggleNavDropdown(e) {
   }
 }
 
+function toggleMoreDropdown(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById('more-dropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('active');
+  }
+}
+
 // Close dropdown when clicking outside
 window.addEventListener('click', (e) => {
   const dropdown = document.getElementById('nav-dropdown');
   if (dropdown && dropdown.classList.contains('active')) {
     if (!dropdown.contains(e.target)) {
       dropdown.classList.remove('active');
+    }
+  }
+  const moreDropdown = document.getElementById('more-dropdown');
+  if (moreDropdown && moreDropdown.classList.contains('active')) {
+    if (!moreDropdown.contains(e.target)) {
+      moreDropdown.classList.remove('active');
     }
   }
 });
@@ -6202,21 +6216,21 @@ window.renderNotifications = async function() {
     combined = combined.filter(item => item.type === currentAlertFilter);
   }
 
-  // 6. Generate Filter bar HTML
+  // 6. Generate Filter bar HTML (Apple Premium Tab Bar)
   let html = `
-    <div class="notifications-filter-bar" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06);">
-      <button onclick="window.setAlertFilter('all')" style="background:${currentAlertFilter === 'all' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'הכל' : 'All'}</button>
-      <button onclick="window.setAlertFilter('system')" style="background:${currentAlertFilter === 'system' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'התראות מערכת' : 'System Alerts'}</button>
-      <button onclick="window.setAlertFilter('order')" style="background:${currentAlertFilter === 'order' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'הזמנות' : 'Orders'}</button>
-      <button onclick="window.setAlertFilter('offer')" style="background:${currentAlertFilter === 'offer' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:none; border-radius:16px; padding:6px 14px; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; outline:none; transition: background 0.2s;">${isHeb ? 'הצעות מחיר' : 'Offers'}</button>
+    <div class="notifications-filter-bar" style="display:flex; gap:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:4px; width:fit-content; margin-bottom:24px; box-shadow:inset 0 1px 2px rgba(255,255,255,0.05); flex-wrap:wrap;">
+      <button onclick="window.setAlertFilter('all')" style="background:${currentAlertFilter === 'all' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'all' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'all' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הכל' : 'All'}</button>
+      <button onclick="window.setAlertFilter('system')" style="background:${currentAlertFilter === 'system' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'system' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'system' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'התראות מערכת' : 'System Alerts'}</button>
+      <button onclick="window.setAlertFilter('order')" style="background:${currentAlertFilter === 'order' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'order' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'order' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הזמנות' : 'Orders'}</button>
+      <button onclick="window.setAlertFilter('offer')" style="background:${currentAlertFilter === 'offer' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'offer' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'offer' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הצעות מחיר' : 'Offers'}</button>
     </div>
   `;
 
   if (combined.length === 0) {
     html += `
-      <div style="text-align: center; padding: 40px; color: #86868b;">
-        <div style="font-size: 3rem; margin-bottom: 12px; opacity: 0.2;"><i class="fas fa-bell-slash"></i></div>
-        <p style="font-size: 0.95rem;">${isHeb ? 'אין לך התראות חדשות בסינון זה.' : 'No notifications in this filter.'}</p>
+      <div style="text-align: center; padding: 60px 20px; color: #86868b; background:rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius:24px; backdrop-filter:blur(20px);">
+        <div style="font-size: 3.5rem; margin-bottom: 16px; opacity: 0.15; color:#fff;"><i class="fas fa-bell-slash"></i></div>
+        <p style="font-size: 0.95rem; font-weight: 500; color:#86868b; margin:0;">${isHeb ? 'אין לך התראות חדשות בסינון זה.' : 'No new alerts found in this section.'}</p>
       </div>
     `;
     container.innerHTML = html;
@@ -6235,15 +6249,15 @@ window.renderNotifications = async function() {
       if (item.message.includes('🔒')) iconClass = 'fa-lock';
 
       html += `
-        <div class="notification-item ${isUnread ? 'notification-item-unread' : ''}" style="display:flex; align-items:center; gap:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:12px; position:relative;">
-          <div class="notification-icon-wrap" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">
-            <i class="fa-solid ${iconClass}"></i>
+        <div class="notification-item ${isUnread ? 'notification-item-unread' : ''}" style="display:flex; align-items:center; gap:16px; background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:16px; margin-bottom:14px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease; flex-direction: ${isHeb ? 'row-reverse' : 'row'};" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';">
+          <div class="notification-icon-wrap" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; border:1px solid rgba(255,255,255,0.1); box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+            <i class="fa-solid ${iconClass}" style="font-size:1.05rem;"></i>
           </div>
-          <div class="notification-content" style="flex:1; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
-            <div class="notification-text" style="font-size:0.95rem; color:#fff;">${item.message}</div>
-            <div class="notification-time" style="font-size:0.8rem; color:#86868b; margin-top:4px;">${item.displayTime}</div>
+          <div class="notification-content" style="flex:1; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'}; min-width:0;">
+            <div class="notification-text" style="font-size:0.95rem; color:#fff; font-weight:500; line-height:1.4; word-break:break-word;">${item.message}</div>
+            <div class="notification-time" style="font-size:0.8rem; color:#86868b; margin-top:6px; font-weight:500;">${item.displayTime}</div>
           </div>
-          <button class="notification-delete-btn" onclick="window.deleteNotification('${item.id}')" title="Delete" style="background:none; border:none; color:#86868b; cursor:pointer; padding:6px; font-size:1.1rem; flex-shrink:0; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#86868b'">
+          <button class="notification-delete-btn" onclick="window.deleteNotification('${item.id}')" title="${isHeb ? 'מחק' : 'Delete'}" style="background:none; border:none; color:#86868b; cursor:pointer; padding:8px; font-size:1.2rem; flex-shrink:0; transition:all 0.2s;" onmouseover="this.style.color='#ff3b30'; this.style.transform='scale(1.1)';" onmouseout="this.style.color='#86868b'; this.style.transform='scale(1)';">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -6270,70 +6284,76 @@ window.renderNotifications = async function() {
       
       const itemsHtml = data.items ? data.items.map(i => {
         if (typeof i === 'string') {
-          return `<div style="font-size:0.85rem; color:#a1a1aa; padding:4px 0;">&bull; ${i}</div>`;
+          return `<div style="font-size:0.85rem; color:#a1a1aa; padding:4px 0; text-align: ${isHeb ? 'right' : 'left'};">&bull; ${i}</div>`;
         } else {
           return `
-            <div style="display:flex; align-items:center; gap:12px; margin-top:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; align-items:center; gap:12px; margin-top:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06); flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
               ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#1c1c1e; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
-              <div style="font-size:0.85rem; color:#e5e5ea; flex:1;">${i.text}</div>
+              <div style="font-size:0.85rem; color:#e5e5ea; flex:1; text-align: ${isHeb ? 'right' : 'left'};">${i.text}</div>
             </div>
           `;
         }
       }).join('') : '';
 
       const trackerHtml = `
-        <div style="margin-bottom: 24px; background:#000; border-radius:8px; padding:16px; border:1px solid rgba(255,255,255,0.06);">
-          <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Order Tracker</div>
-          <div style="display:flex; align-items:center; justify-content:space-between; position:relative; padding:0 10px;">
+        <div style="margin-bottom: 24px; background:#000; border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; text-align:center;">${isHeb ? 'מעקב משלוח' : 'Order Tracker'}</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; position:relative; padding:0 10px; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
             <div style="position:absolute; top:12px; left:30px; right:30px; height:2px; background:#3a3a3c; z-index:1;"></div>
             <div style="position:absolute; top:12px; left:30px; width:calc(50% - 30px); height:2px; background:${line1Color}; z-index:2; transition: background 0.3s;"></div>
             <div style="position:absolute; top:12px; left:50%; width:calc(50% - 30px); height:2px; background:${line2Color}; z-index:2; transition: background 0.3s;"></div>
             
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
               <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
-              <div style="font-size:0.7rem; color:${step >= 1 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Ordered</div>
+              <div style="font-size:0.7rem; color:${step >= 1 ? '#e5e5ea' : '#86868b'}; font-weight:600;">${isHeb ? 'הוזמן' : 'Ordered'}</div>
             </div>
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
               <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
-              <div style="font-size:0.7rem; color:${step >= 2 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Shipped</div>
+              <div style="font-size:0.7rem; color:${step >= 2 ? '#e5e5ea' : '#86868b'}; font-weight:600;">${isHeb ? 'נשלח לדרך' : 'Shipped'}</div>
             </div>
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
               <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
-              <div style="font-size:0.7rem; color:${step >= 3 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Arrived</div>
+              <div style="font-size:0.7rem; color:${step >= 3 ? '#e5e5ea' : '#86868b'}; font-weight:600;">${isHeb ? 'הגיע ליעד' : 'Arrived'}</div>
             </div>
           </div>
         </div>
       `;
 
       html += `
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'" onclick="const d = this.querySelector('.hub-receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div style="display:flex; align-items:flex-start; gap:12px;">
-              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #34c759, #28cd41); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; flex-shrink:0;">
+        <div class="notification-item" style="background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:18px; margin-bottom:14px; cursor:pointer; box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';" onclick="const d = this.querySelector('.hub-receipt-details'); const c = this.querySelector('.receipt-chevron'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; if(c) c.style.transform = d.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)'">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+            <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:0; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
+              <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #34c759, #28cd41); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; flex-shrink:0; border:1px solid rgba(255,255,255,0.2); box-shadow:0 4px 12px rgba(40,205,65,0.3);">
                 <i class="fas fa-receipt"></i>
               </div>
-              <div style="direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
-                <div style="font-weight:700; color:#fff; font-size:0.95rem; margin-bottom:2px;">Order Confirmation</div>
-                <div style="font-weight:600; color:#a1a1aa; font-size:0.85rem; margin-bottom:2px;">ID: #${item.id.slice(0, 8).toUpperCase()}</div>
-                <div style="font-size:0.85rem; color:#86868b;">${shortTitle}</div>
+              <div style="direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'}; min-width:0; flex:1;">
+                <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:3px;">${isHeb ? 'אישור הזמנה 🧾' : 'Order Confirmation'}</div>
+                <div style="font-weight:600; color:#a1a1aa; font-size:0.82rem; margin-bottom:3px; font-family:monospace;">${isHeb ? 'מזהה' : 'ID'}: #${item.id.slice(0, 8).toUpperCase()}</div>
+                <div style="font-size:0.85rem; color:#86868b; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${shortTitle}</div>
               </div>
             </div>
-            <div style="font-size:0.75rem; color:#86868b; white-space:nowrap; margin-top:2px;">${item.displayTime.split(',')[0]}</div>
+            <div style="display:flex; align-items:center; gap:12px; flex-shrink:0; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
+              <span style="font-size:0.78rem; color:#86868b; font-weight:500; white-space:nowrap;">${item.displayTime.split(',')[0]}</span>
+              <i class="fas fa-chevron-down receipt-chevron" style="color:#86868b; transition:transform 0.3s ease; font-size:0.9rem; padding:4px;"></i>
+            </div>
           </div>
           
-          <div class="hub-receipt-details" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
+          <div class="hub-receipt-details" style="display:none; margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06); direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
             ${trackerHtml}
-            <div style="font-size:0.9rem; color:#e5e5ea; margin-bottom:16px; line-height:1.5;">
-              Hi ${data.customer_name || 'Customer'},<br><br>
-              Thank you for your purchase! We have successfully processed your payment. Below are the details of your transaction:
+            <div style="font-size:0.92rem; color:#e5e5ea; margin-bottom:16px; line-height:1.6; font-weight:450;">
+              ${isHeb ? `שלום ${data.customer_name || 'לקוח'},` : `Hi ${data.customer_name || 'Customer'},`}<br><br>
+              ${isHeb ? 'תודה על הרכישה שלך! התשלום התקבל ועובד בהצלחה. להלן פרטי העסקה המלאים:' : 'Thank you for your purchase! We have successfully processed your payment. Below are the details of your transaction:'}
             </div>
-            <div style="background:#000; border-radius:8px; padding:12px; margin-bottom:16px; border:1px solid #1c1c1e;">
-              <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Order Summary</div>
+            <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:14px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.04);">
+              <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:10px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:6px;">${isHeb ? 'סיכום הזמנה' : 'Order Summary'}</div>
               ${itemsHtml}
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-              <span style="font-weight:600; color:#86868b; font-size:0.9rem;">Total Paid</span>
-              <span style="font-weight:800; color:#34c759; font-size:1.2rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+              <span style="font-weight:600; color:#86868b; font-size:0.9rem;">${isHeb ? 'סה"כ שולם' : 'Total Paid'}</span>
+              <span style="font-weight:800; color:#34c759; font-size:1.25rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
+            </div>
+            <div style="text-align:center; margin-top:16px; border-top:1px dashed rgba(255,255,255,0.06); padding-top:12px;">
+              <p style="font-size:0.78rem; color:#86868b; margin:0; font-weight:500;">${isHeb ? 'העסקה הושלמה בתאריך' : 'Transaction completed on'} ${dateStr}</p>
             </div>
           </div>
         </div>
@@ -6342,22 +6362,24 @@ window.renderNotifications = async function() {
       const data = item.data;
 
       html += `
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; direction: ${isHeb ? 'rtl' : 'ltr'};">
-            <div style="text-align: ${isHeb ? 'right' : 'left'};">
-              <div style="font-size:0.75rem; color:#af52de; font-weight:700; text-transform:uppercase; margin-bottom:4px; letter-spacing:1px;">New Offer</div>
-              <h3 style="font-size:1.05rem; font-weight:700; color:#fff; margin:0;">${data.postTitle}</h3>
+        <div class="notification-item" style="background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:18px; margin-bottom:14px; box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
+            <div style="text-align: ${isHeb ? 'right' : 'left'}; flex:1; min-width:0;">
+              <div style="font-size:0.75rem; color:#af52de; font-weight:700; text-transform:uppercase; margin-bottom:5px; letter-spacing:1px; display:flex; align-items:center; gap:6px; justify-content: ${isHeb ? 'flex-end' : 'flex'};">
+                <i class="fas fa-tag"></i> ${isHeb ? 'הצעת מחיר חדשה 🏷️' : 'New Offer'}
+              </div>
+              <h3 style="font-size:1.1rem; font-weight:700; color:#fff; margin:0; line-height:1.4; word-break:break-word;">${data.postTitle}</h3>
             </div>
-            <div style="font-size:1.2rem; font-weight:800; color:#34c759; margin-left:12px;">$${data.offerAmount}</div>
+            <div style="font-size:1.3rem; font-weight:800; color:#34c759; margin-left:14px; flex-shrink:0; background:rgba(52,199,89,0.12); padding:6px 12px; border-radius:10px; border:1px solid rgba(52,199,89,0.2); box-shadow:0 4px 10px rgba(52,199,89,0.15);">${isHeb ? '₪' : '$'}${data.offerAmount}</div>
           </div>
-          <div style="font-size:0.9rem; color:#a1a1aa; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.04); padding:12px; border-radius:8px; margin-bottom:12px; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'};">
-            <strong>From:</strong> ${data.buyerName} (${data.buyerEmail})<br>
-            ${data.message ? `<div style="margin-top:6px; font-style:italic;">"${data.message}"</div>` : ''}
-            ${data.signatureData ? `<div style="margin-top:12px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:8px;"><strong style="font-size:0.8rem;">Contract Signature:</strong><br><img src="${data.signatureData}" style="max-height:60px; background:#fff; border-radius:4px; margin-top:4px;"></div>` : ''}
+          <div style="font-size:0.9rem; color:#a1a1aa; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.04); padding:14px; border-radius:12px; margin-bottom:14px; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'}; line-height:1.5; font-weight:450;">
+            <strong style="color:#fff;">${isHeb ? 'שולח:' : 'From:'}</strong> ${data.buyerName} (${data.buyerEmail})<br>
+            ${data.message ? `<div style="margin-top:8px; font-style:italic; color:#fff; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);">"${data.message}"</div>` : ''}
+            ${data.signatureData ? `<div style="margin-top:14px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:10px;"><strong style="font-size:0.8rem; color:#fff;">${isHeb ? 'חתימה על החוזה:' : 'Contract Signature:'}</strong><br><img src="${data.signatureData}" style="max-height:75px; background:#fff; border-radius:6px; margin-top:6px; border:1px solid rgba(255,255,255,0.1); padding:4px; box-shadow:0 4px 10px rgba(0,0,0,0.15);"></div>` : ''}
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-            <div style="font-size:0.8rem; color:#86868b;">${item.displayTime}</div>
-            <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:0.85rem; font-weight:600; cursor:pointer; transition: background 0.2s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">Contact Buyer</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
+            <div style="font-size:0.8rem; color:#86868b; font-weight:500;">${item.displayTime}</div>
+            <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,113,227,0.3); transition: all 0.2s;" onmouseover="this.style.background='#0077ed'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0071e3'; this.style.transform='translateY(0)';">${isHeb ? 'צור קשר עם הקונה 💬' : 'Contact Buyer'}</button>
           </div>
         </div>
       `;
