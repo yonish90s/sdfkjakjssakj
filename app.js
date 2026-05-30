@@ -6922,3 +6922,355 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// =====================================================================
+// BOTTOM DRAWER MESSAGING & FORUMS SYSTEM
+// =====================================================================
+let activeDrawerChatUserId = null;
+let drawerChatRefreshInterval = null;
+
+window.toggleMessagesDrawer = function() {
+  const drawer = document.getElementById('messages-drawer');
+  if (!drawer) return;
+  
+  if (drawer.classList.contains('active')) {
+    drawer.classList.remove('active');
+    if (drawerChatRefreshInterval) {
+      clearInterval(drawerChatRefreshInterval);
+      drawerChatRefreshInterval = null;
+    }
+  } else {
+    // Close other drawers
+    const cart = document.getElementById('cart-drawer');
+    if (cart) cart.classList.remove('active');
+    const saved = document.getElementById('saved-items-drawer');
+    if (saved) saved.classList.remove('active');
+    const forums = document.getElementById('forums-drawer');
+    if (forums) forums.classList.remove('active');
+    
+    drawer.classList.add('active');
+    renderDrawerChatUsersList();
+    
+    // Start background refresh
+    if (drawerChatRefreshInterval) clearInterval(drawerChatRefreshInterval);
+    drawerChatRefreshInterval = setInterval(async () => {
+      if (drawer.classList.contains('active')) {
+        await renderDrawerChatUsersList();
+        if (activeDrawerChatUserId) {
+          await syncDrawerActiveChatSilent(activeDrawerChatUserId);
+        }
+      } else {
+        clearInterval(drawerChatRefreshInterval);
+        drawerChatRefreshInterval = null;
+      }
+    }, 4000);
+  }
+};
+
+async function renderDrawerChatUsersList() {
+  const container = document.getElementById('drawer-messages-user-list');
+  if (!container) return;
+  
+  const users = await fetchRealChatUsers();
+  const searchInput = document.getElementById('drawer-chat-search');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  
+  let html = '';
+  for (const u of users) {
+    if (query && !u.name.toLowerCase().includes(query)) continue;
+    
+    // Check unread count
+    const roomId = [currentUser?.email, u.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+    const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+    const unreadCount = localMsgs.filter(m => m.senderEmail === u.id && !m.read).length;
+    
+    const isSelected = activeDrawerChatUserId === u.id;
+    
+    html += `
+      <div onclick="selectDrawerChatUser('${u.id}')" style="display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; transition:background 0.2s; background:${isSelected ? 'rgba(255,149,0,0.1)' : 'transparent'}; border-bottom:1px solid rgba(255,255,255,0.03);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='${isSelected ? 'rgba(255,149,0,0.1)' : 'transparent'}'">
+        <div style="position:relative;">
+          <img src="${u.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+          <span style="position:absolute; bottom:0; right:0; width:10px; height:10px; background:#34c759; border:2px solid #141416; border-radius:50%;"></span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; color:#fff; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
+          <div style="font-size:0.75rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${unreadCount > 0 ? `${unreadCount} new messages` : 'Tap to start chatting'}</div>
+        </div>
+        ${unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; font-size:0.75rem; font-weight:700; padding:2px 6px; border-radius:10px;">${unreadCount}</span>` : ''}
+      </div>
+    `;
+  }
+  
+  if (!html) {
+    container.innerHTML = `<div style="text-align:center; padding:30px; color:#86868b; font-size:0.85rem;">No active conversations found</div>`;
+  } else {
+    container.innerHTML = html;
+  }
+}
+
+window.filterDrawerChatUsers = function() {
+  renderDrawerChatUsersList();
+};
+
+window.selectDrawerChatUser = async function(userId) {
+  activeDrawerChatUserId = userId;
+  
+  // Show active pane, hide sidebar list on mobile layout inside drawer
+  const sidebar = document.getElementById('drawer-chat-users-sidebar');
+  const activePane = document.getElementById('drawer-chat-active-pane');
+  const backBtn = document.getElementById('drawer-chat-back-btn');
+  
+  if (sidebar && activePane && backBtn) {
+    sidebar.style.display = 'none';
+    activePane.style.display = 'flex';
+    backBtn.style.display = 'flex';
+  }
+  
+  // Load user details
+  const users = await fetchRealChatUsers();
+  const targetUser = users.find(u => u.id === userId);
+  if (targetUser) {
+    document.getElementById('drawer-chat-active-avatar').src = targetUser.avatar;
+    document.getElementById('drawer-chat-active-name').textContent = targetUser.name;
+  }
+  
+  // Sync messages
+  const roomId = [currentUser?.email, userId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+  
+  // Mark as read
+  localMsgs.forEach(m => {
+    if (m.senderEmail === userId) m.read = true;
+  });
+  localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMsgs));
+  
+  renderDrawerMessagesStream(localMsgs);
+  
+  // Update badges
+  window.updateMessagesBadge();
+  renderDrawerChatUsersList();
+  
+  // Load from Firestore
+  if (window.fbGetDoc && window.fbDb && window.fbDoc) {
+    try {
+      const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+      const docSnap = await window.fbGetDoc(chatDocRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        let dbMsgs = data.messages || [];
+        dbMsgs.forEach(m => {
+          if (m.senderEmail === userId) m.read = true;
+        });
+        localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMsgs));
+        renderDrawerMessagesStream(dbMsgs);
+        
+        await window.fbSetDoc(chatDocRef, {
+          participants: [currentUser.email, userId],
+          messages: dbMsgs,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        window.updateMessagesBadge();
+      }
+    } catch(e) {}
+  }
+};
+
+window.showDrawerUsersList = function() {
+  activeDrawerChatUserId = null;
+  const sidebar = document.getElementById('drawer-chat-users-sidebar');
+  const activePane = document.getElementById('drawer-chat-active-pane');
+  const backBtn = document.getElementById('drawer-chat-back-btn');
+  
+  if (sidebar && activePane && backBtn) {
+    sidebar.style.display = 'flex';
+    activePane.style.display = 'none';
+    backBtn.style.display = 'none';
+  }
+  renderDrawerChatUsersList();
+};
+
+function renderDrawerMessagesStream(messages) {
+  const container = document.getElementById('drawer-messages-stream');
+  if (!container) return;
+  
+  let html = '';
+  messages.forEach(m => {
+    const isMe = m.senderEmail === currentUser?.email;
+    html += `
+      <div style="align-self:${isMe ? 'flex-end' : 'flex-start'}; max-width:70%; display:flex; flex-direction:column; gap:4px;">
+        <div style="background:${isMe ? '#ff9500' : '#1c1c1e'}; color:#fff; padding:10px 14px; border-radius:${isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}; font-size:0.9rem; line-height:1.4; word-break:break-word;">
+          ${m.text}
+        </div>
+        <div style="font-size:0.7rem; color:#86868b; text-align:${isMe ? 'right' : 'left'}; padding:0 4px;">
+          ${m.timestamp ? new Date(m.timestamp).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html || `<div style="text-align:center; padding:40px; color:#86868b; font-size:0.85rem;">Say hi to start the conversation! 👋</div>`;
+  container.scrollTop = container.scrollHeight;
+}
+
+async function syncDrawerActiveChatSilent(userId) {
+  if (!currentUser || !currentUser.email || !window.fbGetDoc || !window.fbDb) return;
+  const roomId = [currentUser.email, userId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  try {
+    const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+    const docSnap = await window.fbGetDoc(chatDocRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      let dbMessages = data.messages || [];
+      const currentLocal = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+      
+      if (dbMessages.length !== currentLocal.length) {
+        dbMessages.forEach(m => {
+          if (m.senderEmail === userId) m.read = true;
+        });
+        localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
+        renderDrawerMessagesStream(dbMessages);
+        
+        await window.fbSetDoc(chatDocRef, {
+          participants: [currentUser.email, userId],
+          messages: dbMessages,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        
+        window.updateMessagesBadge();
+      }
+    }
+  } catch(e) {}
+}
+
+window.sendDrawerMessage = async function() {
+  const input = document.getElementById('drawer-chat-message-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || !activeDrawerChatUserId || !currentUser) return;
+  
+  input.value = '';
+  
+  const roomId = [currentUser.email, activeDrawerChatUserId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+  
+  const newMsg = {
+    id: Date.now() + Math.random().toString(),
+    senderEmail: currentUser.email,
+    senderName: currentUser.name || currentUser.email.split('@')[0],
+    text: text,
+    timestamp: new Date().toISOString(),
+    read: false
+  };
+  
+  localMsgs.push(newMsg);
+  localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMsgs));
+  renderDrawerMessagesStream(localMsgs);
+  
+  // Write to Firestore
+  if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+    try {
+      const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+      await window.fbSetDoc(chatDocRef, {
+        participants: [currentUser.email, activeDrawerChatUserId],
+        messages: localMsgs,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch(err) {
+      console.error("Firestore message send error:", err);
+    }
+  }
+};
+
+// =====================================================================
+// FORUMS FAVORITES DRAWER LOGIC
+// =====================================================================
+window.toggleForumsDrawer = function() {
+  const drawer = document.getElementById('forums-drawer');
+  if (!drawer) return;
+  
+  if (drawer.classList.contains('active')) {
+    drawer.classList.remove('active');
+  } else {
+    // Close other drawers
+    const cart = document.getElementById('cart-drawer');
+    if (cart) cart.classList.remove('active');
+    const saved = document.getElementById('saved-items-drawer');
+    if (saved) saved.classList.remove('active');
+    const messages = document.getElementById('messages-drawer');
+    if (messages) messages.classList.remove('active');
+    
+    drawer.classList.add('active');
+    renderDrawerForumsList();
+  }
+};
+
+window.toggleFavoriteForum = function(e, groupId) {
+  if (e) e.stopPropagation();
+  let favorites = JSON.parse(localStorage.getItem('favorite_forums') || '[]');
+  if (favorites.includes(groupId)) {
+    favorites = favorites.filter(id => id !== groupId);
+  } else {
+    favorites.push(groupId);
+  }
+  localStorage.setItem('favorite_forums', JSON.stringify(favorites));
+  renderDrawerForumsList();
+};
+
+function renderDrawerForumsList() {
+  const container = document.getElementById('drawer-forums-list');
+  if (!container) return;
+  
+  const favorites = JSON.parse(localStorage.getItem('favorite_forums') || '[]');
+  
+  // Sort predefined groups so favorites show up first
+  const sortedGroups = [...PREDEFINED_GROUPS].sort((a, b) => {
+    const aFav = favorites.includes(a.id) ? 1 : 0;
+    const bFav = favorites.includes(b.id) ? 1 : 0;
+    return bFav - aFav; // Favorites first
+  });
+  
+  let html = '';
+  sortedGroups.forEach(g => {
+    const isFav = favorites.includes(g.id);
+    html += `
+      <div onclick="selectDrawerForum('${g.id}')" style="background:#141416; border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; cursor:pointer; position:relative; transition:all 0.2s; display:flex; flex-direction:column; gap:10px;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)';">
+        <!-- Favorite Star Button -->
+        <button onclick="toggleFavoriteForum(event, '${g.id}')" style="position:absolute; top:12px; right:12px; background:none; border:none; color:${isFav ? '#ffc107' : '#48484a'}; cursor:pointer; font-size:1.15rem; transition:color 0.2s;" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">
+          <i class="${isFav ? 'fas' : 'far'} fa-star"></i>
+        </button>
+        
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:${g.color || '#0071e3'}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem;">
+            <i class="fas ${g.icon || 'fa-comments'}"></i>
+          </div>
+          <div style="flex:1; min-width:0; padding-right:20px;">
+            <div style="font-weight:700; color:#fff; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.name}</div>
+            <div style="font-size:0.75rem; color:#86868b; margin-top:2px;">Predefined Forum</div>
+          </div>
+        </div>
+        <p style="font-size:0.8rem; color:#a1a1aa; line-height:1.4; margin:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; height:36px;">
+          ${g.desc}
+        </p>
+        <div style="margin-top:auto; font-size:0.8rem; font-weight:600; color:#ff9500; display:flex; align-items:center; gap:4px;">
+          <span>Enter Forum</span> <i class="fas fa-chevron-right" style="font-size:0.7rem;"></i>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+window.selectDrawerForum = function(groupId) {
+  // Close drawer
+  toggleForumsDrawer();
+  
+  // Navigate to forums page
+  showPage('forum');
+  
+  // Switch active forum group
+  if (window.switchForumGroup) {
+    window.switchForumGroup(groupId);
+  }
+};
+
