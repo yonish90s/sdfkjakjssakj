@@ -4520,13 +4520,30 @@ function toggle3DMode() {
 function toggleSidebar() {
   const sidebar = document.getElementById('app-sidebar');
   const mainWrapper = document.getElementById('main-wrapper');
-  const toggleBtn = document.getElementById('sidebar-toggle').querySelector('i');
 
   sidebar.classList.toggle('collapsed');
   mainWrapper.classList.toggle('sidebar-collapsed');
 
   const isCollapsed = sidebar.classList.contains('collapsed');
   localStorage.setItem('sidebarCollapsed', isCollapsed);
+
+  // Update old sidebar-toggle icon if it exists
+  const oldToggleBtn = document.getElementById('sidebar-toggle');
+  if (oldToggleBtn) {
+    const icon = oldToggleBtn.querySelector('i');
+    if (icon) {
+      if (isCollapsed) {
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-left');
+      } else {
+        icon.classList.remove('fa-chevron-left');
+        icon.classList.add('fa-chevron-right');
+      }
+    }
+  }
+
+  // Update navbar hamburger icon
+  updateHamburgerIcon(isCollapsed);
 
   // Close all submenus when collapsing
   if (isCollapsed) {
@@ -4541,14 +4558,31 @@ function toggleSidebar() {
       if (el) el.style.transform = 'rotate(0deg)';
     });
   }
+}
 
-  // Update toggle icon
+function updateHamburgerIcon(isCollapsed) {
+  const btn = document.getElementById('navbar-sidebar-toggle');
+  const svg = document.getElementById('sidebar-hamburger-icon');
+  if (!btn || !svg) return;
+
   if (isCollapsed) {
-    toggleBtn.classList.remove('fa-chevron-right');
-    toggleBtn.classList.add('fa-chevron-left');
+    // Show "open sidebar" icon — 3 stacked lines but shifted, hinting the sidebar is hidden
+    svg.innerHTML = `
+      <rect y="3" width="20" height="2" rx="1" fill="#0071e3"/>
+      <rect y="9" width="20" height="2" rx="1" fill="#0071e3"/>
+      <rect y="15" width="20" height="2" rx="1" fill="#0071e3"/>
+    `;
+    btn.style.background = 'rgba(0, 113, 227, 0.12)';
+    btn.style.border = '1px solid rgba(0, 113, 227, 0.3)';
   } else {
-    toggleBtn.classList.remove('fa-chevron-left');
-    toggleBtn.classList.add('fa-chevron-right');
+    // Show standard hamburger — sidebar is open
+    svg.innerHTML = `
+      <rect y="3" width="20" height="2" rx="1" fill="#a1a1a6"/>
+      <rect y="9" width="14" height="2" rx="1" fill="#a1a1a6"/>
+      <rect y="15" width="20" height="2" rx="1" fill="#a1a1a6"/>
+    `;
+    btn.style.background = 'transparent';
+    btn.style.border = 'none';
   }
 }
 
@@ -4567,6 +4601,9 @@ function toggleSidebar() {
     toggleBtn.classList.remove('fa-chevron-left');
     toggleBtn.classList.add('fa-chevron-right');
   }
+
+  // Set initial hamburger state (sidebar starts expanded)
+  updateHamburgerIcon(false);
 })();
 
 // ========== LOCATION & WEATHER WIDGET ==========

@@ -318,6 +318,15 @@
             <span id="nav-text-graphs">Graphs</span>
           </button>
 
+          <!-- Sidebar Toggle Hamburger -->
+          <button id="navbar-sidebar-toggle" class="navbar-sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar" style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <svg id="sidebar-hamburger-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect y="3" width="20" height="2" rx="1" fill="#a1a1a6"/>
+              <rect y="9" width="14" height="2" rx="1" fill="#a1a1a6"/>
+              <rect y="15" width="20" height="2" rx="1" fill="#a1a1a6"/>
+            </svg>
+          </button>
+
           <!-- SOKI Articles Logo -->
           <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <span class="soki-logo-text" style="font-weight: 900; font-size: 1.25rem; color: #fff; text-transform: uppercase; letter-spacing: -0.02em;">SOKI <span id="nav-logo-subtext" style="font-weight: 500; color: #a1a1a6; font-size: 0.95rem; text-transform: none; margin-left: 2px;">Articles</span></span>
@@ -2260,54 +2269,7 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- ====== AUTH MODAL ====== -->
-<div id="auth-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
-  <div style="background:#09090b;border:1px solid #27272a;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;position:relative;margin:16px;">
-    <button onclick="closeAuthModal()" style="position:absolute;top:16px;left:16px;background:none;border:none;color:#71717a;font-size:1.4rem;cursor:pointer;">&#x2715;</button>
-    <div id="modal-otp-screen" style="display:none;">
-      <h2 style="color:#fafafa;font-size:1.4rem;font-weight:700;margin-bottom:4px;">Email Verification 📧</h2>
-      <p id="modal-otp-subtitle" style="color:#71717a;font-size:0.875rem;margin-bottom:24px;">We sent a 6-digit code to your email</p>
-      <div style="display:flex;gap:8px;justify-content:center;direction:ltr;margin-bottom:20px;">
-        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
-        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
-        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
-        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
-        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
-        <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
-      </div>
-      <div id="modal-otp-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;color:#f87171;font-size:0.8rem;margin-bottom:12px;"></div>
-      <button id="modal-btn-verify" onclick="modalVerifyOtp()" style="width:100%;background:#fafafa;color:#09090b;font-weight:700;font-size:0.875rem;padding:12px;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px;">Verify Code ✓</button>
-      <div style="text-align:center;font-size:0.8rem;color:#52525b;">Didn't receive? <button id="modal-btn-resend" onclick="modalResendOtp()" style="background:none;border:none;color:#a1a1aa;cursor:pointer;text-decoration:underline;font-family:inherit;font-size:inherit;">Resend</button> <span id="modal-otp-timer"></span></div>
-      <button onclick="modalShowForm()" style="display:block;width:100%;text-align:center;margin-top:16px;font-size:0.85rem;color:#71717a;background:none;border:none;cursor:pointer;text-decoration:underline;">&larr; Back</button>
-    </div>
-    <div id="modal-auth-form">
-      <h2 id="modal-title" style="color:#fafafa;font-size:1.4rem;font-weight:700;margin-bottom:4px;">Welcome Back</h2>
-      <p id="modal-subtitle" style="color:#71717a;font-size:0.875rem;margin-bottom:20px;">Enter your details to continue</p>
-      <div style="display:flex;background:#18181b;border-radius:10px;padding:3px;margin-bottom:20px;">
-        <button id="modal-tab-login" onclick="openAuthModal('login')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;background:#fafafa;color:#09090b;font-family:inherit;">Login</button>
-        <button id="modal-tab-signup" onclick="openAuthModal('signup')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;background:transparent;color:#71717a;font-family:inherit;">Sign Up</button>
-      </div>
-      <div id="modal-field-name" style="display:none;margin-bottom:14px;">
-        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Full Name</label>
-        <input type="text" id="modal-input-name" placeholder="John Doe" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Email</label>
-        <input type="email" id="modal-input-email" placeholder="you@example.com" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;direction:ltr;text-align:left;box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Password</label>
-        <input type="password" id="modal-input-pw" placeholder="••••••••" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;box-sizing:border-box;">
-      </div>
-      <div id="modal-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;color:#f87171;font-size:0.8rem;margin-bottom:12px;"></div>
-      <button id="modal-btn-submit" onclick="modalSubmit()" style="width:100%;background:#fafafa;color:#09090b;font-weight:700;font-size:0.875rem;padding:12px;border:none;border-radius:12px;cursor:pointer;margin-bottom:14px;">Login &rarr;</button>
-      <div style="display:flex;align-items:center;margin:14px 0;color:#3f3f46;font-size:0.75rem;"><div style="flex:1;height:1px;background:#27272a;"></div><span style="margin:0 10px;">OR</span><div style="flex:1;height:1px;background:#27272a;"></div></div>
-      <button onclick="modalGoogleLogin()" style="width:100%;background:#18181b;color:#fafafa;border:1px solid #27272a;border-radius:12px;padding:12px;font-weight:600;font-size:0.875rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;"> Continue with Google
-      </button>
-    </div>
-  </div>
-</div>
+<!-- AUTH MODAL IS MOVED OUTSIDE MAIN-WRAPPER (see near </body>) -->
 
 <script type="module">
   import { auth, db } from './firebase-config.js';
@@ -2529,5 +2491,55 @@
   </script>
 
   <script src="app.js?v=6"></script>
+
+  <!-- ====== AUTH MODAL (global, outside main-wrapper so position:fixed is never broken by parent transforms) ====== -->
+  <div id="auth-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);">
+    <div style="background:#09090b;border:1px solid #27272a;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;position:relative;margin:16px;">
+      <button onclick="closeAuthModal()" style="position:absolute;top:16px;left:16px;background:none;border:none;color:#71717a;font-size:1.4rem;cursor:pointer;">&#x2715;</button>
+      <div id="modal-otp-screen" style="display:none;">
+        <h2 style="color:#fafafa;font-size:1.4rem;font-weight:700;margin-bottom:4px;">Email Verification 📧</h2>
+        <p id="modal-otp-subtitle" style="color:#71717a;font-size:0.875rem;margin-bottom:24px;">We sent a 6-digit code to your email</p>
+        <div style="display:flex;gap:8px;justify-content:center;direction:ltr;margin-bottom:20px;">
+          <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+          <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+          <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+          <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+          <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+          <input type="text" maxlength="1" class="modal-otp-digit" inputmode="numeric" style="width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;background:#18181b;border:1px solid #27272a;border-radius:10px;color:#fafafa;outline:none;font-family:inherit;">
+        </div>
+        <div id="modal-otp-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;color:#f87171;font-size:0.8rem;margin-bottom:12px;"></div>
+        <button id="modal-btn-verify" onclick="modalVerifyOtp()" style="width:100%;background:#fafafa;color:#09090b;font-weight:700;font-size:0.875rem;padding:12px;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px;">Verify Code ✓</button>
+        <div style="text-align:center;font-size:0.8rem;color:#52525b;">Didn't receive? <button id="modal-btn-resend" onclick="modalResendOtp()" style="background:none;border:none;color:#a1a1aa;cursor:pointer;text-decoration:underline;font-family:inherit;font-size:inherit;">Resend</button> <span id="modal-otp-timer"></span></div>
+        <button onclick="modalShowForm()" style="display:block;width:100%;text-align:center;margin-top:16px;font-size:0.85rem;color:#71717a;background:none;border:none;cursor:pointer;text-decoration:underline;">&larr; Back</button>
+      </div>
+      <div id="modal-auth-form">
+        <h2 id="modal-title" style="color:#fafafa;font-size:1.4rem;font-weight:700;margin-bottom:4px;">Welcome Back</h2>
+        <p id="modal-subtitle" style="color:#71717a;font-size:0.875rem;margin-bottom:20px;">Enter your details to continue</p>
+        <div style="display:flex;background:#18181b;border-radius:10px;padding:3px;margin-bottom:20px;">
+          <button id="modal-tab-login" onclick="openAuthModal('login')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;background:#fafafa;color:#09090b;font-family:inherit;">Login</button>
+          <button id="modal-tab-signup" onclick="openAuthModal('signup')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;background:transparent;color:#71717a;font-family:inherit;">Sign Up</button>
+        </div>
+        <div id="modal-field-name" style="display:none;margin-bottom:14px;">
+          <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Full Name</label>
+          <input type="text" id="modal-input-name" placeholder="John Doe" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Email</label>
+          <input type="email" id="modal-input-email" placeholder="you@example.com" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;direction:ltr;text-align:left;box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.8rem;color:#a1a1aa;margin-bottom:6px;">Password</label>
+          <input type="password" id="modal-input-pw" placeholder="••••••••" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 14px;color:#fafafa;font-size:0.875rem;outline:none;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div id="modal-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;color:#f87171;font-size:0.8rem;margin-bottom:12px;"></div>
+        <button id="modal-btn-submit" onclick="modalSubmit()" style="width:100%;background:#fafafa;color:#09090b;font-weight:700;font-size:0.875rem;padding:12px;border:none;border-radius:12px;cursor:pointer;margin-bottom:14px;">Login &rarr;</button>
+        <div style="display:flex;align-items:center;margin:14px 0;color:#3f3f46;font-size:0.75rem;"><div style="flex:1;height:1px;background:#27272a;"></div><span style="margin:0 10px;">OR</span><div style="flex:1;height:1px;background:#27272a;"></div></div>
+        <button onclick="modalGoogleLogin()" style="width:100%;background:#18181b;color:#fafafa;border:1px solid #27272a;border-radius:12px;padding:12px;font-weight:600;font-size:0.875rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;"> Continue with Google
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
