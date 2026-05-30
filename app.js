@@ -4583,6 +4583,13 @@ function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
   currentLocation = { id, nameHeb, lat, lon, capitalHeb };
   localStorage.setItem('userLocation', JSON.stringify(currentLocation));
 
+  // Toggle RTL layout dynamically on body based on selection
+  if (id === 'Israel') {
+    document.body.classList.add('rtl-layout');
+  } else {
+    document.body.classList.remove('rtl-layout');
+  }
+
   // Update UI text
   const textEl = document.getElementById('selected-location-text');
   if (textEl) textEl.textContent = nameHeb;
@@ -4700,6 +4707,13 @@ async function autoDetectLocation() {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply RTL layout on startup if saved location is Hebrew/Israel
+  if (currentLocation && currentLocation.id === 'Israel') {
+    document.body.classList.add('rtl-layout');
+  } else {
+    document.body.classList.remove('rtl-layout');
+  }
+
   const textEl = document.getElementById('selected-location-text');
   if (textEl) textEl.textContent = currentLocation.nameHeb;
   fetchWeatherForCapital();
