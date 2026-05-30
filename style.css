@@ -4219,9 +4219,14 @@ model-viewer {
   text-align: center;
 }
 
-.sidebar-link:hover, .sidebar-link.active {
-  background: rgba(0, 113, 227, 0.1);
-  color: var(--primary);
+.sidebar-link:hover {
+  background: rgba(245, 158, 11, 0.05);
+  color: #f59e0b;
+}
+
+.sidebar-link.active {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
 }
 
 .sidebar.collapsed .sidebar-inner {
@@ -4445,14 +4450,25 @@ body.dark-theme .sidebar-link i {
   color: #f5f5f7 !important;
 }
 
-body.dark-theme .sidebar-link:hover, 
+body.dark-theme .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #fff !important;
+}
+
 body.dark-theme .sidebar-link.active {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #0071e3 !important;
+  background: rgba(245, 158, 11, 0.1) !important; /* Soft premium gold background */
+  color: #f59e0b !important; /* Golden active text */
+  border-left: 3px solid #f59e0b !important; /* Elegant gold indicator bar on the left */
+}
+
+/* Position indicator bar on the right side inside RTL mode */
+body.rtl-layout .sidebar-link.active {
+  border-left: none !important;
+  border-right: 3px solid #f59e0b !important;
 }
 
 body.dark-theme .sidebar-link.active i {
-  color: #0071e3 !important;
+  color: #f59e0b !important; /* Golden active icon */
 }
 
 body.dark-theme .sidebar-divider {
