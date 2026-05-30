@@ -484,7 +484,7 @@ body.dark-theme .apple-dropdown-content.mega-menu .apple-dropdown-item:hover {
   max-width: 100%; 
   width: 100%;
   margin: 0 auto; 
-  padding: 60px 5% 100px; 
+  padding: 60px 24px 100px; 
   box-sizing: border-box;
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -4309,15 +4309,15 @@ model-viewer {
 
 /* Main Content Adjustment */
 #main-wrapper {
-  margin-left: var(--sidebar-width);
+  margin-left: calc(var(--sidebar-width) + 24px); /* Premium 24px safety gap from the sidebar */
   transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  width: calc(100% - var(--sidebar-width));
+  width: calc(100% - (var(--sidebar-width) + 24px));
   padding-top: 44px; /* Space for the fixed navbar */
 }
 
 #main-wrapper.sidebar-collapsed {
-  margin-left: calc(var(--sidebar-collapsed-width) + 25px); /* Added 25px gap from the icons/button */
-  width: calc(100% - (var(--sidebar-collapsed-width) + 25px));
+  margin-left: calc(var(--sidebar-collapsed-width) + 24px); /* Premium 24px safety gap when collapsed */
+  width: calc(100% - (var(--sidebar-collapsed-width) + 24px));
 }
 
 @media (max-width: 1024px) {
@@ -4327,6 +4327,11 @@ model-viewer {
   .sidebar.active {
     transform: translateX(0);
     width: 280px;
+  }
+  .sidebar.active ~ #main-wrapper,
+  .sidebar.active + #main-wrapper {
+    margin-left: calc(280px + 24px) !important;
+    width: calc(100% - (280px + 24px)) !important;
   }
   #main-wrapper {
     margin-left: 0 !important;
