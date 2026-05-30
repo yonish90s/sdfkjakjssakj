@@ -1544,102 +1544,127 @@ body.dark-theme .toast {
 }
 /* ========== PDF STORE GRID ========== */
 .pdf-store-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
   padding: 0 24px 60px;
-  max-width: 900px;
-  margin-left: 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pdf-card {
-  background: #1c1c1e; /* Deep black rectangle */
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 0;
+  background: rgba(28, 28, 30, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 14px;
   display: flex;
+  flex-direction: column;
   align-items: stretch;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
-  text-align: right;
-  height: 90px;
+  height: 330px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .pdf-card:hover {
-  background: #2c2c2e;
-  transform: translateX(-8px);
-  border-color: rgba(0, 113, 227, 0.4);
+  background: rgba(44, 44, 46, 0.7);
+  transform: translateY(-6px);
+  border-color: rgba(0, 113, 227, 0.5);
+  box-shadow: 0 15px 35px rgba(0, 113, 227, 0.2);
 }
 
 .pdf-card-icon {
-  width: 25%;
-  background: rgba(255,255,255,0.05);
-  border-radius: 0;
+  width: 100%;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 3rem;
   flex-shrink: 0;
-  margin-left: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pdf-card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pdf-card:hover .pdf-card-icon img {
+  transform: scale(1.06);
+}
+
+.pdf-card-info-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.pdf-card-type-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0071e3;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .pdf-card-title {
-  color: var(--text-main);
+  color: #ffffff;
   font-weight: 800;
-  font-size: 1.2rem;
-  text-transform: lowercase;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  margin: 1px 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pdf-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .pdf-card-date {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.pdf-card-ticker-wrapper {
-  margin-right: auto;
+  color: #86868b;
+  font-size: 0.76rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.pdf-card-ticker-img {
-  width: 50px;
-  height: 30px;
-  object-fit: contain;
-  background: #fff;
-  border-radius: 4px;
-  padding: 2px;
+  gap: 4px;
 }
 
 .pdf-card-bookmark-btn {
   background: transparent;
   border: none;
   color: #86868b;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 8px;
-  transition: all 0.2s;
+  padding: 4px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.pdf-card-bookmark-btn:hover {
-  color: #f9b233;
-  transform: scale(1.1);
-}
+.pdf-card-bookmark-btn:hover,
 .pdf-card-bookmark-btn.active {
   color: #f9b233 !important;
-  transform: scale(1.1);
-}
-
-
-.pdf-card-icon {
-  font-size: 2.8rem;
-  margin-bottom: 4px;
+  transform: scale(1.15);
 }
 
 .pdf-card-type {

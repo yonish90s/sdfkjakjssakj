@@ -1966,19 +1966,24 @@ function renderPdfStoreGrid() {
     return `
       <div class="pdf-card" onclick="showProductDetailById('${item.id}')">
         <div class="pdf-card-icon">
-          ${mainImg ? `<img src="${mainImg}" style="width:100%; height:100%; object-fit:cover; border-radius:0;" alt="thumb" />` : icon}
+          ${mainImg ? `<img src="${mainImg}" alt="${escHtml(item.title)}" />` : `<span style="font-size:3rem;">${icon}</span>`}
         </div>
-        <div style="display:flex; flex-direction:column; gap:2px; flex-grow:1; text-align: center; padding: 12px 16px; justify-content: center;">
-          <div class="pdf-card-title">${escHtml(item.title)}</div>
-          <div class="pdf-card-date">${item.date ? new Date(item.date).toLocaleDateString('en-US') : 'Recently uploaded'}</div>
-        </div>
-        <div class="pdf-card-ticker-wrapper" style="padding: 12px 20px 12px 0; display: flex; align-items: center;">
-          ${isUserLoggedIn ? `
-            <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
-                    onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)">
-              <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
-            </button>
-          ` : ''}
+        <div class="pdf-card-info-wrap">
+          <span class="pdf-card-type-tag">${escHtml(item.type || 'Analysis')}</span>
+          <div class="pdf-card-title" title="${escHtml(item.title)}">${escHtml(item.title)}</div>
+          
+          <div class="pdf-card-footer">
+            <div class="pdf-card-date">
+              <i class="far fa-calendar-alt" style="margin-right:4px;"></i>
+              ${item.date ? new Date(item.date).toLocaleDateString('en-US') : 'Recently uploaded'}
+            </div>
+            ${isUserLoggedIn ? `
+              <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
+                      onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)">
+                <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+              </button>
+            ` : ''}
+          </div>
         </div>
       </div>
     `;
