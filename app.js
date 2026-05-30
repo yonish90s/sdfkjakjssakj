@@ -2325,6 +2325,20 @@ function toggleSavedDrawer(type) {
   if (drawer.classList.contains('active') && (currentSavedDrawerType === type || !type)) {
     drawer.classList.remove('active');
   } else {
+    // Close other drawers
+    const cart = document.getElementById('cart-drawer');
+    if (cart) cart.classList.remove('active');
+    const forums = document.getElementById('forums-drawer');
+    if (forums) forums.classList.remove('active');
+    const messages = document.getElementById('messages-drawer');
+    if (messages) {
+      messages.classList.remove('active');
+      if (window.drawerChatRefreshInterval) {
+        clearInterval(window.drawerChatRefreshInterval);
+        window.drawerChatRefreshInterval = null;
+      }
+    }
+
     if (type) currentSavedDrawerType = type;
     renderSavedDrawer();
     drawer.classList.add('active');
@@ -3966,6 +3980,20 @@ function toggleCartDrawer() {
   if (drawer.classList.contains('active')) {
     drawer.classList.remove('active');
   } else {
+    // Close other drawers
+    const saved = document.getElementById('saved-items-drawer');
+    if (saved) saved.classList.remove('active');
+    const forums = document.getElementById('forums-drawer');
+    if (forums) forums.classList.remove('active');
+    const messages = document.getElementById('messages-drawer');
+    if (messages) {
+      messages.classList.remove('active');
+      if (window.drawerChatRefreshInterval) {
+        clearInterval(window.drawerChatRefreshInterval);
+        window.drawerChatRefreshInterval = null;
+      }
+    }
+    
     renderCart();
     drawer.classList.add('active');
   }
