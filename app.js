@@ -4997,16 +4997,15 @@ window.openGroup = async function(groupId) {
   document.getElementById('group-desc').textContent = group.desc;
   
   const container = document.getElementById('group-posts-container');
-  container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> Loading discussions...</div>';
+  container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> טוען דיונים בפורום...</div>';
   
   try {
     const postsRef = window.fbColl(window.fbDb, 'posts');
-    // Removed orderBy to avoid composite index requirement
     const q = window.fbQuery(postsRef, window.fbWhere('groupId', '==', groupId));
     const snapshot = await window.fbGetDocs(q);
     
     if (snapshot.empty) {
-      container.innerHTML = '<div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#86868b;">No posts yet. Be the first to start a discussion!</div>';
+      container.innerHTML = '<div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#86868b; direction:rtl;">אין עדיין דיונים בפורום זה. היה הראשון לפתוח דיון!</div>';
       return;
     }
     
@@ -5015,40 +5014,79 @@ window.openGroup = async function(groupId) {
     snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
     docs.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
     
-    let html = '';
+    let html = '<div style="display:flex; flex-direction:column; gap:20px; direction:rtl; text-align:right;">';
     docs.forEach(doc => {
       const data = doc.data;
-      const dateStr = new Date(data.timestamp).toLocaleString();
-      const priceTagHtml = data.price != null ? `<div style="display:inline-block; margin-top:8px; background:#34c759; color:#fff; font-weight:700; padding:4px 10px; border-radius:8px; font-size:0.8rem;">₪${data.price.toLocaleString()}</div>` : '';
-      const imageHtml = data.image ? `<img src="${data.image}" style="width:100%; max-height:300px; object-fit:cover; border-radius:8px; margin-bottom:12px;">` : '';
+      const dateStr = new Date(data.timestamp).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+      const priceTagHtml = data.price != null ? `<div style="background:#34c759; color:#fff; font-weight:700; padding:6px 12px; border-radius:8px; font-size:0.85rem; width:fit-content; margin-top:8px;">₪${data.price.toLocaleString()}</div>` : '';
+      
+      // Let's render an absolute premium split layout if there's a post image
+      let cardInner = '';
+      if (data.image) {
+        cardInner = `
+          <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:stretch; width:100%;">
+            <div style="flex:1; min-width:280px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:12px; line-height:1.3; transition:color 0.2s;" class="post-card-title">${data.title}</h3>
+                <div style="font-size:0.95rem; color:#a1a1aa; line-height:1.6; margin-bottom:16px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${data.content}</div>
+              </div>
+              <div>
+                ${priceTagHtml}
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff;"><i class="fas fa-user"></i></div>
+                    <span style="font-weight:600; color:#e5e5ea;">${data.authorName || data.author || 'Anonymous'}</span>
+                  </div>
+                  <div>${dateStr}</div>
+                </div>
+              </div>
+            </div>
+            <div style="width:220px; min-height:160px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+              <img src="${data.image}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+          </div>
+        `;
+      } else {
+        cardInner = `
+          <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%;">
+            <div>
+              <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:12px; line-height:1.3; transition:color 0.2s;" class="post-card-title">${data.title}</h3>
+              <div style="font-size:0.95rem; color:#a1a1aa; line-height:1.6; margin-bottom:16px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${data.content}</div>
+            </div>
+            <div>
+              ${priceTagHtml}
+              <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff;"><i class="fas fa-user"></i></div>
+                  <span style="font-weight:600; color:#e5e5ea;">${data.authorName || data.author || 'Anonymous'}</span>
+                </div>
+                <div>${dateStr}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       const buttonsHtml = currentGroupId === 'marketplace' ? `
-        <div style="display:flex; gap:10px; margin-top:16px; border-top:1px solid #2c2c2e; padding-top:16px;">
-          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}', '${data.authorEmail || ''}', '${(data.title || '').replace(/'/g, "\\'").replace(/\"/g, "&quot;")}'); else alert('Feature coming soon!');" style="flex:1; background:#fbbf24; color:#000; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Submit Offer</button>
-          <button onclick="event.stopPropagation(); alert('Messaging feature coming soon!');" style="flex:1; background:#3b82f6; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem;">Send Message</button>
+        <div style="display:flex; gap:10px; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}', '${data.authorEmail || ''}', '${(data.title || '').replace(/'/g, "\\'").replace(/\"/g, "&quot;")}'); else alert('הגשת הצעה תהיה זמינה בקרוב!');" style="flex:1; background:#fbbf24; color:#000; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">הגש הצעת רכישה</button>
+          <button onclick="event.stopPropagation(); alert('מערכת הודעות פרטיות תהיה זמינה בקרוב!');" style="flex:1; background:#3b82f6; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">שלח הודעה</button>
         </div>
       ` : '';
-      
+
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px; margin-bottom:16px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="openPost('${doc.id}')">
-          <h3 style="font-size:1.2rem; font-weight:700; color:#f5f5f7; margin-bottom:12px;">${data.title}</h3>
-          ${imageHtml}
-          <div style="font-size:0.95rem; color:#a1a1aa; margin-bottom:12px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${data.content}</div>
-          ${priceTagHtml}
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#86868b; margin-top:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <i class="fas fa-user-circle"></i> ${data.authorName || data.author || 'Anonymous'}
-            </div>
-            <div>${dateStr.split(',')[0]}</div>
-          </div>
+        <div class="premium-post-card" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.transform='none'; this.style.boxShadow='none'" onclick="openPost('${doc.id}')">
+          ${cardInner}
           ${buttonsHtml}
         </div>
       `;
     });
+    html += '</div>';
     
     container.innerHTML = html;
   } catch (err) {
     console.error('Error loading posts:', err);
-    container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">Failed to load discussions. Please try again.</div>';
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444; direction:rtl;">שגיאה בטעינת הדיונים. אנא נסה שוב מאוחר יותר.</div>';
   }
 };
 

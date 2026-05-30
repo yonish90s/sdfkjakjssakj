@@ -7040,5 +7040,10 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   }
 }
 
+.premium-post-card:hover .post-card-title {
+  color: #ff453a !important;
+}
+
+
 
 
