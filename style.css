@@ -6960,4 +6960,85 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   }
 }
 
+/* ========== COMMUNITY FORUM & PERSONAL ARCHIVE STYLES ========== */
+.forum-category-block {
+  box-shadow: var(--shadow-soft);
+  margin-top: 16px;
+}
+
+.forum-category-header {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.forum-row {
+  transition: var(--transition-smooth);
+}
+
+.forum-row:last-child {
+  border-bottom: none !important;
+}
+
+.forum-row:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Timeline Layout */
+.timeline-wrapper {
+  margin-top: 24px;
+}
+
+.timeline-year-section {
+  position: relative;
+}
+
+.timeline-month-section {
+  position: relative;
+}
+
+.archive-item-card {
+  transition: var(--transition-smooth) !important;
+}
+
+.archive-item-card:hover {
+  border-color: rgba(255, 69, 58, 0.3) !important;
+  transform: translateX(-6px) !important;
+  background: rgba(255, 69, 58, 0.02) !important;
+  box-shadow: 0 4px 20px rgba(255, 69, 58, 0.06);
+}
+
+/* Watermark Background */
+.archive-watermark {
+  position: absolute;
+  top: -60px;
+  right: -50px;
+  font-size: 26rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.03);
+  user-select: none;
+  pointer-events: none;
+  font-family: 'Inter', 'Assistant', sans-serif;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .forum-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px;
+    padding: 16px !important;
+  }
+  .forum-row > div {
+    width: 100% !important;
+    text-align: right !important;
+    justify-content: flex-start !important;
+  }
+  .archive-watermark {
+    font-size: 15rem;
+    top: -20px;
+    right: -20px;
+  }
+}
+
+
 

@@ -388,6 +388,8 @@ function showPage(pageId) {
   if (pageId === 'appointments') initBookingWidget();
   if (pageId === 'my-graphs') renderMyGraphsWatchlist();
   if (pageId === 'messages') { if (window.initMessagesSystem) window.initMessagesSystem(); }
+  if (pageId === 'groups') renderForum();
+  if (pageId === 'archive') renderPersonalArchive();
   if (pageId === 'video-reviews') renderVideoReviews();
   if (pageId === 'article-reviews') renderArticleReviews();
   if (pageId === 'exchange') initExchange();
@@ -4658,10 +4660,35 @@ document.addEventListener('DOMContentLoaded', () => {
 // =====================================================================
 
 const PREDEFINED_GROUPS = [
-  { id: 'tech-talk', name: 'Tech Talk', desc: 'Discuss the latest in technology, AI, and development.', icon: 'fa-laptop-code', color: '#0071e3' },
-  { id: 'trading-strategies', name: 'Trading Strategies', desc: 'Share and discuss trading strategies, graphs, and market trends.', icon: 'fa-chart-line', color: '#34c759' },
-  { id: 'general-chat', name: 'General Chat', desc: 'A place for general discussions, networking, and off-topic conversations.', icon: 'fa-comments', color: '#ff9500' },
-  { id: 'marketplace', name: 'Marketplace', desc: 'Buy and sell items, services, or software. Make offers directly to sellers!', icon: 'fa-store', color: '#af52de' }
+  { id: 'gate', name: 'שער הקהילה', desc: 'שער הקהילה הראשי - דיונים כלליים ונטוורקינג.', icon: 'fa-comments', color: '#0071e3' },
+  { id: 'diaries', name: 'יומני מסע אישיים', desc: 'יומני מסע אישיים, יעדים, פיננסים והתפתחות.', icon: 'fa-book-open', color: '#af52de' },
+  { id: 'blog-discussions', name: 'דיוני עומק על פוסטים מהבלוג', desc: 'דיונים מעמיקים ומחשבות על פוסטים ומאמרים.', icon: 'fa-newspaper', color: '#ff9500' },
+  { id: 'capital-market', name: 'שוק ההון', desc: 'מניות, אגרות חוב, קרנות מחקות ואסטרטגיות השקעה.', icon: 'fa-chart-line', color: '#34c759' },
+  { id: 'real-estate', name: 'נדל"ן', desc: 'עסקאות נדל"ן בארץ ובחו"ל, מינוף ודירות להשקעה.', icon: 'fa-building', color: '#ff3b30' },
+  { id: 'pension', name: 'פנסיה, גמל וקרנות השתלמות', desc: 'חיסכון פנסיוני, אופטימיזציית דמי ניהול ומסלולי השקעה.', icon: 'fa-vault', color: '#5ac8fa' },
+  { id: 'finance-consumerism', name: 'צרכנות פיננסית', desc: 'התנהלות פיננסית נכונה, כרטיסי אשראי, בנקים והוזלת עלויות.', icon: 'fa-tags', color: '#ffcc00' },
+  { id: 'taxes', name: 'מיסים', desc: 'מיסוי ישראלי ואמריקאי, החזרי מס ותכנוני מס לפרט.', icon: 'fa-calculator', color: '#4cd964' }
+];
+
+const FORUM_CATEGORIES = [
+  {
+    title: 'הקהילה',
+    subforums: [
+      { id: 'gate', name: 'שער הקהילה', desc: 'שער הקהילה הראשי - דיונים כלליים ונטוורקינג.', icon: 'fa-comments', color: '#0071e3' },
+      { id: 'diaries', name: 'יומני מסע אישיים', desc: 'יומני מסע אישיים, יעדים, פיננסים והתפתחות.', icon: 'fa-book-open', color: '#af52de' },
+      { id: 'blog-discussions', name: 'דיוני עומק על פוסטים מהבלוג', desc: 'דיונים מעמיקים ומחשבות על פוסטים ומאמרים.', icon: 'fa-newspaper', color: '#ff9500' }
+    ]
+  },
+  {
+    title: 'כסף והשקעות',
+    subforums: [
+      { id: 'capital-market', name: 'שוק ההון', desc: 'מניות, אגרות חוב, קרנות מחקות ואסטרטגיות השקעה.', icon: 'fa-chart-line', color: '#34c759' },
+      { id: 'real-estate', name: 'נדל"ן', desc: 'עסקאות נדל"ן בארץ ובחו"ל, מינוף ודירות להשקעה.', icon: 'fa-building', color: '#ff3b30' },
+      { id: 'pension', name: 'פנסיה, גמל וקרנות השתלמות', desc: 'חיסכון פנסיוני, אופטימיזציית דמי ניהול ומסלולי השקעה.', icon: 'fa-vault', color: '#5ac8fa' },
+      { id: 'finance-consumerism', name: 'צרכנות פיננסית', desc: 'התנהלות פיננסית נכונה, כרטיסי אשראי, בנקים והוזלת עלויות.', icon: 'fa-tags', color: '#ffcc00' },
+      { id: 'taxes', name: 'מיסים', desc: 'מיסוי ישראלי ואמריקאי, החזרי מס ותכנוני מס לפרט.', icon: 'fa-calculator', color: '#4cd964' }
+    ]
+  }
 ];
 
 let currentGroupId = null;
@@ -4669,26 +4696,284 @@ let currentPostId = null;
 let currentPostAuthorEmail = null;
 let currentPostTitle = null;
 
-function renderGroups() {
-  const container = document.getElementById('groups-grid');
+async function renderForum() {
+  const container = document.getElementById('forum-directory-container');
   if (!container) return;
-  
-  let html = '';
-  PREDEFINED_GROUPS.forEach(g => {
-    html += `
-      <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:24px; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; gap:16px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='${g.color}'" onmouseout="this.style.transform='none'; this.style.borderColor='#2c2c2e'" onclick="openGroup('${g.id}')">
-        <div style="width:48px; height:48px; border-radius:12px; background:${g.color}20; color:${g.color}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
-          <i class="fas ${g.icon}"></i>
+
+  container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> טוען קטגוריות פורום...</div>';
+
+  try {
+    // Fetch all posts to aggregate stats and latest thread
+    const postsRef = window.fbColl(window.fbDb, 'posts');
+    const postsSnapshot = await window.fbGetDocs(postsRef);
+    
+    // Fetch all comments to count comments per post/subforum
+    const commentsRef = window.fbColl(window.fbDb, 'comments');
+    const commentsSnapshot = await window.fbGetDocs(commentsRef);
+
+    const subforumStats = {};
+    const subforumLatest = {};
+
+    // Group comments by postId
+    const commentsByPost = {};
+    commentsSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (!commentsByPost[data.postId]) {
+        commentsByPost[data.postId] = [];
+      }
+      commentsByPost[data.postId].push({ id: doc.id, data });
+    });
+
+    postsSnapshot.forEach(doc => {
+      const post = doc.data();
+      const pId = doc.id;
+      const gId = post.groupId || 'general-chat';
+      
+      if (!subforumStats[gId]) {
+        subforumStats[gId] = { topicsCount: 0, postsCount: 0 };
+      }
+      subforumStats[gId].topicsCount += 1;
+      
+      const numComments = commentsByPost[pId] ? commentsByPost[pId].length : 0;
+      subforumStats[gId].postsCount += (1 + numComments);
+
+      // Keep track of latest thread in this subforum
+      const pDate = new Date(post.timestamp);
+      if (!subforumLatest[gId] || pDate > new Date(subforumLatest[gId].timestamp)) {
+        subforumLatest[gId] = {
+          id: pId,
+          title: post.title,
+          authorName: post.authorName || post.author || 'Anonymous',
+          authorAvatar: post.authorAvatar || '',
+          timestamp: post.timestamp
+        };
+      }
+    });
+
+    let html = '';
+
+    FORUM_CATEGORIES.forEach(category => {
+      html += `
+        <div class="forum-category-block" style="margin-bottom: 24px;">
+          <div class="forum-category-header" style="font-size: 1.4rem; font-weight: 800; color: #ffffff; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 12px 12px 0 0; border-bottom: 2px solid rgba(255,255,255,0.08); text-align: right;">
+            ${category.title}
+          </div>
+          <div class="forum-table" style="background: #1c1c1e; border: 1px solid #2c2c2e; border-top: none; border-radius: 0 0 12px 12px; overflow: hidden; display: flex; flex-direction: column;">
+      `;
+
+      category.subforums.forEach(sf => {
+        const stats = subforumStats[sf.id] || { topicsCount: 0, postsCount: 0 };
+        const latest = subforumLatest[sf.id];
+
+        let latestHtml = `
+          <div style="color: #86868b; font-size: 0.9rem; text-align: right;">אין הודעות עדיין</div>
+        `;
+
+        if (latest) {
+          const avatarUrl = latest.authorAvatar || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=100&h=100';
+          const timeAgo = formatTimeAgo(new Date(latest.timestamp));
+          latestHtml = `
+            <div style="display: flex; align-items: center; gap: 12px; text-align: right; width: 100%;">
+              <img src="${avatarUrl}" alt="${latest.authorName}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+              <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; max-width: 200px;">
+                <a href="#" onclick="openPost('${latest.id}'); return false;" style="color: #ff453a; font-weight: 600; text-decoration: none; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${latest.title}</a>
+                <div style="font-size: 0.8rem; color: #86868b; margin-top: 2px;">
+                  על ידי <span>${latest.authorName}</span> &bull; <span>${timeAgo}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="forum-row" style="display: flex; align-items: center; padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <!-- Subforum Icon & Name -->
+            <div style="flex: 2; display: flex; align-items: center; gap: 20px; text-align: right; cursor: pointer;" onclick="openGroup('${sf.id}')">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: ${sf.color}15; color: ${sf.color}; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                <i class="fas ${sf.icon}"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff; margin-bottom: 4px;">${sf.name}</h3>
+                <p style="color: #86868b; font-size: 0.9rem; line-height: 1.4; margin: 0; padding-left: 20px;">${sf.desc}</p>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div style="width: 140px; text-align: center; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px;">
+              <span style="color: #ffffff; font-weight: 700; font-size: 1.1rem;">${stats.topicsCount.toLocaleString()}</span>
+              <span style="color: #86868b; font-size: 0.8rem;">נושאים</span>
+            </div>
+            
+            <div style="width: 140px; text-align: center; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px;">
+              <span style="color: #ffffff; font-weight: 700; font-size: 1.1rem;">${stats.postsCount.toLocaleString()}</span>
+              <span style="color: #86868b; font-size: 0.8rem;">הודעות</span>
+            </div>
+
+            <!-- Latest Post Info -->
+            <div style="flex: 1.5; min-width: 220px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-start;">
+              ${latestHtml}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
         </div>
-        <div>
-          <h3 style="font-size:1.4rem; font-weight:800; color:#f5f5f7; margin-bottom:8px;">${g.name}</h3>
-          <p style="color:#86868b; font-size:0.95rem; line-height:1.5;">${g.desc}</p>
+      `;
+    });
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error rendering forum:', err);
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">שגיאה בטעינת נושאי הפורום. אנא נסה שוב.</div>';
+  }
+}
+
+async function renderPersonalArchive() {
+  const container = document.getElementById('archive-timeline-container');
+  if (!container) return;
+
+  if (!currentUser || !currentUser.email) {
+    container.innerHTML = '<div style="text-align:center; padding:60px; color:#86868b;"><i class="fas fa-lock" style="font-size: 3rem; margin-bottom: 16px; color:#555;"></i><br>אנא התחבר כדי לצפות בארכיון הפוסטים האישי שלך.</div>';
+    return;
+  }
+
+  container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> טוען ארכיון פוסטים...</div>';
+
+  try {
+    // 1. Fetch user's posts
+    const postsRef = window.fbColl(window.fbDb, 'posts');
+    const q = window.fbQuery(postsRef, window.fbWhere('authorEmail', '==', currentUser.email));
+    const postsSnapshot = await window.fbGetDocs(q);
+
+    // 2. Fetch all comments to aggregate comment count per post
+    const commentsRef = window.fbColl(window.fbDb, 'comments');
+    const commentsSnapshot = await window.fbGetDocs(commentsRef);
+
+    const commentsByPost = {};
+    commentsSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (!commentsByPost[data.postId]) {
+        commentsByPost[data.postId] = 0;
+      }
+      commentsByPost[data.postId] += 1;
+    });
+
+    if (postsSnapshot.empty) {
+      container.innerHTML = '<div style="text-align:center; padding:60px; color:#86868b;"><i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 16px; color:#555;"></i><br>עדיין לא העלית פוסטים או מאמרים. כל פוסט שתעלה בפורום יופיע כאן!</div>';
+      return;
+    }
+
+    // Group chronologically
+    const postsList = [];
+    postsSnapshot.forEach(doc => {
+      postsList.push({ id: doc.id, ...doc.data() });
+    });
+
+    // Sort descending by timestamp
+    postsList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Group by Year and Month
+    const grouped = {};
+    postsList.forEach(post => {
+      const d = new Date(post.timestamp);
+      const year = d.getFullYear();
+      const monthHeb = d.toLocaleString('he-IL', { month: 'long' });
+      
+      if (!grouped[year]) {
+        grouped[year] = {};
+      }
+      if (!grouped[year][monthHeb]) {
+        grouped[year][monthHeb] = [];
+      }
+      grouped[year][monthHeb].push(post);
+    });
+
+    let html = '<div class="timeline-wrapper" style="position:relative; border-right: 2px solid rgba(255,255,255,0.06); padding-right: 24px; margin-right: 8px;">';
+
+    Object.keys(grouped).sort((a, b) => b - a).forEach(year => {
+      const totalYearPosts = Object.values(grouped[year]).reduce((acc, curr) => acc + curr.length, 0);
+      
+      html += `
+        <div class="timeline-year-section" style="position:relative; margin-bottom:40px;">
+          <!-- Timeline point for year -->
+          <div style="position:absolute; right: -33px; top: 4px; width: 16px; height: 16px; border-radius:50%; background:#ff453a; border: 3px solid #000; box-shadow: 0 0 0 4px rgba(255,69,58,0.15); z-index:3;"></div>
+          <h3 style="font-size:1.8rem; font-weight:800; color:#ffffff; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+            ${year}
+            <span style="font-size:0.95rem; font-weight:500; color:#86868b; background:rgba(255,255,255,0.05); padding: 2px 10px; border-radius:980px;">${totalYearPosts} פוסטים</span>
+          </h3>
+      `;
+
+      const months = grouped[year];
+      Object.keys(months).forEach(month => {
+        html += `
+          <div class="timeline-month-section" style="margin-bottom: 24px; margin-right: 12px;">
+            <h4 style="font-size: 1.25rem; font-weight: 700; color: #ff453a; margin-bottom: 16px;">${month}</h4>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+        `;
+
+        months[month].forEach(post => {
+          const numComments = commentsByPost[post.id] || 0;
+          const day = new Date(post.timestamp).getDate();
+          
+          html += `
+            <div class="archive-item-card" onclick="openPost('${post.id}')" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,69,58,0.3)'; this.style.transform='translateX(-4px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.transform='none'">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(255,69,58,0.1); color: #ff453a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0;">
+                  ${day}
+                </div>
+                <div>
+                  <h5 style="font-size: 1.05rem; font-weight: 700; color:#ffffff; margin-bottom:4px;">${post.title}</h5>
+                  <p style="color:#86868b; font-size:0.85rem; margin:0; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical;">${post.content}</p>
+                </div>
+              </div>
+              
+              <div style="display:flex; align-items:center; gap:8px; color:#86868b; font-size:0.9rem; background:rgba(255,255,255,0.03); padding:6px 12px; border-radius:8px;">
+                <i class="far fa-comment"></i>
+                <span style="font-weight:700; color:#ffffff;">${numComments}</span>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
         </div>
-      </div>
-    `;
-  });
-  
-  container.innerHTML = html;
+      `;
+    });
+
+    html += '</div>';
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error rendering personal archive:', err);
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">שגיאה בטעינת הארכיון האישי.</div>';
+  }
+}
+
+function formatTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  let interval = Math.floor(seconds / 31536000);
+  if (interval >= 1) return `לפני ${interval} שנים`;
+  interval = Math.floor(seconds / 2592000);
+  if (interval >= 1) return `לפני ${interval} חודשים`;
+  interval = Math.floor(seconds / 86400);
+  if (interval >= 1) return `לפני ${interval} ימים`;
+  interval = Math.floor(seconds / 3600);
+  if (interval >= 1) return `לפני ${interval} שעות`;
+  interval = Math.floor(seconds / 60);
+  if (interval >= 1) return `לפני ${interval} דקות`;
+  return 'ממש עכשיו';
+}
+
+function renderGroups() {
+  renderForum();
 }
 
 window.showGroupsList = function() {
@@ -4863,7 +5148,13 @@ window.openPost = async function(postId) {
   document.getElementById('post-detail-view').style.display = 'block';
   
   const backBtn = document.getElementById('post-back-btn');
-  backBtn.onclick = () => openGroup(currentGroupId);
+  backBtn.onclick = () => {
+    if (currentGroupId) {
+      openGroup(currentGroupId);
+    } else {
+      showPage('archive');
+    }
+  };
   
   document.getElementById('post-title').textContent = 'Loading...';
   document.getElementById('post-content').textContent = '';

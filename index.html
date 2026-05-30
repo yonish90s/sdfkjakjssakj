@@ -135,6 +135,11 @@
             <span id="messages-unread-badge" style="display:none; margin-left:auto; width:8px; height:8px; background-color:#ff3b30; border-radius:50%; flex-shrink:0;"></span>
           </a>
 
+          <a href="#" class="sidebar-link" data-page="groups" onclick="showPage('groups'); return false;">
+            <i class="fa-solid fa-comments"></i>
+            <span>Forum</span>
+          </a>
+
           <div class="sidebar-divider"></div>
 
           <!-- Personalized Sections -->
@@ -153,6 +158,11 @@
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-articles')" title="Focus Mode"></i>
             </div>
+          </a>
+
+          <a href="#" class="sidebar-link" data-page="archive" onclick="showPage('archive'); return false;">
+            <i class="fas fa-box-archive"></i>
+            <span>Archive</span>
           </a>
 
           <a href="#" class="sidebar-link" id="link-my-purchases" onclick="toggleMyPurchasesDropdown(event)">
@@ -238,7 +248,7 @@
           <nav class="apple-nav-links">
             <button onclick="clearSearchAndShowHome()" class="apple-nav-item">Articles</button>
             <button onclick="showPage('pdf-store')" class="apple-nav-item">Graphs</button>
-            <button onclick="showPage('groups')" class="apple-nav-item">Groups</button>
+            <button onclick="showPage('groups')" class="apple-nav-item">Forum</button>
             <button onclick="showPage('exchange')" class="apple-nav-item" style="color: #34c759; font-weight:600;"><i class="fas fa-chart-line" style="margin-right:6px;"></i>Exchange</button>
           
           <div class="apple-dropdown" id="nav-dropdown">
@@ -503,20 +513,24 @@
 <!-- PDF STORE PAGE -->
 <!-- GROUPS & FORUMS PAGE -->
 <div id="page-groups" class="page" style="display:none;">
-  <div class="apple-container" style="max-width:900px;">
+  <div class="apple-container" style="max-width:1200px; margin:0 auto; direction:rtl; text-align:right;">
     
     <!-- Groups List View -->
     <div id="groups-list-view">
-      <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">Community Groups</h2>
-      <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 32px;">Join discussions, share strategies, and connect with the community.</p>
-      <div id="groups-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;">
-        <!-- Groups injected by JS -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h2 style="font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 8px;">פורום סוקי הקהילתי</h2>
+          <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 0;">דיונים, שיתוף אסטרטגיות, יומני מסע והשקעות בשוק ההון ובנדל"ן.</p>
+        </div>
+      </div>
+      <div id="forum-directory-container" style="display:flex; flex-direction:column; gap:32px; width: 100%;">
+        <!-- Forum Categories & Subforums rendered dynamically in app.js -->
       </div>
     </div>
 
     <!-- Specific Group View -->
     <div id="group-detail-view" style="display:none;">
-      <button onclick="showGroupsList()" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-left"></i> Back to Groups</button>
+      <button onclick="showGroupsList()" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-right"></i> חזרה לפורום הראשי</button>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
         <div>
           <h2 id="group-title" style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px;">Group Name</h2>
@@ -531,7 +545,7 @@
 
     <!-- Specific Post View -->
     <div id="post-detail-view" style="display:none;">
-      <button id="post-back-btn" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-left"></i> Back to Group</button>
+      <button id="post-back-btn" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-right"></i> חזרה לדיונים</button>
       <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:24px; margin-bottom:24px;">
         <h2 id="post-title" style="font-size: 2rem; font-weight: 800; margin-bottom: 12px;">Post Title</h2>
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; color:#86868b; font-size:0.9rem;">
@@ -564,6 +578,27 @@
     
   </div>
 </div>
+
+<!-- ARCHIVE PAGE -->
+<div id="page-archive" class="page" style="display:none;">
+  <div class="apple-container" style="max-width:1000px; margin:0 auto; direction:rtl; text-align:right; position:relative; overflow:hidden;">
+    <!-- Large elegant Hebrew watermarked letter 'א' backdrop -->
+    <div class="archive-watermark">א</div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; position:relative; z-index:2;">
+      <div>
+        <h2 style="font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 8px;">ארכיון הפוסטים שלי</h2>
+        <p style="color: #86868b; font-size: 1.1rem; margin-bottom: 0;">ציר זמן של כל המאמרים והדיונים שפרסמת בקהילה ובבלוג.</p>
+      </div>
+    </div>
+
+    <!-- Timeline Container -->
+    <div id="archive-timeline-container" style="position:relative; z-index:2; padding-right: 20px;">
+      <!-- Timeline will be rendered dynamically by app.js -->
+    </div>
+  </div>
+</div>
+
 
 <!-- EXCHANGE VIEW -->
 <div id="page-exchange" class="page" style="display:none;">
