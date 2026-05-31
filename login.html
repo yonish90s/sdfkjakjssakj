@@ -731,7 +731,11 @@
 
     setLoading(true);
     try {
-      if (mode === 'admin') {
+      // Auto-detect admin credentials (e.g. username '1' or no '@' sign in email)
+      const isStandardEmail = email.includes('@');
+      const activeLoginMode = (mode === 'login' && !isStandardEmail) ? 'admin' : mode;
+
+      if (activeLoginMode === 'admin') {
         // Admin authentication
         let loginSucceeded = false;
         let loginMessage = '';
