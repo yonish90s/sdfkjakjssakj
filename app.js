@@ -382,6 +382,16 @@ function showPage(pageId) {
     if (home) home.classList.add('active');
   }
 
+  // Dynamically update the logo subtext depending on pageId (Graphs / Articles)
+  const subtextEl = document.getElementById('nav-logo-subtext');
+  if (subtextEl) {
+    if (pageId === 'pdf-store' || pageId === 'my-graphs') {
+      subtextEl.textContent = document.body.classList.contains('rtl-layout') ? 'גרפים' : 'Graphs';
+    } else {
+      subtextEl.textContent = document.body.classList.contains('rtl-layout') ? 'מאמרים' : 'Articles';
+    }
+  }
+
   // Scroll to top
   window.scrollTo(0, 0);
 
@@ -4935,7 +4945,9 @@ function updateNavbarLanguage() {
     if (elSignin) elSignin.textContent = 'התחבר';
     if (elLogout) elLogout.textContent = 'התנתק';
     if (elPremium) elPremium.textContent = 'פרימיום';
-    if (elLogoSubtext) elLogoSubtext.textContent = 'מאמרים';
+    const activePage = document.querySelector('.page.active');
+    const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
+    if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'גרפים' : 'מאמרים';
     if (searchInput) searchInput.placeholder = 'חיפוש כתבות...';
     if (adminLoginTitle) adminLoginTitle.textContent = 'כניסת מנהל';
     if (adminLoginButton) adminLoginButton.textContent = 'התחבר';
@@ -4961,8 +4973,9 @@ function updateNavbarLanguage() {
     if (elGraphs) elGraphs.textContent = 'Graphs';
     if (elSignin) elSignin.textContent = 'Sign In';
     if (elLogout) elLogout.textContent = 'Logout';
-    if (elPremium) elPremium.textContent = 'Premium';
-    if (elLogoSubtext) elLogoSubtext.textContent = 'Articles';
+    const activePage = document.querySelector('.page.active');
+    const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
+    if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'Graphs' : 'Articles';
     if (searchInput) searchInput.placeholder = 'Search Articles...';
     if (adminLoginTitle) adminLoginTitle.textContent = 'Admin Login';
     if (adminLoginButton) adminLoginButton.textContent = 'Login';
