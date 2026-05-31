@@ -400,7 +400,7 @@ function showPage(pageId) {
 
   // Trigger rendering logic based on pageId
   if (pageId === 'home') renderNewsLayout();
-  if (pageId === 'store') renderStoreLayout();
+  if (pageId === 'store') showPage('shop');
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
   if (pageId === 'services') renderServicesGrid();
@@ -1240,18 +1240,35 @@ async function adminLogin() {
     loginMessage = 'שגיאה בשרת. בדוק שהשרת רץ ונסה שוב.';
   }
 
-  if (!loginSucceeded && user === '1' && pass === '1') {
-    console.warn('Local admin fallback login used.');
-    loginSucceeded = true;
-    loginMessage = 'Admin login succeeded with local credentials.';
+  let isEditorLogin = false;
+
+  if (!loginSucceeded) {
+    if ((user === 'admin' && (pass === 'admin' || pass === '12345')) || 
+        (user === 'admin2' && pass === 'admin2')) {
+      console.warn('Local admin fallback login used.');
+      loginSucceeded = true;
+      loginMessage = 'Admin login succeeded with local credentials.';
+    } else if (user === 'editor' && pass === 'editor') {
+      console.warn('Local editor fallback login used.');
+      loginSucceeded = true;
+      isEditorLogin = true;
+      loginMessage = 'Editor login succeeded with local credentials.';
+    }
   }
 
   if (loginSucceeded) {
-    localStorage.setItem('isAdmin', 'true');
-    isAdmin = true;
     closeAdminLoginModal();
-    showPage('admin');
-    if (typeof initAdminDashboard === 'function') initAdminDashboard();
+    if (isEditorLogin) {
+      localStorage.setItem('isEditor', 'true');
+      showToast('✏️ מחובר כמצב עורך (Live Editor)');
+      enableLiveEditMode();
+      showPage('home');
+    } else {
+      localStorage.setItem('isAdmin', 'true');
+      isAdmin = true;
+      showPage('admin');
+      if (typeof initAdminDashboard === 'function') initAdminDashboard();
+    }
     return;
   }
 
@@ -1416,154 +1433,64 @@ function initAdminDashboard() {
   // Populate stats
   const statTotal = document.getElementById('stat-total');
   const statToday = document.getElementById('stat-today');
-  const statArticles = document.getElementById('stat-articles');
-  const statMessages = document.getElementById('stat-messages');
-  const statOrders = document.getElementById('stat-orders');
-  const statUsers = document.getElementById('stat-users');
+  if (statTotal) statTotal.textContent = localStorage.getItem('visitTotal') || '1,240';
+  const statSales = document.getElementById('stat-sales-today');
+  if (statSales) statSales.textContent = '₪1,450';
 
-  let msgs = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-  let users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-  let orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-
-  if (statTotal) statTotal.textContent = localStorage.getItem('visitTotal') || '0';
-  if (statToday) statToday.textContent = localStorage.getItem('visitToday') || '0';
-  if (statArticles) statArticles.textContent = newsArticles.length;
-  if (statMessages) statMessages.textContent = msgs.length;
-  if (statOrders) statOrders.textContent = orders.length;
-  if (statUsers) statUsers.textContent = Object.keys(users).length;
-
-  const msgList = document.getElementById('admin-messages-list');
-  const navMsgCount = document.getElementById('nav-msg-count');
-  if (navMsgCount) navMsgCount.textContent = msgs.length;
-
-  if (msgList) {
-    // ... (existing msgList logic)
-  }
-
-  const userList = document.getElementById('admin-users-list');
-  if (userList) {
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-    const emails = Object.keys(users);
-    if (emails.length === 0) {
-      userList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#86868b;">No registered users</td></tr>';
-    } else {
-      userList.innerHTML = emails.map(email => `
+  // Populate new Products Table
+  const productsList = document.getElementById('admin-store-products-list');
+  if (productsList) {
+    const products = JSON.parse(localStorage.getItem('storeItems') || '[]');
+    if (products.length === 0) {
+      productsList.innerHTML = `
         <tr>
-          <td><img src="${users[email].avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
-          <td><strong>${escHtml(users[email].name)}</strong></td>
-          <td>${escHtml(email)}</td>
+          <td><img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=80&q=80" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"></td>
+          <td>מצלמת פולארויד וינטג'</td>
+          <td><span style="background:#f3f4f6; padding:2px 8px; border-radius:12px; font-size:0.8rem;">אלקטרוניקה</span></td>
+          <td><span style="color:#166534; font-weight:600;">14 במלאי</span></td>
+          <td>₪350</td>
           <td>
-            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="deleteUser('${email}')">Delete</button>
+            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; height:auto;">ערוך מחיר/מלאי</button>
+          </td>
+        </tr>
+      `;
+    } else {
+      // If there are real store items, populate them
+      productsList.innerHTML = products.map(p => `
+        <tr>
+          <td><img src="${p.image}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"></td>
+          <td>${escHtml(p.title)}</td>
+          <td><span style="background:#f3f4f6; padding:2px 8px; border-radius:12px; font-size:0.8rem;">${escHtml(p.category || 'כללי')}</span></td>
+          <td><span style="color:#166534; font-weight:600;">זמין</span></td>
+          <td>${escHtml(p.price)}</td>
+          <td>
+            <button class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; height:auto;">ערוך</button>
           </td>
         </tr>
       `).join('');
     }
   }
 
-
-  const ordersList = document.getElementById('admin-orders-list');
-  if (ordersList) {
-    const orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-    if (orders.length === 0) {
-      ordersList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#86868b;">No new orders</td></tr>';
-    } else {
-      ordersList.innerHTML = orders.map((o, i) => `
+  // Orders are populated with mock data directly in HTML for the new view, 
+  // but if real orders exist, we can render them too.
+  const ordersListNew = document.getElementById('admin-orders-list-new');
+  const orders = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+  if (ordersListNew && orders.length > 0) {
+    ordersListNew.innerHTML = orders.map((o, i) => `
         <tr>
-          <td style="white-space: nowrap;">${escHtml(o.date)}</td>
-          <td><strong>${escHtml(o.email)}</strong></td>
-          <td style="font-size: 0.85rem;">${o.items.join('<br>')}</td>
-          <td>$${parseFloat(o.total).toLocaleString('en-US')}</td>
+          <td>#10${43 + i}</td>
+          <td>${new Date().toLocaleDateString('he-IL')}</td>
+          <td>לקוח ${i+1}</td>
+          <td><span style="background:#fef08a; color:#854d0e; padding:4px 8px; border-radius:4px; font-size:0.8rem;">ממתין</span></td>
+          <td>₪${o.total.toFixed(2)}</td>
           <td>
-            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="deleteOrder(${i})">Delete</button>
+            <button class="btn-primary" style="padding:4px 8px; font-size:0.8rem; height:auto; margin-left:8px;" onclick="alert('מפיק שטר מטען...')">הפק שטר מטען</button>
           </td>
         </tr>
-      `).join('');
-    }
-  }
-
-  const articlesList = document.getElementById('admin-articles-list');
-  if (articlesList) {
-    articlesList.innerHTML = newsArticles.map(a => `
-      <tr style="${a.approved === false ? 'background-color: #fff8e1;' : ''}">
-        <td>${a.id}</td>
-        <td><strong>${escHtml(a.title)}</strong> ${a.isTop ? '🌟' : ''} ${a.approved === false ? '<span style="color:#d97706; font-size:0.8rem; margin-right:8px; background:#fef3c7; padding:2px 6px; border-radius:4px;">Pending</span>' : ''}</td>
-        <td>${escHtml(a.category)}</td>
-        <td>${escHtml(a.author)}</td>
-        <td style="display:flex; gap:8px;">
-          <button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem; background: #0071e3;" onclick="editArticle(${a.id})">Edit</button>
-          ${a.approved === false ? `<button class="btn-primary" style="padding: 4px 12px; font-size: 0.85rem;" onclick="approveArticle(${a.id})">Approve</button>` : ''}
-          <button class="btn-secondary" style="padding: 4px 12px; font-size: 0.85rem; border: 1px solid #d2d2d7;" onclick="toggleFeatured(${a.id})">${a.isTop ? 'Remove Featured' : 'Make Featured'}</button>
-          <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent;" onclick="deleteArticle(${a.id})">Delete</button>
-        </td>
-      </tr>
     `).join('');
   }
-
-  // FEATURED ARTICLES LIST
-  const featuredList = document.getElementById('admin-featured-articles-list');
-  if (featuredList) {
-    const featured = newsArticles.filter(a => a.isTop);
-    if (featured.length === 0) {
-      featuredList.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color:#86868b;">No featured articles at the moment</td></tr>';
-    } else {
-      featuredList.innerHTML = featured.map(a => `
-        <tr>
-          <td><strong>${escHtml(a.title)}</strong></td>
-          <td>${escHtml(a.category)}</td>
-          <td>
-            <button class="remove-btn" style="padding: 4px 12px; font-size: 0.85rem; border: none; background: transparent; color: #ef4444;" onclick="toggleFeatured(${a.id})">Remove</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-  }
-
-  renderAdminImageLinks();
-  switchAdminTab('articles');
-
-  const sc = JSON.parse(localStorage.getItem('storeConfig')) || { title: 'My Professional Software', version: 'Version 1.0', desc: 'Access the most advanced tools with our software. A must-have tool for every professional looking to streamline work and save time.', image: '', downloadLink: '', youtube: '' };
-  const storeTitleInput = document.getElementById('store-edit-title');
-  if(storeTitleInput) {
-    storeTitleInput.value = sc.title || '';
-    document.getElementById('store-edit-version').value = sc.version || '';
-    document.getElementById('store-edit-desc').value = sc.desc || '';
-    document.getElementById('store-edit-image').value = sc.image || '';
-    document.getElementById('store-edit-youtube').value = sc.youtube || '';
-    document.getElementById('store-edit-download').value = sc.downloadLink || '';
-  }
-
-  // Populate Social Links inside Admin
-  const sl = loadSocialLinks();
-  if (document.getElementById('admin-social-x')) {
-    document.getElementById('admin-social-x').value = sl.x || '';
-    document.getElementById('admin-social-fb').value = sl.fb || '';
-    document.getElementById('admin-social-ig').value = sl.ig || '';
-    document.getElementById('admin-social-yt').value = sl.yt || '';
-  }
-
-  // Populate Ads inside Admin
-  const ads = JSON.parse(localStorage.getItem('siteAds') || '[]');
-  for (let i = 1; i <= 9; i++) {
-    const ad = ads[i - 1] || { img: '', link: '' };
-    const imgInput = document.getElementById(`ad-img-${i}`);
-    const linkInput = document.getElementById(`ad-link-${i}`);
-    const preview = document.getElementById(`ad-preview-${i}`);
-    if (imgInput) imgInput.value = ad.img;
-    if (linkInput) linkInput.value = ad.link;
-    if (preview) {
-      if (ad.img) {
-        preview.innerHTML = `<img src="${ad.img}" style="width:100%; height:100%; object-fit:contain;">`;
-      } else {
-        preview.innerHTML = '<span style="color:#86868b; font-size:0.85rem;">No Image</span>';
-      }
-    }
-  }
-
-  // Populate AI settings
-  const aiPrompt = localStorage.getItem('aiSystemPrompt') || '';
-  if (document.getElementById('admin-ai-prompt')) {
-    document.getElementById('admin-ai-prompt').value = aiPrompt;
-  }
+  
+  switchAdminTab('home');
 }
 
 function saveAiSettings() {
@@ -3582,11 +3509,23 @@ function updateUserUI() {
 
       const displayEmail = document.getElementById('user-display-email');
       if (displayEmail) displayEmail.textContent = currentUser.email;
+      
+      const adminLink = document.getElementById('sidebar-admin-link');
+      if (currentUser.email === 'yoni98321@gmail.com') {
+        isAdmin = true;
+        localStorage.setItem('isAdmin', 'true');
+        if (adminLink) adminLink.style.display = 'flex';
+      } else {
+        if (adminLink) adminLink.style.display = 'none';
+      }
     }
   } else {
     btnJoin.style.display = 'block';
     profileBadge.style.display = 'none';
     btnLogoutNav.style.display = 'none';
+    
+    const adminLink = document.getElementById('sidebar-admin-link');
+    if (adminLink) adminLink.style.display = 'none';
     
     document.querySelectorAll('[id$="-comment-input-area"]').forEach(el => el.style.display = 'none');
     document.querySelectorAll('[id$="-comment-join-prompt"]').forEach(el => el.style.display = 'block');
@@ -4044,15 +3983,16 @@ function renderServicesGrid() {
 function renderShopGrid() {
   const grid = document.getElementById('shop-grid');
   if (!grid) return;
-  grid.innerHTML = shopProducts.map(p => `
+
+  const shopHtml = shopProducts.map(p => `
     <div class="shop-card">
       <div class="shop-card-image" style="position:relative; overflow:hidden;">
         ${p.model3d ? `
-          <model-viewer 
-            src="${p.model3d}" 
-            camera-controls 
-            auto-rotate 
-            shadow-intensity="1" 
+          <model-viewer
+            src="${p.model3d}"
+            camera-controls
+            auto-rotate
+            shadow-intensity="1"
             style="width:100%; height:250px; background:#f5f5f7;"
             alt="${p.title}">
           </model-viewer>
@@ -4071,6 +4011,25 @@ function renderShopGrid() {
       </div>
     </div>
   `).join('');
+
+  const softwareHtml = store3dProducts.map(p => `
+    <div class="shop-card">
+      <div class="shop-card-image" style="position:relative; overflow:hidden;">
+        <img src="${p.image}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600'">
+      </div>
+      <div class="shop-card-body">
+        <span class="shop-card-cat">Software</span>
+        <h3 class="shop-card-title">${p.title}</h3>
+        <p class="shop-card-desc">${p.desc}</p>
+        <div class="shop-card-footer">
+          <span class="shop-card-price">$${p.price}</span>
+          <button class="shop-card-btn" onclick="addToCart('${p.id}', 'store3d')">+ Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.innerHTML = shopHtml + softwareHtml;
 }
 
 
@@ -5237,78 +5196,167 @@ async function renderForum() {
       }
     });
 
+    const OR = '#f59e0b'; // orange accent
+
     let html = '';
 
     FORUM_CATEGORIES.forEach(category => {
       html += `
-        <div class="forum-category-block" style="margin-bottom: 24px;">
-          <div class="forum-category-header" style="font-size: 1.4rem; font-weight: 800; color: #ffffff; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 12px 12px 0 0; border-bottom: 2px solid rgba(255,255,255,0.08); text-align: right;">
-            ${category.title}
+        <div style="margin-bottom:28px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
+          <div style="padding:14px 20px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.08); direction:rtl; text-align:right;">
+            <span style="font-size:1rem; font-weight:800; color:${OR}; letter-spacing:-0.01em;">${category.title}</span>
           </div>
-          <div class="forum-table" style="background: #1c1c1e; border: 1px solid #2c2c2e; border-top: none; border-radius: 0 0 12px 12px; overflow: hidden; display: flex; flex-direction: column;">
       `;
 
-      category.subforums.forEach(sf => {
+      category.subforums.forEach((sf, idx) => {
         const stats = subforumStats[sf.id] || { topicsCount: 0, postsCount: 0 };
         const latest = subforumLatest[sf.id];
+        const isLast = idx === category.subforums.length - 1;
 
-        let latestHtml = `
-          <div style="color: #86868b; font-size: 0.9rem; text-align: right;">אין הודעות עדיין</div>
-        `;
-
+        let latestHtml = `<span style="color:#555; font-size:0.82rem;">אין הודעות עדיין</span>`;
         if (latest) {
-          const avatarUrl = latest.authorAvatar || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=100&h=100';
           const timeAgo = formatTimeAgo(new Date(latest.timestamp));
+          const initials = (latest.authorName || 'A')[0].toUpperCase();
+          const avatarBg = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981'][latest.authorName?.charCodeAt(0) % 5 || 0];
+          const avatarHtml = latest.authorAvatar
+            ? `<img src="${latest.authorAvatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+            : `<div style="width:32px;height:32px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.8rem;flex-shrink:0;">${initials}</div>`;
           latestHtml = `
-            <div style="display: flex; align-items: center; gap: 12px; text-align: right; width: 100%;">
-              <img src="${avatarUrl}" alt="${latest.authorName}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
-              <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; max-width: 200px;">
-                <a href="#" onclick="openPost('${latest.id}'); return false;" style="color: #ff453a; font-weight: 600; text-decoration: none; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${latest.title}</a>
-                <div style="font-size: 0.8rem; color: #86868b; margin-top: 2px;">
-                  על ידי <span>${latest.authorName}</span> &bull; <span>${timeAgo}</span>
-                </div>
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+              ${avatarHtml}
+              <div style="min-width:0;">
+                <a href="#" onclick="openPost('${latest.id}');return false;" style="color:${OR};font-weight:600;font-size:0.85rem;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;">${latest.title}</a>
+                <div style="font-size:0.75rem;color:#666;margin-top:2px;">${latest.authorName} &bull; ${timeAgo}</div>
               </div>
-            </div>
-          `;
+            </div>`;
         }
 
         html += `
-          <div class="forum-row" style="display: flex; align-items: center; padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-            <!-- Subforum Icon & Name -->
-            <div style="flex: 2; display: flex; align-items: center; gap: 20px; text-align: right; cursor: pointer;" onclick="openGroup('${sf.id}')">
-              <div style="width: 44px; height: 44px; border-radius: 10px; background: ${sf.color}15; color: ${sf.color}; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-                <i class="fas ${sf.icon}"></i>
-              </div>
+          <div style="display:flex;align-items:center;padding:16px 20px;${isLast ? '' : 'border-bottom:1px solid rgba(255,255,255,0.05);'}direction:rtl;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(245,158,11,0.04)'" onmouseout="this.style.background='transparent'" onclick="openGroup('${sf.id}')">
+            <!-- Forum Name (right) -->
+            <div style="flex:2;display:flex;align-items:center;gap:14px;text-align:right;">
+              <i class="fas fa-comments" style="color:${OR};font-size:1.1rem;flex-shrink:0;"></i>
               <div>
-                <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff; margin-bottom: 4px;">${sf.name}</h3>
-                <p style="color: #86868b; font-size: 0.9rem; line-height: 1.4; margin: 0; padding-left: 20px;">${sf.desc}</p>
+                <div style="font-weight:700;color:${OR};font-size:1rem;">${sf.name}</div>
+                <div style="font-size:0.78rem;color:#888;margin-top:2px;">תת פורומים ▾</div>
               </div>
             </div>
-
-            <!-- Stats -->
-            <div style="width: 140px; text-align: center; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px;">
-              <span style="color: #ffffff; font-weight: 700; font-size: 1.1rem;">${stats.topicsCount.toLocaleString()}</span>
-              <span style="color: #86868b; font-size: 0.8rem;">נושאים</span>
+            <!-- הודעות -->
+            <div style="width:100px;text-align:center;flex-shrink:0;">
+              <div style="font-weight:700;color:#e5e5ea;font-size:0.95rem;">${stats.postsCount.toLocaleString()}</div>
+              <div style="font-size:0.72rem;color:#888;">הודעות</div>
             </div>
-            
-            <div style="width: 140px; text-align: center; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px;">
-              <span style="color: #ffffff; font-weight: 700; font-size: 1.1rem;">${stats.postsCount.toLocaleString()}</span>
-              <span style="color: #86868b; font-size: 0.8rem;">הודעות</span>
+            <!-- נושאים -->
+            <div style="width:100px;text-align:center;flex-shrink:0;">
+              <div style="font-weight:700;color:#e5e5ea;font-size:0.95rem;">${stats.topicsCount.toLocaleString()}</div>
+              <div style="font-size:0.72rem;color:#888;">נושאים</div>
             </div>
-
-            <!-- Latest Post Info -->
-            <div style="flex: 1.5; min-width: 220px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-start;">
-              ${latestHtml}
-            </div>
+            <!-- Latest (left) -->
+            <div style="width:220px;flex-shrink:0;text-align:right;">${latestHtml}</div>
           </div>
         `;
       });
 
-      html += `
+      html += `</div>`;
+    });
+
+    // ---- Build "משתמשים בולטים" section ----
+    // Aggregate user stats from posts and comments snapshots
+    const userPostCount = {};    // email -> post count
+    const userLikes = {};        // email -> total likes received
+    const userComments = {};     // email -> comment count (replies given)
+
+    postsSnapshot.forEach(doc => {
+      const d = doc.data();
+      const email = d.authorEmail || d.author || 'unknown';
+      userPostCount[email] = (userPostCount[email] || 0) + 1;
+      userLikes[email] = (userLikes[email] || 0) + (d.likes || 0);
+    });
+
+    commentsSnapshot.forEach(doc => {
+      const d = doc.data();
+      const email = d.authorEmail || d.author || 'unknown';
+      userComments[email] = (userComments[email] || 0) + 1;
+      // Also increment post count with comments
+      userPostCount[email] = (userPostCount[email] || 0) + 1;
+    });
+
+    // Name lookup: email -> display name (best-effort from posts)
+    const emailToName = {};
+    postsSnapshot.forEach(doc => {
+      const d = doc.data();
+      if (d.authorEmail && (d.authorName || d.author)) {
+        emailToName[d.authorEmail] = d.authorName || d.author;
+      }
+    });
+    commentsSnapshot.forEach(doc => {
+      const d = doc.data();
+      if (d.authorEmail && (d.authorName || d.author)) {
+        emailToName[d.authorEmail] = d.authorName || d.author;
+      }
+    });
+
+    function topUsers(scoreMap, limit) {
+      return Object.entries(scoreMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([email, score]) => ({ email, score, name: emailToName[email] || email.split('@')[0] || email }));
+    }
+
+    const topByPosts = topUsers(userPostCount, 5);
+    const topByLikes = topUsers(userLikes, 5);
+    const topByReplies = topUsers(userComments, 5);
+
+    const avatarColorsRanking = ['#0071e3','#af52de','#ff9500','#34c759','#ff3b30','#5ac8fa','#ffcc00'];
+    function renderRankingList(users) {
+      if (!users.length) return '<div style="color:#86868b; font-size:0.85rem; text-align:center; padding:12px;">אין נתונים עדיין</div>';
+      return users.map((u, i) => {
+        const initials = (u.name || 'A').charAt(0).toUpperCase();
+        const aColor = avatarColorsRanking[initials.charCodeAt(0) % avatarColorsRanking.length];
+        return `
+          <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="color:#86868b; font-size:0.8rem; font-weight:700; width:18px; text-align:center;">${i + 1}</span>
+            <div style="width:32px; height:32px; border-radius:50%; background:${aColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">${initials}</div>
+            <span style="color:#b5192b; font-weight:700; font-size:0.9rem; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.name}</span>
+            <span style="color:#86868b; font-size:0.8rem;">${u.score}</span>
           </div>
+        `;
+      }).join('');
+    }
+
+    const rankingColumns = [
+      { title: 'הכי הרבה הודעות', icon: 'fa-comment', users: topByPosts },
+      { title: 'הדירוג הגבוה ביותר', icon: 'fa-star', users: topByLikes },
+      { title: 'הכי הרבה נקודות', icon: 'fa-trophy', users: topByReplies }
+    ];
+
+    html += `
+      <div style="margin-top:32px; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <h3 style="font-size:1.3rem; font-weight:800; color:#ffffff; margin:0;">משתמשים בולטים</h3>
+          <span style="color:#86868b; font-size:0.9rem; cursor:pointer;" title="הסתר/הצג">▼</span>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
+    `;
+
+    rankingColumns.forEach(col => {
+      html += `
+        <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:10px;">
+            <i class="fas ${col.icon}" style="color:#b5192b; font-size:0.9rem;"></i>
+            <span style="font-weight:700; font-size:0.95rem; color:#ffffff;">${col.title}</span>
+          </div>
+          ${renderRankingList(col.users)}
+          <button onclick="showToast('תכונה זו תהיה זמינה בקרוב!', 'info')" style="width:100%; margin-top:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#86868b; padding:7px; border-radius:8px; cursor:pointer; font-size:0.8rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">ראה עוד...</button>
         </div>
       `;
     });
+
+    html += `
+        </div>
+      </div>
+    `;
+    // ---- End ranking section ----
 
     container.innerHTML = html;
   } catch (err) {
@@ -5474,102 +5522,146 @@ window.showGroupsList = function() {
 window.openGroup = async function(groupId) {
   const group = PREDEFINED_GROUPS.find(g => g.id === groupId);
   if (!group) return;
-  
+
   currentGroupId = groupId;
   document.getElementById('groups-list-view').style.display = 'none';
   document.getElementById('post-detail-view').style.display = 'none';
   document.getElementById('group-detail-view').style.display = 'block';
-  
+
+  // Update header
   document.getElementById('group-title').textContent = group.name;
   document.getElementById('group-desc').textContent = group.desc;
-  
+
   const container = document.getElementById('group-posts-container');
   container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> טוען דיונים בפורום...</div>';
-  
+
   try {
+    // Fetch posts
     const postsRef = window.fbColl(window.fbDb, 'posts');
     const q = window.fbQuery(postsRef, window.fbWhere('groupId', '==', groupId));
     const snapshot = await window.fbGetDocs(q);
-    
+
+    // Fetch all comments for this group to count per-post
+    const commentsRef = window.fbColl(window.fbDb, 'comments');
+    const commentsSnap = await window.fbGetDocs(commentsRef);
+    const commentsByPost = {};
+    const latestCommentByPost = {};
+    commentsSnap.forEach(cdoc => {
+      const cd = cdoc.data();
+      if (!commentsByPost[cd.postId]) commentsByPost[cd.postId] = 0;
+      commentsByPost[cd.postId]++;
+      // Track latest comment
+      if (!latestCommentByPost[cd.postId] || new Date(cd.timestamp) > new Date(latestCommentByPost[cd.postId].timestamp)) {
+        latestCommentByPost[cd.postId] = { author: cd.author || cd.authorName || 'Anonymous', timestamp: cd.timestamp };
+      }
+    });
+
     if (snapshot.empty) {
-      container.innerHTML = '<div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#86868b; direction:rtl;">אין עדיין דיונים בפורום זה. היה הראשון לפתוח דיון!</div>';
+      container.innerHTML = `
+        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#86868b; direction:rtl;">
+          אין עדיין דיונים בפורום זה. היה הראשון לפתוח דיון!
+        </div>`;
       return;
     }
-    
-    // Sort in memory
+
+    // Sort in memory descending
     const docs = [];
     snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
     docs.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
-    
-    let html = '<div style="display:flex; flex-direction:column; gap:20px; direction:rtl; text-align:right;">';
+
+    const OR2 = '#f59e0b';
+
+    // Build forum table
+    let html = `
+      <div style="direction:rtl; text-align:right; border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
+        <!-- Filters bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 20px; background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.8rem; color:#888;">
+          <span style="display:flex; align-items:center; gap:6px; cursor:pointer; color:${OR2}; font-weight:600;">▼ מסננים</span>
+          <div style="display:flex; gap:20px;">
+            <span style="color:#888;">תגובות:</span>
+            <span style="color:#888; width:70px; text-align:center;">צפיות:</span>
+            <span style="color:#888; width:200px;">הודעה אחרונה:</span>
+          </div>
+        </div>
+    `;
+
     docs.forEach(doc => {
       const data = doc.data;
       const dateStr = new Date(data.timestamp).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
-      const priceTagHtml = data.price != null ? `<div style="background:#34c759; color:#fff; font-weight:700; padding:6px 12px; border-radius:8px; font-size:0.85rem; width:fit-content; margin-top:8px;">₪${data.price.toLocaleString()}</div>` : '';
-      
-      // Let's render an absolute premium split layout if there's a post image
-      let cardInner = '';
-      if (data.image) {
-        cardInner = `
-          <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:stretch; width:100%;">
-            <div style="flex:1; min-width:280px; display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:12px; line-height:1.3; transition:color 0.2s;" class="post-card-title">${data.title}</h3>
-                <div style="font-size:0.95rem; color:#a1a1aa; line-height:1.6; margin-bottom:16px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${data.content}</div>
-              </div>
-              <div>
-                ${priceTagHtml}
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff;"><i class="fas fa-user"></i></div>
-                    <span style="font-weight:600; color:#e5e5ea;">${data.authorName || data.author || 'Anonymous'}</span>
-                  </div>
-                  <div>${dateStr}</div>
-                </div>
-              </div>
+      const authorName = data.authorName || data.author || 'Anonymous';
+      const repliesCount = commentsByPost[doc.id] || (data.commentsCount || 0);
+      const viewsCount = data.views || 0;
+      const latestComment = latestCommentByPost[doc.id];
+
+      let latestHtml = `<span style="color:#86868b; font-size:0.8rem;">אין תגובות</span>`;
+      if (latestComment) {
+        const latestTimeAgo = formatTimeAgo(new Date(latestComment.timestamp));
+        const initials = (latestComment.author || 'A').charAt(0).toUpperCase();
+        const avatarColors = ['#0071e3','#af52de','#ff9500','#34c759','#ff3b30','#5ac8fa','#ffcc00'];
+        const avatarColor = avatarColors[initials.charCodeAt(0) % avatarColors.length];
+        latestHtml = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:28px; height:28px; border-radius:50%; background:${avatarColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0;">${initials}</div>
+            <div>
+              <div style="font-size:0.8rem; color:#e5e5ea; font-weight:600;">${latestComment.author}</div>
+              <div style="font-size:0.75rem; color:#86868b;">${latestTimeAgo}</div>
             </div>
-            <div style="width:220px; min-height:160px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
-              <img src="${data.image}" style="width:100%; height:100%; object-fit:cover;">
-            </div>
-          </div>
-        `;
+          </div>`;
       } else {
-        cardInner = `
-          <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%;">
+        // Use post author as latest if no comments
+        const timeAgo = formatTimeAgo(new Date(data.timestamp));
+        const initials = authorName.charAt(0).toUpperCase();
+        const avatarColors = ['#0071e3','#af52de','#ff9500','#34c759','#ff3b30','#5ac8fa','#ffcc00'];
+        const avatarColor = avatarColors[initials.charCodeAt(0) % avatarColors.length];
+        latestHtml = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:28px; height:28px; border-radius:50%; background:${avatarColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0;">${initials}</div>
             <div>
-              <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:12px; line-height:1.3; transition:color 0.2s;" class="post-card-title">${data.title}</h3>
-              <div style="font-size:0.95rem; color:#a1a1aa; line-height:1.6; margin-bottom:16px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${data.content}</div>
+              <div style="font-size:0.8rem; color:#e5e5ea; font-weight:600;">${authorName}</div>
+              <div style="font-size:0.75rem; color:#86868b;">${timeAgo}</div>
             </div>
-            <div>
-              ${priceTagHtml}
-              <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <div style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff;"><i class="fas fa-user"></i></div>
-                  <span style="font-weight:600; color:#e5e5ea;">${data.authorName || data.author || 'Anonymous'}</span>
-                </div>
-                <div>${dateStr}</div>
-              </div>
-            </div>
-          </div>
-        `;
+          </div>`;
       }
 
-      const buttonsHtml = currentGroupId === 'marketplace' ? `
-        <div style="display:flex; gap:10px; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
-          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}', '${data.authorEmail || ''}', '${(data.title || '').replace(/'/g, "\\'").replace(/\"/g, "&quot;")}'); else alert('הגשת הצעה תהיה זמינה בקרוב!');" style="flex:1; background:#fbbf24; color:#000; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">הגש הצעת רכישה</button>
-          <button onclick="event.stopPropagation(); alert('מערכת הודעות פרטיות תהיה זמינה בקרוב!');" style="flex:1; background:#3b82f6; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">שלח הודעה</button>
-        </div>
-      ` : '';
+      const marketplaceBtns = currentGroupId === 'marketplace' ? `
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}', '${data.authorEmail || ''}', '${(data.title || '').replace(/'/g, "\\'").replace(/\"/g, "&quot;")}'); else alert('הגשת הצעה תהיה זמינה בקרוב!');" style="background:#fbbf24; color:#000; border:none; padding:5px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.75rem;">הגש הצעה</button>
+        </div>` : '';
+
+      const authorInitials = authorName.charAt(0).toUpperCase();
+      const avatarBgColors = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#06b6d4'];
+      const avatarBg2 = avatarBgColors[authorInitials.charCodeAt(0) % avatarBgColors.length];
+      const authorAvatarHtml = data.authorAvatar
+        ? `<img src="${data.authorAvatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+        : `<div style="width:34px;height:34px;border-radius:50%;background:${avatarBg2};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem;flex-shrink:0;">${authorInitials}</div>`;
 
       html += `
-        <div class="premium-post-card" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.transform='none'; this.style.boxShadow='none'" onclick="openPost('${doc.id}')">
-          ${cardInner}
-          ${buttonsHtml}
+        <div style="display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.06); transition:background 0.15s;" onmouseover="this.style.background='rgba(245,158,11,0.04)'" onmouseout="this.style.background='transparent'">
+          <!-- Author avatar (right side) -->
+          <div style="flex-shrink:0; margin-left:14px;">${authorAvatarHtml}</div>
+          <!-- Title column -->
+          <div style="flex:1; min-width:0; text-align:right;">
+            <a href="#" onclick="openPost('${doc.id}'); return false;" style="color:${OR2}; font-weight:700; font-size:0.97rem; text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;">${data.title}</a>
+            <div style="font-size:0.78rem; color:#888; margin-top:3px;">${authorName} &bull; ${dateStr}</div>
+            ${marketplaceBtns}
+          </div>
+          <!-- Replies -->
+          <div style="width:70px; text-align:center; flex-shrink:0;">
+            <div style="font-weight:700; color:#e5e5ea; font-size:0.95rem;">${repliesCount}</div>
+            <div style="font-size:0.7rem; color:#666;">תגובות</div>
+          </div>
+          <!-- Views -->
+          <div style="width:70px; text-align:center; flex-shrink:0;">
+            <div style="font-weight:700; color:#e5e5ea; font-size:0.95rem;">${viewsCount}</div>
+            <div style="font-size:0.7rem; color:#666;">צפיות</div>
+          </div>
+          <!-- Latest reply -->
+          <div style="width:200px; flex-shrink:0; text-align:right;">${latestHtml}</div>
         </div>
       `;
     });
+
     html += '</div>';
-    
     container.innerHTML = html;
   } catch (err) {
     console.error('Error loading posts:', err);
@@ -5678,7 +5770,7 @@ window.openPost = async function(postId) {
   currentPostId = postId;
   document.getElementById('group-detail-view').style.display = 'none';
   document.getElementById('post-detail-view').style.display = 'block';
-  
+
   const backBtn = document.getElementById('post-back-btn');
   backBtn.onclick = () => {
     if (currentGroupId) {
@@ -5687,86 +5779,122 @@ window.openPost = async function(postId) {
       showPage('archive');
     }
   };
-  
-  document.getElementById('post-title').textContent = 'Loading...';
-  document.getElementById('post-content').textContent = '';
-  document.getElementById('post-author').textContent = '';
-  document.getElementById('post-date').textContent = '';
-  
-  const commentsContainer = document.getElementById('post-comments-container');
-  commentsContainer.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div>';
-  document.getElementById('comments-count').textContent = '0';
-  
+
+  const threadContainer = document.getElementById('post-thread-container');
+  threadContainer.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div>';
+
   try {
-    // 1. Fetch Post details
+    // 1. Fetch Post
     const postDocRef = window.fbDoc(window.fbDb, 'posts', postId);
     const postSnap = await window.fbGetDoc(postDocRef);
-    
-    if (postSnap.exists()) {
-      const data = postSnap.data();
-      document.getElementById('post-title').textContent = data.title;
-      document.getElementById('post-content').textContent = data.content;
-      document.getElementById('post-author').textContent = data.authorName || data.author;
-      document.getElementById('post-date').textContent = new Date(data.timestamp).toLocaleString();
-      
-      currentPostAuthorEmail = data.authorEmail;
-      currentPostTitle = data.title;
-      
-      const actionsContainer = document.getElementById('post-actions-container');
-      if (actionsContainer) {
-        if (currentGroupId === 'marketplace' && currentUser && currentUser.email !== data.authorEmail) {
-          actionsContainer.style.display = 'flex';
-        } else {
-          actionsContainer.style.display = 'none';
-        }
-      }
-      
-    } else {
-      document.getElementById('post-title').textContent = 'Post not found';
-      commentsContainer.innerHTML = '';
+
+    if (!postSnap.exists()) {
+      threadContainer.innerHTML = '<div style="color:#ef4444; padding:16px; direction:rtl;">הפוסט לא נמצא.</div>';
       return;
     }
-    
-    // 2. Fetch Comments
+
+    const postData = postSnap.data();
+    currentPostAuthorEmail = postData.authorEmail;
+    currentPostTitle = postData.title;
+
+    // 2. Increment views
+    try {
+      const { increment } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+      await window.fbUpdateDoc(postDocRef, { views: increment(1) });
+    } catch (e) {
+      // Silently fail if increment not available
+    }
+
+    // 3. Fetch comments
     const commentsRef = window.fbColl(window.fbDb, 'comments');
-    // Removed orderBy to avoid composite index requirement
-    const q = window.fbQuery(commentsRef, window.fbWhere('postId', '==', postId));
-    const snapshot = await window.fbGetDocs(q);
-    
-    document.getElementById('comments-count').textContent = snapshot.size;
-    
-    if (snapshot.empty) {
-      commentsContainer.innerHTML = '<div style="color:#86868b; font-size:0.95rem; padding:16px; text-align:center;">No comments yet. Be the first to reply!</div>';
-      return;
-    }
-    
-    // Sort in memory
-    const docs = [];
-    snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
-    docs.sort((a, b) => new Date(a.data.timestamp) - new Date(b.data.timestamp));
-    
-    let html = '';
-    docs.forEach(doc => {
-      const data = doc.data;
-      const dateStr = new Date(data.timestamp).toLocaleString();
-      html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:0.85rem; color:#86868b;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <div style="width:24px; height:24px; border-radius:50%; background:#2c2c2e; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fas fa-user" style="font-size:0.7rem;"></i></div>
-              <span style="font-weight:600; color:#e5e5ea;">${data.author}</span>
-            </div>
-            <div>${dateStr}</div>
+    const cq = window.fbQuery(commentsRef, window.fbWhere('postId', '==', postId));
+    const commentsSnap = await window.fbGetDocs(cq);
+
+    const comments = [];
+    commentsSnap.forEach(d => comments.push({ id: d.id, data: d.data() }));
+    comments.sort((a, b) => new Date(a.data.timestamp) - new Date(b.data.timestamp));
+
+    // Helper: build user sidebar card
+    const OR3 = '#f59e0b';
+    const avatarColors = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#06b6d4'];
+    function buildUserSidebar(authorName, authorAvatar, postCount, joinDate) {
+      const initials = (authorName || 'A').charAt(0).toUpperCase();
+      const avatarColor = avatarColors[initials.charCodeAt(0) % avatarColors.length];
+      let role = 'משתמש חדש';
+      let badge = '';
+      if (postCount >= 500) { role = 'מנהל'; badge = `<div style="font-size:0.7rem; background:${OR3}; color:#000; padding:2px 10px; border-radius:4px; font-weight:800; margin-top:2px;">מייסד</div>`; }
+      else if (postCount >= 100) { role = 'מנהל'; }
+      else if (postCount >= 20) { role = 'חבר ותיק'; }
+      else if (postCount >= 5) { role = 'חבר'; }
+      const avatarHtml = authorAvatar
+        ? `<img src="${authorAvatar}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(245,158,11,0.3);">`
+        : `<div style="width:64px;height:64px;border-radius:50%;background:${avatarColor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;">${initials}</div>`;
+      const joinStr = joinDate ? new Date(joinDate).toLocaleDateString('he-IL') : '—';
+      return `
+        <div style="width:180px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-left:1px solid rgba(255,255,255,0.07);text-align:center;gap:6px;background:rgba(255,255,255,0.01);">
+          ${avatarHtml}
+          <div style="font-size:0.95rem;font-weight:700;color:${OR3};margin-top:2px;">${authorName}</div>
+          <div style="font-size:0.72rem;color:#aaa;">${role}</div>
+          ${badge}
+          <div style="width:100%;margin-top:8px;border-top:1px solid rgba(255,255,255,0.07);padding-top:8px;font-size:0.75rem;color:#86868b;text-align:right;">
+            <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>הצטרף ב:</span><span style="color:#d1d1d6;">${joinStr}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>הודעות:</span><span style="color:#d1d1d6;">${postCount}</span></div>
           </div>
-          <div style="font-size:0.95rem; color:#d1d1d6; line-height:1.5; white-space:pre-wrap;">${data.content}</div>
         </div>
       `;
+    }
+
+    function buildPostCard(num, authorName, authorAvatar, timestamp, content, postCount, joinDate, isFirst, titleHtml) {
+      const dateStr = new Date(timestamp).toLocaleDateString('he-IL');
+      const sidebar = buildUserSidebar(authorName, authorAvatar, postCount, joinDate);
+      return `
+        <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.08); border-radius:8px; overflow:hidden; display:flex; flex-direction:row-reverse; direction:rtl;">
+          ${sidebar}
+          <div style="flex:1; min-width:0; padding:16px 20px; display:flex; flex-direction:column;">
+            ${isFirst && titleHtml ? `<h2 style="font-size:1.3rem; font-weight:800; color:#fff; margin-bottom:10px; line-height:1.3; direction:rtl;">${titleHtml}</h2>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.78rem; color:#888; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px; direction:rtl;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="color:#aaa; font-weight:600;">#${num}</span>
+                <button onclick="if(navigator.share){navigator.share({url:window.location.href});}else{navigator.clipboard.writeText(window.location.href).then(()=>showToast('הקישור הועתק','success'));}" style="background:none;border:none;color:#666;cursor:pointer;padding:2px 4px;" title="שתף"><i class="fas fa-share-nodes" style="font-size:0.85rem;"></i></button>
+              </div>
+              <span>${dateStr}</span>
+            </div>
+            <div style="font-size:0.95rem; color:#d1d1d6; line-height:1.75; white-space:pre-wrap; flex:1; direction:rtl; text-align:right;">${content}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Count post appearances per author as proxy for post count
+    const allAuthors = [postData.authorName || postData.author || 'Anonymous', ...comments.map(c => c.data.author || c.data.authorName || 'Anonymous')];
+    const authorCounts = {};
+    allAuthors.forEach(a => { authorCounts[a] = (authorCounts[a] || 0) + 1; });
+
+    let html = '';
+    // Original post as #1
+    const origAuthor = postData.authorName || postData.author || 'Anonymous';
+    html += buildPostCard(1, origAuthor, postData.authorAvatar || '', postData.timestamp, postData.content || '', authorCounts[origAuthor] || 1, postData.timestamp, true, postData.title || '');
+
+    // Marketplace actions
+    if (currentGroupId === 'marketplace' && currentUser && currentUser.email !== postData.authorEmail) {
+      html += `
+        <div style="display:flex; gap:12px; margin-top:4px; margin-bottom:4px; direction:rtl;">
+          <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:10px 24px; font-weight:700;"><i class="fas fa-hand-holding-usd" style="margin-left:8px;"></i>הגש הצעת רכישה</button>
+          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:10px 24px; font-weight:700; background:#2c2c2e; color:#fff;"><i class="fas fa-envelope" style="margin-left:8px;"></i>שלח הודעה למוכר</button>
+        </div>
+      `;
+    }
+
+    // Comments as #2, #3...
+    comments.forEach((c, idx) => {
+      const cAuthor = c.data.author || c.data.authorName || 'Anonymous';
+      html += buildPostCard(idx + 2, cAuthor, c.data.authorAvatar || '', c.data.timestamp, c.data.content || '', authorCounts[cAuthor] || 1, null, false, '');
     });
-    
-    commentsContainer.innerHTML = html;
+
+    threadContainer.innerHTML = html;
   } catch (err) {
     console.error('Error loading post:', err);
-    commentsContainer.innerHTML = '<div style="color:#ef4444; padding:16px;">Failed to load comments.</div>';
+    threadContainer.innerHTML = '<div style="color:#ef4444; padding:16px; direction:rtl;">שגיאה בטעינת הפוסט.</div>';
   }
 };
 
@@ -7586,59 +7714,102 @@ window.toggleFavoriteForum = function(e, groupId) {
 };
 
 function renderDrawerForumsList() {
-  const container = document.getElementById('drawer-forums-list');
-  if (!container) return;
-  
+  const mineContainer = document.getElementById('drawer-forums-mine');
+  const recContainer = document.getElementById('drawer-forums-recommended');
+  if (!mineContainer || !recContainer) return;
+
   const favorites = JSON.parse(localStorage.getItem('favorite_forums') || '[]');
-  
-  // Sort predefined groups so favorites show up first
-  const sortedGroups = [...PREDEFINED_GROUPS].sort((a, b) => {
-    const aFav = favorites.includes(a.id) ? 1 : 0;
-    const bFav = favorites.includes(b.id) ? 1 : 0;
-    return bFav - aFav; // Favorites first
-  });
-  
-  let html = '';
-  sortedGroups.forEach(g => {
-    const isFav = favorites.includes(g.id);
-    html += `
-      <div onclick="selectDrawerForum('${g.id}')" style="background:#141416; border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; cursor:pointer; position:relative; transition:all 0.2s; display:flex; flex-direction:column; gap:10px;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)';">
-        <!-- Favorite Star Button -->
-        <button onclick="toggleFavoriteForum(event, '${g.id}')" style="position:absolute; top:12px; right:12px; background:none; border:none; color:${isFav ? '#ffc107' : '#48484a'}; cursor:pointer; font-size:1.15rem; transition:color 0.2s;" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">
+
+  function forumCard(g, isFav) {
+    return `
+      <div onclick="selectDrawerForum('${g.id}')" style="flex-shrink:0; width:180px; background:#141416; border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:14px; cursor:pointer; transition:all 0.2s; position:relative;" onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'; this.style.transform='none';">
+        <button onclick="toggleFavoriteForum(event, '${g.id}')" style="position:absolute; top:10px; left:10px; background:none; border:none; color:${isFav ? '#ffc107' : '#48484a'}; cursor:pointer; font-size:0.9rem; padding:0; transition:color 0.2s;">
           <i class="${isFav ? 'fas' : 'far'} fa-star"></i>
         </button>
-        
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:40px; height:40px; border-radius:10px; background:${g.color || '#0071e3'}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.2rem;">
-            <i class="fas ${g.icon || 'fa-comments'}"></i>
-          </div>
-          <div style="flex:1; min-width:0; padding-right:20px;">
-            <div style="font-weight:700; color:#fff; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.name}</div>
-            <div style="font-size:0.75rem; color:#86868b; margin-top:2px;">Predefined Forum</div>
-          </div>
+        <div style="width:36px; height:36px; border-radius:10px; background:${g.color || '#0071e3'}22; border:1px solid ${g.color || '#0071e3'}44; display:flex; align-items:center; justify-content:center; color:${g.color || '#0071e3'}; font-size:1rem; margin-bottom:10px;">
+          <i class="fas ${g.icon || 'fa-comments'}"></i>
         </div>
-        <p style="font-size:0.8rem; color:#a1a1aa; line-height:1.4; margin:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; height:36px;">
-          ${g.desc}
-        </p>
-        <div style="margin-top:auto; font-size:0.8rem; font-weight:600; color:#ff9500; display:flex; align-items:center; gap:4px;">
-          <span>Enter Forum</span> <i class="fas fa-chevron-right" style="font-size:0.7rem;"></i>
+        <div style="font-weight:700; color:#fff; font-size:0.85rem; margin-bottom:4px; padding-left:18px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${g.name}</div>
+        <div style="font-size:0.75rem; color:#86868b; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.4; height:34px;">${g.desc}</div>
+        <div style="margin-top:10px; font-size:0.75rem; font-weight:600; color:#ff9500; display:flex; align-items:center; gap:4px;">
+          <span>כניסה לפורום</span> <i class="fas fa-chevron-left" style="font-size:0.65rem;"></i>
         </div>
       </div>
     `;
-  });
-  
-  container.innerHTML = html;
+  }
+
+  // Row 1: My forums (favorites)
+  const myForums = PREDEFINED_GROUPS.filter(g => favorites.includes(g.id));
+  if (myForums.length === 0) {
+    mineContainer.innerHTML = `<div style="color:#86868b; font-size:0.85rem; padding:12px 0;">סמן פורומים ב-⭐ כדי שיופיעו כאן</div>`;
+  } else {
+    mineContainer.innerHTML = myForums.map(g => forumCard(g, true)).join('');
+  }
+
+  // Row 2: All forums as recommendations
+  recContainer.innerHTML = PREDEFINED_GROUPS.map(g => forumCard(g, favorites.includes(g.id))).join('');
 }
 
 window.selectDrawerForum = function(groupId) {
-  // Close drawer
   toggleForumsDrawer();
-  
-  // Navigate to forums page
-  showPage('forum');
-  
-  // Switch active forum group
-  if (window.switchForumGroup) {
-    window.switchForumGroup(groupId);
-  }
+  showPage('groups');
+  setTimeout(() => openGroup(groupId), 300);
 };
+
+// =====================================================================
+// LIVE INLINE EDITOR MODE
+// =====================================================================
+
+function enableLiveEditMode() {
+  document.body.classList.add('live-edit-mode');
+  document.body.addEventListener('click', handleLiveEditClick, true);
+
+  let exitBtn = document.getElementById('live-edit-exit-btn');
+  if (!exitBtn) {
+    exitBtn = document.createElement('button');
+    exitBtn.id = 'live-edit-exit-btn';
+    exitBtn.innerHTML = '❌ Exit Edit Mode';
+    exitBtn.style.cssText = 'position:fixed; bottom:20px; left:20px; z-index:99999; background:#ef4444; color:#fff; border:none; padding:12px 24px; border-radius:980px; font-weight:700; box-shadow:0 4px 12px rgba(0,0,0,0.3); cursor:pointer; font-size:1rem;';
+    exitBtn.onclick = disableLiveEditMode;
+    document.body.appendChild(exitBtn);
+  }
+  exitBtn.style.display = 'block';
+}
+
+function disableLiveEditMode() {
+  document.body.classList.remove('live-edit-mode');
+  document.body.removeEventListener('click', handleLiveEditClick, true);
+  localStorage.removeItem('isEditor');
+  const exitBtn = document.getElementById('live-edit-exit-btn');
+  if (exitBtn) exitBtn.style.display = 'none';
+  showToast('✅ יצאת ממצב עריכה');
+}
+
+function handleLiveEditClick(e) {
+  if (!document.body.classList.contains('live-edit-mode')) return;
+  if (e.target.closest('#live-edit-exit-btn') || e.target.closest('.modal-overlay')) return;
+
+  const validTags = ['H1', 'H2', 'H3', 'H4', 'H5', 'P', 'SPAN', 'A', 'BUTTON', 'IMG', 'DIV'];
+  if (!validTags.includes(e.target.tagName)) return;
+
+  // For DIVs, only allow editing if it looks like a leaf node or text container
+  if (e.target.tagName === 'DIV' && e.target.children.length > 2) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (e.target.tagName === 'IMG') {
+    const newSrc = prompt('ערוך תמונה (הכנס כתובת URL):', e.target.src);
+    if (newSrc) e.target.src = newSrc;
+  } else {
+    // Find text content
+    const textNode = Array.from(e.target.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0);
+    if (textNode) {
+      const newText = prompt('ערוך טקסט:', textNode.textContent.trim());
+      if (newText !== null) textNode.textContent = newText;
+    } else if (e.target.children.length === 0) {
+      const newText = prompt('ערוך טקסט:', e.target.innerText);
+      if (newText !== null) e.target.innerText = newText;
+    }
+  }
+}

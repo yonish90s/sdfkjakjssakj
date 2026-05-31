@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- 3D MODEL VIEWER LIBRARY -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
@@ -91,8 +91,14 @@
         <span>Back to Menu</span>
       </a>
 
-      <div class="sidebar-header">
+      <div class="sidebar-header" style="margin-bottom:16px;">
         <h2 class="sidebar-logo">הדשבורד שלי</h2>
+      </div>
+      <!-- Sidebar Search -->
+      <div class="sidebar-search-bar" onclick="document.getElementById('sidebar-search-input').focus()" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:7px 12px; margin-bottom:12px; cursor:text;">
+        <i class="fas fa-search" style="color:#71717a; font-size:0.8rem;"></i>
+        <input id="sidebar-search-input" type="text" placeholder="חיפוש..." style="background:none; border:none; outline:none; color:#fff; font-size:0.8rem; width:100%; font-family:inherit; direction:rtl;" oninput="filterSidebarSearch(this.value)">
+        <kbd style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:4px; padding:1px 5px; font-size:0.65rem; color:#71717a; font-family:inherit; flex-shrink:0;">F</kbd>
       </div>
 
       <!-- Weather Widget -->
@@ -111,7 +117,11 @@
             <i class="fas fa-home"></i>
             <span>כתבות</span>
           </a>
-          <a href="#" class="sidebar-link" data-page="store" onclick="showPage('store'); return false;">
+          <a href="#" id="sidebar-admin-link" class="sidebar-link" data-page="admin" style="display:none;" onclick="showPage('admin'); return false;">
+            <i class="fas fa-lock" style="color: #f9b233;"></i>
+            <span style="font-weight:800; color: #f9b233;">ניהול אתר</span>
+          </a>
+          <a href="#" class="sidebar-link" data-page="shop" onclick="showPage('shop'); return false;">
             <i class="fas fa-shopping-bag"></i>
             <span>חנות</span>
           </a>
@@ -124,16 +134,6 @@
             <span>פרימיום</span>
           </a>
 
-          <a href="#" class="sidebar-link" data-page="video-reviews" onclick="showPage('video-reviews'); return false;">
-            <i class="fa-solid fa-play"></i>
-            <span>וידאו</span>
-          </a>
-          
-          <a href="#" class="sidebar-link" data-page="messages" onclick="showPage('messages'); return false;">
-            <i class="fa-solid fa-comment-dots"></i>
-            <span id="sidebar-messages-text">הודעות</span>
-            <span id="messages-unread-badge" style="display:none; margin-left:auto; width:8px; height:8px; background-color:#ff3b30; border-radius:50%; flex-shrink:0;"></span>
-          </a>
 
           <a href="#" class="sidebar-link" data-page="groups" onclick="showPage('groups'); return false;">
             <i class="fa-solid fa-comments"></i>
@@ -208,9 +208,7 @@
           <button onclick="showPage('home'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-newspaper"></i> Articles</button>
           <button onclick="showPage('pdf-store'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-chart-line"></i> Graphs</button>
           <button onclick="showPage('groups'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-users"></i> Groups</button>
-          <button onclick="showPage('exchange'); toggleMobileMenu()" class="mobile-nav-link" style="color:#34c759;"><i class="fas fa-chart-line"></i> Exchange</button>
-          <button onclick="showPage('store'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-laptop-code"></i> Software Store</button>
-          <button onclick="showPage('shop'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-shopping-bag"></i> Online Shop</button>
+          <button onclick="showPage('shop'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-shopping-bag"></i> חנות</button>
           <button onclick="showPage('appointments'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-calendar-alt"></i> Book Appointment</button>
           <div class="mobile-menu-divider"></div>
           <button onclick="showPage('subscription'); toggleMobileMenu()" class="mobile-nav-link premium-link"><i class="fas fa-crown"></i> Go Premium</button>
@@ -284,28 +282,9 @@
 
         <!-- RIGHT SIDE: Navigation and Logo -->
         <div class="nav-right-section" style="display: flex; align-items: center; gap: 24px;">
-          <!-- Dropdown Our Stores -->
-          <div class="apple-dropdown" id="nav-dropdown" style="position:relative;">
-            <button class="apple-nav-item dropdown-trigger" onclick="toggleNavDropdown(event)" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
-              <span id="nav-text-stores">Our Stores</span> <i class="fas fa-chevron-down" style="font-size:0.75rem; color:#86868b;"></i>
-            </button>
-            <div class="apple-dropdown-content mega-menu" style="background: #1c1c1e; border: 1px solid #2c2c2e;">
-              <div class="mega-menu-title" id="nav-text-solutions" style="color:#86868b;">Our Solutions</div>
-              <button onclick="showPage('store'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color:#fff;">
-                <i class="fas fa-laptop-code"></i> <span id="nav-text-software">Software Store</span>
-              </button>
-              <button onclick="showPage('appointments'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color:#fff;">
-                <i class="fas fa-calendar-alt"></i> <span id="nav-text-appointment">Book Appointment</span>
-              </button>
-              <button onclick="showPage('shop'); toggleNavDropdown(event)" class="apple-dropdown-item" style="color:#fff;">
-                <i class="fas fa-shopping-bag"></i> <span id="nav-text-shop">Online Shop</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Exchange -->
-          <button onclick="showPage('exchange')" class="apple-nav-item" style="color: #10b981; font-weight: 700; font-size:0.9rem; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
-            <span id="nav-text-exchange">Exchange</span> <i class="fas fa-rotate" style="font-size:0.85rem;"></i>
+          <!-- Store -->
+          <button onclick="showPage('shop')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+            <span id="nav-text-stores">חנות</span>
           </button>
 
           <!-- Forum -->
@@ -512,8 +491,16 @@
         <div class="soki-footer-col">
           <h4 id="footer-title-admin">Admin</h4>
           <ul>
-            <li><a href="#" id="footer-admin-login" onclick="event.preventDefault(); showPage('admin-login');">Admin Login</a></li>
             <li><a href="#" id="footer-upload-articles" onclick="event.preventDefault(); showPage('user-article');">Upload Articles</a></li>
+          </ul>
+        </div>
+
+        <div class="soki-footer-col">
+          <h4>מידע משפטי</h4>
+          <ul>
+            <li><a href="#" onclick="openLegalModal('terms'); return false;">תנאי שימוש</a></li>
+            <li><a href="#" onclick="openLegalModal('privacy'); return false;">מדיניות פרטיות</a></li>
+            <li><a href="#" onclick="openLegalModal('accessibility'); return false;">הצהרת נגישות</a></li>
           </ul>
         </div>
       </div>
@@ -608,47 +595,32 @@
     </div>
 
     <!-- Specific Group View -->
-    <div id="group-detail-view" style="display:none;">
-      <button onclick="showGroupsList()" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-right"></i> חזרה לפורום הראשי</button>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
-        <div>
-          <h2 id="group-title" style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px;">Group Name</h2>
-          <p id="group-desc" style="color: #86868b; font-size: 1rem;">Group description</p>
+    <div id="group-detail-view" style="display:none; direction:rtl; text-align:right;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <button onclick="showGroupsList()" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem; border-radius:980px; flex-shrink:0;">← חזרה</button>
+          <div>
+            <h2 id="group-title" style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px;">Group Name</h2>
+            <p id="group-desc" style="color: #86868b; font-size: 0.9rem; margin:0;">Group description</p>
+          </div>
         </div>
-        <button class="btn-primary" onclick="openCreatePostModal()" style="border-radius:980px;"><i class="fas fa-pen"></i> New Post</button>
+        <button class="btn-primary" onclick="openCreatePostModal()" style="border-radius:980px; padding:10px 20px; font-size:0.9rem; flex-shrink:0;"><i class="fas fa-pen" style="margin-left:6px;"></i> כתוב דיון חדש</button>
       </div>
-      <div id="group-posts-container" style="display:flex; flex-direction:column; gap:16px;">
+      <div id="group-posts-container">
         <!-- Posts injected by JS -->
       </div>
     </div>
 
     <!-- Specific Post View -->
-    <div id="post-detail-view" style="display:none;">
-      <button id="post-back-btn" class="btn-secondary" style="margin-bottom: 24px; padding: 6px 12px; font-size: 0.85rem; border-radius:980px;"><i class="fas fa-arrow-right"></i> חזרה לדיונים</button>
-      <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:24px; margin-bottom:24px;">
-        <h2 id="post-title" style="font-size: 2rem; font-weight: 800; margin-bottom: 12px;">Post Title</h2>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; color:#86868b; font-size:0.9rem;">
-          <div style="width:32px; height:32px; border-radius:50%; background:#2c2c2e; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fas fa-user"></i></div>
-          <span id="post-author" style="font-weight:600; color:#f5f5f7;">Author Name</span>
-          <span>&bull;</span>
-          <span id="post-date">Date</span>
-        </div>
-        <div id="post-content" style="font-size:1.05rem; line-height:1.6; color:#e5e5ea; white-space:pre-wrap;">Post Content</div>
-        <div id="post-actions-container" style="margin-top: 24px; display:none; gap:12px;">
-          <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:10px 24px; font-weight:700;"><i class="fas fa-hand-holding-usd" style="margin-right:8px;"></i>Make an Offer</button>
-          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:10px 24px; font-weight:700; background:#2c2c2e; color:#fff;"><i class="fas fa-envelope" style="margin-right:8px;"></i>Message Seller</button>
-        </div>
+    <div id="post-detail-view" style="display:none; direction:rtl; text-align:right;">
+      <button id="post-back-btn" class="btn-secondary" style="margin-bottom: 20px; padding: 8px 14px; font-size: 0.85rem; border-radius:980px;">← חזרה לדיונים</button>
+      <div id="post-thread-container" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+        <!-- Thread cards injected by JS -->
       </div>
-      
-      <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 16px;">Comments (<span id="comments-count">0</span>)</h3>
-      <div id="post-comments-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
-        <!-- Comments injected by JS -->
-      </div>
-      
-      <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:16px;">
-        <textarea id="new-comment-input" placeholder="Write a comment..." style="width:100%; background:transparent; border:none; color:#fafafa; font-size:0.95rem; font-family:inherit; resize:vertical; min-height:80px; outline:none; margin-bottom:12px;"></textarea>
-        <div style="display:flex; justify-content:flex-end;">
-          <button class="btn-primary" onclick="submitComment()" style="border-radius:980px; padding:8px 20px;">Reply</button>
+      <div id="post-reply-area" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:16px;">
+        <textarea id="new-comment-input" placeholder="כתוב תגובה..." style="width:100%; background:transparent; border:none; color:#fafafa; font-size:0.95rem; font-family:inherit; resize:vertical; min-height:80px; outline:none; margin-bottom:12px; direction:rtl; text-align:right; box-sizing:border-box;"></textarea>
+        <div style="display:flex; justify-content:flex-start;">
+          <button class="btn-primary" onclick="submitComment()" style="border-radius:980px; padding:8px 20px;">שלח תגובה</button>
         </div>
       </div>
     </div>
@@ -960,6 +932,7 @@
     </div>
   </div>
 </div>
+</div>
 
 <!-- ARTICLE REVIEWS PAGE -->
 <div id="page-article-reviews" class="page">
@@ -1135,583 +1108,104 @@
 <div id="page-admin" class="page" style="max-width: 1400px;">
   <div style="display: flex; gap: 32px; align-items: flex-start; direction: rtl;">
     
-    <!-- SIDEBAR (Always on the right in RTL) -->
-    <aside style="width: 250px; flex-shrink: 0; background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
-      <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800;">Admin Menu</h3>
+    <!-- SIDEBAR -->
+    <aside style="width: 250px; flex-shrink: 0; background: #1c1c1e; border-radius: 16px; padding: 24px; border: 1px solid #2c2c2e; box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
+      <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800; color: #fafafa;">תפריט ניהול</h3>
       <div style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto;">
-        <button class="admin-nav-btn" data-admin-tab="dashboard" onclick="switchAdminTab('dashboard', this)">סטטיסטיקה</button>
-        <button class="admin-nav-btn active" data-admin-tab="articles" onclick="switchAdminTab('articles', this)">ניהול כתבות</button>
-        <button class="admin-nav-btn" data-admin-tab="images" onclick="switchAdminTab('images', this)">🖼️ ניהול תמונות</button>
-        <button class="admin-nav-btn" data-admin-tab="messages" onclick="switchAdminTab('messages', this)">✉️ הודעות צור קשר</button>
-        <button class="admin-nav-btn" data-admin-tab="store" onclick="switchAdminTab('store', this)">🛍️ ניהול חנות</button>
-        <button class="admin-nav-btn" data-admin-tab="pdfstore" onclick="switchAdminTab('pdfstore', this)">📊 ניהול גרפים ומידע</button>
-        <button class="admin-nav-btn" data-admin-tab="users" onclick="switchAdminTab('users', this)">👥 ניהול משתמשים</button>
-        <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)">📦 ניהול הזמנות</button>
-        <button class="admin-nav-btn" data-admin-tab="calendar" onclick="switchAdminTab('calendar', this)">📅 ניהול פגישות</button>
-        <button class="admin-nav-btn" data-admin-tab="settings" onclick="switchAdminTab('settings', this)">⚙️ הגדרות אתר</button>
-        <button class="admin-nav-btn" data-admin-tab="social" onclick="switchAdminTab('social', this)">🔗 רשתות חברתיות</button>
-        <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff;">יציאה</button>
+        <button class="admin-nav-btn active" data-admin-tab="home" onclick="switchAdminTab('home', this)" style="color: #fafafa;"><i class="fas fa-home"></i> בית</button>
+        <button class="admin-nav-btn" data-admin-tab="products" onclick="switchAdminTab('products', this)" style="color: #a1a1aa;"><i class="fas fa-tag"></i> מוצרים</button>
+        <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)" style="color: #a1a1aa;"><i class="fas fa-box"></i> הזמנות</button>
+        <button class="admin-nav-btn" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)" style="color: #a1a1aa;"><i class="fas fa-chart-pie"></i> ניתוח נתונים</button>
+        <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
+        
+        <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
       </div>
     </aside>
 
-    <!-- MAIN CONTENT (On the left) -->
-    <div style="flex: 1; min-width: 0;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; gap:16px; direction: rtl;">
-        <div>
-          <h1 style="font-size:2rem; margin:0;">ממשק ניהול האתר</h1>
-          <p style="color:#6b7280; margin:8px 0 0;">כאן תוכל לנהל כתבות, תמונות, קישורים והגדרות.</p>
-        </div>
-        <button class="btn-secondary" onclick="adminLogout()" style="height:44px; align-self:flex-start;">יציאה מהמערכת</button>
-      </div>
-
-      <!-- DASHBOARD TAB -->
-      <div id="admin-section-dashboard" class="admin-section">
-        <!-- Stats -->
+    <!-- MAIN CONTENT -->
+    <div style="flex: 1; min-width: 0; color: #fafafa;">
+      <!-- 1. HOME TAB -->
+      <div id="admin-section-home" class="admin-section">
+        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">תמונת מצב יומית</h2>
         <div style="display:flex; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
-          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
-            <div style="font-size:2.5rem; font-weight:800;" id="stat-total">0</div>
-            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">Total Site Visits</div>
+          <div style="flex:1; min-width:180px; background:#1c1c1e; border-radius:16px; padding:24px; text-align:center; border: 1px solid #2c2c2e;">
+            <div style="font-size:2rem; font-weight:800; color:#fafafa;" id="stat-sales-today">₪0</div>
+            <div style="font-size:0.9rem; color:#a1a1aa; margin-top:4px;">מכירות היום</div>
           </div>
-          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
-            <div style="font-size:2.5rem; font-weight:800;" id="stat-today">0</div>
-            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">Visits Today</div>
+          <div style="flex:1; min-width:180px; background:#1c1c1e; border-radius:16px; padding:24px; text-align:center; border: 1px solid #2c2c2e;">
+            <div style="font-size:2rem; font-weight:800; color:#fafafa;" id="stat-today">0</div>
+            <div style="font-size:0.9rem; color:#a1a1aa; margin-top:4px;">מבקרים היום</div>
           </div>
-          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
-            <div style="font-size:2.5rem; font-weight:800;" id="stat-articles">0</div>
-            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">Active Articles</div>
-          </div>
-          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
-            <div style="font-size:2.5rem; font-weight:800; color: #0071e3;" id="stat-messages">0</div>
-            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">New Messages</div>
-          </div>
-          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
-            <div style="font-size:2.5rem; font-weight:800; color: #34c759;" id="stat-orders">0</div>
-            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">Completed Orders</div>
-          </div>
-          <div style="flex:1; min-width:180px; background:#f5f5f7; border-radius:16px; padding:24px; text-align:center;">
-            <div style="font-size:2.5rem; font-weight:800; color: #af52de;" id="stat-users">0</div>
-            <div style="color:#86868b; font-size:0.9rem; margin-top:4px;">Registered Users</div>
+          <div style="flex:1; min-width:180px; background:#422006; border-radius:16px; padding:24px; text-align:center; border:1px solid #713f12;">
+            <div style="font-size:2rem; font-weight:800; color:#fde047;">3</div>
+            <div style="font-size:0.9rem; color:#fef08a; margin-top:4px;">הזמנות לאריזה</div>
           </div>
         </div>
       </div>
 
-      <!-- MESSAGES TAB -->
-      <div id="admin-section-messages" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>הודעות נכנסות</h2>
+      <!-- 2. PRODUCTS TAB -->
+      <div id="admin-section-products" class="admin-section" style="display: none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <h2 style="margin:0; font-size:1.5rem; color: #fafafa;">ניהול מוצרים ומלאי</h2>
+          <button class="btn-primary">+ הוסף מוצר</button>
         </div>
-        <table class="admin-table" style="margin-bottom: 40px;">
+        <table class="admin-table" style="color: #fafafa;">
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>From</th>
-              <th>Message</th>
-              <th>Actions</th>
+            <tr style="border-bottom: 1px solid #2c2c2e;">
+              <th style="color: #a1a1aa;">תמונה</th>
+              <th style="color: #a1a1aa;">שם מוצר</th>
+              <th style="color: #a1a1aa;">קטגוריה</th>
+              <th style="color: #a1a1aa;">מלאי</th>
+              <th style="color: #a1a1aa;">מחיר</th>
+              <th style="color: #a1a1aa;">פעולות</th>
             </tr>
           </thead>
-          <tbody id="admin-messages-list">
-            <!-- Populated by JS -->
-          </tbody>
+          <tbody id="admin-store-products-list"></tbody>
         </table>
       </div>
 
-      <!-- ARTICLES TAB -->
-      <div id="admin-section-articles" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>ניהול כתבות</h2>
-          <button class="btn-primary" onclick="openArticleEditor()">+ הוספת כתבה</button>
-        </div>
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Category</th>
-              <th>Author</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="admin-articles-list">
-            <!-- Populated by JS -->
-          </tbody>
-        </table>
-
-        <!-- FEATURED ARTICLES MANAGEMENT -->
-        <div style="margin-top: 40px; background: #fbfbfd; border-radius: 20px; padding: 24px; border: 1px solid var(--border-subtle);">
-          <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 800;">
-            <i class="fas fa-star" style="color: #f9b233;"></i> ניהול כתבות מומלצות
-          </h3>
-          <p style="font-size: 0.9rem; color: #86868b; margin-bottom: 20px;">The articles marked here will appear in the top grid of the home page (first 3 will be shown).</p>
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="admin-featured-articles-list">
-              <!-- Populated by JS -->
-            </tbody>
-          </table>
-        </div>
-        
-        <div id="admin-editor" class="hidden" style="margin-top: 40px; border-top: 1px solid #e5e5ea; padding-top: 24px;">
-          <h3>Edit Article</h3>
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <input type="hidden" id="edit-id" value="">
-            <input type="text" id="edit-title" placeholder="Article Title" class="admin-input" required>
-            <input type="text" id="edit-category" placeholder="Category" class="admin-input" required>
-            <input type="text" id="edit-author" placeholder="Author/Creator" class="admin-input" required>
-            <input type="text" id="edit-time" placeholder="Published Time (e.g., Today, 10:00)" class="admin-input" required>
-            <div style="display:flex; flex-direction:column; gap:4px;">
-              <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">Image (paste URL or upload):</label>
-              <div style="display:flex; gap:8px;">
-                <input type="text" id="edit-image" placeholder="Image URL or code..." class="admin-input" style="flex:1;" required>
-                <button type="button" class="btn-secondary" style="padding: 0 16px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; white-space: nowrap;" onclick="document.getElementById('edit-image-upload').click()">Upload Image</button>
-                <input type="file" id="edit-image-upload" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-              </div>
-            </div>
-            <textarea id="edit-snippet" placeholder="Article Snippet / Excerpt" rows="4" class="admin-input" required></textarea>
-            <textarea id="edit-content" placeholder="Full Article Content (appears when opening the article)" rows="10" class="admin-input"></textarea>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <label style="font-size:0.85rem;font-weight:600;color:#1d1d1f;">🎬 YouTube Video (Optional):</label>
-              <input type="text" id="edit-youtube" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="admin-input">
-              <p style="font-size:0.78rem;color:#86868b;margin-top:2px;">The video will be displayed below the content.</p>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <label style="font-size: 0.9rem; font-weight: 700; color: #1d1d1f;">Top Grid Position (Featured):</label>
-              <div class="position-options">
-                <label class="pos-option">
-                  <input type="radio" name="topPos" value="none" id="pos-none" checked>
-                  <span class="pos-label">None</span>
-                </label>
-                <label class="pos-option">
-                  <input type="radio" name="topPos" value="right" id="pos-right">
-                  <span class="pos-label">Right</span>
-                </label>
-                <label class="pos-option">
-                  <input type="radio" name="topPos" value="center" id="pos-center">
-                  <span class="pos-label">Center</span>
-                </label>
-                <label class="pos-option">
-                  <input type="radio" name="topPos" value="left" id="pos-left">
-                  <span class="pos-label">Left</span>
-                </label>
-              </div>
-            </div>
-            <label style="display: flex; gap: 8px; color: #f9b233; font-weight: 700;"><input type="checkbox" id="edit-isPremium"> 👑 Premium Article (Subscribers Only)</label>
-            <div style="display:flex; gap:12px;">
-              <button class="btn-primary" onclick="saveAdminArticle()">Save Article</button>
-              <button class="btn-secondary" onclick="document.getElementById('admin-editor').classList.add('hidden')" style="background:#f5f5f7; border:none; padding:12px 24px; border-radius:980px; font-weight:600; cursor:pointer;">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-      
-      <!-- STORE ADMIN TAB -->
-      <div id="admin-section-store" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>Project 11 Management</h2>
-        </div>
-        <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); display:flex; flex-direction:column; gap:16px;">
-          <input type="text" id="store-edit-title" placeholder="Software Name" class="admin-input">
-          <input type="text" id="store-edit-version" placeholder="Version (e.g., Version 1.0)" class="admin-input">
-          <textarea id="store-edit-desc" placeholder="Short description of the software" rows="4" class="admin-input"></textarea>
-          
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">YouTube Video (link or ID):</label>
-            <input type="text" id="store-edit-youtube" placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="admin-input">
-          </div>
-          
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">Image (Product Image File):</label>
-            <div style="display:flex; gap:8px;">
-              <input type="text" id="store-edit-image" placeholder="Image URL or code..." class="admin-input" style="flex:1;">
-              <button type="button" class="btn-secondary" style="padding: 0 16px; border-radius: 8px; border: 1px solid #ccc; background: white; cursor: pointer; white-space: nowrap;" onclick="document.getElementById('store-image-upload').click()">Upload Image</button>
-              <input type="file" id="store-image-upload" accept="image/*" style="display:none;" onchange="handleStoreImageUpload(event)">
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <label style="font-size: 0.85rem; font-weight: 600; color: #1d1d1f;">Download Link or Sale Document:</label>
-            <div style="display:flex; gap:8px;">
-              <input type="text" id="store-edit-download" placeholder="Enter file download link (Google Drive, etc.)" class="admin-input" style="flex:1;">
-            </div>
-            <p style="font-size: 0.8rem; color: #86868b; margin-top: 4px;">Customers will receive this link when clicking the download button.</p>
-          </div>
-          
-          <button class="btn-primary" onclick="saveStoreConfig()" style="width: 200px; margin-top: 8px;">Save Store Changes</button>
-        </div>
-      </div>
-
-      <!-- PDF STORE ADMIN TAB -->
-      <div id="admin-section-pdfstore" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>📊 Manage Graphs & Data</h2>
-          <button class="btn-primary" onclick="openPdfItemEditorById()">Add Item</button>
-        </div>
-        <div id="pdf-admin-list" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px;">
-          <!-- Populated by JS -->
-        </div>
-        <div id="pdf-item-editor" class="hidden" style="background: #fff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); margin-top: 24px;">
-          <h3>Edit Item</h3>
-          <div style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
-            <input type="hidden" id="pdf-edit-id" value="">
-            <input type="text" id="pdf-edit-title" placeholder="Graph / File Name" class="admin-input">
-            <textarea id="pdf-edit-desc" placeholder="Short description" rows="2" class="admin-input"></textarea>
-            <select id="pdf-edit-type" class="admin-input">
-              <option value="Graph">📊 Graph</option>
-              <option value="Data">📈 Data</option>
-              <option value="PDF">📄 PDF</option>
-              <option value="Software">🖥️ Software</option>
-              <option value="File">📁 File</option>
-            </select>
-            <input type="text" id="pdf-edit-price" placeholder="Price (e.g., Free / $29.90)" class="admin-input">
-            
-            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:10px; background:#f5f5f7; border-radius:10px; font-weight:600;">
-              <input type="checkbox" id="pdf-edit-premium" style="width:20px; height:20px;">
-              <span>🌟 Premium Content (Subscribers Only)</span>
-            </label>
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">Gallery Image 1 (Main):</label>
-                <div style="display:flex; gap:6px;">
-                  <input type="text" id="pdf-edit-img1" placeholder="Image URL" class="admin-input" style="flex:1;">
-                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(1)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">Gallery Image 2:</label>
-                <div style="display:flex; gap:6px;">
-                  <input type="text" id="pdf-edit-img2" placeholder="Image URL" class="admin-input" style="flex:1;">
-                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(2)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">Gallery Image 3:</label>
-                <div style="display:flex; gap:6px;">
-                  <input type="text" id="pdf-edit-img3" placeholder="Image URL" class="admin-input" style="flex:1;">
-                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(3)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <label style="font-size:0.85rem; font-weight:700; color:#1d1d1f;">Gallery Image 4:</label>
-                <div style="display:flex; gap:6px;">
-                  <input type="text" id="pdf-edit-img4" placeholder="Image URL" class="admin-input" style="flex:1;">
-                  <button type="button" class="btn-secondary" onclick="triggerImgUpload(4)" style="padding:0 12px; font-size:0.8rem;">🖼️</button>
-                </div>
-              </div>
-              <input type="file" id="pdf-image-upload-hidden" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-              <label style="font-size:0.85rem; font-weight:600; color:#1d1d1f;">PDF File / Download Link:</label>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <input type="text" id="pdf-edit-link" placeholder="Download link (Google Drive, etc.)" class="admin-input" style="flex:1;">
-                <span style="font-size:0.85rem; color:#86868b; white-space:nowrap;">- OR -</span>
-                <button type="button" class="btn-secondary" style="padding: 10px 16px; border-radius:8px; border:1px solid #ccc; background:white; cursor:pointer; white-space:nowrap; font-size:0.9rem;" onclick="document.getElementById('pdf-file-upload').click()">📄 Upload File</button>
-                <input type="file" id="pdf-file-upload" accept=".pdf,application/pdf" style="display:none;" onchange="handlePdfFileUpload(event)">
-              </div>
-              <div id="pdf-upload-status" style="font-size:0.82rem; color:#0071e3; display:none;"></div>
-              <p style="font-size:0.78rem; color:#86868b; margin-top:2px;">Uploading from device is recommended up to 5MB. For larger files, use a Google Drive link.</p>
-            </div>
-            <div style="display:flex; gap:12px;">
-              <button class="btn-primary" onclick="savePdfItemAdmin()">Save</button>
-              <button class="btn-secondary" onclick="document.getElementById('pdf-item-editor').classList.add('hidden')" style="background:#f5f5f7; border:none; padding:12px 24px; border-radius:980px; font-weight:600; cursor:pointer;">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-
-
-    <div id="admin-section-users" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>👥 ניהול משתמשים רשומים</h2>
-        </div>
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>תמונה</th>
-              <th>שם</th>
-              <th>מייל</th>
-              <th>פעולות</th>
-            </tr>
-          </thead>
-          <tbody id="admin-users-list">
-            <!-- Populated by JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div id="admin-section-images" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>🖼️ ניהול תמונות מקושרות</h2>
-          <button class="btn-primary" onclick="openAdminImageEditor()">+ הוסף תמונה</button>
-        </div>
-        <div id="admin-images-list" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:24px;"></div>
-        <div id="admin-image-editor" class="hidden" style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid rgba(15,23,42,0.08);">
-          <h3 style="margin-top:0;">הוסף / ערוך תמונה</h3>
-          <div style="display:grid; gap:14px; margin-top:16px;">
-            <input type="hidden" id="image-edit-id" value="">
-            <input type="text" id="image-title" placeholder="כותרת תמונה" class="admin-input">
-            <input type="text" id="image-url" placeholder="כתובת תמונה (URL)" class="admin-input">
-            <input type="text" id="image-link" placeholder="כתובת לחיצה" class="admin-input">
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-              <button class="btn-primary" onclick="saveAdminImageLink()">שמור תמונה</button>
-              <button class="btn-secondary" onclick="closeAdminImageEditor()" style="background:#f5f5f7; color:#1f2937;">ביטול</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="admin-section-settings" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>⚙️ הגדרות מערכת</h2>
-        </div>
-        <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid rgba(15,23,42,0.08);">
-          <div style="display:grid; gap:16px;">
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <label style="font-weight:700;">כותרת האתר</label>
-              <input id="admin-site-title" type="text" class="admin-input" placeholder="כותרת האתר" />
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <label style="font-weight:700;">תיאור נושא</label>
-              <textarea id="admin-site-description" class="admin-input" rows="3" placeholder="תיאור קצר לאתר"></textarea>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <label style="font-weight:700;">שפת ברירת מחדל</label>
-              <select id="admin-default-lang" class="admin-input">
-                <option value="he">עברית</option>
-                <option value="en">אנגלית</option>
-              </select>
-            </div>
-            <label style="display:flex; align-items:center; gap:10px; font-weight:700;">
-              <input id="admin-maintenance-mode" type="checkbox" />
-              מצב תחזוקה
-            </label>
-            <button class="btn-primary" onclick="saveAdminSettings()" style="width: fit-content;">💾 שמור הגדרות</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ADS ADMIN TAB -->
-      <div id="admin-section-ads" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>📢 ניהול מודעות</h2>
-          <button class="btn-primary" onclick="saveAdminAds()">💾 שמור מודעות</button>
-        </div>
-        <p style="color: #86868b; margin-bottom: 24px; font-size: 0.95rem;">העלה עד 4 תמונות מודעה והוסף קישורים. אם אין תמונות, יופיע המרחב הרגיל של פרסום.</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-          <!-- Ad 1 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-              <h3 style="font-size: 1.1rem; margin:0;">Ad 1</h3>
-              <button onclick="clearAdSlot(1)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="Clear Ad"><i class="fas fa-trash-can"></i></button>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-1" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No image</span>
-              </div>
-              <input type="text" id="ad-img-1" placeholder="Image URL (or upload)" class="admin-input">
-              <input type="file" id="ad-file-1" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 1)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-1').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-1" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-          
-          <!-- Ad 2 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-              <h3 style="font-size: 1.1rem; margin:0;">Ad 2</h3>
-              <button onclick="clearAdSlot(2)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="Clear Ad"><i class="fas fa-trash-can"></i></button>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-2" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No image</span>
-              </div>
-              <input type="text" id="ad-img-2" placeholder="Image URL (or upload)" class="admin-input">
-              <input type="file" id="ad-file-2" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 2)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-2').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-2" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 3 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-              <h3 style="font-size: 1.1rem; margin:0;">Ad 3</h3>
-              <button onclick="clearAdSlot(3)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="Clear Ad"><i class="fas fa-trash-can"></i></button>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-3" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No image</span>
-              </div>
-              <input type="text" id="ad-img-3" placeholder="Image URL (or upload)" class="admin-input">
-              <input type="file" id="ad-file-3" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 3)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-3').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-3" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 4 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-              <h3 style="font-size: 1.1rem; margin:0;">Ad 4</h3>
-              <button onclick="clearAdSlot(4)" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1rem;" title="Clear Ad"><i class="fas fa-trash-can"></i></button>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-4" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No image</span>
-              </div>
-              <input type="text" id="ad-img-4" placeholder="Image URL (or upload)" class="admin-input">
-              <input type="file" id="ad-file-4" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 4)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-4').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-4" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 5 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Ad 5</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-5" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No Image</span>
-              </div>
-              <input type="text" id="ad-img-5" placeholder="Image URL (or upload from computer)" class="admin-input">
-              <input type="file" id="ad-file-5" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 5)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-5').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-5" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 6 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Ad 6</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-6" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No Image</span>
-              </div>
-              <input type="text" id="ad-img-6" placeholder="Image URL (or upload from computer)" class="admin-input">
-              <input type="file" id="ad-file-6" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 6)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-6').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-6" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 7 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Ad 7</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-7" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No Image</span>
-              </div>
-              <input type="text" id="ad-img-7" placeholder="Image URL (or upload from computer)" class="admin-input">
-              <input type="file" id="ad-file-7" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 7)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-7').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-7" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 8 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Ad 8</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-8" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No Image</span>
-              </div>
-              <input type="text" id="ad-img-8" placeholder="Image URL (or upload from computer)" class="admin-input">
-              <input type="file" id="ad-file-8" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 8)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-8').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-8" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-
-          <!-- Ad 9 -->
-          <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle);">
-            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Ad 9</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div id="ad-preview-9" style="height: 120px; background: #f5f5f7; border-radius: 12px; display:flex; align-items:center; justify-content:center; border: 1px dashed #d2d2d7; overflow:hidden;">
-                <span style="color:#86868b; font-size:0.85rem;">No Image</span>
-              </div>
-              <input type="text" id="ad-img-9" placeholder="Image URL (or upload from computer)" class="admin-input">
-              <input type="file" id="ad-file-9" accept="image/*" style="display:none;" onchange="handleAdImageUpload(event, 9)">
-              <button class="btn-secondary" style="font-size:0.85rem;" onclick="document.getElementById('ad-file-9').click()">🖼️ Upload Image</button>
-              <input type="text" id="ad-link-9" placeholder="Click link (e.g., https://example.com)" class="admin-input">
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- 3. ORDERS TAB -->
       <div id="admin-section-orders" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>📦 ניהול הזמנות</h2>
-          <button class="btn-secondary" onclick="clearOrders()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">נקה היסטוריית הזמנות</button>
-        </div>
-        <table class="admin-table">
+        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">מעקב הזמנות ומשלוחים</h2>
+        <table class="admin-table" style="color: #fafafa;">
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Customer Email</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Actions</th>
+            <tr style="border-bottom: 1px solid #2c2c2e;">
+              <th style="color: #a1a1aa;">מספר הזמנה</th>
+              <th style="color: #a1a1aa;">תאריך</th>
+              <th style="color: #a1a1aa;">לקוח</th>
+              <th style="color: #a1a1aa;">סטטוס</th>
+              <th style="color: #a1a1aa;">סה"כ</th>
+              <th style="color: #a1a1aa;">פעולות</th>
             </tr>
           </thead>
-          <tbody id="admin-orders-list">
-            <!-- Populated by JS -->
-          </tbody>
+          <tbody id="admin-orders-list-new"></tbody>
         </table>
       </div>
 
-      <div id="admin-section-calendar" class="admin-section" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-          <h2>📅 לוח פגישות</h2>
-          <button class="btn-secondary" onclick="clearAppointments()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">מחק את כל הפגישות</button>
-        </div>
-        <div id="admin-calendar-list" style="display: grid; gap: 16px; margin-top: 20px;">
-          <!-- Appointments listed here -->
+      <!-- 4. ANALYTICS TAB -->
+      <div id="admin-section-analytics" class="admin-section" style="display: none;">
+        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">ניתוח נתונים (Analytics)</h2>
+        <div style="background:#1c1c1e; border: 1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#a1a1aa; display:flex; flex-direction:column; align-items:center;">
+          <i class="fas fa-chart-line" style="font-size:3rem; margin-bottom:16px; color:#3f3f46;"></i>
+          <h3 style="color:#fafafa; margin-bottom:8px;">דוחות מכירות חודשיים</h3>
+          <p>כאן יופיעו בהמשך גרפים מתקדמים המציגים את אחוזי ההמרה ומקורות התנועה לאתר.</p>
         </div>
       </div>
 
-      <!-- SOCIAL LINKS ADMIN TAB -->
-      <div id="admin-section-social" class="admin-section" style="display: none;">
-        <div class="admin-header">
-          <h2>🌐 ניהול רשתות חברתיות</h2>
-        </div>
-        <div style="background: #ffffff; border-radius: 16px; padding: 32px; border: 1px solid var(--border-subtle); display:flex; flex-direction:column; gap:20px;">
-          <p style="color: #86868b; font-size: 0.95rem; margin-bottom: 10px;">Enter the full links to your social media profiles (including http:// or https://):</p>
-          
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 Link to X (Twitter):</label>
-            <input type="text" id="admin-social-x" placeholder="https://x.com/username" class="admin-input">
-          </div>
-          
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 Link to Facebook:</label>
-            <input type="text" id="admin-social-fb" placeholder="https://facebook.com/username" class="admin-input">
-          </div>
-          
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 Link to Instagram:</label>
-            <input type="text" id="admin-social-ig" placeholder="https://instagram.com/username" class="admin-input">
-          </div>
-          
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.9rem; font-weight:700; color:#1d1d1f;">🔗 Link to YouTube:</label>
-            <input type="text" id="admin-social-yt" placeholder="https://youtube.com/@channel" class="admin-input">
-          </div>
-          
-          <button class="btn-primary" onclick="saveSocialLinks()" style="height: 52px; font-size: 1.1rem; border-radius: 12px; margin-top: 12px;">💾 Save Links & Update Site</button>
+      <!-- 5. STORE DESIGN TAB -->
+      <div id="admin-section-storedesign" class="admin-section" style="display: none;">
+        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">עיצוב החנות (Live Editor)</h2>
+        <div style="background:#1c1c1e; border: 1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center;">
+          <i class="fas fa-paint-brush" style="font-size:3rem; margin-bottom:16px; color:#0ea5e9;"></i>
+          <h3 style="color:#fafafa; margin-bottom:8px;">עריכה ויזואלית ללא קוד</h3>
+          <p style="color:#a1a1aa; margin-bottom:24px;">לחץ על הכפתור כדי לעבור למצב עריכה באתר עצמו, שם תוכל ללחוץ על טקסטים ותמונות כדי לערוך אותם בזמן אמת.</p>
+          <button class="btn-primary" onclick="enableLiveEditMode(); showPage('home'); document.getElementById('auth-modal-overlay').style.display = 'none';" style="font-size:1.1rem; padding:12px 24px;">הפעל מצב עריכה עכשיו</button>
         </div>
       </div>
+
     </div>
+  </div>
+</div>
 
 <!-- SHOP PAGE -->
 <div id="page-shop" class="page">
@@ -2369,7 +1863,10 @@
     await fetch('/api/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:mEmail})});
   };
   window.modalGoogleLogin=async function(){
-    try{await signInWithPopup(auth,new GoogleAuthProvider());closeAuthModal();location.reload();}
+    try{
+      const cred = await signInWithPopup(auth,new GoogleAuthProvider());
+      closeAuthModal();location.reload();
+    }
     catch(e){if(e.code!=='auth/popup-closed-by-user')showMErr(fbErr(e.code)||e.message);}
   };
   otpDigits.forEach((inp,i)=>{
@@ -2486,7 +1983,7 @@
       </div>
     </div>
 
-    <div id="drawer-messages-content" style="display:flex; height:60vh; overflow:hidden;">
+    <div id="drawer-messages-content" style="display:flex; flex:1; overflow:hidden;">
       <!-- Sidebar Users List -->
       <div id="drawer-chat-users-sidebar" style="width:100%; border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; background:#141416;">
         <div style="padding:12px; background:#141416;">
@@ -2535,14 +2032,25 @@
       </div>
     </div>
 
-    <div id="drawer-forums-content" style="padding:20px; overflow-y:auto; max-height:60vh;">
-      <div id="drawer-forums-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
-        <!-- Populated dynamically by JS -->
+    <div id="drawer-forums-content" style="flex:1; overflow-y:auto; padding:0 20px 16px;">
+      <!-- Row 1: My Forums -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.75rem; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; padding-top:16px;">הפורומים שלי</div>
+        <div id="drawer-forums-mine" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <!-- Row 2: Recommended -->
+      <div>
+        <div style="font-size:0.75rem; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">המלצות</div>
+        <div id="drawer-forums-recommended" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none;">
+          <!-- Populated by JS -->
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=12"></script>
 
   <!-- ====== AUTH MODAL (global, outside main-wrapper so position:fixed is never broken by parent transforms) ====== -->
   <div id="auth-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);">
@@ -2611,5 +2119,130 @@
     </div>
   </div>
 
+  <script>
+    // Redirect logic removed so user stays on Home page
+  </script>
+
+  <!-- ====== LEGAL MODAL ====== -->
+  <div id="legal-modal-overlay" onclick="if(event.target===this)closeLegalModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div style="background:#0d0d0d; border:1px solid rgba(255,255,255,0.1); border-radius:20px; width:100%; max-width:680px; max-height:85vh; display:flex; flex-direction:column; margin:16px; overflow:hidden; direction:rtl;">
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 28px; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="display:flex; gap:8px;">
+          <button onclick="openLegalModal('terms')" id="legal-tab-terms" class="legal-tab active-tab" style="background:rgba(255,255,255,0.08); border:none; color:#fff; padding:6px 16px; border-radius:980px; font-size:0.85rem; cursor:pointer; font-family:inherit; font-weight:600;">תנאי שימוש</button>
+          <button onclick="openLegalModal('privacy')" id="legal-tab-privacy" class="legal-tab" style="background:none; border:none; color:#86868b; padding:6px 16px; border-radius:980px; font-size:0.85rem; cursor:pointer; font-family:inherit;">מדיניות פרטיות</button>
+          <button onclick="openLegalModal('accessibility')" id="legal-tab-accessibility" class="legal-tab" style="background:none; border:none; color:#86868b; padding:6px 16px; border-radius:980px; font-size:0.85rem; cursor:pointer; font-family:inherit;">הצהרת נגישות</button>
+        </div>
+        <button onclick="closeLegalModal()" style="background:none; border:none; color:#86868b; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+      </div>
+      <!-- Content -->
+      <div id="legal-modal-content" style="padding:28px; overflow-y:auto; font-size:0.95rem; line-height:1.8; color:#d1d1d6; text-align:right;"></div>
+    </div>
+  </div>
+
+  <script>
+  const legalContent = {
+    terms: {
+      title: 'תנאי שימוש',
+      body: `
+        <h2 style="color:#fff; font-size:1.4rem; font-weight:800; margin-bottom:20px;">תנאי שימוש — SOKI Media</h2>
+        <p style="color:#86868b; font-size:0.85rem; margin-bottom:24px;">עדכון אחרון: ינואר 2026</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">1. כללי</h3>
+        <p>ברוכים הבאים לפלטפורמת SOKI. השימוש באתר זה מהווה הסכמה לתנאים המפורטים להלן. SOKI Media מספקת תוכן פיננסי וכלכלי למטרות מידע בלבד ואינה מהווה ייעוץ השקעות, ייעוץ מס, ייעוץ פנסיוני או כל ייעוץ מקצועי אחר.</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">2. אחריות מוגבלת</h3>
+        <p>המידע המוצג באתר זה אינו מהווה המלצת השקעה. כל ההחלטות הפיננסיות הן באחריות המשתמש בלבד. SOKI Media אינה אחראית לכל נזק ישיר או עקיף שייגרם כתוצאה משימוש במידע המוצג.</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">3. קניין רוחני</h3>
+        <p>כל התכנים באתר, לרבות טקסטים, גרפיקות, לוגואים ונתונים, הינם קניינה הבלעדי של SOKI Media ומוגנים בזכויות יוצרים. אין להעתיק, לשכפל או להפיץ ללא אישור מפורש בכתב.</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">4. שינויים בתנאים</h3>
+        <p>SOKI Media שומרת לעצמה את הזכות לשנות תנאים אלה בכל עת. שימוש מתמשך באתר לאחר פרסום שינויים מהווה הסכמה לתנאים המעודכנים.</p>
+      `
+    },
+    privacy: {
+      title: 'מדיניות פרטיות',
+      body: `
+        <h2 style="color:#fff; font-size:1.4rem; font-weight:800; margin-bottom:20px;">מדיניות פרטיות — SOKI Media</h2>
+        <p style="color:#86868b; font-size:0.85rem; margin-bottom:24px;">עדכון אחרון: ינואר 2026</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">1. מידע שנאסף</h3>
+        <p>אנו אוספים מידע שנמסר מרצון בעת הרשמה לאתר (שם, כתובת אימייל), נתוני שימוש אנונימיים לצורך שיפור השירות, וקובצי Cookie לצורך זכירת העדפות.</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">2. שימוש במידע</h3>
+        <p>המידע משמש לאספקת השירות, שיפור חוויית המשתמש, ושליחת עדכונים רלוונטיים (ניתן לביטול בכל עת). אנו לא מוכרים מידע אישי לצדדים שלישיים.</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">3. אבטחת מידע</h3>
+        <p>אנו נוקטים באמצעי אבטחה מתקדמים להגנה על המידע שלך, כולל הצפנת SSL וגישה מוגבלת לבסיסי הנתונים.</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">4. זכויותיך</h3>
+        <p>בהתאם לחוק הגנת הפרטיות הישראלי, יש לך זכות לעיין, לתקן ולמחוק את המידע האישי שלך. לפנייה: <span style="color:#f59e0b;">support@soki.media</span></p>
+      `
+    },
+    accessibility: {
+      title: 'הצהרת נגישות',
+      body: `
+        <h2 style="color:#fff; font-size:1.4rem; font-weight:800; margin-bottom:20px;">הצהרת נגישות — SOKI Media</h2>
+        <p style="color:#86868b; font-size:0.85rem; margin-bottom:24px;">עדכון אחרון: ינואר 2026</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">מחויבות לנגישות</h3>
+        <p>SOKI Media מחויבת להנגשת השירות לכלל המשתמשים, לרבות אנשים עם מוגבלויות, בהתאם לתקן WCAG 2.1 ברמה AA ולחוק שוויון זכויות לאנשים עם מוגבלות (ישראל).</p>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">התאמות נגישות באתר</h3>
+        <ul style="padding-right:20px; margin:8px 0;">
+          <li>תמיכה בניווט מקלדת מלא</li>
+          <li>תיאורי alt לתמונות</li>
+          <li>ניגודיות צבעים תקנית</li>
+          <li>תמיכה בקוראי מסך</li>
+          <li>טקסטים ברורים וקריאים</li>
+        </ul>
+
+        <h3 style="color:#fff; font-size:1rem; font-weight:700; margin:20px 0 8px;">פנייה בנושא נגישות</h3>
+        <p>נתקלתם בבעיית נגישות? נשמח לשמוע: <span style="color:#f59e0b;">accessibility@soki.media</span><br>אנו מתחייבים להשיב תוך 5 ימי עסקים.</p>
+      `
+    }
+  };
+
+  window.openLegalModal = function(tab) {
+    const overlay = document.getElementById('legal-modal-overlay');
+    overlay.style.display = 'flex';
+    document.getElementById('legal-modal-content').innerHTML = legalContent[tab].body;
+    // Update tabs
+    ['terms','privacy','accessibility'].forEach(t => {
+      const btn = document.getElementById('legal-tab-' + t);
+      if (t === tab) {
+        btn.style.background = 'rgba(255,255,255,0.08)';
+        btn.style.color = '#fff';
+        btn.style.fontWeight = '600';
+      } else {
+        btn.style.background = 'none';
+        btn.style.color = '#86868b';
+        btn.style.fontWeight = 'normal';
+      }
+    });
+  };
+
+  window.closeLegalModal = function() {
+    document.getElementById('legal-modal-overlay').style.display = 'none';
+  };
+
+  // Sidebar search filter
+  window.filterSidebarSearch = function(val) {
+    const links = document.querySelectorAll('.sidebar-link');
+    links.forEach(link => {
+      const text = link.textContent.toLowerCase();
+      link.style.display = (!val || text.includes(val.toLowerCase())) ? '' : 'none';
+    });
+  };
+
+  // Keyboard shortcut F to focus sidebar search
+  document.addEventListener('keydown', e => {
+    if (e.key === 'f' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+      const inp = document.getElementById('sidebar-search-input');
+      if (inp) { inp.focus(); e.preventDefault(); }
+    }
+  });
+  </script>
 </body>
 </html>
