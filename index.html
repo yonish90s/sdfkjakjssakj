@@ -1138,10 +1138,18 @@
     <!-- SIDEBAR (Always on the right in RTL) -->
     <aside style="width: 250px; flex-shrink: 0; background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
       <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800;">Admin Menu</h3>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto;">
         <button class="admin-nav-btn" data-admin-tab="dashboard" onclick="switchAdminTab('dashboard', this)">סטטיסטיקה</button>
         <button class="admin-nav-btn active" data-admin-tab="articles" onclick="switchAdminTab('articles', this)">ניהול כתבות</button>
         <button class="admin-nav-btn" data-admin-tab="images" onclick="switchAdminTab('images', this)">🖼️ ניהול תמונות</button>
+        <button class="admin-nav-btn" data-admin-tab="messages" onclick="switchAdminTab('messages', this)">✉️ הודעות צור קשר</button>
+        <button class="admin-nav-btn" data-admin-tab="store" onclick="switchAdminTab('store', this)">🛍️ ניהול חנות</button>
+        <button class="admin-nav-btn" data-admin-tab="pdfstore" onclick="switchAdminTab('pdfstore', this)">📊 ניהול גרפים ומידע</button>
+        <button class="admin-nav-btn" data-admin-tab="users" onclick="switchAdminTab('users', this)">👥 ניהול משתמשים</button>
+        <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)">📦 ניהול הזמנות</button>
+        <button class="admin-nav-btn" data-admin-tab="calendar" onclick="switchAdminTab('calendar', this)">📅 ניהול פגישות</button>
+        <button class="admin-nav-btn" data-admin-tab="settings" onclick="switchAdminTab('settings', this)">⚙️ הגדרות אתר</button>
+        <button class="admin-nav-btn" data-admin-tab="social" onclick="switchAdminTab('social', this)">🔗 רשתות חברתיות</button>
         <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff;">יציאה</button>
       </div>
     </aside>
