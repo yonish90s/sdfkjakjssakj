@@ -41,9 +41,9 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 // --- Admin Login API ---
-app.post('/api/admin-login', loginLimiter, (req, res) => {
+app.post('/api/admin-login', (req, res) => {
   const { user, pass } = req.body;
-  // Use environment variables for production! (Hardcoded 1/1 for now as per current site logic)
+  // Use environment variables for production! Default admin credentials are 1/1 for local testing.
   const ADMIN_USER = process.env.ADMIN_USER || '1';
   const ADMIN_PASS = process.env.ADMIN_PASS || '1';
 

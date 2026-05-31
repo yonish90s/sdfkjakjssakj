@@ -92,7 +92,7 @@
       </a>
 
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">My Dashboard</h2>
+        <h2 class="sidebar-logo">הדשבורד שלי</h2>
       </div>
 
       <!-- Weather Widget -->
@@ -113,31 +113,31 @@
           </a>
           <a href="#" class="sidebar-link" data-page="store" onclick="showPage('store'); return false;">
             <i class="fas fa-shopping-bag"></i>
-            <span>Store</span>
+            <span>חנות</span>
           </a>
           <a href="#" class="sidebar-link" data-page="pdf-store" onclick="showPage('pdf-store'); return false;">
             <i class="fas fa-chart-line"></i>
-            <span>Graphs & Data</span>
+            <span>גרפים ונתונים</span>
           </a>
           <a href="#" class="sidebar-link" data-page="subscription" onclick="showPage('subscription'); return false;">
             <i class="fas fa-crown"></i>
-            <span>Premium</span>
+            <span>פרימיום</span>
           </a>
 
           <a href="#" class="sidebar-link" data-page="video-reviews" onclick="showPage('video-reviews'); return false;">
             <i class="fa-solid fa-play"></i>
-            <span>Video</span>
+            <span>וידאו</span>
           </a>
           
           <a href="#" class="sidebar-link" data-page="messages" onclick="showPage('messages'); return false;">
             <i class="fa-solid fa-comment-dots"></i>
-            <span id="sidebar-messages-text">Messages</span>
+            <span id="sidebar-messages-text">הודעות</span>
             <span id="messages-unread-badge" style="display:none; margin-left:auto; width:8px; height:8px; background-color:#ff3b30; border-radius:50%; flex-shrink:0;"></span>
           </a>
 
           <a href="#" class="sidebar-link" data-page="groups" onclick="showPage('groups'); return false;">
             <i class="fa-solid fa-comments"></i>
-            <span>Forum</span>
+            <span>פורום</span>
           </a>
 
           <div class="sidebar-divider"></div>
@@ -146,7 +146,7 @@
 
           <a href="#" class="sidebar-link" id="link-my-graphs" onclick="toggleSavedDrawer('graphs'); return false;">
             <i class="fas fa-chart-pie"></i>
-            <span>My Graphs</span>
+            <span>הגרפים שלי</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-graphs')" title="Focus Mode"></i>
             </div>
@@ -154,7 +154,7 @@
 
           <a href="#" class="sidebar-link" id="link-my-articles" onclick="toggleSavedDrawer('articles'); return false;">
             <i class="fas fa-newspaper"></i>
-            <span>My Articles</span>
+            <span>הכתבות שלי</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-articles')" title="Focus Mode"></i>
             </div>
@@ -162,12 +162,12 @@
 
           <a href="#" class="sidebar-link" data-page="archive" onclick="showPage('archive'); return false;">
             <i class="fas fa-box-archive"></i>
-            <span>Archive</span>
+            <span>ארכיון</span>
           </a>
 
           <a href="#" class="sidebar-link" id="link-my-purchases" onclick="toggleMyPurchasesDropdown(event)">
             <i class="fas fa-shopping-cart"></i>
-            <span>My Purchases</span>
+            <span>הרכישות שלי</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-purchases')" title="Focus Mode"></i>
             </div>
@@ -315,7 +315,10 @@
 
           <!-- Graphs -->
           <button onclick="showPage('pdf-store')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
-            <span id="nav-text-graphs">Graphs</span          <!-- SOKI Articles Logo -->
+            <span id="nav-text-graphs">Graphs</span>
+          </button>
+
+          <!-- SOKI Articles Logo -->
           <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <span class="soki-logo-text" style="font-weight: 900; font-size: 1.25rem; color: #fff; text-transform: uppercase; letter-spacing: -0.02em;">SOKI <span id="nav-logo-subtext" style="font-weight: 500; color: #a1a1a6; font-size: 0.95rem; text-transform: none; margin-left: 2px;">Articles</span></span>
             <i class="fas fa-crown" style="color:#f59e0b; font-size:1.1rem; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));"></i>
@@ -489,28 +492,28 @@
       <!-- Link Menus Columns Container -->
       <div class="soki-footer-links-container">
         <div class="soki-footer-col">
-          <h4>Contact Us</h4>
+          <h4 id="footer-title-contact">Contact Us</h4>
           <ul>
-            <li><a href="#" onclick="showToast('Monthly subscription option coming soon!'); return false;">⭐ Monthly Subscription</a></li>
-            <li><a href="#" onclick="openContactModal(); return false;">Email Support</a></li>
-            <li><a href="tel:+1-555-0199">Call Us: +1-555-0199</a></li>
-            <li><a href="https://paypal.me/yhsh98321" target="_blank" style="color: #34c759; font-weight: 600;"><i class="fa-brands fa-paypal" style="margin-right: 4px;"></i> Donate via PayPal</a></li>
+            <li><a href="#" id="footer-monthly-subscription" onclick="showToast('Monthly subscription option coming soon!'); return false;">⭐ Monthly Subscription</a></li>
+            <li><a href="#" id="footer-email-support" onclick="openContactModal(); return false;">Email Support</a></li>
+            <li><a href="tel:+1-555-0199" id="footer-call-us">Call Us: +1-555-0199</a></li>
+            <li><a href="https://paypal.me/yhsh98321" id="footer-paypal-donate" target="_blank" style="color: #34c759; font-weight: 600;"><i class="fa-brands fa-paypal" style="margin-right: 4px;"></i> Donate via PayPal</a></li>
           </ul>
         </div>
 
         <div class="soki-footer-col">
-          <h4>Information</h4>
+          <h4 id="footer-title-information">Information</h4>
           <ul>
-            <li><a href="#" onclick="showPage('about')">About Us</a></li>
-            <li><a href="#" onclick="showPage('whats-new')">What's New</a></li>
+            <li><a href="#" id="footer-about-us" onclick="showPage('about')">About Us</a></li>
+            <li><a href="#" id="footer-whats-new" onclick="showPage('whats-new')">What's New</a></li>
           </ul>
         </div>
 
         <div class="soki-footer-col">
-          <h4>Admin</h4>
+          <h4 id="footer-title-admin">Admin</h4>
           <ul>
-            <li><a href="#" onclick="showPage('admin-login')">Admin Login</a></li>
-            <li><a href="#" onclick="showPage('user-article'); return false;">Upload Articles</a></li>
+            <li><a href="#" id="footer-admin-login" onclick="event.preventDefault(); showPage('admin-login');">Admin Login</a></li>
+            <li><a href="#" id="footer-upload-articles" onclick="event.preventDefault(); showPage('user-article');">Upload Articles</a></li>
           </ul>
         </div>
       </div>
@@ -1125,15 +1128,8 @@
 </div>
 
 
-<!-- ADMIN LOGIN PAGE -->
-<div id="page-admin-login" class="page">
-  <div class="admin-login-box">
-    <h2>Admin Login</h2>
-    <input type="text" id="admin-user" placeholder="Username (try: admin)" class="admin-input" style="margin-bottom: 12px;" />
-    <input type="password" id="admin-pass" placeholder="Password (try: admin)" class="admin-input" />
-    <button class="btn-primary" style="width:100%" onclick="adminLogin()">Login</button>
-  </div>
-</div>
+<!-- ADMIN LOGIN MODAL -->
+<!-- page-admin-login removed in favor of modal popup -->
 
 <!-- ADMIN DASHBOARD -->
 <div id="page-admin" class="page" style="max-width: 1400px;">
@@ -1143,26 +1139,23 @@
     <aside style="width: 250px; flex-shrink: 0; background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
       <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800;">Admin Menu</h3>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="admin-nav-btn active" onclick="switchAdminTab('dashboard', this)">Dashboard (Stats)</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('calendar', this)">Appointment Calendar</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('store', this)">Project 11 Management</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('pdfstore', this)">📊 Charts & Data Management</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('articles', this)">Article Management</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('users', this)">👥 User Management</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('orders', this)">📦 New Orders</button>
-
-        <button class="admin-nav-btn" onclick="switchAdminTab('messages', this)" style="display: flex; justify-content: space-between; align-items: center;">
-          Inbox Messages
-          <span id="nav-msg-count" style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">0</span>
-        </button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('ads', this)">📢 Ads Management</button>
-        <button class="admin-nav-btn" onclick="switchAdminTab('social', this)">🌐 Social Media Management</button>
+        <button class="admin-nav-btn" data-admin-tab="dashboard" onclick="switchAdminTab('dashboard', this)">סטטיסטיקה</button>
+        <button class="admin-nav-btn active" data-admin-tab="articles" onclick="switchAdminTab('articles', this)">ניהול כתבות</button>
+        <button class="admin-nav-btn" data-admin-tab="images" onclick="switchAdminTab('images', this)">🖼️ ניהול תמונות</button>
+        <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff;">יציאה</button>
       </div>
     </aside>
 
     <!-- MAIN CONTENT (On the left) -->
     <div style="flex: 1; min-width: 0;">
-      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; gap:16px; direction: rtl;">
+        <div>
+          <h1 style="font-size:2rem; margin:0;">ממשק ניהול האתר</h1>
+          <p style="color:#6b7280; margin:8px 0 0;">כאן תוכל לנהל כתבות, תמונות, קישורים והגדרות.</p>
+        </div>
+        <button class="btn-secondary" onclick="adminLogout()" style="height:44px; align-self:flex-start;">יציאה מהמערכת</button>
+      </div>
+
       <!-- DASHBOARD TAB -->
       <div id="admin-section-dashboard" class="admin-section">
         <!-- Stats -->
@@ -1197,7 +1190,7 @@
       <!-- MESSAGES TAB -->
       <div id="admin-section-messages" class="admin-section" style="display: none;">
         <div class="admin-header">
-          <h2>Inbox Messages</h2>
+          <h2>הודעות נכנסות</h2>
         </div>
         <table class="admin-table" style="margin-bottom: 40px;">
           <thead>
@@ -1217,8 +1210,8 @@
       <!-- ARTICLES TAB -->
       <div id="admin-section-articles" class="admin-section" style="display: none;">
         <div class="admin-header">
-          <h2>Article Management</h2>
-          <button class="btn-primary" onclick="openArticleEditor()">+ New Article</button>
+          <h2>ניהול כתבות</h2>
+          <button class="btn-primary" onclick="openArticleEditor()">+ הוספת כתבה</button>
         </div>
         <table class="admin-table">
           <thead>
@@ -1238,7 +1231,7 @@
         <!-- FEATURED ARTICLES MANAGEMENT -->
         <div style="margin-top: 40px; background: #fbfbfd; border-radius: 20px; padding: 24px; border: 1px solid var(--border-subtle);">
           <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 800;">
-            <i class="fas fa-star" style="color: #f9b233;"></i> Featured Articles Management
+            <i class="fas fa-star" style="color: #f9b233;"></i> ניהול כתבות מומלצות
           </h3>
           <p style="font-size: 0.9rem; color: #86868b; margin-bottom: 20px;">The articles marked here will appear in the top grid of the home page (first 3 will be shown).</p>
           <table class="admin-table">
@@ -1431,15 +1424,15 @@
 
     <div id="admin-section-users" class="admin-section" style="display: none;">
         <div class="admin-header">
-          <h2>👥 Manage Registered Users</h2>
+          <h2>👥 ניהול משתמשים רשומים</h2>
         </div>
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Actions</th>
+              <th>תמונה</th>
+              <th>שם</th>
+              <th>מייל</th>
+              <th>פעולות</th>
             </tr>
           </thead>
           <tbody id="admin-users-list">
@@ -1448,13 +1441,64 @@
         </table>
       </div>
 
+      <div id="admin-section-images" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>🖼️ ניהול תמונות מקושרות</h2>
+          <button class="btn-primary" onclick="openAdminImageEditor()">+ הוסף תמונה</button>
+        </div>
+        <div id="admin-images-list" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:24px;"></div>
+        <div id="admin-image-editor" class="hidden" style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid rgba(15,23,42,0.08);">
+          <h3 style="margin-top:0;">הוסף / ערוך תמונה</h3>
+          <div style="display:grid; gap:14px; margin-top:16px;">
+            <input type="hidden" id="image-edit-id" value="">
+            <input type="text" id="image-title" placeholder="כותרת תמונה" class="admin-input">
+            <input type="text" id="image-url" placeholder="כתובת תמונה (URL)" class="admin-input">
+            <input type="text" id="image-link" placeholder="כתובת לחיצה" class="admin-input">
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn-primary" onclick="saveAdminImageLink()">שמור תמונה</button>
+              <button class="btn-secondary" onclick="closeAdminImageEditor()" style="background:#f5f5f7; color:#1f2937;">ביטול</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-section-settings" class="admin-section" style="display: none;">
+        <div class="admin-header">
+          <h2>⚙️ הגדרות מערכת</h2>
+        </div>
+        <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid rgba(15,23,42,0.08);">
+          <div style="display:grid; gap:16px;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-weight:700;">כותרת האתר</label>
+              <input id="admin-site-title" type="text" class="admin-input" placeholder="כותרת האתר" />
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-weight:700;">תיאור נושא</label>
+              <textarea id="admin-site-description" class="admin-input" rows="3" placeholder="תיאור קצר לאתר"></textarea>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-weight:700;">שפת ברירת מחדל</label>
+              <select id="admin-default-lang" class="admin-input">
+                <option value="he">עברית</option>
+                <option value="en">אנגלית</option>
+              </select>
+            </div>
+            <label style="display:flex; align-items:center; gap:10px; font-weight:700;">
+              <input id="admin-maintenance-mode" type="checkbox" />
+              מצב תחזוקה
+            </label>
+            <button class="btn-primary" onclick="saveAdminSettings()" style="width: fit-content;">💾 שמור הגדרות</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ADS ADMIN TAB -->
       <div id="admin-section-ads" class="admin-section" style="display: none;">
         <div class="admin-header">
-          <h2>📢 Manage Ad Spaces</h2>
-          <button class="btn-primary" onclick="saveAdminAds()">💾 Save Ads</button>
+          <h2>📢 ניהול מודעות</h2>
+          <button class="btn-primary" onclick="saveAdminAds()">💾 שמור מודעות</button>
         </div>
-        <p style="color: #86868b; margin-bottom: 24px; font-size: 0.95rem;">Upload up to 4 ad images and add links. If no images are uploaded, the original ad space will be shown ("Contact for advertising").</p>
+        <p style="color: #86868b; margin-bottom: 24px; font-size: 0.95rem;">העלה עד 4 תמונות מודעה והוסף קישורים. אם אין תמונות, יופיע המרחב הרגיל של פרסום.</p>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
           <!-- Ad 1 -->
@@ -1599,8 +1643,8 @@
 
       <div id="admin-section-orders" class="admin-section" style="display: none;">
         <div class="admin-header">
-          <h2>📦 Manage Orders</h2>
-          <button class="btn-secondary" onclick="clearOrders()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">Clear Order History</button>
+          <h2>📦 ניהול הזמנות</h2>
+          <button class="btn-secondary" onclick="clearOrders()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">נקה היסטוריית הזמנות</button>
         </div>
         <table class="admin-table">
           <thead>
@@ -1620,8 +1664,8 @@
 
       <div id="admin-section-calendar" class="admin-section" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-          <h2>📅 Appointment Calendar</h2>
-          <button class="btn-secondary" onclick="clearAppointments()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">Delete All Appointments</button>
+          <h2>📅 לוח פגישות</h2>
+          <button class="btn-secondary" onclick="clearAppointments()" style="color:#ef4444; border-color:#ef4444; font-size:0.85rem;">מחק את כל הפגישות</button>
         </div>
         <div id="admin-calendar-list" style="display: grid; gap: 16px; margin-top: 20px;">
           <!-- Appointments listed here -->
@@ -1631,7 +1675,7 @@
       <!-- SOCIAL LINKS ADMIN TAB -->
       <div id="admin-section-social" class="admin-section" style="display: none;">
         <div class="admin-header">
-          <h2>🌐 Manage Social Networks</h2>
+          <h2>🌐 ניהול רשתות חברתיות</h2>
         </div>
         <div style="background: #ffffff; border-radius: 16px; padding: 32px; border: 1px solid var(--border-subtle); display:flex; flex-direction:column; gap:20px;">
           <p style="color: #86868b; font-size: 0.95rem; margin-bottom: 10px;">Enter the full links to your social media profiles (including http:// or https://):</p>
@@ -1768,49 +1812,47 @@
   </div>
 </div>
 
-<!-- USER ARTICLE UPLOAD PAGE -->
-<div id="page-user-article" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px;">
-  <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft);">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 32px; border-bottom: 2px solid #f5f5f7; padding-bottom: 16px;">
-      <h2 style="font-size: 2rem; font-weight: 800; color: #1d1d1f; margin: 0;">Create New Article</h2>
+<!-- USER ARTICLE UPLOAD MODAL -->
+<div id="user-article-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;">
+  <div style="background:#ffffff;border-radius:24px;padding:40px;box-shadow:var(--shadow-soft);max-width:860px;width:100%;position:relative;">
+    <button type="button" onclick="closeUserArticleModal()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.6rem;color:#71717a;cursor:pointer;">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;border-bottom:2px solid #f5f5f7;padding-bottom:16px;">
+      <h2 style="font-size:2rem;font-weight:800;color:#1d1d1f;margin:0;">Create New Article</h2>
     </div>
 
-    <form onsubmit="submitUserArticle(event)" style="display:flex; flex-direction:column; gap:20px;">
-      
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <input type="text" id="user-art-title" class="admin-input" placeholder="Article Title" required style="font-weight: 600; font-size: 1.1rem; padding: 16px; border-radius: 12px; background: #fbfbfd;">
+    <form onsubmit="submitUserArticle(event)" style="display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="user-art-title" class="admin-input" placeholder="Article Title" required style="font-weight:600;font-size:1.1rem;padding:16px;border-radius:12px;background:#fbfbfd;">
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <input type="text" id="user-art-cat" class="admin-input" placeholder="Category (e.g., Security, Politics, Tech)" required style="padding: 16px; border-radius: 12px; background: #fbfbfd;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="user-art-cat" class="admin-input" placeholder="Category (e.g., Security, Politics, Tech)" required style="padding:16px;border-radius:12px;background:#fbfbfd;">
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <input type="text" id="user-art-author" class="admin-input" placeholder="Author Name / Credit" required style="padding: 16px; border-radius: 12px; background: #fbfbfd;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="user-art-author" class="admin-input" placeholder="Author Name / Credit" required style="padding:16px;border-radius:12px;background:#fbfbfd;">
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <label style="font-size: 0.95rem; font-weight: 700; color: #1d1d1f;">Image (upload from device or paste link):</label>
-        <div style="display:flex; gap:16px; align-items:center;">
-          <input type="text" id="user-art-image" class="admin-input" placeholder="https://..." style="flex:1; padding: 16px; border-radius: 12px; background: #fbfbfd; font-family: monospace;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-size:0.95rem;font-weight:700;color:#1d1d1f;">Image (upload from device or paste link):</label>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="user-art-image" class="admin-input" placeholder="https://..." style="flex:1;min-width:220px;padding:16px;border-radius:12px;background:#fbfbfd;font-family:monospace;">
           <input type="file" id="user-art-image-file" accept="image/*" style="display:none;" onchange="handleUserArticleImage()">
-          <button type="button" class="btn-secondary" onclick="document.getElementById('user-art-image-file').click()" style="padding: 16px 24px; border-radius: 12px; white-space: nowrap;">Upload Image</button>
+          <button type="button" class="btn-secondary" onclick="document.getElementById('user-art-image-file').click()" style="padding:16px 24px;border-radius:12px;white-space:nowrap;">Upload Image</button>
         </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <textarea id="user-art-excerpt" class="admin-input" rows="3" placeholder="Snippet / Article excerpt" required style="padding: 16px; border-radius: 12px; background: #fbfbfd; resize: vertical;"></textarea>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <textarea id="user-art-excerpt" class="admin-input" rows="3" placeholder="Snippet / Article excerpt" required style="padding:16px;border-radius:12px;background:#fbfbfd;resize:vertical;"></textarea>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <textarea id="user-art-body" class="admin-input" rows="10" placeholder="Full Article Content (appears when opening the article)" required style="padding: 16px; border-radius: 12px; background: #fbfbfd; resize: vertical; margin-bottom: 24px;"></textarea>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <textarea id="user-art-body" class="admin-input" rows="10" placeholder="Full Article Content (appears when opening the article)" required style="padding:16px;border-radius:12px;background:#fbfbfd;resize:vertical;margin-bottom:24px;"></textarea>
       </div>
 
-      <div style="display:flex; justify-content: flex-end; gap:16px;">
-        <button type="button" class="btn-secondary" onclick="showPage('home')" style="border-radius: 12px; width: 140px; border-color: transparent; font-weight: 600; color: #86868b;">Cancel</button>
-        <button type="submit" class="btn-primary" style="height: 54px; width: 220px; font-size: 1.1rem; border-radius: 12px;">Submit Article for Approval 🚀</button>
+      <div style="display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;"><button type="button" class="btn-secondary" onclick="closeUserArticleModal()" style="border-radius:12px;width:140px;border-color:transparent;font-weight:600;color:#86868b;">Cancel</button>
+        <button type="submit" class="btn-primary" style="height:54px;width:220px;font-size:1.1rem;border-radius:12px;">Submit Article for Approval 🚀</button>
       </div>
-
     </form>
   </div>
 </div>
@@ -2540,6 +2582,24 @@
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;"> Continue with Google
         </button>
       </div>
+    </div>
+  </div>
+
+  <div id="admin-login-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100000;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);">
+    <div style="background:#09090b;border:1px solid #27272a;border-radius:24px;padding:36px;max-width:420px;width:100%;position:relative;margin:16px;">
+      <button onclick="closeAdminLoginModal()" style="position:absolute;top:18px;left:18px;background:none;border:none;color:#71717a;font-size:1.5rem;cursor:pointer;">&#x2715;</button>
+      <h2 style="color:#fafafa;font-size:1.5rem;font-weight:800;margin-bottom:12px;">כניסת מנהל</h2>
+      <p style="color:#a1a1a8;font-size:0.95rem;margin-bottom:12px;">הכנס שם משתמש וסיסמא כדי להיכנס לממשק הניהול.</p>
+      <div id="admin-login-error" style="display:none;color:#fca5a5;background:#7f1d1d0f;border:1px solid #f87171;border-radius:14px;padding:12px 14px;margin-bottom:18px;font-size:0.95rem;">שגיאה</div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;color:#a1a1a8;font-size:0.85rem;margin-bottom:8px;">שם משתמש</label>
+        <input type="text" id="admin-user" placeholder="1" style="width:100%;background:#121212;border:1px solid #27272a;border-radius:14px;padding:12px 14px;color:#fff;font-size:0.95rem;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:24px;">
+        <label style="display:block;color:#a1a1a8;font-size:0.85rem;margin-bottom:8px;">סיסמה</label>
+        <input type="password" id="admin-pass" placeholder="1" style="width:100%;background:#121212;border:1px solid #27272a;border-radius:14px;padding:12px 14px;color:#fff;font-size:0.95rem;outline:none;box-sizing:border-box;">
+      </div>
+      <button onclick="adminLogin()" style="width:100%;background:#f59e0b;color:#09090b;border:none;border-radius:16px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;">התחבר</button>
     </div>
   </div>
 
