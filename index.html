@@ -48,9 +48,21 @@
 
     if (user) {
       localStorage.removeItem('isGuest');
+      const name = user.displayName || user.email.split('@')[0];
+      const email = user.email;
+
+      // Automatically treat System Admin as admin
+      if (email.toLowerCase().includes('admin') || name.toLowerCase().includes('admin')) {
+        localStorage.setItem('isAdmin', 'true');
+        window.isAdmin = true;
+        if (typeof showPage === 'function') {
+          showPage('admin');
+        }
+      }
+
       window._fbUser = {
-        name:   user.displayName || user.email.split('@')[0],
-        email:  user.email,
+        name:   name,
+        email:  email,
         avatar: user.photoURL || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200&h=200'
       };
     } else {
@@ -63,6 +75,7 @@
 
     window._fbSignOut = () => {
       localStorage.removeItem('isGuest');
+      localStorage.removeItem('isAdmin');
       signOut(auth).then(() => {
         window._fbUser = null;
         location.reload();
