@@ -423,10 +423,10 @@
 
       <!-- Email -->
       <div class="field">
-        <label for="input-email">Email Address</label>
+        <label for="input-email" id="label-email">Email Address</label>
         <div class="input-wrap">
-          <span class="icon">✉</span>
-          <input type="email" id="input-email" placeholder="you@example.com" autocomplete="email" required />
+          <span class="icon" id="icon-email">✉</span>
+          <input type="text" id="input-email" placeholder="you@example.com" autocomplete="email" required />
         </div>
       </div>
 
@@ -453,7 +453,7 @@
       </button>
 
       <!-- Divider -->
-      <div class="divider"><span>OR</span></div>
+      <div class="divider" id="auth-divider"><span>OR</span></div>
 
       <!-- Google Login -->
       <button type="button" class="btn-google" id="btn-google">
@@ -462,9 +462,10 @@
       </button>
 
       <button type="button" class="btn-guest" id="btn-guest">Continue as guest 🔓</button>
+      <button type="button" class="btn-guest" id="btn-admin-mode" style="margin-top: 12px; color: #f59e0b; font-weight: 600; text-decoration: underline; text-underline-offset: 4px;">כניסת מנהל 🔑 (Admin Login)</button>
     </form>
 
-    <p class="switch-mode">
+    <p class="switch-mode" id="switch-mode-wrap">
       <span id="switch-text">Don't have an account yet?</span>
       <button type="button" id="btn-switch">Sign up now</button>
     </p>
@@ -595,7 +596,7 @@
     if (user) window.location.replace('index.html');
   });
 
-  let mode = 'login'; // 'login' | 'signup'
+  let mode = 'login'; // 'login' | 'signup' | 'admin'
 
   const formTitle    = document.getElementById('form-title');
   const formSubtitle = document.getElementById('form-subtitle');
@@ -613,6 +614,11 @@
   const btnTogglePw  = document.getElementById('btn-toggle-pw');
   const btnGoogle    = document.getElementById('btn-google');
   const btnGuest     = document.getElementById('btn-guest');
+  const btnAdminMode = document.getElementById('btn-admin-mode');
+  const labelEmail   = document.getElementById('label-email');
+  const iconEmail    = document.getElementById('icon-email');
+  const authDivider  = document.getElementById('auth-divider');
+  const switchModeWrap = document.getElementById('switch-mode-wrap');
 
   // Toggle password visibility
   btnTogglePw.addEventListener('click', () => {
@@ -628,6 +634,15 @@
     inputEmail.value = '';
     inputPw.value = '';
     inputName.value = '';
+
+    // Restore standard labels in case we were in admin mode before
+    labelEmail.textContent = 'Email Address';
+    iconEmail.textContent = '✉';
+    inputEmail.placeholder = 'you@example.com';
+    btnGoogle.style.display = '';
+    btnGuest.style.display = '';
+    authDivider.style.display = '';
+    btnAdminMode.textContent = 'כניסת מנהל 🔑 (Admin Login)';
 
     if (mode === 'signup') {
       formTitle.textContent    = 'Create Account';
@@ -647,6 +662,45 @@
       btnSwitch.textContent    = 'Sign up now';
       btnForgot.style.visibility = 'visible';
       inputPw.autocomplete     = 'current-password';
+    }
+  });
+
+  // Admin Mode button toggle
+  btnAdminMode.addEventListener('click', () => {
+    hideError();
+    inputEmail.value = '';
+    inputPw.value = '';
+    inputName.value = '';
+
+    if (mode !== 'admin') {
+      mode = 'admin';
+      formTitle.textContent = 'כניסת מנהל 🔑';
+      formSubtitle.textContent = 'התחבר לממשק ניהול האתר';
+      labelEmail.textContent = 'Username / שם משתמש';
+      iconEmail.textContent = '👤';
+      inputEmail.placeholder = 'שם משתמש מנהל (למשל: 1)';
+      btnLabel.textContent = 'התחבר כמנהל';
+      fieldName.classList.remove('visible');
+      btnForgot.style.visibility = 'hidden';
+      btnGoogle.style.display = 'none';
+      btnGuest.style.display = 'none';
+      authDivider.style.display = 'none';
+      switchModeWrap.style.display = 'none';
+      btnAdminMode.textContent = '← חזור להתחברות רגילה (Standard Login)';
+    } else {
+      mode = 'login';
+      formTitle.textContent = 'Welcome Back';
+      formSubtitle.textContent = 'Enter your details to continue';
+      labelEmail.textContent = 'Email Address';
+      iconEmail.textContent = '✉';
+      inputEmail.placeholder = 'you@example.com';
+      btnLabel.textContent = 'Sign In';
+      btnForgot.style.visibility = 'visible';
+      btnGoogle.style.display = '';
+      btnGuest.style.display = '';
+      authDivider.style.display = '';
+      switchModeWrap.style.display = 'block';
+      btnAdminMode.textContent = 'כניסת מנהל 🔑 (Admin Login)';
     }
   });
 
@@ -677,7 +731,40 @@
 
     setLoading(true);
     try {
-      if (mode === 'signup') {
+      if (mode === 'admin') {
+        // Admin authentication
+        let loginSucceeded = false;
+        let loginMessage = '';
+
+        try {
+          const response = await fetch(`${window.location.origin}/api/admin-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: email, pass: password })
+          });
+          const data = await response.json();
+          if (response.ok && data.status === 'success') {
+            loginSucceeded = true;
+          } else {
+            loginMessage = data.message || 'שם משתמש או סיסמה לא נכונים.';
+          }
+        } catch (error) {
+          // Fallback if backend is not running or network fails
+          if (email === '1' && password === '1') {
+            loginSucceeded = true;
+          } else {
+            loginMessage = 'שגיאה בחיבור לשרת. בדוק שהשרת רץ ונסה שוב.';
+          }
+        }
+
+        if (loginSucceeded) {
+          localStorage.setItem('isAdmin', 'true');
+          window.location.replace('index.html');
+          return;
+        } else {
+          showError(loginMessage);
+        }
+      } else if (mode === 'signup') {
         // Send OTP first, then show OTP screen
         pendingEmail    = email;
         pendingPassword = password;
@@ -724,7 +811,7 @@
       btnArrow.textContent = '';
       btnSubmit.innerHTML = '<div class="spinner"></div>';
     } else {
-      btnSubmit.innerHTML = `<span id="btn-label">${mode === 'login' ? 'Sign In' : 'Sign Up'}</span><span id="btn-arrow">&rarr;</span>`;
+      btnSubmit.innerHTML = `<span id="btn-label">${mode === 'admin' ? 'התחבר כמנהל' : (mode === 'login' ? 'Sign In' : 'Sign Up')}</span><span id="btn-arrow">&rarr;</span>`;
     }
   }
 

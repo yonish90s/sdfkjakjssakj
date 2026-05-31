@@ -3322,7 +3322,11 @@ function showReviewDetail(id, type) {
 
 // ========== INIT ==========
 initTheme();
-showPage('home');
+if (isAdmin) {
+  showPage('admin');
+} else {
+  showPage('home');
+}
 
 
 
