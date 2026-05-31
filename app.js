@@ -34,7 +34,6 @@ const SERVER_URL = (hostname === 'localhost' || hostname === '127.0.0.1' || host
 let storedArticles = localStorage.getItem('newsArticles');
 let newsArticles = storedArticles ? JSON.parse(storedArticles) : [...defaultNewsArticles];
 let searchQuery = '';
-let adminLoginAttempts = 0;
 
 // Backup user articles before Firestore sync wipes them
 if (storedArticles && !localStorage.getItem('newsArticles_migrated')) {
@@ -51,8 +50,6 @@ if (!storedArticles) {
 }
 
 let nextId = newsArticles.length ? Math.max(...newsArticles.map(a => a.id)) + 1 : 1;
-
-let adminIsBlocked = false;
 
 const store3dProducts = [
   { 
