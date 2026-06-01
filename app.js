@@ -4803,21 +4803,21 @@ function toggleSidebar() {
 }
 
 function updateHamburgerIcon(isCollapsed) {
-  const btn = document.getElementById('navbar-sidebar-toggle');
-  const svg = document.getElementById('sidebar-hamburger-icon');
+  const btn = document.getElementById('sidebar-hamburger-btn');
+  const svg = document.getElementById('sidebar-hamburger-svg');
   if (!btn || !svg) return;
 
   if (isCollapsed) {
-    // Show "open sidebar" icon — 3 stacked lines but shifted, hinting the sidebar is hidden
+    // Sidebar closed → yellow to invite opening
     svg.innerHTML = `
-      <rect y="3" width="20" height="2" rx="1" fill="#0071e3"/>
-      <rect y="9" width="20" height="2" rx="1" fill="#0071e3"/>
-      <rect y="15" width="20" height="2" rx="1" fill="#0071e3"/>
+      <rect y="3" width="20" height="2" rx="1" fill="#f59e0b"/>
+      <rect y="9" width="20" height="2" rx="1" fill="#f59e0b"/>
+      <rect y="15" width="20" height="2" rx="1" fill="#f59e0b"/>
     `;
-    btn.style.background = 'rgba(0, 113, 227, 0.12)';
-    btn.style.border = '1px solid rgba(0, 113, 227, 0.3)';
+    btn.style.background = 'rgba(245, 158, 11, 0.12)';
+    btn.style.border = '1px solid rgba(245, 158, 11, 0.3)';
   } else {
-    // Show standard hamburger — sidebar is open
+    // Sidebar open → subtle grey
     svg.innerHTML = `
       <rect y="3" width="20" height="2" rx="1" fill="#a1a1a6"/>
       <rect y="9" width="14" height="2" rx="1" fill="#a1a1a6"/>

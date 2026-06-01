@@ -4209,6 +4209,20 @@ model-viewer {
 
 .sidebar.collapsed .sidebar-logo {
   opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center !important;
+}
+
+#sidebar-hamburger-btn {
+  flex-shrink: 0;
+  transition: background 0.2s, border 0.2s;
+}
+#sidebar-hamburger-btn:hover rect {
+  fill: #f59e0b !important;
 }
 
 .sidebar-nav {

@@ -91,8 +91,15 @@
         <span>Back to Menu</span>
       </a>
 
-      <div class="sidebar-header" style="margin-bottom:16px;">
+      <div class="sidebar-header" style="margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
         <h2 class="sidebar-logo" id="sidebar-title">הדשבורד שלי</h2>
+        <button id="sidebar-hamburger-btn" onclick="toggleSidebar()" style="background:none; border:none; cursor:pointer; padding:6px; border-radius:8px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">
+          <svg id="sidebar-hamburger-svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect y="3" width="20" height="2" rx="1" fill="#a1a1a6"/>
+            <rect y="9" width="14" height="2" rx="1" fill="#a1a1a6"/>
+            <rect y="15" width="20" height="2" rx="1" fill="#a1a1a6"/>
+          </svg>
+        </button>
       </div>
       <!-- Sidebar Search -->
       <div class="sidebar-search-bar" onclick="document.getElementById('sidebar-search-input').focus()" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:7px 12px; margin-bottom:12px; cursor:text;">
@@ -303,14 +310,6 @@
             <i class="fas fa-crown" style="color:#f59e0b; font-size:1.1rem; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));"></i>
           </div>
 
-          <!-- Sidebar Toggle Hamburger — always adjacent to the sidebar panel -->
-          <button id="navbar-sidebar-toggle" class="navbar-sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar" style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:-8px;">
-            <svg id="sidebar-hamburger-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <rect y="3" width="20" height="2" rx="1" fill="#a1a1a6"/>
-              <rect y="9" width="14" height="2" rx="1" fill="#a1a1a6"/>
-              <rect y="15" width="20" height="2" rx="1" fill="#a1a1a6"/>
-            </svg>
-          </button>
         </div>  </div>
         </div>
 
