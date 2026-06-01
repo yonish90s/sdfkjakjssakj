@@ -7624,3 +7624,287 @@ button, a, [role="button"] {
   /* Forum sidebar: narrower */
   #group-sidebar { width: 220px !important; }
 }
+
+/* ============================================================
+   GADGETY-STYLE MOBILE LAYOUT (≤768px)
+   Clean top bar + scrollable secondary nav + article cards
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* ── TOP BAR: Logo + Hamburger ONLY ── */
+  .nav-inner-apple {
+    height: 56px !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-direction: row !important;
+  }
+
+  /* Hide everything in nav except logo (nav-right-section) and hamburger */
+  .nav-left-section {
+    display: none !important;
+  }
+
+  /* Show only logo in nav-right-section */
+  .nav-right-section {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+  }
+  .nav-right-section .apple-nav-item {
+    display: none !important;
+  }
+
+  /* Show hamburger button in top-right corner */
+  #sidebar-hamburger-btn {
+    display: flex !important;
+    width: 44px !important;
+    height: 44px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    order: 999;
+    margin-left: auto;
+  }
+
+  /* SOKI logo: bigger on mobile */
+  .soki-logo-text {
+    font-size: 1.2rem !important;
+  }
+  .soki-logo-text span#nav-logo-subtext {
+    font-size: 0.95rem !important;
+    display: inline !important;
+  }
+
+  /* Hide center search bar */
+  .nav-inner-apple > div:nth-child(2) {
+    display: none !important;
+  }
+
+  /* ── SECONDARY NAV BAR: always visible on mobile ── */
+  .nav-secondary-apple {
+    display: flex !important;
+    position: sticky;
+    top: 56px;
+    z-index: 999;
+    background: rgba(10,10,10,0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    padding: 0 8px !important;
+    gap: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    align-items: center;
+  }
+  .nav-secondary-apple::-webkit-scrollbar { display: none; }
+
+  .sec-nav-item {
+    color: #a1a1a6 !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    padding: 12px 14px !important;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    min-height: unset !important;
+    min-width: unset !important;
+  }
+  .sec-nav-item:hover, .sec-nav-item.active {
+    color: #fff !important;
+    border-bottom-color: #f59e0b;
+  }
+
+  /* ── MAIN WRAPPER: below both bars ── */
+  #main-wrapper {
+    padding-top: 56px !important; /* just the top bar */
+  }
+
+  /* ── CATEGORY PILLS: horizontal scroll ── */
+  .category-filter-bar {
+    padding: 10px 12px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    scrollbar-width: none;
+  }
+  .category-filter-bar::-webkit-scrollbar { display: none; }
+  .category-pill {
+    font-size: 0.82rem !important;
+    padding: 6px 14px !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── HERO CAROUSEL: full-width ── */
+  .featured-carousel-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  .carousel-track-wrapper {
+    border-radius: 0 !important;
+  }
+  .featured-card {
+    border-radius: 0 !important;
+    min-height: 240px !important;
+  }
+  .featured-card.center {
+    min-height: 260px !important;
+  }
+
+  /* ── ARTICLE FEED: gadgety-style horizontal cards ── */
+  #news-feed-list {
+    padding: 0 !important;
+  }
+  .feed-item {
+    flex-direction: row !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+    align-items: center !important;
+    border-radius: 0 !important;
+  }
+  .feed-image {
+    width: 100px !important;
+    height: 75px !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
+    order: 2; /* image on right in RTL, left in LTR */
+  }
+  body.rtl-layout .feed-image { order: 2; }
+  body:not(.rtl-layout) .feed-image { order: 2; }
+
+  .feed-content {
+    flex: 1 !important;
+    order: 1;
+    min-width: 0;
+  }
+  .feed-title {
+    font-size: 0.98rem !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    margin-bottom: 6px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  .feed-meta {
+    font-size: 0.75rem !important;
+    margin-bottom: 0 !important;
+  }
+  .feed-snippet {
+    display: none !important; /* hide snippet on mobile like gadgety */
+  }
+
+  /* ── SIDEBAR: hidden, use overlay ── */
+  .news-sidebar, .news-sidebar-right {
+    display: none !important;
+  }
+  .main-news-layout {
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;
+  }
+  .news-main {
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* ── SIDEBAR OVERLAY (hamburger tap) ── */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    right: -290px !important;
+    left: auto !important;
+    width: 290px !important;
+    height: 100dvh !important;
+    z-index: 3000 !important;
+    transition: right 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    transform: none !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.7);
+  }
+  body:not(.rtl-layout) .sidebar {
+    right: auto !important;
+    left: -290px !important;
+    box-shadow: 8px 0 40px rgba(0,0,0,0.7);
+  }
+  .sidebar.mobile-open {
+    right: 0 !important;
+  }
+  body:not(.rtl-layout) .sidebar.mobile-open {
+    left: 0 !important;
+  }
+
+  .sidebar-mobile-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2999;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+  .sidebar-mobile-backdrop.active { display: block; }
+
+  /* ── MODALS & DRAWERS: bottom sheets ── */
+  .modal-overlay { align-items: flex-end !important; }
+  .modal-content {
+    max-width: 100vw !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92dvh !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Customer service chat window */
+  #chat-draggable-window {
+    right: 8px !important;
+    left: 8px !important;
+    max-width: calc(100vw - 16px) !important;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Support floating button */
+  #support-floating-btn-container {
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+    right: calc(14px + env(safe-area-inset-right, 0px)) !important;
+  }
+
+  /* Footer */
+  .soki-footer-inner {
+    flex-direction: column !important;
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .soki-footer-links-container {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  /* Graphs: stack */
+  #pdf-store-grid {
+    padding: 0 12px !important;
+    gap: 12px !important;
+  }
+  .premium-post-card > div { flex-direction: column !important; }
+  .premium-post-card > div > div:first-child {
+    width: 100% !important;
+    height: 170px !important;
+  }
+
+  /* Forum */
+  #group-detail-view { margin: 8px 0 0 !important; }
+  #group-detail-view > div[style*="flex"] {
+    flex-direction: column !important;
+    padding: 8px !important;
+  }
+  #group-sidebar { width: 100% !important; position: static !important; }
+}

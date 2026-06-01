@@ -355,6 +355,12 @@ function showPage(pageId) {
     }
   });
 
+  // Secondary mobile nav active state
+  const secMap = { 'home': 'sec-nav-home', 'pdf-store': 'sec-nav-graphs', 'my-graphs': 'sec-nav-graphs', 'groups': 'sec-nav-forum', 'shop': 'sec-nav-shop', 'appointments': 'sec-nav-booking', 'services': 'sec-nav-services' };
+  document.querySelectorAll('.sec-nav-item').forEach(btn => btn.classList.remove('active'));
+  const secId = secMap[pageId];
+  if (secId) { const el = document.getElementById(secId); if (el) el.classList.add('active'); }
+
   if (pageId === 'checkout') {
     openCheckoutModal();
     return;
@@ -5136,6 +5142,29 @@ function updateNavbarLanguage() {
     if (sidebarMyArticles) sidebarMyArticles.textContent = 'My Articles';
     if (sidebarArchive) sidebarArchive.textContent = 'Archive';
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'My Purchases';
+  }
+
+  // Secondary mobile nav
+  const secHome = document.getElementById('sec-nav-home');
+  const secGraphs = document.getElementById('sec-nav-graphs');
+  const secForum = document.getElementById('sec-nav-forum');
+  const secShop = document.getElementById('sec-nav-shop');
+  const secBooking = document.getElementById('sec-nav-booking');
+  const secServices = document.getElementById('sec-nav-services');
+  if (isHeb) {
+    if (secHome) secHome.textContent = 'מאמרים';
+    if (secGraphs) secGraphs.textContent = 'גרפים';
+    if (secForum) secForum.textContent = 'פורום';
+    if (secShop) secShop.textContent = 'חנות';
+    if (secBooking) secBooking.textContent = 'הזמנת פגישה';
+    if (secServices) secServices.textContent = 'שירותים';
+  } else {
+    if (secHome) secHome.textContent = 'Articles';
+    if (secGraphs) secGraphs.textContent = 'Graphs';
+    if (secForum) secForum.textContent = 'Forum';
+    if (secShop) secShop.textContent = 'Shop';
+    if (secBooking) secBooking.textContent = 'Booking';
+    if (secServices) secServices.textContent = 'Services';
   }
 
   if (isHeb) {
