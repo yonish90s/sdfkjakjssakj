@@ -7649,9 +7649,10 @@ body.live-edit-mode img:hover {
     height: 14px !important;
   }
   #chat-draggable-window {
-    right: 12px !important;
     left: 12px !important;
-    max-width: calc(100vw - 24px) !important;
+    right: auto !important;
+    width: 70vw !important;
+    max-width: 300px !important;
     bottom: 80px !important;
     z-index: 9999 !important;
   }
