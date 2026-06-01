@@ -4411,8 +4411,21 @@ Thank you for your purchase! Your order has been received.
   // Update local storage so badge & list refresh
   localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(updatedMessages));
 
-  // Refresh messages badge
-  if (typeof updateMessagesBadge === 'function') updateMessagesBadge();
+  // Make sure SOKI system account appears in the users list
+  try {
+    const localUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    if (!localUsers[SOKI_SYSTEM]) {
+      localUsers[SOKI_SYSTEM] = {
+        name: 'SOKI — קבלות',
+        avatar: 'https://ui-avatars.com/api/?name=SOKI&background=fb923c&color=fff&size=80&rounded=true&bold=true',
+        email: SOKI_SYSTEM
+      };
+      localStorage.setItem('registeredUsers', JSON.stringify(localUsers));
+    }
+  } catch(e) {}
+
+  // Refresh messages badge and list
+  if (window.updateMessagesBadge) window.updateMessagesBadge();
   if (window.renderChatUsersList) window.renderChatUsersList();
 }
 
