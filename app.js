@@ -5146,6 +5146,8 @@ function updateNavbarLanguage() {
   const chatTermsBtn = document.getElementById('chat-terms-btn');
   const chatInput = document.getElementById('ai-chat-input');
   const chatGreeting = document.getElementById('ai-chat-greeting');
+  const chatModeBtn = document.getElementById('chat-mode-btn');
+  const directChatInput = document.getElementById('direct-chat-input');
 
   if (isHeb) {
     if (sidebarTitle) sidebarTitle.textContent = 'הדשבורד שלי';
@@ -5162,7 +5164,9 @@ function updateNavbarLanguage() {
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'הרכישות שלי';
 
     // Hebrew Chat Translation
-    if (chatHeaderTitle) chatHeaderTitle.textContent = '✨ עוזר וירטואלי חכם';
+    if (chatModeBtn) chatModeBtn.textContent = window._supportChatMode === 'direct' ? 'עוזר וירטואלי' : 'הודעות';
+    if (directChatInput) directChatInput.placeholder = 'כתוב הודעה לתומך...';
+    if (chatHeaderTitle) chatHeaderTitle.textContent = window._supportChatMode === 'direct' ? '💬 הודעות תמיכה' : '✨ עוזר וירטואלי חכם';
     if (chatTermsBtn) chatTermsBtn.textContent = 'תנאים';
     if (chatInput) chatInput.placeholder = 'הקלד הודעה...';
     if (chatGreeting) {
@@ -5193,7 +5197,9 @@ function updateNavbarLanguage() {
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'My Purchases';
 
     // English Chat Translation
-    if (chatHeaderTitle) chatHeaderTitle.textContent = '✨ Smart Virtual Assistant';
+    if (chatModeBtn) chatModeBtn.textContent = window._supportChatMode === 'direct' ? 'AI Assistant' : 'Messages';
+    if (directChatInput) directChatInput.placeholder = 'Type a message to admin...';
+    if (chatHeaderTitle) chatHeaderTitle.textContent = window._supportChatMode === 'direct' ? '💬 Support Messages' : '✨ Smart Virtual Assistant';
     if (chatTermsBtn) chatTermsBtn.textContent = 'Terms';
     if (chatInput) chatInput.placeholder = 'Type a message...';
     if (chatGreeting) {
@@ -8284,6 +8290,13 @@ function disableLiveEditMode() {
   showToast('✅ יצאת ממצב עריכה');
 }
 
+  document.body.removeEventListener('click', handleLiveEditClick, true);
+  localStorage.removeItem('isEditor');
+  const exitBtn = document.getElementById('live-edit-exit-btn');
+  if (exitBtn) exitBtn.style.display = 'none';
+  showToast('✅ יצאת ממצב עריכה');
+}
+
 function handleLiveEditClick(e) {
   if (!document.body.classList.contains('live-edit-mode')) return;
   if (e.target.closest('#live-edit-exit-btn') || e.target.closest('.modal-overlay')) return;
@@ -8311,4 +8324,367 @@ function handleLiveEditClick(e) {
       if (newText !== null) e.target.innerText = newText;
     }
   }
+}
+
+// =====================================================================
+// LIVE MESSAGE SYSTEM LOGIC (Direct User-Admin Messaging)
+// =====================================================================
+
+window._supportChatMode = 'assistant'; // default view
+window._activeAdminChatThreadId = null;
+
+function toggleSupportChatMode() {
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  const aiTab = document.getElementById('support-ai-tab');
+  const directTab = document.getElementById('support-direct-tab');
+  const modeBtn = document.getElementById('chat-mode-btn');
+  const headerTitle = document.getElementById('chat-header-title');
+
+  if (window._supportChatMode === 'assistant') {
+    window._supportChatMode = 'direct';
+    if (aiTab) aiTab.style.display = 'none';
+    if (directTab) directTab.style.display = 'block';
+    
+    // Customize button text to switch back
+    if (modeBtn) {
+      modeBtn.textContent = isHeb ? 'עוזר וירטואלי' : 'AI Assistant';
+      modeBtn.style.background = '#34c759 !important'; // elegant green
+    }
+    if (headerTitle) {
+      headerTitle.textContent = isHeb ? '💬 הודעות תמיכה' : '💬 Support Messages';
+    }
+    
+    loadDirectMessages();
+    
+    // Auto pull updates every 5 seconds while in messages view
+    if (window._supportPullInterval) clearInterval(window._supportPullInterval);
+    window._supportPullInterval = setInterval(loadDirectMessages, 5000);
+  } else {
+    window._supportChatMode = 'assistant';
+    if (aiTab) aiTab.style.display = 'block';
+    if (directTab) directTab.style.display = 'none';
+    
+    if (modeBtn) {
+      modeBtn.textContent = isHeb ? 'הודעות' : 'Messages';
+      modeBtn.style.background = '#0071e3 !important'; // blue
+    }
+    if (headerTitle) {
+      headerTitle.textContent = isHeb ? '✨ עוזר וירטואלי חכם' : '✨ Smart Virtual Assistant';
+    }
+    
+    if (window._supportPullInterval) {
+      clearInterval(window._supportPullInterval);
+      window._supportPullInterval = null;
+    }
+  }
+}
+
+function getSupportUserId() {
+  if (typeof currentUser !== 'undefined' && currentUser && currentUser.email) {
+    return currentUser.email;
+  }
+  let guestId = localStorage.getItem('supportGuestId');
+  if (!guestId) {
+    guestId = 'guest_' + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem('supportGuestId', guestId);
+  }
+  return guestId;
+}
+
+function getSupportUserName() {
+  if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
+    return currentUser.name;
+  }
+  return 'Guest Customer';
+}
+
+async function sendDirectChatMessage() {
+  const input = document.getElementById('direct-chat-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const userId = getSupportUserId();
+  const userName = getSupportUserName();
+  const timestamp = new Date().toISOString();
+
+  const msgObj = {
+    userId: userId,
+    senderName: userName,
+    text: text,
+    timestamp: timestamp,
+    isAdmin: false,
+    read: false
+  };
+
+  // 1. Try to save to Firestore
+  if (window.fbAddDoc && window.fbDb) {
+    try {
+      await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), msgObj);
+    } catch(e) {
+      console.warn('[DirectChat] Firestore save failed, local fallback:', e);
+    }
+  }
+
+  // 2. Save to localstorage array
+  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  localMsgs.push(msgObj);
+  localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+
+  input.value = '';
+  loadDirectMessages();
+}
+
+async function loadDirectMessages() {
+  const container = document.getElementById('direct-chat-messages');
+  if (!container) return;
+
+  const userId = getSupportUserId();
+  let msgs = [];
+
+  // Try fetching from Firestore
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.userId === userId) {
+          msgs.push(data);
+        }
+      });
+      msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    } catch(e) {}
+  }
+
+  // Fallback to localStorage if Firestore yielded no matches or failed
+  if (msgs.length === 0) {
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    msgs = localMsgs.filter(m => m.userId === userId);
+    msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  }
+
+  if (msgs.length === 0) {
+    const isHeb = (currentLocation && currentLocation.id === 'Israel');
+    container.innerHTML = `<div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">${isHeb ? 'אין הודעות עדיין. כתוב משהו למעלה כדי להתחיל צ'אט ישיר עם מנהל האתר! 💬' : 'No messages yet. Send a message to start a live support session with the admin! 💬'}</div>`;
+    return;
+  }
+
+  container.innerHTML = msgs.map(m => {
+    const isMe = !m.isAdmin;
+    const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const bubbleBg = isMe ? 'var(--primary)' : 'rgba(255,255,255,0.08)';
+    const textColor = isMe ? '#ffffff' : '#ffffff';
+    const align = isMe ? 'flex-end' : 'flex-start';
+    const direction = 'ltr';
+
+    return `
+      <div style="background:${bubbleBg}; color:${textColor}; padding:10px 14px; border-radius:14px; align-self:${align}; max-width:85%; font-size:0.95rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <span style="font-weight: 500; font-size: 0.78rem; opacity: 0.7;">${m.isAdmin ? 'Admin' : m.senderName}</span>
+        <span style="white-space: pre-wrap; word-break: break-word;">${m.text}</span>
+        <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end;">${timeStr}</span>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── Admin Live Chat Tab Swapper ──
+window._adminMsgsSubtab = 'contact';
+
+function switchAdminMsgsSubtab(tab) {
+  window._adminMsgsSubtab = tab;
+  
+  const btnContact = document.getElementById('admin-msgs-subtab-contact');
+  const btnDirect = document.getElementById('admin-msgs-subtab-direct');
+  const contactList = document.getElementById('manager-msgs-list');
+  const directList = document.getElementById('manager-direct-chats-container');
+
+  if (tab === 'contact') {
+    if (btnContact) btnContact.style.background = '#0071e3';
+    if (btnContact) btnContact.style.color = '#fff';
+    if (btnDirect) btnDirect.style.background = 'rgba(255,255,255,0.05)';
+    if (btnDirect) btnDirect.style.color = '#a1a1aa';
+    
+    if (contactList) contactList.style.display = 'flex';
+    if (directList) directList.style.display = 'none';
+    
+    renderManagerMessages();
+  } else {
+    if (btnContact) btnContact.style.background = 'rgba(255,255,255,0.05)';
+    if (btnContact) btnContact.style.color = '#a1a1aa';
+    if (btnDirect) btnDirect.style.background = '#0071e3';
+    if (btnDirect) btnDirect.style.color = '#fff';
+    
+    if (contactList) contactList.style.display = 'none';
+    if (directList) directList.style.display = 'flex';
+    
+    renderAdminDirectChats();
+    
+    // Auto refresh every 5 seconds while in admin direct chat subtab
+    if (window._adminDirectChatsInterval) clearInterval(window._adminDirectChatsInterval);
+    window._adminDirectChatsInterval = setInterval(renderAdminDirectChats, 5000);
+  }
+}
+
+// Hook subtab tab change inside the main switchAdminTab function
+const origSwitchAdminTab = window.switchAdminTab;
+window.switchAdminTab = function(tabId, btn) {
+  if (origSwitchAdminTab) origSwitchAdminTab(tabId, btn);
+  if (tabId === 'manager-msgs') {
+    switchAdminMsgsSubtab(window._adminMsgsSubtab || 'contact');
+  } else {
+    if (window._adminDirectChatsInterval) {
+      clearInterval(window._adminDirectChatsInterval);
+      window._adminDirectChatsInterval = null;
+    }
+  }
+};
+
+async function renderAdminDirectChats() {
+  const listContainer = document.getElementById('admin-chat-threads-list');
+  if (!listContainer) return;
+
+  let allMsgs = [];
+
+  // 1. Fetch all direct chat messages
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      snap.forEach(doc => allMsgs.push(doc.data()));
+    } catch(e) {}
+  }
+
+  if (allMsgs.length === 0) {
+    allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  }
+
+  // 2. Group messages by userId
+  const threadsMap = {};
+  allMsgs.forEach(m => {
+    if (!m.userId) return;
+    if (!threadsMap[m.userId]) {
+      threadsMap[m.userId] = [];
+    }
+    threadsMap[m.userId].push(m);
+  });
+
+  // Convert map to list of threads with last message details
+  const threads = Object.keys(threadsMap).map(userId => {
+    const msgs = threadsMap[userId];
+    msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const lastMsg = msgs[msgs.length - 1];
+    return {
+      userId,
+      messages: msgs,
+      lastMsg,
+      senderName: msgs[0].senderName || 'Anonymous User'
+    };
+  });
+
+  // Sort threads by latest message timestamp
+  threads.sort((a, b) => new Date(b.lastMsg.timestamp) - new Date(a.lastMsg.timestamp));
+
+  if (threads.length === 0) {
+    listContainer.innerHTML = '<div style="padding:16px; color:#86868b; text-align:center; font-size:0.85rem;">אין פניות בצ\'אט עדיין</div>';
+    return;
+  }
+
+  listContainer.innerHTML = threads.map(t => {
+    const isSelected = window._activeAdminChatThreadId === t.userId;
+    const border = isSelected ? 'border-right: 4px solid #0071e3; background:rgba(0,113,227,0.1);' : 'border-right: 4px solid transparent;';
+    const textStyle = isSelected ? 'color:#ffffff; font-weight:700;' : 'color:#f5f5f7;';
+    const timeStr = t.lastMsg.timestamp ? new Date(t.lastMsg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+    
+    return `
+      <div onclick="selectAdminChatThread('${t.userId}')" style="padding:12px 16px; cursor:pointer; border-bottom:1px solid #2c2c2e; display:flex; flex-direction:column; gap:4px; ${border}">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.88rem; ${textStyle}">${t.senderName}</span>
+          <span style="font-size:0.7rem; color:#86868b;">${timeStr}</span>
+        </div>
+        <span style="font-size:0.78rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.lastMsg.text}</span>
+      </div>
+    `;
+  }).join('');
+
+  if (window._activeAdminChatThreadId) {
+    renderAdminChatPane(window._activeAdminChatThreadId, threadsMap[window._activeAdminChatThreadId] || []);
+  }
+}
+
+function selectAdminChatThread(userId) {
+  window._activeAdminChatThreadId = userId;
+  renderAdminDirectChats();
+}
+
+function renderAdminChatPane(userId, msgs) {
+  const pane = document.getElementById('admin-chat-messages-pane');
+  if (!pane) return;
+
+  msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  const messagesHtml = msgs.map(m => {
+    const isAdminReply = m.isAdmin;
+    const align = isAdminReply ? 'flex-start' : 'flex-end'; // since the pane is RTL or LTR
+    const bubbleBg = isAdminReply ? 'rgba(0,113,227,0.2)' : 'rgba(255,255,255,0.06)';
+    const border = isAdminReply ? 'border: 1px solid rgba(0,113,227,0.4);' : 'border: 1px solid rgba(255,255,255,0.05);';
+    const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    
+    return `
+      <div style="align-self:${align}; max-width:80%; padding:10px 14px; border-radius:12px; font-size:0.9rem; background:${bubbleBg}; ${border} display:flex; flex-direction:column; gap:4px;">
+        <div style="display:flex; gap:8px; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; font-size:0.75rem; color:#a1a1aa;">${m.isAdmin ? 'תומך' : m.senderName}</span>
+          <span style="font-size:0.65rem; color:#86868b;">${timeStr}</span>
+        </div>
+        <span style="color:#ffffff; white-space:pre-wrap; word-break:break-all;">${m.text}</span>
+      </div>
+    `;
+  }).join('');
+
+  pane.innerHTML = `
+    <div style="flex:1; display:flex; flex-direction:column; padding:16px; overflow-y:auto; gap:12px;" id="admin-chat-messages-log">
+      ${messagesHtml}
+    </div>
+    <div style="padding:16px; border-top:1px solid #2c2c2e; background:#1c1c1e; display:flex; gap:10px; align-items:center;">
+      <input type="text" id="admin-chat-reply-input" class="admin-input" placeholder="כתוב מענה למשתמש..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendAdminDirectReply('${userId}')">
+      <button class="btn-primary" onclick="sendAdminDirectReply('${userId}')" style="height:44px; padding:0 20px;">שלח</button>
+    </div>
+  `;
+
+  const log = document.getElementById('admin-chat-messages-log');
+  if (log) log.scrollTop = log.scrollHeight;
+}
+
+async function sendAdminDirectReply(userId) {
+  const input = document.getElementById('admin-chat-reply-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const timestamp = new Date().toISOString();
+  const replyObj = {
+    userId: userId,
+    senderName: 'Admin Support',
+    text: text,
+    timestamp: timestamp,
+    isAdmin: true,
+    read: true
+  };
+
+  // 1. Save to Firestore
+  if (window.fbAddDoc && window.fbDb) {
+    try {
+      await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), replyObj);
+    } catch(e) {
+      console.warn('[DirectChatAdmin] Firestore reply save failed:', e);
+    }
+  }
+
+  // 2. Save to localstorage fallback array
+  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  localMsgs.push(replyObj);
+  localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+
+  input.value = '';
+  renderAdminDirectChats();
 }

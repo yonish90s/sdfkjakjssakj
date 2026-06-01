@@ -385,30 +385,48 @@
       <div style="display:flex; align-items:center; gap:8px;">
         <span id="chat-header-title">✨ Smart Virtual Assistant</span>
       </div>
-      <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px;">
         <button onclick="openTermsModal()" class="chat-terms-btn" id="chat-terms-btn">Terms</button>
+        <button onclick="toggleSupportChatMode()" class="chat-terms-btn" id="chat-mode-btn" style="background:#0071e3 !important; box-shadow: 0 4px 12px rgba(0,113,227,0.2) !important;">Messages</button>
         <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Collapse Chat">
           <i class="fas fa-chevron-down"></i>
         </button>
       </div>
     </div>
     <div style="padding: 24px;">
-      <div id="ai-chat-messages" style="height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
-        <div id="ai-chat-greeting" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color: #000;">
-          Hello! I am the site's virtual assistant. How can I help you today? 😊<br><br>
-          Please select an option:<br>
-          1. 🕒 Opening Hours<br>
-          2. 📧 Contact Us<br>
-          3. 📅 Book Appointment<br>
-          4. 📊 Graphs and Data<br>
-          5. 💬 Talk to Manager
+      <!-- AI Assistant Tab Content -->
+      <div id="support-ai-tab">
+        <div id="ai-chat-messages" style="height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+          <div id="ai-chat-greeting" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color: #000;">
+            Hello! I am the site's virtual assistant. How can I help you today? 😊<br><br>
+            Please select an option:<br>
+            1. 🕒 Opening Hours<br>
+            2. 📧 Contact Us<br>
+            3. 📅 Book Appointment<br>
+            4. 📊 Graphs and Data<br>
+            5. 💬 Talk to Manager
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="ai-chat-input" class="admin-input" placeholder="Type a message..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+          <button class="btn-primary" onclick="sendChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-paper-plane"></i>
+          </button>
         </div>
       </div>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="ai-chat-input" class="admin-input" placeholder="Type a message..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendChatMessage()">
-        <button class="btn-primary" onclick="sendChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center;">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+
+      <!-- Direct Messaging Tab Content -->
+      <div id="support-direct-tab" style="display: none;">
+        <div id="direct-chat-messages" style="height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+          <!-- Loaded dynamically -->
+          <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">Loading messages... 💬</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="direct-chat-input" class="admin-input" placeholder="Type a message to admin..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendDirectChatMessage()">
+          <button class="btn-primary" onclick="sendDirectChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1279,11 +1297,32 @@
 
       <!-- 6. MANAGER MESSAGES TAB -->
       <div id="admin-section-manager-msgs" class="admin-section" style="display: none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h2 style="margin:0; font-size:1.5rem; color:#fafafa;">💬 הודעות למנהל</h2>
-          <button onclick="clearManagerMessages()" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:6px 14px; border-radius:8px; font-size:0.8rem; cursor:pointer;">נקה הכל</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+          <h2 style="margin:0; font-size:1.5rem; color:#fafafa;">💬 הודעות למנהל ותמיכה</h2>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button id="admin-msgs-subtab-contact" onclick="switchAdminMsgsSubtab('contact')" style="background:#0071e3; color:#fff; border:none; padding:6px 14px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;">פניות צור קשר</button>
+            <button id="admin-msgs-subtab-direct" onclick="switchAdminMsgsSubtab('direct')" style="background:rgba(255,255,255,0.05); color:#a1a1aa; border:none; padding:6px 14px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;">צ'אטים ישירים</button>
+            <button onclick="clearManagerMessages()" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:6px 14px; border-radius:8px; font-size:0.8rem; cursor:pointer;">נקה הכל</button>
+          </div>
         </div>
+        
+        <!-- Contact Form List -->
         <div id="manager-msgs-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+        <!-- Direct Live Chats Split View -->
+        <div id="manager-direct-chats-container" style="display:none; gap:0; height: 500px; background:#151516; border:1px solid #2c2c2e; border-radius:16px; overflow:hidden;">
+          <!-- Left side (RTL right side): Thread list -->
+          <div id="admin-chat-threads-list" style="width:260px; border-left:1px solid #2c2c2e; overflow-y:auto; display:flex; flex-direction:column; background:rgba(0,0,0,0.15); height: 100%;">
+            <div style="padding:16px; color:#86868b; text-align:center;">טוען שיחות... 💬</div>
+          </div>
+          <!-- Right side (RTL left side): Message log & Reply -->
+          <div id="admin-chat-messages-pane" style="flex:1; display:flex; flex-direction:column; height:100%; position:relative; background:#1c1c1e;">
+            <div style="flex:1; display:flex; justify-content:center; align-items:center; color:#86868b; font-size:0.95rem; flex-direction:column; gap:8px;">
+              <i class="fas fa-comments" style="font-size:2.5rem; color:#2c2c2e;"></i>
+              בחר שיחה מהרשימה כדי לצפות ולהשיב למשתמש 💬
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
