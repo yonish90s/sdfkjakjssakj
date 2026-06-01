@@ -8290,13 +8290,6 @@ function disableLiveEditMode() {
   showToast('✅ יצאת ממצב עריכה');
 }
 
-  document.body.removeEventListener('click', handleLiveEditClick, true);
-  localStorage.removeItem('isEditor');
-  const exitBtn = document.getElementById('live-edit-exit-btn');
-  if (exitBtn) exitBtn.style.display = 'none';
-  showToast('✅ יצאת ממצב עריכה');
-}
-
 function handleLiveEditClick(e) {
   if (!document.body.classList.contains('live-edit-mode')) return;
   if (e.target.closest('#live-edit-exit-btn') || e.target.closest('.modal-overlay')) return;
@@ -8465,7 +8458,7 @@ async function loadDirectMessages() {
 
   if (msgs.length === 0) {
     const isHeb = (currentLocation && currentLocation.id === 'Israel');
-    container.innerHTML = `<div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">${isHeb ? 'אין הודעות עדיין. כתוב משהו למעלה כדי להתחיל צ'אט ישיר עם מנהל האתר! 💬' : 'No messages yet. Send a message to start a live support session with the admin! 💬'}</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">${isHeb ? "אין הודעות עדיין. כתוב משהו למעלה כדי להתחיל צ'אט ישיר עם מנהל האתר! 💬" : "No messages yet. Send a message to start a live support session with the admin! 💬"}</div>`;
     return;
   }
 
