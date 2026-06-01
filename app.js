@@ -5461,9 +5461,15 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGroups();
   autoDetectLocation(); // Run automatic geolocation check!
   
-  // Check for unread support messages on startup and every 10 seconds in the background
-  setTimeout(() => { if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); }, 1500);
-  setInterval(() => { if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); }, 10000);
+  // Check for unread support and inbox messages on startup and every 10 seconds in the background
+  setTimeout(() => { 
+    if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); 
+    if (typeof checkInboxUnreadMessages === 'function') checkInboxUnreadMessages();
+  }, 1500);
+  setInterval(() => { 
+    if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); 
+    if (typeof checkInboxUnreadMessages === 'function') checkInboxUnreadMessages();
+  }, 10000);
 });
 
 // =====================================================================
@@ -7874,10 +7880,12 @@ window.updateMessagesBadge = async function() {
 
   const users = await fetchRealChatUsers();
   let unreadChats = 0;
+  let totalUnreadMessages = 0;
   users.forEach(user => {
     const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
     const messages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
     const unreadCount = messages.filter(m => m.senderEmail === user.id && !m.read).length;
+    totalUnreadMessages += unreadCount;
     if (unreadCount > 0) {
       unreadChats++;
     }
@@ -7898,6 +7906,16 @@ window.updateMessagesBadge = async function() {
   if (sidebarDot) {
     sidebarDot.style.display = (unreadChats > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
   }
+
+  const navBadge = document.getElementById('messages-nav-badge');
+  if (navBadge) {
+    navBadge.textContent = totalUnreadMessages;
+    navBadge.style.display = totalUnreadMessages > 0 ? 'flex' : 'none';
+  }
+};
+
+window.checkInboxUnreadMessages = function() {
+  window.updateMessagesBadge();
 };
 
 window.showToast = function(msg, type = '') {
@@ -7981,13 +7999,16 @@ async function renderDrawerChatUsersList() {
   const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
   
   let html = '';
+  let totalUnread = 0;
   for (const u of users) {
+    if (currentUser && u.id === currentUser.email) continue;
     if (query && !u.name.toLowerCase().includes(query)) continue;
     
     // Check unread count
     const roomId = [currentUser?.email, u.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
     const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
     const unreadCount = localMsgs.filter(m => m.senderEmail === u.id && !m.read).length;
+    totalUnread += unreadCount;
     
     const isSelected = activeDrawerChatUserId === u.id;
     
@@ -8004,6 +8025,12 @@ async function renderDrawerChatUsersList() {
         ${unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; font-size:0.75rem; font-weight:700; padding:2px 6px; border-radius:10px;">${unreadCount}</span>` : ''}
       </div>
     `;
+  }
+  
+  const navBadge = document.getElementById('messages-nav-badge');
+  if (navBadge) {
+    navBadge.textContent = totalUnread;
+    navBadge.style.display = totalUnread > 0 ? 'flex' : 'none';
   }
   
   if (!html) {
