@@ -4840,6 +4840,7 @@ function updateNavbarLanguage() {
   document.documentElement.lang = isHeb ? 'he' : 'en';
   document.documentElement.dir = isHeb ? 'rtl' : 'ltr';
 
+  const elArticles = document.getElementById('nav-text-articles');
   const elStores = document.getElementById('nav-text-stores');
   const elSolutions = document.getElementById('nav-text-solutions');
   const elSoftware = document.getElementById('nav-text-software');
@@ -4910,6 +4911,7 @@ function updateNavbarLanguage() {
   }
 
   if (isHeb) {
+  if (elArticles) elArticles.textContent = 'מאמרים';
   if (elStores) elStores.textContent = 'החנויות שלנו';
     if (elSolutions) elSolutions.textContent = 'הפתרונות שלנו';
     if (elSoftware) elSoftware.textContent = 'חנות תוכנה';
@@ -4939,6 +4941,7 @@ function updateNavbarLanguage() {
     if (footerAdminLogin) footerAdminLogin.textContent = 'כניסת מנהל';
     if (footerUploadArticles) footerUploadArticles.textContent = 'העלה מאמרים';
   } else {
+    if (elArticles) elArticles.textContent = 'Articles';
     if (elStores) elStores.textContent = 'Our Stores';
     if (elSolutions) elSolutions.textContent = 'Our Solutions';
     if (elSoftware) elSoftware.textContent = 'Software Store';
