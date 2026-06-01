@@ -401,6 +401,10 @@ function showPage(pageId) {
   const sidebar = document.getElementById('app-sidebar');
   if (sidebar && window.innerWidth <= 1024) {
     sidebar.classList.remove('active');
+    sidebar.classList.remove('mobile-open');
+    const backdrop = document.getElementById('sidebar-mobile-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    updateHamburgerIcon(false);
   }
 
   // Trigger rendering logic based on pageId
@@ -4933,6 +4937,25 @@ function toggle3DMode() {
 function toggleSidebar() {
   const sidebar = document.getElementById('app-sidebar');
   const mainWrapper = document.getElementById('main-wrapper');
+
+  // Mobile/tablet: use overlay mode instead of collapse
+  if (window.innerWidth <= 1024) {
+    const isOpen = sidebar.classList.contains('mobile-open');
+    sidebar.classList.toggle('mobile-open', !isOpen);
+    sidebar.classList.toggle('active', !isOpen);
+    // Backdrop
+    let backdrop = document.getElementById('sidebar-mobile-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'sidebar-mobile-backdrop';
+      backdrop.className = 'sidebar-mobile-backdrop';
+      backdrop.onclick = () => toggleSidebar();
+      document.body.appendChild(backdrop);
+    }
+    backdrop.classList.toggle('active', !isOpen);
+    updateHamburgerIcon(!isOpen);
+    return;
+  }
 
   sidebar.classList.toggle('collapsed');
   mainWrapper.classList.toggle('sidebar-collapsed');
