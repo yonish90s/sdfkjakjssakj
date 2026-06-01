@@ -460,14 +460,8 @@ function updateFloatingButtons(page = null) {
     page = activePage ? activePage.id.replace('page-', '') : 'home';
   }
 
-  const isStore = ['store', 'pdf-store', 'shop', 'services', 'appointments', 'product-detail'].includes(page);
-  const supportBtn = document.getElementById('support-floating-btn');
-  
-  if (window.innerWidth <= 768) {
-    if (supportBtn) supportBtn.style.display = isStore ? 'flex' : 'none';
-  } else {
-    if (supportBtn) supportBtn.style.display = 'flex';
-  }
+  const container = document.getElementById('support-floating-btn-container');
+  if (container) container.style.display = 'block';
 }
 
 window.addEventListener('resize', () => {
