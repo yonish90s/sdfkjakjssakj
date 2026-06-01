@@ -5950,51 +5950,121 @@ window.openPost = async function(postId) {
       `;
     }
 
-    function buildPostCard(num, authorName, authorAvatar, timestamp, content, postCount, joinDate, isFirst, titleHtml) {
-      const dateStr = new Date(timestamp).toLocaleDateString('he-IL');
-      const sidebar = buildUserSidebar(authorName, authorAvatar, postCount, joinDate);
-      return `
-        <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.08); border-radius:8px; overflow:hidden; display:flex; flex-direction:row-reverse; direction:rtl;">
-          ${sidebar}
-          <div style="flex:1; min-width:0; padding:16px 20px; display:flex; flex-direction:column;">
-            ${isFirst && titleHtml ? `<h2 style="font-size:1.3rem; font-weight:800; color:#fff; margin-bottom:10px; line-height:1.3; direction:rtl;">${titleHtml}</h2>` : ''}
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.78rem; color:#888; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px; direction:rtl;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="color:#aaa; font-weight:600;">#${num}</span>
-                <button onclick="if(navigator.share){navigator.share({url:window.location.href});}else{navigator.clipboard.writeText(window.location.href).then(()=>showToast('הקישור הועתק','success'));}" style="background:none;border:none;color:#666;cursor:pointer;padding:2px 4px;" title="שתף"><i class="fas fa-share-nodes" style="font-size:0.85rem;"></i></button>
-              </div>
-              <span>${dateStr}</span>
-            </div>
-            <div style="font-size:0.95rem; color:#d1d1d6; line-height:1.75; white-space:pre-wrap; flex:1; direction:rtl; text-align:right;">${content}</div>
+    // Helper: build avatar html
+    function buildAvatar(name, avatarUrl, size=42) {
+      const initials = (name||'A').charAt(0).toUpperCase();
+      const color = avatarColors[initials.charCodeAt(0) % avatarColors.length];
+      return avatarUrl
+        ? `<img src="${avatarUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${Math.round(size*0.4)}px;flex-shrink:0;">${initials}</div>`;
+    }
+
+    // Helper: format full date like "4:57 PM · May 29, 2026"
+    function fmtFullDate(ts) {
+      try {
+        const d = new Date(ts);
+        return d.toLocaleString('en-US', { hour:'numeric', minute:'2-digit', hour12:true }) + ' · ' +
+               d.toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      } catch { return ''; }
+    }
+
+    // Helper: format number
+    const fmtN = n => n >= 1000 ? (n/1000).toFixed(1).replace(/\.0$/,'')+'K' : String(n||0);
+
+    // ── Main post (Twitter-style expanded) ──
+    const origAuthor = postData.authorName || postData.author || 'Anonymous';
+    const origHandle = '@' + origAuthor.toLowerCase().replace(/\s+/g,'');
+    const origAvatar = buildAvatar(origAuthor, postData.authorAvatar||'', 44);
+    const postVotes = postData.votes || 0;
+    const postViews = postData.views || 0;
+    const repliesCount = comments.length;
+
+    let html = `
+      <div style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;">
+        <!-- Author row -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;direction:rtl;">
+          ${origAvatar}
+          <div>
+            <div style="font-weight:700;color:#e7e9ea;font-size:1rem;">${origAuthor}</div>
+            <div style="color:#71767b;font-size:0.88rem;">${origHandle}</div>
           </div>
         </div>
-      `;
-    }
+        <!-- Title -->
+        ${postData.title ? `<div style="font-weight:700;color:#e7e9ea;font-size:1.1rem;line-height:1.5;margin-bottom:10px;direction:rtl;text-align:right;">${postData.title}</div>` : ''}
+        <!-- Full content -->
+        <div style="color:#e7e9ea;font-size:1rem;line-height:1.7;white-space:pre-wrap;margin-bottom:14px;direction:rtl;text-align:right;">${postData.content||''}</div>
+        <!-- Full date + views -->
+        <div style="color:#71767b;font-size:0.88rem;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);">
+          ${fmtFullDate(postData.timestamp)} · <strong style="color:#e7e9ea;">${fmtN(postViews)}</strong> Views
+        </div>
+        <!-- Stats row -->
+        <div style="display:flex;gap:20px;font-size:0.9rem;color:#71767b;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);">
+          <span><strong style="color:#e7e9ea;">${fmtN(repliesCount)}</strong> Replies</span>
+          <span><strong style="color:#e7e9ea;">${fmtN(postVotes)}</strong> Likes</span>
+        </div>
+        <!-- Action icons -->
+        <div style="display:flex;justify-content:space-around;padding-top:6px;direction:rtl;" onclick="event.stopPropagation()">
+          <button onclick="document.getElementById('new-comment-input').focus()" style="background:none;border:none;color:#71767b;cursor:pointer;padding:8px;border-radius:50%;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='#1d9bf0';this.style.background='rgba(29,155,240,0.1)'" onmouseout="this.style.color='#71767b';this.style.background='none'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.879 3.77 7.879 8.022 0 4.different-422-3.556 8.011-7.879 8.011h-1.53l-2.059 2.254c-.4.439-1.013.616-1.585.46-.571-.155-.985-.65-1.049-1.236L9.54 18.5H9.756C5.351 18.5 1.751 14.924 1.751 10Z" stroke="currentColor" stroke-width="1.8"/></svg>
+          </button>
+          <button onclick="votePost('${postId}',1)" style="background:none;border:none;color:${postVotes>0?'#00ba7c':'#71767b'};cursor:pointer;padding:8px;border-radius:50%;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='#00ba7c';this.style.background='rgba(0,186,124,0.1)'" onmouseout="this.style.color='${postVotes>0?'#00ba7c':'#71767b'}';this.style.background='none'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46L19.5 20.12l-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z" fill="currentColor"/></svg>
+          </button>
+          <button style="background:none;border:none;color:#71767b;cursor:pointer;padding:8px;border-radius:50%;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='#f91880';this.style.background='rgba(249,24,128,0.1)'" onmouseout="this.style.color='#71767b';this.style.background='none'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.53.771-.53-.77c-1.125-1.635-2.52-2.186-3.78-2.128-1.934.09-3.396 1.555-3.396 3.323 0 .92.364 1.896 1.25 2.9 2 2.284 5.86 5.11 6.455 5.54.596-.43 4.454-3.256 6.455-5.54.886-1.004 1.249-1.98 1.249-2.9 0-1.738-1.447-3.19-3.29-3.356z" stroke="currentColor" stroke-width="1.8"/></svg>
+          </button>
+          <button onclick="if(navigator.share){navigator.share({url:window.location.href});}else{navigator.clipboard.writeText(window.location.href).then(()=>showToast('Link copied','success'));}" style="background:none;border:none;color:#71767b;cursor:pointer;padding:8px;border-radius:50%;transition:color 0.15s,background 0.15s;" onmouseover="this.style.color='#1d9bf0';this.style.background='rgba(29,155,240,0.1)'" onmouseout="this.style.color='#71767b';this.style.background='none'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
 
-    // Count post appearances per author as proxy for post count
-    const allAuthors = [postData.authorName || postData.author || 'Anonymous', ...comments.map(c => c.data.author || c.data.authorName || 'Anonymous')];
-    const authorCounts = {};
-    allAuthors.forEach(a => { authorCounts[a] = (authorCounts[a] || 0) + 1; });
+      <!-- Reply input row -->
+      <div style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:14px 18px;display:flex;align-items:center;gap:12px;direction:rtl;">
+        ${buildAvatar(currentUser?.name||'Guest', currentUser?.photoURL||'', 38)}
+        <div onclick="document.getElementById('new-comment-input').focus()" style="flex:1;color:#71767b;font-size:0.97rem;cursor:text;padding:10px 0;">כתוב תגובה...</div>
+        <button onclick="submitComment()" style="background:#e7e9ea;color:#000;border:none;padding:8px 20px;border-radius:980px;font-weight:700;font-size:0.9rem;cursor:pointer;flex-shrink:0;transition:background 0.15s;" onmouseover="this.style.background='#cfd3d7'" onmouseout="this.style.background='#e7e9ea'">שלח</button>
+      </div>
+    `;
 
-    let html = '';
-    // Original post as #1
-    const origAuthor = postData.authorName || postData.author || 'Anonymous';
-    html += buildPostCard(1, origAuthor, postData.authorAvatar || '', postData.timestamp, postData.content || '', authorCounts[origAuthor] || 1, postData.timestamp, true, postData.title || '');
-
-    // Marketplace actions
+    // ── Marketplace actions ──
     if (currentGroupId === 'marketplace' && currentUser && currentUser.email !== postData.authorEmail) {
       html += `
-        <div style="display:flex; gap:12px; margin-top:4px; margin-bottom:4px; direction:rtl;">
-          <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:10px 24px; font-weight:700;"><i class="fas fa-hand-holding-usd" style="margin-left:8px;"></i>הגש הצעת רכישה</button>
-          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:10px 24px; font-weight:700; background:#2c2c2e; color:#fff;"><i class="fas fa-envelope" style="margin-left:8px;"></i>שלח הודעה למוכר</button>
+        <div style="display:flex; gap:12px; padding:12px 18px; background:#000; border-bottom:1px solid rgba(255,255,255,0.1);">
+          <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem;"><i class="fas fa-hand-holding-usd" style="margin-left:8px;"></i>הגש הצעת רכישה</button>
+          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; background:#2c2c2e; color:#fff;"><i class="fas fa-envelope" style="margin-left:8px;"></i>שלח הודעה למוכר</button>
         </div>
       `;
     }
 
-    // Comments as #2, #3...
-    comments.forEach((c, idx) => {
+    // ── Comments (Twitter reply style) ──
+    comments.forEach((c) => {
       const cAuthor = c.data.author || c.data.authorName || 'Anonymous';
-      html += buildPostCard(idx + 2, cAuthor, c.data.authorAvatar || '', c.data.timestamp, c.data.content || '', authorCounts[cAuthor] || 1, null, false, '');
+      const cHandle = '@' + cAuthor.toLowerCase().replace(/\s+/g,'');
+      const cAvatar = buildAvatar(cAuthor, c.data.authorAvatar||'', 42);
+      const cTimeAgo = formatTimeAgo(new Date(c.data.timestamp));
+      const cContent = (c.data.content||'').replace(/<[^>]+>/g,'');
+      html += `
+        <div style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;display:flex;gap:12px;direction:rtl;">
+          <div style="flex-shrink:0;">${cAvatar}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;direction:rtl;">
+              <span style="font-weight:700;color:#e7e9ea;font-size:0.97rem;">${cAuthor}</span>
+              <span style="color:#71767b;font-size:0.88rem;">${cHandle}</span>
+              <span style="color:#71767b;font-size:0.88rem;">·</span>
+              <span style="color:#71767b;font-size:0.88rem;">${cTimeAgo}</span>
+            </div>
+            <div style="color:#e7e9ea;font-size:0.95rem;line-height:1.6;white-space:pre-wrap;direction:rtl;text-align:right;">${cContent}</div>
+            <div style="display:flex;gap:20px;margin-top:10px;">
+              <button style="display:flex;align-items:center;gap:5px;background:none;border:none;color:#71767b;font-size:0.82rem;cursor:pointer;padding:4px;border-radius:4px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.879 3.77 7.879 8.022 0 4.different-422-3.556 8.011-7.879 8.011h-1.53l-2.059 2.254c-.4.439-1.013.616-1.585.46-.571-.155-.985-.65-1.049-1.236L9.54 18.5H9.756C5.351 18.5 1.751 14.924 1.751 10Z" stroke="currentColor" stroke-width="1.8"/></svg>
+              </button>
+              <button style="display:flex;align-items:center;gap:5px;background:none;border:none;color:#71767b;font-size:0.82rem;cursor:pointer;padding:4px;border-radius:4px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#f91880'" onmouseout="this.style.color='#71767b'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.53.771-.53-.77c-1.125-1.635-2.52-2.186-3.78-2.128-1.934.09-3.396 1.555-3.396 3.323 0 .92.364 1.896 1.25 2.9 2 2.284 5.86 5.11 6.455 5.54.596-.43 4.454-3.256 6.455-5.54.886-1.004 1.249-1.98 1.249-2.9 0-1.738-1.447-3.19-3.29-3.356z" stroke="currentColor" stroke-width="1.8"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>`;
     });
 
     threadContainer.innerHTML = html;
