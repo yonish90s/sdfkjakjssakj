@@ -3208,7 +3208,11 @@ trackVisit();
 // ========== CONTACT MODAL ==========
 function openContactModal() {
   const el = document.getElementById('contact-modal');
-  if (el) el.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    // Ensure chat widget is correctly localized whenever opened
+    updateNavbarLanguage();
+  }
 }
 
 function closeContactModal() {
@@ -3228,6 +3232,8 @@ function openCustomerServiceModal() {
   const modal = document.getElementById('contact-modal');
   if (modal) {
     modal.classList.toggle('active');
+    // Ensure chat widget is correctly localized whenever opened
+    updateNavbarLanguage();
   }
 }
 
@@ -5080,7 +5086,8 @@ function toggleLanguage(e) {
 }
 
 function updateNavbarLanguage() {
-  const isHeb = (currentLocation && currentLocation.id === 'Israel');
+  try {
+    const isHeb = (currentLocation && currentLocation.id === 'Israel');
 
   // Flip navbar sections: RTL (Hebrew) = logo on right (row-reverse), LTR (English) = logo on left (row)
   const navInner = document.querySelector('.nav-inner-apple');
@@ -5295,6 +5302,9 @@ function updateNavbarLanguage() {
     if (footerTerms) footerTerms.textContent = 'Terms of Use';
     if (footerPrivacy) footerPrivacy.textContent = 'Privacy Policy';
     if (footerAccessibility) footerAccessibility.textContent = 'Accessibility';
+  }
+  } catch (err) {
+    console.error('Error in updateNavbarLanguage:', err);
   }
 }
 
