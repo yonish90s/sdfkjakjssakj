@@ -4901,6 +4901,10 @@ function toggleLanguage(e) {
 
 function updateNavbarLanguage() {
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
+
+  // Flip navbar sections: RTL (Hebrew) = logo on right (row-reverse), LTR (English) = logo on left (row)
+  const navInner = document.querySelector('.nav-inner-apple');
+  if (navInner) navInner.style.flexDirection = isHeb ? 'row-reverse' : 'row';
   document.documentElement.lang = isHeb ? 'he' : 'en';
   document.documentElement.dir = isHeb ? 'rtl' : 'ltr';
 
