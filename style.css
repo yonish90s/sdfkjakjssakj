@@ -7657,26 +7657,19 @@ body.live-edit-mode img:hover {
     bottom: 80px !important;
     z-index: 9999 !important;
   }
-  /* Position support button above the chat window when active on Mobile */
-  #contact-modal.active ~ #support-floating-btn-container {
-    bottom: 590px !important;
-    left: 12px !important;
-    right: auto !important;
-    top: auto !important;
-  }
 }
 
 /* =====================================================================
-   GLOBAL CHAT WIDGET TRANSITIONS (Desktop & Global)
+   GLOBAL CHAT WIDGET TRANSITIONS & OPTION B BEHAVIORS
    ===================================================================== */
 #support-floating-btn-container {
-  transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), right 0.4s cubic-bezier(0.4, 1.56, 0.64, 1) !important;
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), bottom 0.3s ease, left 0.3s ease, right 0.3s ease, top 0.3s ease !important;
+  transform-origin: center center !important;
 }
 
-/* Position support button above the chat window when active on Desktop */
+/* Option B: Hide and scale down support button when the chat window is active */
 #contact-modal.active ~ #support-floating-btn-container {
-  bottom: 590px !important;
-  right: 32px !important;
-  left: auto !important;
-  top: auto !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0) !important;
 }

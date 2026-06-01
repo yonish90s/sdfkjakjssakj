@@ -387,7 +387,9 @@
       </div>
       <div style="display:flex; align-items:center; gap:12px;">
         <button onclick="openTermsModal()" class="chat-terms-btn">Terms</button>
-        <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:18px;">✕</button>
+        <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Collapse Chat">
+          <i class="fas fa-chevron-down"></i>
+        </button>
       </div>
     </div>
     <div style="padding: 24px;">
