@@ -5519,18 +5519,38 @@ window.showGroupsList = function() {
   currentPostId = null;
 };
 
-window.openGroup = async function(groupId) {
+window.openGroup = async function(groupId, sortType = 'new') {
   const group = PREDEFINED_GROUPS.find(g => g.id === groupId);
   if (!group) return;
 
   currentGroupId = groupId;
+  window._currentGroupObj = group;
   document.getElementById('groups-list-view').style.display = 'none';
   document.getElementById('post-detail-view').style.display = 'none';
   document.getElementById('group-detail-view').style.display = 'block';
 
-  // Update header
+  // Reddit-style header population
   document.getElementById('group-title').textContent = group.name;
   document.getElementById('group-desc').textContent = group.desc;
+  document.getElementById('sidebar-group-desc').textContent = group.desc;
+  document.getElementById('sidebar-created').textContent = 'נוצר 2024';
+
+  // Banner
+  const bannerEl = document.getElementById('group-banner');
+  const overlayEl = document.getElementById('group-banner-overlay');
+  const bannerImg = document.getElementById('group-banner-img');
+  if (bannerImg) { bannerImg.style.display = 'none'; bannerImg.src = ''; }
+  if (bannerEl) bannerEl.style.background = `linear-gradient(135deg, ${group.color}22, ${group.color}55, #0a0a0a)`;
+  if (overlayEl) overlayEl.style.background = group.color;
+  loadSavedBanner(groupId);
+
+  // Icon
+  const iconWrap = document.getElementById('group-icon-wrap');
+  const iconI = document.getElementById('group-icon-i');
+  if (iconWrap) iconWrap.style.background = group.color;
+  if (iconI) { iconI.className = `fas ${group.icon}`; iconI.style.color = '#fff'; }
+
+  document.getElementById('sidebar-members').textContent = '...';
 
   const container = document.getElementById('group-posts-container');
   container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;"><div class="spinner" style="margin:0 auto 16px;"></div> טוען דיונים בפורום...</div>';
@@ -5564,104 +5584,70 @@ window.openGroup = async function(groupId) {
       return;
     }
 
-    // Sort in memory descending
+    // Sort
     const docs = [];
     snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
-    docs.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
+    if (sortType === 'top') {
+      docs.sort((a, b) => (b.data.votes || 0) - (a.data.votes || 0));
+    } else if (sortType === 'hot') {
+      docs.sort((a, b) => ((commentsByPost[b.id]||0)*2+(b.data.votes||0)) - ((commentsByPost[a.id]||0)*2+(a.data.votes||0)));
+    } else {
+      docs.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
+    }
 
-    const OR2 = '#f59e0b';
+    // Members count
+    const uniqueAuthors = new Set(docs.map(d => d.data.authorName || d.data.author));
+    const membersEl = document.getElementById('sidebar-members');
+    if (membersEl) membersEl.textContent = `${uniqueAuthors.size} חברים`;
 
-    // Build forum table
-    let html = `
-      <div style="direction:rtl; text-align:right; border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
-        <!-- Filters bar -->
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 20px; background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.8rem; color:#888;">
-          <span style="display:flex; align-items:center; gap:6px; cursor:pointer; color:${OR2}; font-weight:600;">▼ מסננים</span>
-          <div style="display:flex; gap:20px;">
-            <span style="color:#888;">תגובות:</span>
-            <span style="color:#888; width:70px; text-align:center;">צפיות:</span>
-            <span style="color:#888; width:200px;">הודעה אחרונה:</span>
-          </div>
-        </div>
-    `;
-
+    // Reddit-style post cards
+    let html = '';
     docs.forEach(doc => {
       const data = doc.data;
-      const dateStr = new Date(data.timestamp).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+      const timeAgo = formatTimeAgo(new Date(data.timestamp));
       const authorName = data.authorName || data.author || 'Anonymous';
       const repliesCount = commentsByPost[doc.id] || (data.commentsCount || 0);
       const viewsCount = data.views || 0;
-      const latestComment = latestCommentByPost[doc.id];
-
-      let latestHtml = `<span style="color:#86868b; font-size:0.8rem;">אין תגובות</span>`;
-      if (latestComment) {
-        const latestTimeAgo = formatTimeAgo(new Date(latestComment.timestamp));
-        const initials = (latestComment.author || 'A').charAt(0).toUpperCase();
-        const avatarColors = ['#0071e3','#af52de','#ff9500','#34c759','#ff3b30','#5ac8fa','#ffcc00'];
-        const avatarColor = avatarColors[initials.charCodeAt(0) % avatarColors.length];
-        latestHtml = `
-          <div style="display:flex; align-items:center; gap:8px;">
-            <div style="width:28px; height:28px; border-radius:50%; background:${avatarColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0;">${initials}</div>
-            <div>
-              <div style="font-size:0.8rem; color:#e5e5ea; font-weight:600;">${latestComment.author}</div>
-              <div style="font-size:0.75rem; color:#86868b;">${latestTimeAgo}</div>
-            </div>
-          </div>`;
-      } else {
-        // Use post author as latest if no comments
-        const timeAgo = formatTimeAgo(new Date(data.timestamp));
-        const initials = authorName.charAt(0).toUpperCase();
-        const avatarColors = ['#0071e3','#af52de','#ff9500','#34c759','#ff3b30','#5ac8fa','#ffcc00'];
-        const avatarColor = avatarColors[initials.charCodeAt(0) % avatarColors.length];
-        latestHtml = `
-          <div style="display:flex; align-items:center; gap:8px;">
-            <div style="width:28px; height:28px; border-radius:50%; background:${avatarColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0;">${initials}</div>
-            <div>
-              <div style="font-size:0.8rem; color:#e5e5ea; font-weight:600;">${authorName}</div>
-              <div style="font-size:0.75rem; color:#86868b;">${timeAgo}</div>
-            </div>
-          </div>`;
-      }
-
-      const marketplaceBtns = currentGroupId === 'marketplace' ? `
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}', '${data.authorEmail || ''}', '${(data.title || '').replace(/'/g, "\\'").replace(/\"/g, "&quot;")}'); else alert('הגשת הצעה תהיה זמינה בקרוב!');" style="background:#fbbf24; color:#000; border:none; padding:5px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.75rem;">הגש הצעה</button>
-        </div>` : '';
-
+      const votes = data.votes || 0;
       const authorInitials = authorName.charAt(0).toUpperCase();
       const avatarBgColors = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#06b6d4'];
-      const avatarBg2 = avatarBgColors[authorInitials.charCodeAt(0) % avatarBgColors.length];
-      const authorAvatarHtml = data.authorAvatar
-        ? `<img src="${data.authorAvatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
-        : `<div style="width:34px;height:34px;border-radius:50%;background:${avatarBg2};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem;flex-shrink:0;">${authorInitials}</div>`;
+      const avatarBg = avatarBgColors[authorInitials.charCodeAt(0) % avatarBgColors.length];
+      const avatarHtml = data.authorAvatar
+        ? `<img src="${data.authorAvatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle;">`
+        : `<span style="display:inline-flex;width:24px;height:24px;border-radius:50%;background:${avatarBg};align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.7rem;vertical-align:middle;">${authorInitials}</span>`;
+      const snippetText = (data.content || '').replace(/<[^>]+>/g, '').slice(0, 120);
+      const marketplaceBtn = currentGroupId === 'marketplace' ? `<button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}','${data.authorEmail||''}','${(data.title||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}');" style="background:#f59e0b;color:#000;border:none;padding:4px 12px;border-radius:980px;font-weight:700;cursor:pointer;font-size:0.75rem;">💰 הגש הצעה</button>` : '';
 
       html += `
-        <div style="display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.06); transition:background 0.15s;" onmouseover="this.style.background='rgba(245,158,11,0.04)'" onmouseout="this.style.background='transparent'">
-          <!-- Author avatar (right side) -->
-          <div style="flex-shrink:0; margin-left:14px;">${authorAvatarHtml}</div>
-          <!-- Title column -->
-          <div style="flex:1; min-width:0; text-align:right;">
-            <a href="#" onclick="openPost('${doc.id}'); return false;" style="color:${OR2}; font-weight:700; font-size:0.97rem; text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;">${data.title}</a>
-            <div style="font-size:0.78rem; color:#888; margin-top:3px;">${authorName} &bull; ${dateStr}</div>
-            ${marketplaceBtns}
+        <div style="background:#141414;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;transition:border-color 0.15s;cursor:pointer;"
+          onmouseover="this.style.borderColor='rgba(255,255,255,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'"
+          onclick="openPost('${doc.id}')">
+          <div style="display:flex;direction:ltr;">
+            <div style="width:44px;background:rgba(255,255,255,0.02);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:2px;flex-shrink:0;" onclick="event.stopPropagation()">
+              <button onclick="votePost('${doc.id}',1)" style="background:none;border:none;color:#52525b;cursor:pointer;font-size:0.95rem;padding:3px;line-height:1;transition:color 0.15s;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#52525b'">▲</button>
+              <span style="font-size:0.75rem;font-weight:700;color:${votes>0?'#f59e0b':votes<0?'#ef4444':'#71717a'};">${votes}</span>
+              <button onclick="votePost('${doc.id}',-1)" style="background:none;border:none;color:#52525b;cursor:pointer;font-size:0.95rem;padding:3px;line-height:1;transition:color 0.15s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#52525b'">▼</button>
+            </div>
+            <div style="flex:1;min-width:0;padding:12px 16px;direction:rtl;text-align:right;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:0.73rem;color:#52525b;margin-bottom:7px;">
+                ${avatarHtml}<span style="color:#a1a1aa;font-weight:600;">${authorName}</span><span>•</span><span>${timeAgo}</span>
+              </div>
+              <div style="font-size:0.97rem;font-weight:700;color:#f0f0f0;line-height:1.45;margin-bottom:5px;">${data.title || ''}</div>
+              ${snippetText ? `<div style="font-size:0.82rem;color:#6b6b6b;line-height:1.55;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${snippetText}</div>` : ''}
+              <div style="display:flex;align-items:center;gap:4px;" onclick="event.stopPropagation()">
+                <button onclick="openPost('${doc.id}')" style="display:flex;align-items:center;gap:5px;background:transparent;border:none;color:#52525b;font-size:0.76rem;font-weight:600;cursor:pointer;padding:5px 9px;border-radius:6px;font-family:inherit;" onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.color='#a1a1aa'" onmouseout="this.style.background='transparent';this.style.color='#52525b'">
+                  <i class="fas fa-comment"></i> ${repliesCount} תגובות
+                </button>
+                <button style="display:flex;align-items:center;gap:5px;background:transparent;border:none;color:#52525b;font-size:0.76rem;font-weight:600;cursor:pointer;padding:5px 9px;border-radius:6px;font-family:inherit;">
+                  <i class="fas fa-eye"></i> ${viewsCount} צפיות
+                </button>
+                ${marketplaceBtn}
+              </div>
+            </div>
           </div>
-          <!-- Replies -->
-          <div style="width:70px; text-align:center; flex-shrink:0;">
-            <div style="font-weight:700; color:#e5e5ea; font-size:0.95rem;">${repliesCount}</div>
-            <div style="font-size:0.7rem; color:#666;">תגובות</div>
-          </div>
-          <!-- Views -->
-          <div style="width:70px; text-align:center; flex-shrink:0;">
-            <div style="font-weight:700; color:#e5e5ea; font-size:0.95rem;">${viewsCount}</div>
-            <div style="font-size:0.7rem; color:#666;">צפיות</div>
-          </div>
-          <!-- Latest reply -->
-          <div style="width:200px; flex-shrink:0; text-align:right;">${latestHtml}</div>
-        </div>
-      `;
+        </div>`;
     });
 
-    html += '</div>';
     container.innerHTML = html;
   } catch (err) {
     console.error('Error loading posts:', err);
@@ -5690,6 +5676,59 @@ window.openCreatePostModal = function() {
 window.closeCreatePostModal = function() {
   document.getElementById('create-post-modal').classList.remove('active');
 };
+
+// ── Reddit forum helpers ─────────────────────────────────────────────────────
+window.votePost = async function(postId, delta) {
+  if (!currentUser) { showToast('התחבר כדי להצביע', 'error'); return; }
+  try {
+    await window.fbUpdateDoc(window.fbDoc(window.fbDb, 'posts', postId), { votes: window.fbIncrement(delta) });
+    openGroup(currentGroupId);
+  } catch(e) { console.error('Vote error', e); }
+};
+
+window.setGroupSort = function(type) {
+  ['hot','new','top'].forEach(t => {
+    const btn = document.getElementById('sort-' + t);
+    if (btn) { btn.style.background = t === type ? 'rgba(255,255,255,0.08)' : 'transparent'; btn.style.color = t === type ? '#fff' : '#71717a'; }
+  });
+  openGroup(currentGroupId, type);
+};
+
+window.openBannerEditor = function() {
+  const p = document.getElementById('banner-editor-popup');
+  if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+};
+window.applyBannerUrl = function() {
+  const url = document.getElementById('banner-url-input')?.value?.trim();
+  if (url) { setBannerImage(url); document.getElementById('banner-editor-popup').style.display = 'none'; }
+};
+window.handleBannerFileUpload = function(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { setBannerImage(ev.target.result); document.getElementById('banner-editor-popup').style.display = 'none'; };
+  reader.readAsDataURL(file);
+};
+window.removeBanner = function() {
+  const img = document.getElementById('group-banner-img');
+  const banner = document.getElementById('group-banner');
+  if (img) img.style.display = 'none';
+  const g = window._currentGroupObj;
+  if (banner && g) banner.style.background = `linear-gradient(135deg, ${g.color}22, ${g.color}55, #0a0a0a)`;
+  if (currentGroupId) localStorage.removeItem('banner_' + currentGroupId);
+  document.getElementById('banner-editor-popup').style.display = 'none';
+};
+function setBannerImage(src) {
+  const img = document.getElementById('group-banner-img');
+  const banner = document.getElementById('group-banner');
+  if (!img || !banner) return;
+  img.src = src; img.style.display = 'block'; banner.style.background = 'transparent';
+  if (currentGroupId) localStorage.setItem('banner_' + currentGroupId, src);
+}
+function loadSavedBanner(groupId) {
+  const saved = localStorage.getItem('banner_' + groupId);
+  if (saved) setBannerImage(saved);
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 window.submitPost = async function() {
   if (!currentUser || !currentUser.email) {

@@ -594,20 +594,84 @@
       </div>
     </div>
 
-    <!-- Specific Group View -->
-    <div id="group-detail-view" style="display:none; direction:rtl; text-align:right;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-        <div style="display:flex; align-items:center; gap:16px;">
-          <button onclick="showGroupsList()" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem; border-radius:980px; flex-shrink:0;">← חזרה</button>
-          <div>
-            <h2 id="group-title" style="font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px;">Group Name</h2>
-            <p id="group-desc" style="color: #86868b; font-size: 0.9rem; margin:0;">Group description</p>
+    <!-- Specific Group View — Reddit Style -->
+    <div id="group-detail-view" style="display:none; direction:rtl; text-align:right; margin: -24px -24px 0;">
+
+      <!-- Banner -->
+      <div id="group-banner" style="height:140px; background:linear-gradient(135deg,#1a1a2e,#16213e); position:relative; overflow:hidden; cursor:pointer;"
+        onmouseover="document.getElementById('banner-edit-btn').style.opacity='1'"
+        onmouseout="document.getElementById('banner-edit-btn').style.opacity='0'">
+        <div id="group-banner-overlay" style="position:absolute;inset:0;opacity:0.5;"></div>
+        <img id="group-banner-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
+        <div id="banner-edit-btn" onclick="openBannerEditor()" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;background:rgba(0,0,0,0.45);">
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);border-radius:980px;padding:8px 18px;color:#fff;font-size:0.85rem;font-weight:600;">
+            <i class="fas fa-camera"></i> שנה תמונת באנר
           </div>
         </div>
-        <button class="btn-primary" onclick="openCreatePostModal()" style="border-radius:980px; padding:10px 20px; font-size:0.9rem; flex-shrink:0;"><i class="fas fa-pen" style="margin-left:6px;"></i> כתוב דיון חדש</button>
+        <input type="file" id="banner-file-input" accept="image/*" style="display:none;" onchange="handleBannerFileUpload(event)">
       </div>
-      <div id="group-posts-container">
-        <!-- Posts injected by JS -->
+      <div id="banner-editor-popup" style="display:none;position:absolute;top:120px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:16px 20px;z-index:999;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+        <div style="font-size:0.8rem;font-weight:700;color:#a1a1aa;margin-bottom:10px;direction:rtl;">שנה באנר</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input id="banner-url-input" type="text" placeholder="https://..." style="flex:1;padding:8px 12px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.82rem;outline:none;direction:ltr;">
+          <button onclick="applyBannerUrl()" style="padding:8px 14px;background:#f59e0b;border:none;border-radius:8px;color:#000;font-weight:700;font-size:0.8rem;cursor:pointer;">אשר</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="document.getElementById('banner-file-input').click()" style="flex:1;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a1a1aa;font-size:0.8rem;cursor:pointer;font-family:inherit;"><i class="fas fa-upload" style="margin-left:4px;"></i>העלה תמונה</button>
+          <button onclick="removeBanner()" style="padding:8px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;color:#ef4444;font-size:0.8rem;cursor:pointer;font-family:inherit;">הסר</button>
+          <button onclick="document.getElementById('banner-editor-popup').style.display='none'" style="padding:8px 14px;background:transparent;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#71717a;font-size:0.8rem;cursor:pointer;">ביטול</button>
+        </div>
+      </div>
+
+      <!-- Community header bar -->
+      <div style="background:#111111; border-bottom:1px solid rgba(255,255,255,0.07); padding:0 24px 14px;">
+        <div style="display:flex; align-items:flex-end; gap:16px; margin-top:-28px; flex-wrap:wrap;">
+          <div id="group-icon-wrap" style="width:72px;height:72px;border-radius:50%;border:4px solid #111111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;background:#1c1c1e;">
+            <i id="group-icon-i" class="fas fa-comments" style="color:#fff;"></i>
+          </div>
+          <div style="flex:1;min-width:0;padding-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+              <h2 id="group-title" style="font-size:1.4rem;font-weight:800;color:#fff;margin:0;letter-spacing:-0.02em;">Group Name</h2>
+              <p id="group-desc" style="color:#71717a;font-size:0.82rem;margin:2px 0 0;"></p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button onclick="showGroupsList()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#a1a1aa;padding:7px 16px;border-radius:980px;font-size:0.82rem;font-weight:600;cursor:pointer;">← חזרה</button>
+              <button class="btn-primary" onclick="openCreatePostModal()" style="border-radius:980px;padding:7px 18px;font-size:0.82rem;font-weight:700;"><i class="fas fa-plus" style="margin-left:5px;"></i> פרסם פוסט</button>
+            </div>
+          </div>
+        </div>
+        <div id="group-sort-tabs" style="display:flex;gap:4px;margin-top:14px;">
+          <button onclick="setGroupSort('hot')" id="sort-hot" style="padding:6px 14px;border-radius:980px;border:none;background:rgba(255,255,255,0.08);color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer;">🔥 חם</button>
+          <button onclick="setGroupSort('new')" id="sort-new" style="padding:6px 14px;border-radius:980px;border:none;background:transparent;color:#71717a;font-size:0.8rem;font-weight:600;cursor:pointer;">✨ חדש</button>
+          <button onclick="setGroupSort('top')" id="sort-top" style="padding:6px 14px;border-radius:980px;border:none;background:transparent;color:#71717a;font-size:0.8rem;font-weight:600;cursor:pointer;">📈 מוביל</button>
+        </div>
+      </div>
+
+      <!-- Two-column layout -->
+      <div style="display:flex;gap:24px;padding:20px 24px;align-items:flex-start;max-width:1100px;margin:0 auto;box-sizing:border-box;">
+        <div id="group-posts-container" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;"></div>
+        <aside id="group-sidebar" style="width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;position:sticky;top:80px;">
+          <div style="background:#111111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+            <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:0.85rem;font-weight:700;color:#e5e5e5;">אודות הקהילה</div>
+            <div style="padding:14px 16px;">
+              <p id="sidebar-group-desc" style="font-size:0.83rem;color:#a1a1aa;margin:0 0 14px;line-height:1.6;"></p>
+              <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:#a1a1aa;margin-bottom:8px;">
+                <span id="sidebar-members">0 חברים</span>
+                <span id="sidebar-created" style="color:#52525b;"></span>
+              </div>
+              <button class="btn-primary" onclick="openCreatePostModal()" style="width:100%;border-radius:980px;padding:9px;font-size:0.85rem;font-weight:700;margin-top:6px;"><i class="fas fa-plus" style="margin-left:5px;"></i> פרסם פוסט חדש</button>
+            </div>
+          </div>
+          <div style="background:#111111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+            <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:0.85rem;font-weight:700;color:#e5e5e5;">כללי הקהילה</div>
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+              <div style="font-size:0.8rem;color:#a1a1aa;display:flex;gap:8px;"><span style="color:#f59e0b;font-weight:700;">1.</span>היו מכבדים ואדיבים</div>
+              <div style="font-size:0.8rem;color:#a1a1aa;display:flex;gap:8px;"><span style="color:#f59e0b;font-weight:700;">2.</span>אין spam או פרסומות</div>
+              <div style="font-size:0.8rem;color:#a1a1aa;display:flex;gap:8px;"><span style="color:#f59e0b;font-weight:700;">3.</span>שמרו על רלוונטיות לנושא</div>
+              <div style="font-size:0.8rem;color:#a1a1aa;display:flex;gap:8px;"><span style="color:#f59e0b;font-weight:700;">4.</span>אין ייעוץ השקעות מחייב</div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
 
