@@ -397,7 +397,8 @@
           1. 🕒 Opening Hours<br>
           2. 📧 Contact Us<br>
           3. 📅 Book Appointment<br>
-          4. 📊 Graphs and Data
+          4. 📊 Graphs and Data<br>
+          5. 💬 Talk to Manager
         </div>
       </div>
       <div style="display:flex; gap:8px;">
@@ -1187,6 +1188,7 @@
         <button class="admin-nav-btn" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)" style="color: #a1a1aa;"><i class="fas fa-chart-pie"></i> ניתוח נתונים</button>
         <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
         
+        <button class="admin-nav-btn" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)" style="color: #a1a1aa;"><i class="fas fa-comment-dots"></i> הודעות למנהל <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.7rem; margin-right:4px;"></span></button>
         <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
       </div>
     </aside>
@@ -1270,6 +1272,15 @@
           <p style="color:#a1a1aa; margin-bottom:24px;">לחץ על הכפתור כדי לעבור למצב עריכה באתר עצמו, שם תוכל ללחוץ על טקסטים ותמונות כדי לערוך אותם בזמן אמת.</p>
           <button class="btn-primary" onclick="enableLiveEditMode(); showPage('home'); document.getElementById('auth-modal-overlay').style.display = 'none';" style="font-size:1.1rem; padding:12px 24px;">הפעל מצב עריכה עכשיו</button>
         </div>
+      </div>
+
+      <!-- 6. MANAGER MESSAGES TAB -->
+      <div id="admin-section-manager-msgs" class="admin-section" style="display: none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="margin:0; font-size:1.5rem; color:#fafafa;">💬 הודעות למנהל</h2>
+          <button onclick="clearManagerMessages()" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:6px 14px; border-radius:8px; font-size:0.8rem; cursor:pointer;">נקה הכל</button>
+        </div>
+        <div id="manager-msgs-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
 
     </div>

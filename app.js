@@ -1493,6 +1493,13 @@ function initAdminDashboard() {
   }
   
   switchAdminTab('home');
+  // Show unread manager messages badge
+  setTimeout(() => {
+    const msgs = JSON.parse(localStorage.getItem('managerMessages') || '[]');
+    const unread = msgs.filter(m => !m.read).length;
+    const badge = document.getElementById('manager-msgs-badge');
+    if (badge && unread > 0) { badge.textContent = unread; badge.style.display = 'inline'; }
+  }, 300);
 }
 
 function saveAiSettings() {
@@ -1527,10 +1534,59 @@ async function sendChatMessage() {
     '4': 'On the "Graphs" page, you can find advanced analytics, charts, and data files for direct download.'
   };
 
+  // Option 5 — Talk to Manager
+  if (message === '5') {
+    // Show prompt for user to type their message
+    chatContainer.innerHTML += `
+      <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:left;">
+        Sure! Please type your message below and I'll make sure the manager sees it. ✉️
+      </div>
+    `;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    // Flag so next message goes to manager
+    window._chatSendToManager = true;
+    return;
+  }
+
+  // If previous message was "5" — send this as a manager message
+  if (window._chatSendToManager) {
+    window._chatSendToManager = false;
+    const senderName = (currentUser && currentUser.name) ? currentUser.name : 'Guest';
+    const senderEmail = (currentUser && currentUser.email) ? currentUser.email : 'guest_' + Date.now();
+    const timestamp = new Date().toISOString();
+    const managerMsg = {
+      from: senderName,
+      email: senderEmail,
+      message,
+      timestamp,
+      read: false
+    };
+    // Save to Firestore under admin messages
+    if (window.fbAddDoc && window.fbDb) {
+      try {
+        await window.fbAddDoc(window.fbColl(window.fbDb, 'adminMessages'), managerMsg);
+      } catch(e) { console.error('Failed to save manager message:', e); }
+    }
+    // Also save to localStorage as backup
+    const stored = JSON.parse(localStorage.getItem('managerMessages') || '[]');
+    stored.unshift(managerMsg);
+    localStorage.setItem('managerMessages', JSON.stringify(stored));
+
+    setTimeout(() => {
+      chatContainer.innerHTML += `
+        <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:left;">
+          ✅ Your message has been sent to the manager! We'll get back to you soon.
+        </div>
+      `;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 400);
+    return;
+  }
+
   if (predefinedAnswers[message]) {
     setTimeout(() => {
       chatContainer.innerHTML += `
-        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:right;">
+        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color:#000;">
           ${predefinedAnswers[message]}
         </div>
       `;
@@ -1675,6 +1731,72 @@ function switchAdminTab(tabId, btnEl) {
   if (tabId === 'calendar') renderAdminCalendar();
   if (tabId === 'pdfstore') renderPdfAdminList();
   if (tabId === 'images') renderAdminImageLinks();
+  if (tabId === 'manager-msgs') renderManagerMessages();
+}
+
+async function renderManagerMessages() {
+  const container = document.getElementById('manager-msgs-list');
+  if (!container) return;
+
+  let msgs = [];
+
+  // Load from Firestore
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'adminMessages'));
+      snap.forEach(doc => msgs.push({ id: doc.id, ...doc.data() }));
+      msgs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    } catch(e) {}
+  }
+
+  // Fallback to localStorage
+  if (msgs.length === 0) {
+    msgs = JSON.parse(localStorage.getItem('managerMessages') || '[]');
+  }
+
+  // Update badge
+  const badge = document.getElementById('manager-msgs-badge');
+  const unread = msgs.filter(m => !m.read).length;
+  if (badge) {
+    badge.textContent = unread;
+    badge.style.display = unread > 0 ? 'inline' : 'none';
+  }
+
+  if (msgs.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b;">אין הודעות עדיין</div>';
+    return;
+  }
+
+  container.innerHTML = msgs.map((m, i) => {
+    const dateStr = m.timestamp ? new Date(m.timestamp).toLocaleString('he-IL') : '';
+    return `
+      <div style="background:#1c1c1e; border:1px solid ${m.read ? 'rgba(255,255,255,0.06)' : 'rgba(245,158,11,0.4)'}; border-radius:12px; padding:16px; direction:rtl;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${!m.read ? '<span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;display:inline-block;flex-shrink:0;"></span>' : ''}
+            <span style="font-weight:700; color:#f5f5f7; font-size:0.9rem;">${m.from || 'אורח'}</span>
+            <span style="color:#86868b; font-size:0.8rem;">${m.email || ''}</span>
+          </div>
+          <span style="color:#86868b; font-size:0.75rem;">${dateStr}</span>
+        </div>
+        <p style="color:#e5e5e5; font-size:0.9rem; margin:0 0 10px; line-height:1.5;">${m.message}</p>
+        <button onclick="markManagerMsgRead(${i})" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#a1a1aa; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer;">סמן כנקרא</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function markManagerMsgRead(index) {
+  let msgs = JSON.parse(localStorage.getItem('managerMessages') || '[]');
+  if (msgs[index]) { msgs[index].read = true; localStorage.setItem('managerMessages', JSON.stringify(msgs)); }
+  renderManagerMessages();
+}
+
+function clearManagerMessages() {
+  if (confirm('למחוק את כל ההודעות?')) {
+    localStorage.setItem('managerMessages', JSON.stringify([]));
+    renderManagerMessages();
+  }
 }
 
 
