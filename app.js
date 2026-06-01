@@ -712,7 +712,7 @@ function goBack() {
 // ========== RENDER NEWS ==========
 let currentPage = 1;
 const ARTICLES_PER_PAGE = 10;
-let currentCategory = 'הכל';
+let currentCategory = 'all';
 let currentLocation = JSON.parse(localStorage.getItem('userLocation')) || {
   id: 'Israel',
   nameHeb: 'Hebrew',
@@ -781,16 +781,19 @@ function renderNewsLayout(page = 1) {
   const locationArticles = getLocationArticles();
   const categoryBar = document.getElementById('category-filter-bar');
   if (categoryBar) {
-    const categories = ['הכל', ...new Set(locationArticles.map(a => a.category).filter(Boolean))];
+    const isHebLang = document.body.classList.contains('rtl-layout');
+    const allLabel = isHebLang ? 'הכל' : 'All';
+    const categories = ['all', ...new Set(locationArticles.map(a => a.category).filter(Boolean))];
     categoryBar.innerHTML = categories.map(cat => {
       const isSelected = currentCategory === cat;
+      const displayCat = cat === 'all' ? allLabel : cat;
       const emoji = categoryEmojis[cat] ? categoryEmojis[cat] + ' ' : '';
-      return `<button class="category-pill ${isSelected ? 'active' : ''}" onclick="filterCategory('${escHtml(cat)}')">${emoji}${escHtml(cat)}</button>`;
+      return `<button class="category-pill ${isSelected ? 'active' : ''}" onclick="filterCategory('${escHtml(cat)}')">${emoji}${escHtml(displayCat)}</button>`;
     }).join('');
   }
 
   // Filter articles based on currentCategory
-  let filteredArticles = currentCategory === 'הכל'
+  let filteredArticles = currentCategory === 'all'
     ? locationArticles
     : locationArticles.filter(a => a.category === currentCategory);
 
@@ -812,7 +815,7 @@ function renderNewsLayout(page = 1) {
   if (page === 1) {
     const featuredCarousel = document.getElementById('featured-carousel-container');
     if (featuredCarousel) {
-      if (currentCategory === 'הכל' && (!searchQuery || searchQuery.trim() === '')) {
+      if (currentCategory === 'all' && (!searchQuery || searchQuery.trim() === '')) {
         // Show carousel only on the main 'All' page
         displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 12);
       } else {
@@ -5007,7 +5010,7 @@ function selectLocation(id, nameHeb, lat, lon, capitalHeb) {
   fetchWeatherForCapital();
 
   // Re-render articles for the selected region
-  currentCategory = 'הכל';
+  currentCategory = 'all';
   renderNewsLayout(1);
 
   // Update cookie consent banner language dynamically
