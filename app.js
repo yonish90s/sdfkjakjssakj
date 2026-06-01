@@ -4952,6 +4952,7 @@ function updateNavbarLanguage() {
     if (elGraphs) elGraphs.textContent = 'Graphs';
     if (elSignin) elSignin.textContent = 'Sign In';
     if (elLogout) elLogout.textContent = 'Logout';
+    if (elPremium) elPremium.textContent = 'Premium';
     const activePage = document.querySelector('.page.active');
     const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
     if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'Graphs' : 'Articles';
