@@ -383,10 +383,10 @@
   <div id="chat-draggable-window" class="modal-content chat-window" style="position: fixed; bottom: 100px; right: 32px; max-width: 350px; margin: 0; padding: 0; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 150px); z-index: 9999;">
     <div class="chat-drag-handle chat-header" id="chat-header" style="cursor: move; padding: 12px 16px; border-top-left-radius: 20px; border-top-right-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div style="display:flex; align-items:center; gap:8px;">
-        <span>✨ Smart Virtual Assistant</span>
+        <span id="chat-header-title">✨ Smart Virtual Assistant</span>
       </div>
       <div style="display:flex; align-items:center; gap:12px;">
-        <button onclick="openTermsModal()" class="chat-terms-btn">Terms</button>
+        <button onclick="openTermsModal()" class="chat-terms-btn" id="chat-terms-btn">Terms</button>
         <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Collapse Chat">
           <i class="fas fa-chevron-down"></i>
         </button>
@@ -394,7 +394,7 @@
     </div>
     <div style="padding: 24px;">
       <div id="ai-chat-messages" style="height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
-        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color: #000;">
+        <div id="ai-chat-greeting" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color: #000;">
           Hello! I am the site's virtual assistant. How can I help you today? 😊<br><br>
           Please select an option:<br>
           1. 🕒 Opening Hours<br>

@@ -1526,10 +1526,11 @@ async function sendChatMessage() {
   if (!message) return;
 
   const chatContainer = document.getElementById('ai-chat-messages');
+  const isHeb = (currentLocation && currentLocation.id === 'Israel');
   
   // Add user message to UI
   chatContainer.innerHTML += `
-    <div style="background:var(--primary); color:white; padding:10px 14px; border-radius:14px; align-self:flex-end; max-width:85%; font-size:0.95rem; text-align:right;">
+    <div style="background:var(--primary); color:white; padding:10px 14px; border-radius:14px; align-self:flex-end; max-width:85%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
       ${message}
     </div>
   `;
@@ -1537,7 +1538,12 @@ async function sendChatMessage() {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
   // --- PREDEFINED ANSWERS LOGIC ---
-  const predefinedAnswers = {
+  const predefinedAnswers = isHeb ? {
+    '1': 'אנחנו זמינים 24/7 באתר שלנו! כל המאמרים והמוצרים זמינים עבורך בכל עת.',
+    '2': 'תוכל ליצור איתנו קשר במייל: support@project11.com או להשתמש בטופס צור קשר באתר.',
+    '3': 'תוכל לקבוע פגישה בקלות דרך עמוד "קביעת פגישה" בתפריט הניווט שלנו.',
+    '4': 'בעמוד "גרפים ונתונים" תוכל למצוא ניתוחים מתקדמים, תרשימים וקובצי נתונים להורדה ישירה.'
+  } : {
     '1': 'We are available 24/7 on our site! All articles and products are available anytime.',
     '2': 'You can email us at: support@project11.com or use the contact form on the site.',
     '3': 'You can easily book an appointment via the "Book Appointment" page in our navigation menu.',
@@ -1548,8 +1554,10 @@ async function sendChatMessage() {
   if (message === '5') {
     // Show prompt for user to type their message
     chatContainer.innerHTML += `
-      <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:left;">
-        Sure! Please type your message below and I'll make sure the manager sees it. ✉️
+      <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
+        ${isHeb 
+          ? 'בטח! אנא הקלד את ההודעה שלך למטה ואני אדאג שהמנהל יראה אותה. ✉️' 
+          : "Sure! Please type your message below and I'll make sure the manager sees it. ✉️"}
       </div>
     `;
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1584,8 +1592,10 @@ async function sendChatMessage() {
 
     setTimeout(() => {
       chatContainer.innerHTML += `
-        <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:left;">
-          ✅ Your message has been sent to the manager! We'll get back to you soon.
+        <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
+          ${isHeb 
+            ? '✅ ההודעה שלך נשלחה למנהל בהצלחה! נחזור אליך בהקדם.' 
+            : "✅ Your message has been sent to the manager! We'll get back to you soon."}
         </div>
       `;
       chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1596,7 +1606,7 @@ async function sendChatMessage() {
   if (predefinedAnswers[message]) {
     setTimeout(() => {
       chatContainer.innerHTML += `
-        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left; color:#000;">
+        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'}; color:#000;">
           ${predefinedAnswers[message]}
         </div>
       `;
@@ -1608,11 +1618,16 @@ async function sendChatMessage() {
 
   // Add "Typing..."
   const typingId = 'typing-' + Date.now();
-  chatContainer.innerHTML += `<div id="${typingId}" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left;">Assistant is thinking...</div>`;
+  chatContainer.innerHTML += `<div id="${typingId}" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'}; color:#71717a;">${isHeb ? 'העוזר הווירטואלי חושב...' : 'Assistant is thinking...'}</div>`;
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
   try {
-    const systemPrompt = localStorage.getItem('aiSystemPrompt') || "You are a virtual assistant on the site. Answer in English politely.";
+    let systemPrompt = localStorage.getItem('aiSystemPrompt');
+    if (!systemPrompt) {
+      systemPrompt = isHeb 
+        ? "You are an AI virtual assistant on this digital store website named SOKI. Answer in Hebrew politely, helpfully, and professionally." 
+        : "You are an AI virtual assistant on this digital store website named SOKI. Answer in English politely, helpfully, and professionally.";
+    }
     
     const apiUrl = window.API_URL || '';
     const res = await fetch(`${apiUrl}/api/chat`, {
@@ -1627,7 +1642,7 @@ async function sendChatMessage() {
       data = JSON.parse(responseText);
     } catch (parseErr) {
       const typingElem = document.getElementById(typingId);
-      if (typingElem) typingElem.innerHTML = `<span style="color:red;">Server error (not JSON): ${responseText.substring(0, 100)}...</span>`;
+      if (typingElem) typingElem.innerHTML = `<span style="color:red;">Server error: ${responseText.substring(0, 100)}...</span>`;
       return;
     }
 
@@ -1636,7 +1651,7 @@ async function sendChatMessage() {
 
     if (res.ok && data.text) {
       chatContainer.innerHTML += `
-        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:left;">
+        <div style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'}; color:#000;">
           ${data.text}
         </div>
       `;
@@ -5119,6 +5134,12 @@ function updateNavbarLanguage() {
   const sidebarArchive = document.getElementById('sidebar-link-archive');
   const sidebarMyPurchases = document.getElementById('sidebar-link-my-purchases');
 
+  // Chat Widget localization
+  const chatHeaderTitle = document.getElementById('chat-header-title');
+  const chatTermsBtn = document.getElementById('chat-terms-btn');
+  const chatInput = document.getElementById('ai-chat-input');
+  const chatGreeting = document.getElementById('ai-chat-greeting');
+
   if (isHeb) {
     if (sidebarTitle) sidebarTitle.textContent = 'הדשבורד שלי';
     if (sidebarSearchInput) sidebarSearchInput.placeholder = 'חיפוש...';
@@ -5132,6 +5153,24 @@ function updateNavbarLanguage() {
     if (sidebarMyArticles) sidebarMyArticles.textContent = 'הכתבות שלי';
     if (sidebarArchive) sidebarArchive.textContent = 'ארכיון';
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'הרכישות שלי';
+
+    // Hebrew Chat Translation
+    if (chatHeaderTitle) chatHeaderTitle.textContent = '✨ עוזר וירטואלי חכם';
+    if (chatTermsBtn) chatTermsBtn.textContent = 'תנאים';
+    if (chatInput) chatInput.placeholder = 'הקלד הודעה...';
+    if (chatGreeting) {
+      chatGreeting.style.textAlign = 'right';
+      chatGreeting.style.direction = 'rtl';
+      chatGreeting.innerHTML = `
+        שלום! אני העוזר הווירטואלי של האתר. כיצד אוכל לעזור לך היום? 😊<br><br>
+        אנא בחר אפשרות:<br>
+        1. 🕒 שעות פעילות<br>
+        2. 📧 צור קשר<br>
+        3. 📅 קביעת פגישה<br>
+        4. 📊 גרפים ונתונים<br>
+        5. 💬 שיחה עם מנהל
+      `;
+    }
   } else {
     if (sidebarTitle) sidebarTitle.textContent = 'My Dashboard';
     if (sidebarSearchInput) sidebarSearchInput.placeholder = 'Search...';
@@ -5145,6 +5184,24 @@ function updateNavbarLanguage() {
     if (sidebarMyArticles) sidebarMyArticles.textContent = 'My Articles';
     if (sidebarArchive) sidebarArchive.textContent = 'Archive';
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'My Purchases';
+
+    // English Chat Translation
+    if (chatHeaderTitle) chatHeaderTitle.textContent = '✨ Smart Virtual Assistant';
+    if (chatTermsBtn) chatTermsBtn.textContent = 'Terms';
+    if (chatInput) chatInput.placeholder = 'Type a message...';
+    if (chatGreeting) {
+      chatGreeting.style.textAlign = 'left';
+      chatGreeting.style.direction = 'ltr';
+      chatGreeting.innerHTML = `
+        Hello! I am the site's virtual assistant. How can I help you today? 😊<br><br>
+        Please select an option:<br>
+        1. 🕒 Opening Hours<br>
+        2. 📧 Contact Us<br>
+        3. 📅 Book Appointment<br>
+        4. 📊 Graphs and Data<br>
+        5. 💬 Talk to Manager
+      `;
+    }
   }
 
   // Secondary mobile nav
