@@ -3210,7 +3210,10 @@ function closeUploadGraphModal() {
 }
 
 function openCustomerServiceModal() {
-  document.getElementById('contact-modal').classList.add('active');
+  const modal = document.getElementById('contact-modal');
+  if (modal) {
+    modal.classList.toggle('active');
+  }
 }
 
 function closeCustomerServiceModal() {
