@@ -7558,15 +7558,70 @@ body.live-edit-mode img:hover {
     font-size: 16px !important;
   }
 
-  /* Premium Responsive Footer */
+  /* Premium Responsive Footer - shrunk by half */
   .soki-footer-inner {
     flex-direction: column !important;
-    padding: 32px 16px !important;
-    gap: 32px !important;
+    padding: 16px 12px !important;
+    gap: 16px !important;
+  }
+  .soki-footer-brand-col {
+    gap: 12px !important;
+  }
+  .soki-footer-brand-col .soki-logo {
+    font-size: 1rem !important;
+  }
+  .soki-footer-socials {
+    gap: 8px !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+  }
+  .soki-social-icon {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.75rem !important;
+  }
+  .soki-footer-apps {
+    gap: 8px !important;
+  }
+  .soki-app-badge {
+    padding: 4px 10px !important;
+    min-width: 105px !important;
+    border-radius: 6px !important;
+  }
+  .soki-app-badge .app-icon, .soki-app-badge .app-img {
+    font-size: 14px !important;
+    width: 13px !important;
+    height: 13px !important;
+    margin-right: 6px !important;
+  }
+  .soki-app-badge .app-sub {
+    font-size: 5px !important;
+  }
+  .soki-app-badge .app-main {
+    font-size: 9.5px !important;
+  }
+  .soki-footer-copyright {
+    font-size: 0.68rem !important;
+    margin-top: 12px !important;
   }
   .soki-footer-links-container {
     flex-direction: column !important;
-    gap: 24px !important;
+    gap: 16px !important;
+  }
+  .soki-footer-col h4 {
+    font-size: 0.82rem !important;
+    margin-bottom: 8px !important;
+  }
+  .soki-footer-col ul {
+    gap: 6px !important;
+  }
+  .soki-footer-col ul li a {
+    font-size: 0.76rem !important;
+  }
+
+  /* Disable floating popup ad on mobile */
+  #floating-ad-card, .floating-ad-card {
+    display: none !important;
   }
 
   /* Floating Widgets & Draggable Support */
