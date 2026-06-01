@@ -4364,6 +4364,58 @@ function closePaymentModal() {
   if (modal) modal.classList.remove('active');
 }
 
+async function sendReceiptMessage(userEmail, summaryLines, total, timestamp) {
+  const SOKI_SYSTEM = 'receipts@soki.co';
+  const roomId = [userEmail, SOKI_SYSTEM].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  const dateStr = new Date(timestamp).toLocaleString('he-IL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const orderId = Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  const itemsList = summaryLines.map(i => `• ${i.text}`).join('\n');
+  const receiptText =
+`🧾 קבלת רכישה | Order Receipt #${orderId}
+
+📅 ${dateStr}
+
+${itemsList}
+
+💳 סה"כ שולם | Total Paid: $${total.toLocaleString()}
+
+תודה על הרכישה! הזמנתך התקבלה ועובדת.
+Thank you for your purchase! Your order has been received.
+
+— SOKI`;
+
+  const newMsg = {
+    senderEmail: SOKI_SYSTEM,
+    senderName: 'SOKI',
+    text: receiptText,
+    time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+    read: false,
+    isReceipt: true,
+    orderId
+  };
+
+  const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+  const existing = await window.fbGetDoc ? (await window.fbGetDoc(chatDocRef).catch(() => null)) : null;
+  const existingMessages = (existing && existing.exists && existing.exists() && existing.data().messages) ? existing.data().messages : [];
+  const updatedMessages = [...existingMessages, newMsg];
+
+  await window.fbSetDoc(chatDocRef, {
+    participants: [userEmail, SOKI_SYSTEM],
+    messages: updatedMessages,
+    updatedAt: new Date().toISOString(),
+    lastMessage: `🧾 קבלה #${orderId}`,
+    lastSender: SOKI_SYSTEM
+  }, { merge: true });
+
+  // Update local storage so badge & list refresh
+  localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(updatedMessages));
+
+  // Refresh messages badge
+  if (typeof updateMessagesBadge === 'function') updateMessagesBadge();
+  if (window.renderChatUsersList) window.renderChatUsersList();
+}
+
 async function runRealPayment(summaryLines, total) {
   const modal = document.getElementById('payment-modal');
   if (!modal) return;
@@ -4426,7 +4478,16 @@ async function runRealPayment(summaryLines, total) {
       }
     }
 
-    // 3. Complete animation & show success
+    // 3. Send receipt message in the messages system
+    if (currentUser && currentUser.email && window.fbSetDoc && window.fbDb) {
+      try {
+        await sendReceiptMessage(currentUser.email, summaryLines, total, payload.timestamp);
+      } catch (msgErr) {
+        console.error('Failed to send receipt message:', msgErr);
+      }
+    }
+
+    // 4. Complete animation & show success
     track.style.background = `conic-gradient(#0071e3 360deg, #e8e8ed 360deg)`;
     setTimeout(() => {
       spinner.style.display = 'none';
