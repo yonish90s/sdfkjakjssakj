@@ -4867,6 +4867,10 @@ function updateNavbarLanguage() {
   const footerAdminTitle = document.getElementById('footer-title-admin');
   const footerAdminLogin = document.getElementById('footer-admin-login');
   const footerUploadArticles = document.getElementById('footer-upload-articles');
+  const footerTitleLegal = document.getElementById('footer-title-legal');
+  const footerTerms = document.getElementById('footer-terms');
+  const footerPrivacy = document.getElementById('footer-privacy');
+  const footerAccessibility = document.getElementById('footer-accessibility');
 
   // Sidebar translations
   const sidebarTitle = document.getElementById('sidebar-title');
@@ -4940,6 +4944,10 @@ function updateNavbarLanguage() {
     if (footerAdminTitle) footerAdminTitle.textContent = 'מנהל';
     if (footerAdminLogin) footerAdminLogin.textContent = 'כניסת מנהל';
     if (footerUploadArticles) footerUploadArticles.textContent = 'העלה מאמרים';
+    if (footerTitleLegal) footerTitleLegal.textContent = 'מידע משפטי';
+    if (footerTerms) footerTerms.textContent = 'תנאי שימוש';
+    if (footerPrivacy) footerPrivacy.textContent = 'מדיניות פרטיות';
+    if (footerAccessibility) footerAccessibility.textContent = 'הצהרת נגישות';
   } else {
     if (elArticles) elArticles.textContent = 'Articles';
     if (elStores) elStores.textContent = 'Our Stores';
@@ -4970,6 +4978,10 @@ function updateNavbarLanguage() {
     if (footerAdminTitle) footerAdminTitle.textContent = 'Admin';
     if (footerAdminLogin) footerAdminLogin.textContent = 'Admin Login';
     if (footerUploadArticles) footerUploadArticles.textContent = 'Upload Articles';
+    if (footerTitleLegal) footerTitleLegal.textContent = 'Legal';
+    if (footerTerms) footerTerms.textContent = 'Terms of Use';
+    if (footerPrivacy) footerPrivacy.textContent = 'Privacy Policy';
+    if (footerAccessibility) footerAccessibility.textContent = 'Accessibility';
   }
 }
 
