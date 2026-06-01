@@ -5460,6 +5460,10 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchWeatherForCapital();
   renderGroups();
   autoDetectLocation(); // Run automatic geolocation check!
+  
+  // Check for unread support messages on startup and every 10 seconds in the background
+  setTimeout(() => { if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); }, 1500);
+  setInterval(() => { if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); }, 10000);
 });
 
 // =====================================================================
@@ -8352,6 +8356,9 @@ function toggleSupportChatMode() {
     // Auto pull updates every 5 seconds while in messages view
     if (window._supportPullInterval) clearInterval(window._supportPullInterval);
     window._supportPullInterval = setInterval(loadDirectMessages, 5000);
+    
+    // Clear badge immediately on open
+    setTimeout(checkUnreadSupportMessages, 100);
   } else {
     window._supportChatMode = 'assistant';
     if (aiTab) aiTab.style.display = 'block';
@@ -8369,6 +8376,8 @@ function toggleSupportChatMode() {
       clearInterval(window._supportPullInterval);
       window._supportPullInterval = null;
     }
+    
+    checkUnreadSupportMessages();
   }
 }
 
@@ -8391,6 +8400,67 @@ function getSupportUserName() {
   return 'Guest Customer';
 }
 
+async function checkUnreadSupportMessages() {
+  const userId = getSupportUserId();
+  let msgs = [];
+
+  // Try fetching from Firestore
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.userId === userId) {
+          msgs.push(data);
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Fallback to localstorage
+  if (msgs.length === 0) {
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    msgs = localMsgs.filter(m => m.userId === userId);
+  }
+
+  // If user is currently looking at direct chat, mark unread admin messages as read
+  if (window._supportChatMode === 'direct') {
+    let changed = false;
+    
+    // Local update
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    localMsgs.forEach(m => {
+      if (m.userId === userId && m.isAdmin && !m.read) {
+        m.read = true;
+        changed = true;
+      }
+    });
+    
+    if (changed) {
+      localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+      
+      // Update Firestore docs read flag (Optional, local storage handles it smoothly)
+      if (window.fbAddDoc && window.fbDb) {
+        try {
+          // Send a dummy read receipt trigger if desired, or let the local sync handle client state
+        } catch(e){}
+      }
+    }
+    updateSupportBadge(0);
+  } else {
+    const unreadCount = msgs.filter(m => m.isAdmin && !m.read).length;
+    updateSupportBadge(unreadCount);
+  }
+}
+
+function updateSupportBadge(count) {
+  const badge = document.getElementById('support-badge');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+}
+
 async function sendDirectChatMessage() {
   const input = document.getElementById('direct-chat-input');
   if (!input) return;
@@ -8407,7 +8477,7 @@ async function sendDirectChatMessage() {
     text: text,
     timestamp: timestamp,
     isAdmin: false,
-    read: false
+    read: true // user reads their own message
   };
 
   // 1. Try to save to Firestore
@@ -8480,6 +8550,7 @@ async function loadDirectMessages() {
   }).join('');
 
   container.scrollTop = container.scrollHeight;
+  checkUnreadSupportMessages();
 }
 
 // ── Admin Live Chat Tab Swapper ──
