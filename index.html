@@ -229,10 +229,10 @@
   <div id="main-wrapper">
     <!-- APPLE GLOBAL NAVBAR -->
     <header class="navbar-apple" style="background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="nav-inner-apple" style="display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 24px; max-width: 100%;">
+      <div class="nav-inner-apple" style="display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 24px; max-width: 100%; gap: 16px;">
 
         <!-- LEFT SIDE: Navigation and Logo -->
-        <div class="nav-right-section" style="display: flex; align-items: center; gap: 24px;">
+        <div class="nav-right-section" style="display: flex; align-items: center; gap: 24px; flex-shrink: 0;">
           <!-- SOKI Articles Logo -->
           <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <i class="fas fa-crown" style="color:#f59e0b; font-size:1.1rem; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));"></i>
@@ -255,8 +255,16 @@
           </button>
         </div>
 
-        <!-- RIGHT SIDE: Actions, Buttons, Search -->
-        <div class="nav-left-section" style="display: flex; align-items: center; gap: 14px;">
+        <!-- CENTER: Search Bar -->
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+          <div class="apple-search-wrapper" style="position:relative; width: 100%; max-width: 320px;">
+            <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:980px; padding:7px 16px 7px 36px; color:#fff; font-size:0.85rem; width:100%; outline:none; text-align:right; box-sizing:border-box;" />
+            <i class="fas fa-search search-icon" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#86868b; font-size:0.85rem;"></i>
+          </div>
+        </div>
+
+        <!-- RIGHT SIDE: Actions, Buttons -->
+        <div class="nav-left-section" style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
           <!-- Location Selector -->
           <div class="location-selector" onclick="toggleLanguage(event)" style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#a1a1a6;" title="Toggle Language">
             <span class="location-text" id="selected-location-text" style="font-size:0.85rem; font-weight:500; color:#a1a1a6;">English</span>
@@ -304,11 +312,6 @@
             </button>
           </div>
 
-          <!-- Search Bar -->
-          <div class="apple-search-wrapper" style="position:relative; margin-left: 10px;">
-            <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:8px; padding:6px 12px 6px 32px; color:#fff; font-size:0.85rem; width:180px; outline:none; text-align:right;" />
-            <i class="fas fa-search search-icon" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#86868b; font-size:0.85rem;"></i>
-          </div>
         </div>
 
       </div>
