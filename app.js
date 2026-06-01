@@ -382,10 +382,15 @@ function showPage(pageId) {
   // Dynamically update the logo subtext depending on pageId (Graphs / Articles)
   const subtextEl = document.getElementById('nav-logo-subtext');
   if (subtextEl) {
+    const isHeb = document.body.classList.contains('rtl-layout');
     if (pageId === 'pdf-store' || pageId === 'my-graphs') {
-      subtextEl.textContent = document.body.classList.contains('rtl-layout') ? 'גרפים' : 'Graphs';
+      subtextEl.textContent = isHeb ? 'גרפים' : 'Graphs';
+    } else if (pageId === 'groups' || pageId === 'group-detail') {
+      subtextEl.textContent = isHeb ? 'פורום' : 'Forum';
+    } else if (pageId === 'shop') {
+      subtextEl.textContent = isHeb ? 'חנות' : 'Store';
     } else {
-      subtextEl.textContent = document.body.classList.contains('rtl-layout') ? 'מאמרים' : 'Articles';
+      subtextEl.textContent = isHeb ? 'מאמרים' : 'Articles';
     }
   }
 
@@ -5539,6 +5544,10 @@ window.openGroup = async function(groupId, sortType = 'new') {
   document.getElementById('groups-list-view').style.display = 'none';
   document.getElementById('post-detail-view').style.display = 'none';
   document.getElementById('group-detail-view').style.display = 'block';
+
+  // Update logo subtext to group name
+  const subtextEl = document.getElementById('nav-logo-subtext');
+  if (subtextEl) subtextEl.textContent = group.name;
 
   // Reddit-style header population
   document.getElementById('group-title').textContent = group.name;
