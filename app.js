@@ -5196,7 +5196,7 @@ async function renderForum() {
       }
     });
 
-    const OR = '#f59e0b'; // orange accent
+    const OR = '#ffffff'; // white for forum directory names
 
     let html = '';
 
