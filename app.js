@@ -4893,8 +4893,50 @@ function updateNavbarLanguage() {
   const footerAdminLogin = document.getElementById('footer-admin-login');
   const footerUploadArticles = document.getElementById('footer-upload-articles');
 
+  // Sidebar translations
+  const sidebarTitle = document.getElementById('sidebar-title');
+  const sidebarSearchInput = document.getElementById('sidebar-search-input');
+  const sidebarHome = document.getElementById('sidebar-link-home');
+  const sidebarAdmin = document.getElementById('sidebar-link-admin');
+  const sidebarShop = document.getElementById('sidebar-link-shop');
+  const sidebarGraphs = document.getElementById('sidebar-link-graphs');
+  const sidebarPremium = document.getElementById('sidebar-link-premium');
+  const sidebarForum = document.getElementById('sidebar-link-forum');
+  const sidebarMyGraphs = document.getElementById('sidebar-link-my-graphs');
+  const sidebarMyArticles = document.getElementById('sidebar-link-my-articles');
+  const sidebarArchive = document.getElementById('sidebar-link-archive');
+  const sidebarMyPurchases = document.getElementById('sidebar-link-my-purchases');
+
   if (isHeb) {
-    if (elStores) elStores.textContent = 'החנויות שלנו';
+    if (sidebarTitle) sidebarTitle.textContent = 'הדשבורד שלי';
+    if (sidebarSearchInput) sidebarSearchInput.placeholder = 'חיפוש...';
+    if (sidebarHome) sidebarHome.textContent = 'כתבות';
+    if (sidebarAdmin) sidebarAdmin.textContent = 'ניהול אתר';
+    if (sidebarShop) sidebarShop.textContent = 'חנות';
+    if (sidebarGraphs) sidebarGraphs.textContent = 'גרפים ונתונים';
+    if (sidebarPremium) sidebarPremium.textContent = 'פרימיום';
+    if (sidebarForum) sidebarForum.textContent = 'פורום';
+    if (sidebarMyGraphs) sidebarMyGraphs.textContent = 'הגרפים שלי';
+    if (sidebarMyArticles) sidebarMyArticles.textContent = 'הכתבות שלי';
+    if (sidebarArchive) sidebarArchive.textContent = 'ארכיון';
+    if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'הרכישות שלי';
+  } else {
+    if (sidebarTitle) sidebarTitle.textContent = 'My Dashboard';
+    if (sidebarSearchInput) sidebarSearchInput.placeholder = 'Search...';
+    if (sidebarHome) sidebarHome.textContent = 'Articles';
+    if (sidebarAdmin) sidebarAdmin.textContent = 'Site Admin';
+    if (sidebarShop) sidebarShop.textContent = 'Store';
+    if (sidebarGraphs) sidebarGraphs.textContent = 'Graphs & Data';
+    if (sidebarPremium) sidebarPremium.textContent = 'Premium';
+    if (sidebarForum) sidebarForum.textContent = 'Forum';
+    if (sidebarMyGraphs) sidebarMyGraphs.textContent = 'My Graphs';
+    if (sidebarMyArticles) sidebarMyArticles.textContent = 'My Articles';
+    if (sidebarArchive) sidebarArchive.textContent = 'Archive';
+    if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'My Purchases';
+  }
+
+  if (isHeb) {
+  if (elStores) elStores.textContent = 'החנויות שלנו';
     if (elSolutions) elSolutions.textContent = 'הפתרונות שלנו';
     if (elSoftware) elSoftware.textContent = 'חנות תוכנה';
     if (elAppointment) elAppointment.textContent = 'קביעת פגישה';

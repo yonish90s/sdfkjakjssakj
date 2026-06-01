@@ -92,12 +92,12 @@
       </a>
 
       <div class="sidebar-header" style="margin-bottom:16px;">
-        <h2 class="sidebar-logo">הדשבורד שלי</h2>
+        <h2 class="sidebar-logo" id="sidebar-title">הדשבורד שלי</h2>
       </div>
       <!-- Sidebar Search -->
       <div class="sidebar-search-bar" onclick="document.getElementById('sidebar-search-input').focus()" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:7px 12px; margin-bottom:12px; cursor:text;">
         <i class="fas fa-search" style="color:#71717a; font-size:0.8rem;"></i>
-        <input id="sidebar-search-input" type="text" placeholder="חיפוש..." style="background:none; border:none; outline:none; color:#fff; font-size:0.8rem; width:100%; font-family:inherit; direction:rtl;" oninput="filterSidebarSearch(this.value)">
+        <input id="sidebar-search-input" type="text" placeholder="חיפוש..." style="background:none; border:none; outline:none; color:#fff; font-size:0.8rem; width:100%; font-family:inherit; direction:rtl;" oninput="filterSidebarSearch(this.value)" data-he="חיפוש..." data-en="Search...">
         <kbd style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:4px; padding:1px 5px; font-size:0.65rem; color:#71717a; font-family:inherit; flex-shrink:0;">F</kbd>
       </div>
 
@@ -115,29 +115,29 @@
       <nav class="sidebar-nav">
           <a href="#" class="sidebar-link active" data-page="home" onclick="clearSearchAndShowHome(); return false;">
             <i class="fas fa-home"></i>
-            <span>כתבות</span>
+            <span id="sidebar-link-home">כתבות</span>
           </a>
           <a href="#" id="sidebar-admin-link" class="sidebar-link" data-page="admin" style="display:none;" onclick="showPage('admin'); return false;">
             <i class="fas fa-lock" style="color: #f9b233;"></i>
-            <span style="font-weight:800; color: #f9b233;">ניהול אתר</span>
+            <span id="sidebar-link-admin" style="font-weight:800; color: #f9b233;">ניהול אתר</span>
           </a>
           <a href="#" class="sidebar-link" data-page="shop" onclick="showPage('shop'); return false;">
             <i class="fas fa-shopping-bag"></i>
-            <span>חנות</span>
+            <span id="sidebar-link-shop">חנות</span>
           </a>
           <a href="#" class="sidebar-link" data-page="pdf-store" onclick="showPage('pdf-store'); return false;">
             <i class="fas fa-chart-line"></i>
-            <span>גרפים ונתונים</span>
+            <span id="sidebar-link-graphs">גרפים ונתונים</span>
           </a>
           <a href="#" class="sidebar-link" data-page="subscription" onclick="showPage('subscription'); return false;">
             <i class="fas fa-crown"></i>
-            <span>פרימיום</span>
+            <span id="sidebar-link-premium">פרימיום</span>
           </a>
 
 
           <a href="#" class="sidebar-link" data-page="groups" onclick="showPage('groups'); return false;">
             <i class="fa-solid fa-comments"></i>
-            <span>פורום</span>
+            <span id="sidebar-link-forum">פורום</span>
           </a>
 
           <div class="sidebar-divider"></div>
@@ -146,7 +146,7 @@
 
           <a href="#" class="sidebar-link" id="link-my-graphs" onclick="toggleSavedDrawer('graphs'); return false;">
             <i class="fas fa-chart-pie"></i>
-            <span>הגרפים שלי</span>
+            <span id="sidebar-link-my-graphs">הגרפים שלי</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-graphs')" title="Focus Mode"></i>
             </div>
@@ -154,7 +154,7 @@
 
           <a href="#" class="sidebar-link" id="link-my-articles" onclick="toggleSavedDrawer('articles'); return false;">
             <i class="fas fa-newspaper"></i>
-            <span>הכתבות שלי</span>
+            <span id="sidebar-link-my-articles">הכתבות שלי</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-articles')" title="Focus Mode"></i>
             </div>
@@ -162,12 +162,12 @@
 
           <a href="#" class="sidebar-link" data-page="archive" onclick="showPage('archive'); return false;">
             <i class="fas fa-box-archive"></i>
-            <span>ארכיון</span>
+            <span id="sidebar-link-archive">ארכיון</span>
           </a>
 
           <a href="#" class="sidebar-link" id="link-my-purchases" onclick="toggleMyPurchasesDropdown(event)">
             <i class="fas fa-shopping-cart"></i>
-            <span>הרכישות שלי</span>
+            <span id="sidebar-link-my-purchases">הרכישות שלי</span>
             <div class="sidebar-link-actions">
               <i class="fas fa-expand-alt focus-toggle" onclick="enterFocusMode(event, 'my-purchases')" title="Focus Mode"></i>
             </div>
