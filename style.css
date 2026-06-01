@@ -7477,12 +7477,19 @@ body.live-edit-mode img:hover {
   .carousel-track-wrapper {
     border-radius: 0 !important;
   }
+
+  .carousel-slide {
+    flex: 0 0 100% !important; /* Exactly 1 slide on screen at a time */
+    height: 250px !important;
+    border-radius: 0 !important;
+  }
   .featured-card {
     border-radius: 0 !important;
     min-height: 250px !important;
     position: relative !important;
     overflow: hidden !important;
   }
+
   .featured-card::after {
     content: "" !important;
     position: absolute !important;
@@ -7564,9 +7571,27 @@ body.live-edit-mode img:hover {
 
   /* Floating Widgets & Draggable Support */
   #support-floating-btn-container {
-    bottom: 80px !important;
-    right: 16px !important;
+    position: fixed !important;
+    top: 10px !important;
+    left: 12px !important;
+    right: auto !important;
+    bottom: auto !important;
     z-index: 2000 !important;
+  }
+  #support-floating-btn {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: #1c1c1e !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  #support-floating-btn svg {
+    width: 14px !important;
+    height: 14px !important;
   }
   #chat-draggable-window {
     right: 12px !important;
