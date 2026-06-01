@@ -594,10 +594,10 @@
     </div>
 
     <!-- Specific Group View — Reddit Style -->
-    <div id="group-detail-view" style="display:none; direction:rtl; text-align:right; margin: -44px -24px 0;">
+    <div id="group-detail-view" style="display:none; direction:rtl; text-align:right; margin: 32px -24px 0;">
 
       <!-- Banner -->
-      <div id="group-banner" style="height:90px; background:linear-gradient(135deg,#1a1a2e,#16213e); position:relative; overflow:hidden; cursor:pointer; margin-bottom:16px; border-radius:0 0 12px 12px;"
+      <div id="group-banner" style="height:90px; background:linear-gradient(135deg,#1a1a2e,#16213e); position:relative; overflow:hidden; cursor:pointer; margin-bottom:16px; border-radius:12px; display:none;"
         onmouseover="document.getElementById('banner-edit-btn').style.opacity='1'"
         onmouseout="document.getElementById('banner-edit-btn').style.opacity='0'">
         <div id="group-banner-overlay" style="position:absolute;inset:0;opacity:0.5;"></div>
@@ -623,12 +623,12 @@
       </div>
 
       <!-- Community header bar -->
-      <div style="background:#111111; border-bottom:1px solid rgba(255,255,255,0.07); padding:0 28px 18px;">
-        <div style="display:flex; align-items:flex-end; gap:16px; margin-top:-32px; flex-wrap:wrap;">
-          <div id="group-icon-wrap" style="width:72px;height:72px;border-radius:50%;border:4px solid #111111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;background:#1c1c1e;">
+      <div style="background:#111111; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px 28px 18px; margin:0 24px;">
+        <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+          <div id="group-icon-wrap" style="width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;background:#1c1c1e;">
             <i id="group-icon-i" class="fas fa-comments" style="color:#fff;"></i>
           </div>
-          <div style="flex:1;min-width:0;padding-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div>
               <h2 id="group-title" style="font-size:1.4rem;font-weight:800;color:#fff;margin:0;letter-spacing:-0.02em;">Group Name</h2>
               <p id="group-desc" style="color:#71717a;font-size:0.82rem;margin:2px 0 0;"></p>
