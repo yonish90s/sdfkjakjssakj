@@ -2137,55 +2137,30 @@ function renderPdfStoreGrid() {
     const isSaved = myGraphsList.some(x => x.id === item.id);
     const dateStr = item.date ? new Date(item.date).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) : 'הועלה לאחרונה';
     
-    // We render a beautiful, highly curated horizontal list item matching the forum design!
-    let cardContent = '';
-    if (mainImg) {
-      cardContent = `
-        <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:stretch; width:100%; direction:rtl; text-align:right;">
-          <!-- Image Container on the right -->
-          <div style="width:220px; min-height:140px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
-            <img src="${mainImg}" style="width:100%; height:100%; object-fit:cover;">
-          </div>
-          
-          <!-- Text details on the left -->
-          <div style="flex:1; min-width:280px; display:flex; flex-direction:column; justify-content:space-between; padding:4px 0;">
-            <div>
-              <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:8px; transition:color 0.2s;" class="post-card-title">${escHtml(item.title)}</h3>
-              <p style="color:#86868b; font-size:0.95rem; margin:0;">${item.type || 'ניתוח טכני'}</p>
-            </div>
-            
-            <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
-              <div>${dateStr}</div>
-              
-              <div style="display:flex; align-items:center; gap:12px;">
-                ${isUserLoggedIn ? `
-                  <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
-                          style="background:transparent; border:none; color:${isSaved ? '#ff453a' : '#86868b'}; cursor:pointer; font-size:1.15rem; transition:color 0.2s;"
-                          onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)"
-                          onmouseover="this.style.color='#ff453a'"
-                          onmouseout="this.style.color='${isSaved ? '#ff453a' : '#86868b'}'">
-                    <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          </div>
+    // Unified horizontal card — same proportions regardless of image
+    const imageBlock = mainImg
+      ? `<img src="${mainImg}" style="width:100%; height:100%; object-fit:cover;">`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));"><span style="font-size:2rem;opacity:0.4;">${icon}</span></div>`;
+
+    const cardContent = `
+      <div style="display:flex; gap:24px; align-items:stretch; width:100%; direction:rtl; text-align:right; min-height:140px;">
+        <!-- Image / placeholder on the right -->
+        <div style="width:220px; height:140px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+          ${imageBlock}
         </div>
-      `;
-    } else {
-      cardContent = `
-        <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; width:100%; direction:rtl; text-align:right;">
+
+        <!-- Text details -->
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between; padding:4px 0;">
           <div>
             <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin-bottom:8px; transition:color 0.2s;" class="post-card-title">${escHtml(item.title)}</h3>
             <p style="color:#86868b; font-size:0.95rem; margin:0;">${item.type || 'ניתוח טכני'}</p>
           </div>
-          
+
           <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; color:#86868b; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; margin-top:12px;">
             <div>${dateStr}</div>
-            
             <div style="display:flex; align-items:center; gap:12px;">
               ${isUserLoggedIn ? `
-                <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}" 
+                <button class="pdf-card-bookmark-btn ${isSaved ? 'active' : ''}"
                         style="background:transparent; border:none; color:${isSaved ? '#ff453a' : '#86868b'}; cursor:pointer; font-size:1.15rem; transition:color 0.2s;"
                         onclick="event.stopPropagation(); addToMyGraphs('${item.id}', this)"
                         onmouseover="this.style.color='#ff453a'"
@@ -2196,8 +2171,8 @@ function renderPdfStoreGrid() {
             </div>
           </div>
         </div>
-      `;
-    }
+      </div>
+    `;
 
     return `
       <div class="premium-post-card" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);" 
