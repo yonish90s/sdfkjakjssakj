@@ -126,6 +126,10 @@
             <i class="fas fa-home"></i>
             <span id="sidebar-link-home">כתבות</span>
           </a>
+          <a href="#" class="sidebar-link" onclick="openGiantArticlePage(); return false;" style="color: #818cf8; font-weight: 700; border-right: 2px solid rgba(129,140,248,0.2);">
+            <i class="fas fa-play-circle" style="color: #818cf8;"></i>
+            <span>מצב קולנוע 📺</span>
+          </a>
           <a href="#" id="sidebar-admin-link" class="sidebar-link" data-page="admin" style="display:none;" onclick="showPage('admin'); return false;">
             <i class="fas fa-lock" style="color: #f9b233;"></i>
             <span id="sidebar-link-admin" style="font-weight:800; color: #f9b233;">ניהול אתר</span>
@@ -2712,6 +2716,78 @@
       <!-- Populated dynamically by JS -->
     </div>
   </div>
+  <!-- Giant Article Cinema Mode Overlay -->
+  <div id="page-giant-hero" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999900; background: #050508; flex-direction: column; overflow: hidden; font-family: system-ui, -apple-system, sans-serif;">
+    <!-- Giant Background Cover Image (with blur and dark overlay) -->
+    <div id="giant-bg-cover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(30px) brightness(0.25); transform: scale(1.15); transition: background-image 0.8s ease; z-index: 1;"></div>
+    
+    <!-- Premium radial/vignette overlay for cinema focus -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 100%); z-index: 2; pointer-events: none;"></div>
+
+    <!-- Close Button -->
+    <button onclick="closeGiantArticlePage()" style="position: absolute; top: 24px; left: 24px; z-index: 10; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.25s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'; this.style.borderColor='rgba(239,68,68,0.4)'; this.style.transform='scale(1.08)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.12)'; this.style.transform='none'">
+      ✕
+    </button>
+
+    <!-- Main Viewport Content Layout -->
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px 100px 24px; z-index: 5; position: relative;">
+      
+      <!-- Slide Container (Holds cover + details centered) -->
+      <div id="giant-slide-container" style="max-width: 1200px; width: 100%; display: flex; gap: 40px; align-items: center; justify-content: center; direction: rtl; text-align: right; transition: opacity 0.5s ease;">
+        
+        <!-- Left Side: Massive Premium Article Details -->
+        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 16px; min-width: 320px;">
+          
+          <!-- Category & Time Row -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span id="giant-category" style="background: #818cf8; color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(129,140,248,0.35);">קטגוריה</span>
+            <span id="giant-time" style="color: #a1a1aa; font-size: 0.9rem; font-weight: 500;">זמן פרסום</span>
+          </div>
+
+          <!-- Giant Headline -->
+          <h1 id="giant-title" style="font-size: 3.5rem; font-weight: 900; line-height: 1.2; color: #fff; margin: 8px 0; text-shadow: 0 4px 20px rgba(0,0,0,0.6); font-family: 'Inter', system-ui, sans-serif;">כותרת הכתבה</h1>
+          
+          <!-- Author -->
+          <span id="giant-author" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; font-weight: 600;">מאת: כתב מערכת</span>
+
+          <!-- Snippet -->
+          <p id="giant-snippet" style="font-size: 1.15rem; color: #d1d1d6; line-height: 1.6; margin: 8px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">תקציר הכתבה...</p>
+
+          <!-- Buttons -->
+          <div style="display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
+            <button id="giant-btn-read" class="btn-primary" style="background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%); border: none; box-shadow: 0 4px 20px rgba(129,140,248,0.3); font-weight: 800; padding: 14px 28px; font-size: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.25s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(129,140,248,0.45)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 20px rgba(129,140,248,0.3)'">
+              קרא את הכתבה המלאה <i class="fas fa-book-open"></i>
+            </button>
+            <div style="display: flex; gap: 10px;">
+              <button onclick="prevGiantArticle()" style="width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+              <button onclick="nextGiantArticle()" style="width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Beautiful Giant Cover Image (Framed) -->
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+          <div style="position: relative; width: 100%; max-width: 500px; aspect-ratio: 16/10; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.12);">
+            <img id="giant-img-frame" src="" style="width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease;" />
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 50%);"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Fixed Bottom Social Networks Bar -->
+    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; gap: 24px; z-index: 10;">
+      <!-- Populated dynamically with gorgeous social icons by JS -->
+      <div id="giant-social-icons-row" style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;"></div>
+    </div>
+  </div>
+
   <!-- Time Machine Restore Portal (Full screen overlay) -->
   <div id="time-machine-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #0f0c1b 0%, #030008 100%); z-index: 999999; align-items: center; justify-content: center; flex-direction: column; direction: rtl; text-align: center; color: #fff; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
     <style>

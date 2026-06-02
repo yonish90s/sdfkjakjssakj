@@ -10110,3 +10110,143 @@ window.restoreBackup = function(timestamp) {
   }, intervalTime);
 };
 
+// ========== GIANT ARTICLE CINEMA MODE LOGIC ==========
+window._giantArticleIndex = 0;
+window._giantArticleInterval = null;
+
+window.openGiantArticlePage = function() {
+  const overlay = document.getElementById('page-giant-hero');
+  if (!overlay) return;
+
+  overlay.style.display = 'flex';
+  window._giantArticleIndex = 0;
+  
+  // Render current article
+  window.renderGiantArticle();
+  
+  // Render bottom social row dynamically using real configuration values
+  window.renderGiantSocialRow();
+
+  // Setup auto-rotate interval of 6 seconds
+  if (window._giantArticleInterval) clearInterval(window._giantArticleInterval);
+  window._giantArticleInterval = setInterval(window.nextGiantArticle, 6000);
+  
+  showToast('📺 נכנס למצב קולנוע: מצגת כתבות ענקית');
+};
+
+window.closeGiantArticlePage = function() {
+  const overlay = document.getElementById('page-giant-hero');
+  if (overlay) overlay.style.display = 'none';
+
+  if (window._giantArticleInterval) {
+    clearInterval(window._giantArticleInterval);
+    window._giantArticleInterval = null;
+  }
+};
+
+window.renderGiantArticle = function() {
+  // Use newsArticles global list or fall back to defaultNewsArticles
+  let list = [];
+  if (typeof newsArticles !== 'undefined') {
+    list = newsArticles;
+  } else if (typeof defaultNewsArticles !== 'undefined') {
+    list = defaultNewsArticles;
+  }
+
+  if (list.length === 0) return;
+
+  // Make sure index is within bounds
+  if (window._giantArticleIndex >= list.length) window._giantArticleIndex = 0;
+  if (window._giantArticleIndex < 0) window._giantArticleIndex = list.length - 1;
+
+  const article = list[window._giantArticleIndex];
+  
+  // Grab DOM elements
+  const bgCover = document.getElementById('giant-bg-cover');
+  const slideContainer = document.getElementById('giant-slide-container');
+  const catSpan = document.getElementById('giant-category');
+  const timeSpan = document.getElementById('giant-time');
+  const titleH = document.getElementById('giant-title');
+  const authorSpan = document.getElementById('giant-author');
+  const snippetP = document.getElementById('giant-snippet');
+  const imgFrame = document.getElementById('giant-img-frame');
+  const readBtn = document.getElementById('giant-btn-read');
+
+  if (!article) return;
+
+  // Crossfade effect: briefly lower opacity
+  if (slideContainer) slideContainer.style.opacity = '0.3';
+
+  setTimeout(() => {
+    if (bgCover) bgCover.style.backgroundImage = `url('${article.image}')`;
+    if (imgFrame) imgFrame.src = article.image;
+    if (catSpan) catSpan.textContent = article.category || 'חדשות';
+    if (timeSpan) timeSpan.textContent = article.time || 'עכשיו';
+    if (titleH) titleH.textContent = article.title || 'כותרת הכתבה';
+    if (authorSpan) authorSpan.textContent = `מאת: ${article.author || 'כתב מערכת'}`;
+    if (snippetP) snippetP.textContent = article.snippet || '';
+    
+    if (readBtn) {
+      readBtn.onclick = function() {
+        window.closeGiantArticlePage();
+        if (window.showArticle) window.showArticle(article.id);
+      };
+    }
+
+    if (slideContainer) slideContainer.style.opacity = '1';
+  }, 200);
+};
+
+window.nextGiantArticle = function() {
+  window._giantArticleIndex++;
+  window.renderGiantArticle();
+};
+
+window.prevGiantArticle = function() {
+  window._giantArticleIndex--;
+  window.renderGiantArticle();
+};
+
+window.renderGiantSocialRow = function() {
+  const row = document.getElementById('giant-social-icons-row');
+  if (!row) return;
+
+  // Retrieve current links config
+  const saved = localStorage.getItem('soki_admin_links');
+  const links = saved ? JSON.parse(saved) : (typeof defaultLinks !== 'undefined' ? defaultLinks : {});
+
+  // Social configuration to render
+  const configs = [
+    { key: 'x', icon: 'fa-brands fa-x-twitter', color: '#fff', label: 'Twitter / X' },
+    { key: 'linkedin', icon: 'fa-brands fa-linkedin-in', color: '#0077b5', label: 'LinkedIn' },
+    { key: 'facebook', icon: 'fa-brands fa-facebook-f', color: '#1877f2', label: 'Facebook' },
+    { key: 'instagram', icon: 'fa-brands fa-instagram', color: '#c13584', label: 'Instagram' },
+    { key: 'youtube', icon: 'fa-brands fa-youtube', color: '#ff0000', label: 'YouTube' },
+    { key: 'mastodon', icon: 'fa-brands fa-mastodon', color: '#6364ff', label: 'Mastodon' },
+    { key: 'threads', icon: 'fa-brands fa-threads', color: '#fff', label: 'Threads' },
+    { key: 'bluesky', icon: 'fa-brands fa-bluesky', color: '#0285f4', label: 'Bluesky' }
+  ];
+
+  row.innerHTML = configs.map(c => {
+    const url = links[c.key] || '#';
+    return `
+      <a href="${url}" target="_blank" title="${c.label}" style="
+        color: ${c.color};
+        font-size: 1.4rem;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.25s ease;
+      " onmouseover="this.style.transform='scale(1.15) translateY(-3px)'; this.style.background='rgba(255,255,255,0.12)'; this.style.boxShadow='0 4px 15px rgba(255,255,255,0.1)';" onmouseout="this.style.transform='none'; this.style.background='rgba(255,255,255,0.05)'; this.style.boxShadow='none';">
+        <i class="${c.icon}"></i>
+      </a>
+    `;
+  }).join('');
+};
+
