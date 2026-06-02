@@ -5975,89 +5975,145 @@ window.openGroup = async function(groupId, sortType = 'new') {
     const membersEl = document.getElementById('sidebar-members');
     if (membersEl) membersEl.textContent = `${uniqueAuthors.size} חברים`;
 
-    // Twitter/X-style post cards
-    let html = '';
-    docs.forEach(doc => {
-      const data = doc.data;
-      const timeAgo = formatTimeAgo(new Date(data.timestamp));
-      const authorName = data.authorName || data.author || 'Anonymous';
-      const repliesCount = commentsByPost[doc.id] || (data.commentsCount || 0);
-      const viewsCount = data.views || Math.floor(Math.random()*4000+500);
-      const votes = data.votes || 0;
-      const authorInitials = authorName.charAt(0).toUpperCase();
-      const avatarBgColors = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#06b6d4'];
-      const avatarBg = avatarBgColors[authorInitials.charCodeAt(0) % avatarBgColors.length];
-      const avatarHtml = data.authorAvatar
-        ? `<img src="${data.authorAvatar}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
-        : `<div style="width:44px;height:44px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.1rem;flex-shrink:0;">${authorInitials}</div>`;
-      const contentText = (data.content || '').replace(/<[^>]+>/g, '').trim();
-      const handle = '@' + authorName.toLowerCase().replace(/\s+/g,'');
-      const marketplaceBtn = currentGroupId === 'marketplace' ? `<button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}','${data.authorEmail||''}','${(data.title||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}');" style="background:#f59e0b;color:#000;border:none;padding:4px 14px;border-radius:980px;font-weight:700;cursor:pointer;font-size:0.75rem;">💰 הגש הצעה</button>` : '';
+    // Setup infinite scroll docs and variables
+    window._currentGroupDocs = docs;
+    window._commentsByPost = commentsByPost;
+    window._currentGroupLoadedCount = 0;
 
-      // Format views nicely
-      const fmtNum = n => n >= 1000 ? (n/1000).toFixed(1).replace(/\.0$/,'')+'K' : n;
-
-      html += `
-        <div onclick="openPost('${doc.id}')" style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;cursor:pointer;transition:background 0.15s;display:flex;gap:12px;direction:ltr;"
-          onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='#000'">
-
-          <!-- Avatar column -->
-          <div style="flex-shrink:0;">${avatarHtml}</div>
-
-          <!-- Content column -->
-          <div style="flex:1;min-width:0;">
-
-            <!-- Header row: name · handle · time -->
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-              <span style="font-weight:700;color:#e7e9ea;font-size:0.97rem;">${authorName}</span>
-              <span style="color:#71767b;font-size:0.9rem;">${handle}</span>
-              <span style="color:#71767b;font-size:0.9rem;">·</span>
-              <span style="color:#71767b;font-size:0.9rem;">${timeAgo}</span>
-            </div>
-
-            <!-- Title (bold) -->
-            ${data.title ? `<div style="font-weight:700;color:#e7e9ea;font-size:1rem;line-height:1.5;margin-bottom:6px;">${data.title}</div>` : ''}
-
-            <!-- Body text -->
-            ${contentText ? `<div style="color:#e7e9ea;font-size:0.95rem;line-height:1.6;margin-bottom:12px;white-space:pre-line;">${contentText.slice(0,280)}${contentText.length>280?'<span style="color:#1d9bf0"> הצג עוד</span>':''}</div>` : ''}
-
-            <!-- Action bar -->
-            <div style="display:flex;align-items:center;gap:0;margin-top:4px;" onclick="event.stopPropagation()">
-
-              <!-- Reply -->
-              <button onclick="openPost('${doc.id}')" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:#71767b;font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 0;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.879 3.77 7.879 8.022 0 4.422-3.556 8.011-7.879 8.011h-1.53l-2.059 2.254c-.4.439-1.013.616-1.585.46-.571-.155-.985-.65-1.049-1.236L9.54 18.5H9.756C5.351 18.5 1.751 14.924 1.751 10Z" stroke="currentColor" stroke-width="1.8"/></svg>
-                ${fmtNum(repliesCount)}
-              </button>
-
-              <!-- Retweet/votes -->
-              <button onclick="votePost('${doc.id}',1)" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:${votes>0?'#00ba7c':'#71767b'};font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 6px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#00ba7c'" onmouseout="this.style.color='${votes>0?'#00ba7c':'#71767b'}'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46L19.5 20.12l-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z" fill="currentColor"/></svg>
-                ${fmtNum(votes > 0 ? votes : 0)}
-              </button>
-
-              <!-- Like -->
-              <button style="display:flex;align-items:center;gap:6px;background:none;border:none;color:#71767b;font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 6px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#f91880'" onmouseout="this.style.color='#71767b'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.53.771-.53-.77c-1.125-1.635-2.52-2.186-3.78-2.128-1.934.09-3.396 1.555-3.396 3.323 0 .92.364 1.896 1.25 2.9 2 2.284 5.86 5.11 6.455 5.54.596-.43 4.454-3.256 6.455-5.54.886-1.004 1.249-1.98 1.249-2.9 0-1.738-1.447-3.19-3.29-3.356z" stroke="currentColor" stroke-width="1.8"/></svg>
-                ${fmtNum(Math.floor((votes+3)*7+repliesCount*3))}
-              </button>
-
-              <!-- Views -->
-              <button style="display:flex;align-items:center;gap:6px;background:none;border:none;color:#71767b;font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 6px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z" fill="currentColor"/></svg>
-                ${fmtNum(viewsCount)}
-              </button>
-
-              ${marketplaceBtn}
-            </div>
-          </div>
-        </div>`;
-    });
-
-    container.innerHTML = html;
+    // Render first batch
+    window.renderNextPostBatch();
   } catch (err) {
     console.error('Error loading posts:', err);
     container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444; direction:rtl;">שגיאה בטעינת הדיונים. אנא נסה שוב מאוחר יותר.</div>';
+  }
+};
+
+window.renderNextPostBatch = function() {
+  if (!window._currentGroupDocs) return;
+  const container = document.getElementById('group-posts-container');
+  if (!container) return;
+
+  const batchSize = 5;
+  const start = window._currentGroupLoadedCount;
+  const end = Math.min(start + batchSize, window._currentGroupDocs.length);
+  
+  if (start >= window._currentGroupDocs.length) return;
+
+  let html = '';
+  const commentsByPost = window._commentsByPost || {};
+  const currentGroupId = window.currentGroupId;
+
+  for (let i = start; i < end; i++) {
+    const doc = window._currentGroupDocs[i];
+    const data = doc.data;
+    const timeAgo = formatTimeAgo(new Date(data.timestamp));
+    const authorName = data.authorName || data.author || 'Anonymous';
+    const repliesCount = commentsByPost[doc.id] || (data.commentsCount || 0);
+    const viewsCount = data.views || Math.floor(Math.random()*4000+500);
+    const votes = data.votes || 0;
+    const authorInitials = authorName.charAt(0).toUpperCase();
+    const avatarBgColors = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#06b6d4'];
+    const avatarBg = avatarBgColors[authorInitials.charCodeAt(0) % avatarBgColors.length];
+    const avatarHtml = data.authorAvatar
+      ? `<img src="${data.authorAvatar}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+      : `<div style="width:44px;height:44px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.1rem;flex-shrink:0;">${authorInitials}</div>`;
+    const contentText = (data.content || '').replace(/<[^>]+>/g, '').trim();
+    const handle = '@' + authorName.toLowerCase().replace(/\s+/g,'');
+    const marketplaceBtn = currentGroupId === 'marketplace' ? `<button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}','${data.authorEmail||''}','${(data.title||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}');" style="background:#f59e0b;color:#000;border:none;padding:4px 14px;border-radius:980px;font-weight:700;cursor:pointer;font-size:0.75rem;">💰 הגש הצעה</button>` : '';
+
+    const fmtNum = n => n >= 1000 ? (n/1000).toFixed(1).replace(/\.0$/,'')+'K' : n;
+
+    // Reddit-style post image
+    const imageHtml = data.image ? `
+      <div style="margin-top:10px; margin-bottom:12px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); max-height: 400px; display: flex; align-items: center; justify-content: center; background: #0c0c0d;">
+        <img src="${data.image}" style="max-width:100%; max-height:400px; object-fit:contain; cursor:zoom-in;" onclick="event.stopPropagation(); if(window.openLightboxImage) window.openLightboxImage('${data.image}');">
+      </div>` : '';
+
+    html += `
+      <div onclick="openPost('${doc.id}')" style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;cursor:pointer;transition:background 0.15s;display:flex;gap:12px;direction:ltr;"
+        onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='#000'">
+
+        <!-- Avatar column -->
+        <div style="flex-shrink:0;">${avatarHtml}</div>
+
+        <!-- Content column -->
+        <div style="flex:1;min-width:0;">
+
+          <!-- Header row: name · handle · time -->
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+            <span style="font-weight:700;color:#e7e9ea;font-size:0.97rem;">${authorName}</span>
+            <span style="color:#71767b;font-size:0.9rem;">${handle}</span>
+            <span style="color:#71767b;font-size:0.9rem;">·</span>
+            <span style="color:#71767b;font-size:0.9rem;">${timeAgo}</span>
+          </div>
+
+          <!-- Title (bold) -->
+          ${data.title ? `<div style="font-weight:700;color:#e7e9ea;font-size:1rem;line-height:1.5;margin-bottom:6px;">${data.title}</div>` : ''}
+
+          <!-- Body text -->
+          ${contentText ? `<div style="color:#e7e9ea;font-size:0.95rem;line-height:1.6;margin-bottom:12px;white-space:pre-line;">${contentText.slice(0,280)}${contentText.length>280?'<span style="color:#1d9bf0"> הצג עוד</span>':''}</div>` : ''}
+
+          <!-- Image -->
+          ${imageHtml}
+
+          <!-- Action bar -->
+          <div style="display:flex;align-items:center;gap:0;margin-top:4px;" onclick="event.stopPropagation()">
+
+            <!-- Reply -->
+            <button onclick="openPost('${doc.id}')" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:#71767b;font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 0;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.879 3.77 7.879 8.022 0 4.422-3.556 8.011-7.879 8.011h-1.53l-2.059 2.254c-.4.439-1.013.616-1.585.46-.571-.155-.985-.65-1.049-1.236L9.54 18.5H9.756C5.351 18.5 1.751 14.924 1.751 10Z" stroke="currentColor" stroke-width="1.8"/></svg>
+              ${fmtNum(repliesCount)}
+            </button>
+
+            <!-- Retweet/votes -->
+            <button onclick="votePost('${doc.id}',1)" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:${votes>0?'#00ba7c':'#71767b'};font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 6px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#00ba7c'" onmouseout="this.style.color='${votes>0?'#00ba7c':'#71767b'}'">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46L19.5 20.12l-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z" fill="currentColor"/></svg>
+              ${fmtNum(votes > 0 ? votes : 0)}
+            </button>
+
+            <!-- Like -->
+            <button style="display:flex;align-items:center;gap:6px;background:none;border:none;color:#71767b;font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 6px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#f91880'" onmouseout="this.style.color='#71767b'">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.53.771-.53-.77c-1.125-1.635-2.52-2.186-3.78-2.128-1.934.09-3.396 1.555-3.396 3.323 0 .92.364 1.896 1.25 2.9 2 2.284 5.86 5.11 6.455 5.54.596-.43 4.454-3.256 6.455-5.54.886-1.004 1.249-1.98 1.249-2.9 0-1.738-1.447-3.19-3.29-3.356z" stroke="currentColor" stroke-width="1.8"/></svg>
+              ${fmtNum(Math.floor((votes+3)*7+repliesCount*3))}
+            </button>
+
+            <!-- Views -->
+            <button style="display:flex;align-items:center;gap:6px;background:none;border:none;color:#71767b;font-size:0.85rem;cursor:pointer;padding:6px 14px 6px 6px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z" fill="currentColor"/></svg>
+              ${fmtNum(viewsCount)}
+            </button>
+
+            ${marketplaceBtn}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (start === 0) {
+    container.innerHTML = html;
+  } else {
+    container.innerHTML += html;
+  }
+
+  window._currentGroupLoadedCount = end;
+};
+
+// Global scroll listener for infinite scroll
+window.addEventListener('scroll', () => {
+  const detailView = document.getElementById('group-detail-view');
+  if (detailView && detailView.style.display === 'block' && window._currentGroupDocs && window._currentGroupLoadedCount < window._currentGroupDocs.length) {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 250) {
+      window.renderNextPostBatch();
+    }
+  }
+});
+
+window.openLightboxImage = function(src) {
+  const lightbox = document.getElementById('image-lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  if (lightbox && lightboxImg) {
+    lightboxImg.src = src;
+    lightbox.classList.add('active');
   }
 };
 
@@ -6332,6 +6388,8 @@ window.openPost = async function(postId) {
         ${postData.title ? `<div style="font-weight:700;color:#e7e9ea;font-size:1.1rem;line-height:1.5;margin-bottom:10px;direction:rtl;text-align:right;">${postData.title}</div>` : ''}
         <!-- Full content -->
         <div style="color:#e7e9ea;font-size:1rem;line-height:1.7;white-space:pre-wrap;margin-bottom:14px;direction:rtl;text-align:right;">${postData.content||''}</div>
+        <!-- Post Image -->
+        ${postData.image ? `<div style="margin-top:12px; margin-bottom:16px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); text-align:center; background: #0c0c0d; display: flex; align-items: center; justify-content: center; max-height: 500px;"><img src="${postData.image}" style="max-width:100%; max-height:500px; object-fit:contain; cursor:zoom-in;" onclick="if(window.openLightboxImage) window.openLightboxImage('${postData.image}');"></div>` : ''}
         <!-- Full date + views -->
         <div style="color:#71767b;font-size:0.88rem;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);">
           ${fmtFullDate(postData.timestamp)} · <strong style="color:#e7e9ea;">${fmtN(postViews)}</strong> Views
