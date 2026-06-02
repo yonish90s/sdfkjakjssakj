@@ -157,10 +157,10 @@ body.rtl-layout {
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { 
-  background: rgba(139, 92, 246, 0.3); 
+  background: rgba(255, 255, 255, 0.3); 
   border-radius: 4px; 
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
 
 
 /* ========== APPLE NAVBAR ========== */
@@ -1431,6 +1431,32 @@ body.dark-theme .toast {
 .article-body p {
   margin-bottom: 20px;
 }
+.article-body a {
+  color: inherit !important;
+  text-decoration: none !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+.article-detail p[style*="background"],
+.article-body p[style*="background"],
+.article-source-box {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  font-size: 0.9em !important;
+  margin-bottom: 16px !important;
+  display: block !important;
+}
+.article-detail p[style*="background"] a,
+.article-body p[style*="background"] a,
+.article-source-box a {
+  color: #38bdf8 !important;
+  text-decoration: underline !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
 .article-intro {
   font-size: 1.35rem;
   font-weight: 600;
@@ -1773,6 +1799,8 @@ body.dark-theme .toast {
   border-radius: 28px;
   border: 1px solid var(--border-subtle);
   box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+  max-width: 70% !important;
+  margin: 0 auto !important;
 }
 
 .product-info-column {
@@ -1869,14 +1897,14 @@ body.dark-theme .toast {
   justify-content: center;
   overflow: hidden;
   border: 1px solid #f2f2f2;
-  min-height: 350px;
-  max-height: 600px;
+  min-height: 250px;
+  max-height: 420px;
   width: 100%;
 }
 
 .main-image-wrapper img {
   max-width: 100%;
-  max-height: 700px;
+  max-height: 400px;
   object-fit: contain;
 }
 
@@ -2901,7 +2929,7 @@ body.dark-theme .btn-download-mac:hover {
 }
 
 .rec-card {
-  flex: 0 0 300px;
+  flex: 0 0 210px;
   cursor: pointer;
   transition: var(--transition-smooth);
 }
@@ -4119,8 +4147,8 @@ model-viewer {
 
 /* ========== COLLAPSIBLE SIDEBAR ========== */
 :root {
-  --sidebar-width: 220px;
-  --sidebar-collapsed-width: 55px; /* Reduced from 70px to bring content closer */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 92px; /* Decreased by 1cm (38px) as per user request */
 }
 
 
@@ -4340,9 +4368,9 @@ model-viewer {
 
 /* Main Content Adjustment */
 #main-wrapper {
-  margin-left: calc(var(--sidebar-width) + 24px); /* Premium 24px safety gap from the sidebar */
+  margin-left: var(--sidebar-width);
   transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  width: calc(100% - (var(--sidebar-width) + 24px));
+  width: calc(100% - var(--sidebar-width));
   padding-top: 44px; /* Space for the fixed navbar */
 }
 
@@ -4595,9 +4623,9 @@ body.dark-theme .submenu-link::before {
 }
 
 .btn-save-article {
-  background: #1d1d1f !important; /* Black in light mode */
+  background: #000000 !important; /* Black in light mode */
   color: #ffffff !important;      /* White text in light mode */
-  border: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   padding: 10px 24px !important;
   border-radius: 980px !important;
   font-size: 0.9rem !important;
@@ -4612,12 +4640,14 @@ body.dark-theme .submenu-link::before {
 
 .btn-save-article:hover {
   transform: scale(1.02);
+  background: #111111 !important;
   box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 body.dark-theme .btn-save-article {
-  background: #ffffff !important; /* White in dark mode */
-  color: #1d1d1f !important;      /* Black text in dark mode */
+  background: #000000 !important; /* Black in dark mode */
+  color: #ffffff !important;      /* White text in dark mode */
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Meta Bookmark Button */
@@ -7620,7 +7650,7 @@ body.live-edit-mode img:hover {
   }
 
   /* Disable floating popup ad on mobile */
-  #floating-ad-card, .floating-ad-card {
+  #floating-ad-card, .floating-ad-card, #recent-activity-floating-btn-container, .recent-activity-floating-card {
     display: none !important;
   }
 
@@ -7672,4 +7702,231 @@ body.live-edit-mode img:hover {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: scale(0) !important;
+}
+
+/* =====================================================================
+   REDDIT-STYLE THREE-COLUMN LAYOUT AND PERFECT PROPORTIONS
+   ===================================================================== */
+@media (min-width: 1025px) {
+  #page-home {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  /* Spacious 1280px articles carousel and wide news layout globally on desktop */
+  #page-home .category-filter-bar,
+  #page-home .featured-carousel-container,
+  #page-home .main-news-layout {
+    max-width: 1280px !important;
+    margin: 20px auto !important;
+    padding: 0 24px !important;
+    box-sizing: border-box !important;
+  }
+  #page-home .news-feed {
+    max-width: 100% !important;
+  }
+  
+  /* Main news layout - flex columns matching Reddit's exact grid proportions */
+  #page-home .main-news-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 24px !important;
+    margin: 40px auto 0 auto !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    padding: 0 24px !important;
+    box-sizing: border-box !important;
+    direction: ltr !important; /* Ensure Left-Nav -> Center-Feed -> Right-Sidebar layout order */
+  }
+
+  /* Center Content Column (Feed) */
+  #page-home .news-feed {
+    flex: 1 !important;
+    min-width: 0 !important;
+    direction: rtl !important; /* Keep Hebrew text alignment and direction correct */
+  }
+
+  /* Right Column (Sidebar) */
+  #page-home .news-sidebar-right {
+    width: 312px !important;
+    min-width: 312px !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+    direction: rtl !important; /* Keep Hebrew text alignment inside sidebar correct */
+  }
+}
+
+/* Floating Recent Activity Card Styles */
+.recent-activity-floating-card {
+  position: fixed !important;
+  bottom: 162px !important;
+  right: 28px !important;
+  width: 312px !important;
+  z-index: 8900 !important;
+  background: #1a1a1b !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.9) translateY(10px) !important;
+  transition: opacity 0.3s ease, visibility 0.3s ease, bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.recent-activity-floating-card.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: scale(1) translateY(0) !important;
+}
+
+/* Position floating widgets on the bottom-left in Hebrew/RTL mode */
+body.rtl-layout #support-floating-btn-container {
+  right: auto !important;
+  left: 28px !important;
+}
+
+body.rtl-layout #recent-activity-floating-btn-container {
+  right: auto !important;
+  left: 28px !important;
+}
+
+body.rtl-layout .recent-activity-floating-card {
+  right: auto !important;
+  left: 28px !important;
+}
+
+body.rtl-layout #chat-draggable-window {
+  right: auto !important;
+  left: 28px !important;
+}
+
+/* Hide floating activity card completely when the support assistant/messages modal is active */
+#contact-modal.active ~ #page-home .recent-activity-floating-card,
+#contact-modal.active ~ .recent-activity-floating-card {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Smooth shifting of floating elements near the bottom of the page */
+#chat-draggable-window {
+  transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease !important;
+}
+
+/* Align user profile badge to the far right of the nav actions in RTL mode */
+body.rtl-layout #user-nav-section {
+  order: -10 !important;
+}
+
+/* Sidebar inline buttons responsive and collapsed states */
+.sidebar-inline-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 4px 16px 12px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Force absolute symmetry and centering on collapsed sidebar items */
+.sidebar.collapsed {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.sidebar.collapsed .sidebar-inner {
+  padding: 20px 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center !important;
+  padding: 0 !important;
+  margin-bottom: 20px !important;
+  width: 100% !important;
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  right: -18px !important; /* Keep floating toggle button positioned perfectly */
+}
+
+/* Collapse and center search bar beautifully */
+.sidebar.collapsed .sidebar-search-bar {
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto 12px auto !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+}
+
+.sidebar.collapsed .sidebar-search-bar input,
+.sidebar.collapsed .sidebar-search-bar kbd {
+  display: none !important;
+}
+
+.sidebar.collapsed .sidebar-search-bar i {
+  margin: 0 !important;
+  font-size: 1rem !important;
+}
+
+/* Perfect centering for sidebar links, overriding RTL specific margins */
+.sidebar.collapsed .sidebar-link {
+  width: 52px !important;
+  height: 52px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 4px auto !important;
+  border-radius: 12px !important;
+  flex-direction: row !important;
+}
+
+.sidebar.collapsed .sidebar-link i {
+  margin: 0 !important;
+  font-size: 1.4rem !important;
+}
+
+.sidebar.collapsed .sidebar-link span,
+.sidebar.collapsed .sidebar-link-actions,
+.sidebar.collapsed .sidebar-submenu {
+  display: none !important;
+}
+
+/* Divider adjustment */
+.sidebar.collapsed .sidebar-divider,
+.sidebar.collapsed #purchases-divider {
+  width: 40px !important;
+  margin: 12px auto !important;
+}
+
+/* Center inline buttons at the bottom */
+.sidebar.collapsed .sidebar-inline-buttons {
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 0 !important;
+  width: 100% !important;
+  gap: 8px !important;
+}
+
+.sidebar.collapsed .sidebar-inline-buttons .sidebar-inline-btn {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  margin: 0 auto !important;
+}
+
+/* Hide original floating buttons since they are now integrated inline inside the sidebar */
+#support-floating-btn-container,
+#recent-activity-floating-btn-container {
+  display: none !important;
 }

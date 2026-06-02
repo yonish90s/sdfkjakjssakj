@@ -184,6 +184,26 @@
           <div id="my-purchases-dropdown" class="sidebar-submenu" style="display: none;">
             <!-- Submenu items -->
           </div>
+
+          <!-- Divider under Purchases -->
+          <div class="sidebar-divider" id="purchases-divider" style="margin: 12px 16px;"></div>
+
+          <!-- Inline icons below the divider -->
+          <div class="sidebar-inline-buttons" id="sidebar-inline-buttons" style="display: flex; gap: 16px; justify-content: center; padding: 4px 16px 12px 16px;">
+            <!-- History / Recent Activity Button -->
+            <button onclick="toggleRecentActivityCard()" class="sidebar-inline-btn" id="sidebar-btn-history" title="Recent Activity" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.85);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='scale(1)'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8v4l3 3" />
+                <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
+              </svg>
+            </button>
+            <!-- Support / Chat Button -->
+            <button onclick="openCustomerServiceModal()" class="sidebar-inline-btn" id="sidebar-btn-support" title="Customer Service" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.85);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='scale(1)'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                <path d="M12 2C6.477 2 2 6.268 2 11.5c0 2.57 1.07 4.9 2.82 6.61L4 22l4.12-1.37C9.3 21.18 10.62 21.5 12 21.5c5.523 0 10-4.268 10-9.5S17.523 2 12 2z" />
+              </svg>
+            </button>
+          </div>
       </nav>
 
       <div class="sidebar-ads-container">
@@ -272,11 +292,7 @@
 
         <!-- RIGHT SIDE: Actions, Buttons -->
         <div class="nav-left-section" style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
-          <!-- Location Selector -->
-          <div class="location-selector" onclick="toggleLanguage(event)" style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#a1a1a6;" title="Toggle Language">
-            <span class="location-text" id="selected-location-text" style="font-size:0.85rem; font-weight:500; color:#a1a1a6;">English</span>
-            <i class="fas fa-globe" style="font-size:1.1rem;"></i>
-          </div>
+          
 
           <!-- Messages Button -->
           <button onclick="toggleMessagesDrawer()" class="cart-nav-btn" title="Messages" style="background:none; border:none; cursor:pointer; position:relative; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
@@ -306,14 +322,58 @@
           </button>
 
           <!-- Sign In / Profile -->
-          <div id="user-nav-section" style="display: flex; align-items: center; gap: 8px;">
+          <div id="user-nav-section" style="display: flex; align-items: center; gap: 8px; position: relative;">
             <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.8rem; padding:6px 12px; height:32px; border-radius:8px; display:flex; align-items:center; gap:6px; background:#1c1c1e; border:1px solid #3a3a3c; color:#fff; cursor:pointer; font-weight:600;">
               <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-signin">Sign In</span>
             </button>
-            <div id="user-profile-badge" onclick="toggleUserDropdown()" style="display: none; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-main); padding: 4px 10px; border-radius: 980px; align-items: center; gap: 8px;">
+            <div id="user-profile-badge" onclick="toggleUserDropdown(event)" style="display: none; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-main); padding: 4px 10px; border-radius: 980px; align-items: center; gap: 8px; user-select: none;">
               <img id="user-badge-avatar" class="user-avatar-small" src="">
               <span id="user-badge-name" style="font-size: 0.85rem; font-weight: 700;"></span>
             </div>
+
+            <!-- Reddit-style clean text-only user dropdown menu -->
+            <div id="nav-user-dropdown" style="display:none; position:absolute; top:38px; right:0; background:#0b1416; border:1px solid #27272a; border-radius:12px; width:220px; box-shadow:0 8px 24px rgba(0,0,0,0.5); z-index:99999; padding:8px 0; font-family:'Inter', sans-serif; direction:ltr; text-align:left;">
+              
+              <!-- Profile Header info -->
+              <div id="dropdown-profile-header" style="padding:8px 16px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:6px;">
+                <div id="dropdown-user-fullname" style="font-size:0.88rem; font-weight:700; color:#e7e9ea; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">User Name</div>
+                <div id="dropdown-user-username" style="font-size:0.75rem; color:#71767b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">u/username</div>
+              </div>
+
+              <!-- Menu Items (Clean text-only) -->
+              <div class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">View Profile</div>
+              <div class="dropdown-item-reddit" onclick="showPage('subscription'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Premium</div>
+              <div class="dropdown-item-reddit" onclick="toggleTheme(); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Display Mode</div>
+              <div class="dropdown-item-reddit" onclick="toggleLanguage(event); closeUserDropdown();" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; justify-content:space-between;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                <span>Language</span>
+                <span id="dropdown-language-label" style="color:#a1a1a6; font-size:0.8rem; font-weight:600;">English</span>
+              </div>
+              <div class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Settings</div>
+              
+              <div style="height:1px; background:rgba(255,255,255,0.06); margin:6px 0;"></div>
+
+              <div class="dropdown-item-reddit" onclick="logoutUser(); closeUserDropdown()" style="color:#ef4444; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background='transparent'">Log Out</div>
+            </div>
+            
+            <script>
+              window.toggleUserDropdown = function(event) {
+                if (event) event.stopPropagation();
+                const dropdown = document.getElementById('nav-user-dropdown');
+                if (dropdown) {
+                  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                }
+              };
+
+              window.closeUserDropdown = function() {
+                const dropdown = document.getElementById('nav-user-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+              };
+
+              document.addEventListener('click', function() {
+                window.closeUserDropdown();
+              });
+            </script>
+
             <button id="btn-logout-nav" class="btn-secondary" onclick="logoutUser()" style="display:none; font-size:0.75rem; padding:6px 12px; height:32px; color:#ef4444; border-color:rgba(239,68,68,0.2); background:transparent; display:flex; align-items:center; gap:5px; cursor:pointer;">
               <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-logout">Logout</span>
             </button>
@@ -380,8 +440,8 @@
 
 <!-- CONTACT MODAL -->
 <div id="contact-modal" class="modal-overlay floating-modal-overlay">
-  <div id="chat-draggable-window" class="modal-content chat-window" style="position: fixed; bottom: 100px; right: 32px; max-width: 350px; margin: 0; padding: 0; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 150px); z-index: 9999;">
-    <div class="chat-drag-handle chat-header" id="chat-header" style="cursor: move; padding: 12px 16px; border-top-left-radius: 20px; border-top-right-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
+  <div id="chat-draggable-window" class="modal-content chat-window" style="position: fixed; bottom: 162px; right: 28px; width: 312px; max-width: 312px; margin: 0; padding: 0; border-radius: 16px; box-shadow: 0 15px 50px rgba(0,0,0,0.15); max-height: calc(100vh - 200px); z-index: 9999;">
+    <div class="chat-drag-handle chat-header" id="chat-header" style="cursor: move; padding: 12px 16px; border-top-left-radius: 16px; border-top-right-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
       <div style="display:flex; align-items:center; gap:8px;">
         <span id="chat-header-title">✨ Smart Virtual Assistant</span>
       </div>
@@ -441,7 +501,7 @@
   <!-- Featured Carousel Slider -->
   <div class="featured-carousel-container" id="featured-carousel-container" style="margin-top: 20px;"></div>
 
-  <section class="top-news-grid" id="top-news-grid" style="display: none;">
+  <section class="top-news-grid" id="top-news-grid" style="display: none; margin-bottom: 20px;">
     <!-- Populated by JS -->
   </section>
 
@@ -466,24 +526,24 @@
             <span class="soki-logo-text">soki</span>
           </div>
           <div class="soki-footer-socials">
-            <a href="#" class="soki-social-icon" title="X"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#" class="soki-social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#" class="soki-social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" class="soki-social-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" class="soki-social-icon" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
-            <a href="#" class="soki-social-icon" title="Mastodon"><i class="fa-brands fa-mastodon"></i></a>
-            <a href="#" class="soki-social-icon" title="Threads"><i class="fa-brands fa-threads"></i></a>
-            <a href="#" class="soki-social-icon" title="Bluesky"><i class="fa-brands fa-bluesky"></i></a>
+            <a href="#" id="link-social-x" class="soki-social-icon" title="X" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#" id="link-social-linkedin" class="soki-social-icon" title="LinkedIn" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" id="link-social-facebook" class="soki-social-icon" title="Facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" id="link-social-instagram" class="soki-social-icon" title="Instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" id="link-social-youtube" class="soki-social-icon" title="YouTube" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+            <a href="#" id="link-social-mastodon" class="soki-social-icon" title="Mastodon" target="_blank"><i class="fa-brands fa-mastodon"></i></a>
+            <a href="#" id="link-social-threads" class="soki-social-icon" title="Threads" target="_blank"><i class="fa-brands fa-threads"></i></a>
+            <a href="#" id="link-social-bluesky" class="soki-social-icon" title="Bluesky" target="_blank"><i class="fa-brands fa-bluesky"></i></a>
           </div>
           <div class="soki-footer-apps">
-            <a href="#" class="soki-app-badge" title="Download on App Store">
+            <a href="#" id="link-app-appstore" class="soki-app-badge" title="Download on App Store" target="_blank">
               <i class="fa-brands fa-apple app-icon"></i>
               <div class="app-text">
                 <span class="app-sub">Download on the</span>
                 <span class="app-main">App Store</span>
               </div>
             </a>
-            <a href="#" class="soki-app-badge" title="Get it on Google Play">
+            <a href="#" id="link-app-googleplay" class="soki-app-badge" title="Get it on Google Play" target="_blank">
               <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Google_Play_Arrow_logo.svg" alt="Google Play" class="app-img">
               <div class="app-text">
                 <span class="app-sub">GET IT ON</span>
@@ -531,7 +591,6 @@
           </ul>
         </div>
       </div>
-    </div>
   </footer>
 </div>
 
@@ -708,33 +767,18 @@
       <div id="post-thread-container" style="display:flex; flex-direction:column; gap:0; margin-bottom:0; border:1px solid rgba(255,255,255,0.1); border-radius:16px; overflow:hidden;">
         <!-- Thread cards injected by JS -->
       </div>
-      <div id="post-reply-area" style="background:transparent; padding:0; margin-top:16px;">
+      <!-- Sticky Floating Bottom Comment Bar (Reddit Style) -->
+      <div id="floating-post-reply-bar" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#000000; border-top:1px solid rgba(255,255,255,0.1); padding:12px 24px; z-index:9999; align-items:center; gap:16px; justify-content:space-between; box-shadow: 0 -4px 20px rgba(0,0,0,0.5); box-sizing:border-box; height:68px;">
         
-        <!-- Collapsed state (Reddit pill) -->
-        <div id="reply-collapsed-pill" onclick="window.expandReplyArea()" style="display:flex; align-items:center; background:#000; border:1px solid rgba(255,255,255,0.1); border-radius:9999px; padding:12px 20px; cursor:text; transition:border-color 0.2s, background-color 0.2s; direction:ltr;" onmouseover="this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';">
-          <i class="fas fa-comment" style="color:#71767b; margin-right:10px; font-size:0.95rem;"></i>
-          <span style="color:#71767b; font-size:0.95rem; font-family:inherit; user-select:none;">Join the conversation</span>
-        </div>
-
-        <!-- Expanded state (Reddit editor box) -->
-        <div id="reply-expanded-editor" style="display:none; background:#121212; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px; margin-top:0px;">
-          <textarea id="new-comment-input" placeholder="What are your thoughts?" style="width:100%; background:transparent; border:none; color:#fafafa; font-size:0.95rem; font-family:inherit; resize:vertical; min-height:100px; outline:none; margin-bottom:12px; direction:ltr; text-align:left; box-sizing:border-box;"></textarea>
-          <div style="display:flex; justify-content:flex-start; gap:8px;">
-            <button class="btn-primary" onclick="submitComment()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; cursor:pointer;">Comment</button>
-            <button class="btn-secondary" onclick="window.collapseReplyArea()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; background:#2c2c2e; border:none; color:#fff; cursor:pointer;">Cancel</button>
-          </div>
-        </div>
-
-        <!-- Sort and Search filters underneath just like the screenshot! -->
-        <div style="display:flex; align-items:center; gap:16px; margin-top:16px; padding:0 8px; direction:ltr; text-align:left;">
-          <div style="font-size:0.85rem; color:#71767b; display:flex; align-items:center; gap:6px;">
-            <span>Sort by:</span>
-            <span style="color:#e7e9ea; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">Best <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i></span>
-          </div>
-          <div style="display:flex; align-items:center; background:#121212; border:1px solid rgba(255,255,255,0.06); border-radius:9999px; padding:6px 14px; gap:8px; cursor:pointer;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
-            <i class="fas fa-search" style="color:#71767b; font-size:0.75rem;"></i>
-            <span style="color:#71767b; font-size:0.78rem; font-weight:600;">Search Comments</span>
-          </div>
+        <!-- שלח button on the left -->
+        <button class="btn-primary" onclick="submitComment()" style="background:#e7e9ea; color:#000; border:none; padding:10px 24px; border-radius:9999px; font-weight:700; font-size:0.92rem; cursor:pointer; flex-shrink:0; transition:background 0.2s;" onmouseover="this.style.background='#cfd3d7'" onmouseout="this.style.background='#e7e9ea'">שלח</button>
+        
+        <!-- Input field in the middle -->
+        <input type="text" id="new-comment-input" placeholder="כתוב תגובה..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.97rem; outline:none; text-align:right; direction:rtl; font-family:inherit;" onkeypress="if(event.key === 'Enter') submitComment()">
+        
+        <!-- User avatar on the right -->
+        <div id="floating-reply-avatar-container" style="flex-shrink:0; display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; overflow:hidden;">
+          <!-- Injected dynamically by JS -->
         </div>
 
       </div>
@@ -903,11 +947,24 @@
     <div id="article-comments-list" style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 48px;">
       <!-- Populated by JS -->
     </div>
-    <div id="article-comment-input-area" style="background: #1c1c1e; border-radius: 24px; padding: 32px; border: 1px solid #2c2c2e; display: none; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
-      <textarea id="article-new-comment" placeholder="What are your thoughts on this article?..." style="width: 100%; min-height: 120px; border: none; outline: none; font-size: 1.15rem; resize: none; background: transparent; color: #fafafa;"></textarea>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #2c2c2e;">
-        <span style="font-size: 0.95rem; color: #a1a1aa;">Posting as: <strong id="article-comment-user-name" style="color: #ffffff;"></strong></span>
-        <button class="btn-primary" onclick="submitComment('article')" style="padding: 12px 32px; font-size: 1.1rem; border-radius: 980px;">Post Comment</button>
+    <div id="article-comment-input-area" style="background: #1a1a1b; border-radius: 18px; padding: 16px; border: 1px solid rgba(255,255,255,0.08); display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.4); margin-bottom: 24px;">
+      <!-- Textarea input -->
+      <textarea id="article-new-comment" placeholder="Join the conversation" style="width: 100%; min-height: 80px; border: none; outline: none; font-size: 0.95rem; resize: none; background: transparent; color: #e7e9ea; font-family: inherit; box-sizing: border-box; padding: 0 4px;" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';"></textarea>
+      
+      <!-- Footer actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);">
+        <!-- Bottom left: Icons -->
+        <div style="display: flex; align-items: center; gap: 14px; color: #818384;">
+          <i class="far fa-image" style="font-size: 1.1rem; cursor: pointer; transition: color 0.15s;" onmouseover="this.style.color='#e7e9ea'" onmouseout="this.style.color='#818384'"></i>
+          <span style="font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: color 0.15s; font-family:'Inter', sans-serif;" onmouseover="this.style.color='#e7e9ea'" onmouseout="this.style.color='#818384'">Aa</span>
+          <span style="font-size: 0.82rem; color: #818384; margin-left: 6px;">Posting as: <strong id="article-comment-user-name" style="color: #d1d1d6;"></strong></span>
+        </div>
+        
+        <!-- Bottom right: Cancel and Comment buttons -->
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" onclick="document.getElementById('article-new-comment').value = '';" style="background: rgba(255,255,255,0.06); border: none; color: #e7e9ea; padding: 8px 18px; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">Cancel</button>
+          <button class="btn-primary" onclick="submitLocalComment('article')" style="background: #0079d3; border: none; color: #fff; padding: 8px 20px; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#1493f0'" onmouseout="this.style.background='#0079d3'">Comment</button>
+        </div>
       </div>
     </div>
     <div id="article-comment-join-prompt" style="text-align: center; padding: 60px; background: #fbfbfd; border-radius: 24px; border: 1px dashed #d2d2d7;">
@@ -1232,6 +1289,7 @@
         <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)" style="color: #a1a1aa;"><i class="fas fa-box"></i> הזמנות</button>
         <button class="admin-nav-btn" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)" style="color: #a1a1aa;"><i class="fas fa-chart-pie"></i> ניתוח נתונים</button>
         <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
+        <button class="admin-nav-btn" data-admin-tab="links" onclick="switchAdminTab('links', this)" style="color: #a1a1aa;"><i class="fas fa-link"></i> ניהול קישורים</button>
         
         <button class="admin-nav-btn" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)" style="color: #a1a1aa;"><i class="fas fa-comment-dots"></i> הודעות למנהל <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.7rem; margin-right:4px;"></span></button>
         <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
@@ -1349,6 +1407,81 @@
         </div>
       </div>
 
+      <!-- 7. LINKS MANAGER TAB -->
+      <div id="admin-section-links" class="admin-section" style="display: none; direction: rtl; text-align: right;">
+        <h2 style="margin: 0 0 8px 0; font-size: 1.5rem; color: #fafafa;">🔗 ניהול קישורים באתר</h2>
+        <p style="color: #a1a1aa; font-size: 0.95rem; margin-bottom: 24px;">נהל את קישורי הרשתות החברתיות וחנויות האפליקציות המוצגות בתחתית האתר (Footer)</p>
+        
+        <form id="admin-links-form" onsubmit="saveAdminLinks(event)" style="background: #1c1c1e; border: 1px solid #2c2c2e; padding: 28px; border-radius: 16px; display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <!-- Social X / Twitter -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-x-twitter" style="margin-left:6px;"></i> קישור ל-X / Twitter</label>
+              <input type="url" id="inp-link-x" class="admin-input" placeholder="https://x.com/your-username" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- LinkedIn -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-linkedin-in" style="margin-left:6px; color:#0077b5;"></i> קישור ל-LinkedIn</label>
+              <input type="url" id="inp-link-linkedin" class="admin-input" placeholder="https://linkedin.com/in/your-profile" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- Facebook -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-facebook-f" style="margin-left:6px; color:#1877f2;"></i> קישור ל-Facebook</label>
+              <input type="url" id="inp-link-facebook" class="admin-input" placeholder="https://facebook.com/your-page" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- Instagram -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-instagram" style="margin-left:6px; color:#c13584;"></i> קישור ל-Instagram</label>
+              <input type="url" id="inp-link-instagram" class="admin-input" placeholder="https://instagram.com/your-username" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- YouTube -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-youtube" style="margin-left:6px; color:#ff0000;"></i> קישור ל-YouTube</label>
+              <input type="url" id="inp-link-youtube" class="admin-input" placeholder="https://youtube.com/@your-channel" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- Mastodon -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-mastodon" style="margin-left:6px; color:#6364ff;"></i> קישור ל-Mastodon</label>
+              <input type="url" id="inp-link-mastodon" class="admin-input" placeholder="https://mastodon.social/@your-username" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- Threads -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-threads" style="margin-left:6px;"></i> קישור ל-Threads</label>
+              <input type="url" id="inp-link-threads" class="admin-input" placeholder="https://threads.net/@your-username" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- Bluesky -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-bluesky" style="margin-left:6px; color:#0285f4;"></i> קישור ל-Bluesky</label>
+              <input type="url" id="inp-link-bluesky" class="admin-input" placeholder="https://bsky.app/profile/your-profile" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- App Store -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-apple" style="margin-left:6px;"></i> קישור להורדה ב-App Store</label>
+              <input type="url" id="inp-link-appstore" class="admin-input" placeholder="https://apps.apple.com/app/your-app-id" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+
+            <!-- Google Play -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="font-size:0.9rem; font-weight:700; color:#e4e4e7;"><i class="fa-brands fa-google-play" style="margin-left:6px; color:#3bccff;"></i> קישור להורדה ב-Google Play</label>
+              <input type="url" id="inp-link-googleplay" class="admin-input" placeholder="https://play.google.com/store/apps/details?id=your-package-name" style="width:100%; border-radius:8px; border:1px solid #3a3a3c; padding:10px; background:#0b0b0c; color:#fff;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top: 12px; height: 50px; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fas fa-save"></i> שמור את כל הקישורים
+          </button>
+        </form>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1461,81 +1594,100 @@
 </div>
 
 <!-- USER ARTICLE UPLOAD MODAL -->
-<div id="user-article-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;">
-  <div style="background:#ffffff;border-radius:24px;padding:40px;box-shadow:var(--shadow-soft);max-width:860px;width:100%;position:relative;">
-    <button type="button" onclick="closeUserArticleModal()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.6rem;color:#71717a;cursor:pointer;">×</button>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;border-bottom:2px solid #f5f5f7;padding-bottom:16px;">
-      <h2 style="font-size:2rem;font-weight:800;color:#1d1d1f;margin:0;">Create New Article</h2>
+<div id="user-article-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;">
+  <div style="background:#0b0c0e;border-radius:20px;padding:36px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.6);max-width:800px;width:100%;position:relative;">
+    <button type="button" onclick="closeUserArticleModal()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.6rem;color:#a1a1a6;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a1a1a6'">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;">
+      <h2 style="font-size:1.8rem;font-weight:800;color:#ffffff;margin:0;font-family:'Inter', sans-serif;letter-spacing:-0.02em;">Create New Article</h2>
     </div>
 
-    <form onsubmit="submitUserArticle(event)" style="display:flex;flex-direction:column;gap:20px;">
+    <form onsubmit="submitUserArticle(event)" style="display:flex;flex-direction:column;gap:18px;">
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <input type="text" id="user-art-title" class="admin-input" placeholder="Article Title" required style="font-weight:600;font-size:1.1rem;padding:16px;border-radius:12px;background:#fbfbfd;">
+        <input type="text" id="user-art-title" class="admin-input" placeholder="Article Title" required 
+               style="font-weight:600;font-size:1.05rem;padding:14px;border-radius:10px;background:#16171a;border:1px solid rgba(255,255,255,0.08);color:#ffffff;outline:none;transition:border-color 0.2s;"
+               onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <input type="text" id="user-art-cat" class="admin-input" placeholder="Category (e.g., Security, Politics, Tech)" required style="padding:16px;border-radius:12px;background:#fbfbfd;">
+        <input type="text" id="user-art-cat" class="admin-input" placeholder="Category (e.g., Security, Politics, Tech)" required 
+               style="padding:14px;border-radius:10px;background:#16171a;border:1px solid rgba(255,255,255,0.08);color:#ffffff;outline:none;transition:border-color 0.2s;"
+               onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <input type="text" id="user-art-author" class="admin-input" placeholder="Author Name / Credit" required style="padding:16px;border-radius:12px;background:#fbfbfd;">
+        <input type="text" id="user-art-author" class="admin-input" placeholder="Author Name / Credit" required 
+               style="padding:14px;border-radius:10px;background:#16171a;border:1px solid rgba(255,255,255,0.08);color:#ffffff;outline:none;transition:border-color 0.2s;"
+               onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <label style="font-size:0.95rem;font-weight:700;color:#1d1d1f;">Image (upload from device or paste link):</label>
-        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-          <input type="text" id="user-art-image" class="admin-input" placeholder="https://..." style="flex:1;min-width:220px;padding:16px;border-radius:12px;background:#fbfbfd;font-family:monospace;">
+        <label style="font-size:0.9rem;font-weight:600;color:#a1a1a6;">Image (upload from device or paste link):</label>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="user-art-image" class="admin-input" placeholder="https://..." 
+                 style="flex:1;min-width:220px;padding:14px;border-radius:10px;background:#16171a;border:1px solid rgba(255,255,255,0.08);color:#ffffff;outline:none;font-family:monospace;transition:border-color 0.2s;"
+                 onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
           <input type="file" id="user-art-image-file" accept="image/*" style="display:none;" onchange="handleUserArticleImage()">
-          <button type="button" class="btn-secondary" onclick="document.getElementById('user-art-image-file').click()" style="padding:16px 24px;border-radius:12px;white-space:nowrap;">Upload Image</button>
+          <button type="button" class="btn-secondary" onclick="document.getElementById('user-art-image-file').click()" 
+                  style="padding:14px 20px;border-radius:10px;white-space:nowrap;background:#1c1c1e;border:1px solid rgba(255,255,255,0.12);color:#fff;cursor:pointer;font-weight:600;transition:background 0.2s;"
+                  onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'">Upload Image</button>
         </div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <textarea id="user-art-excerpt" class="admin-input" rows="3" placeholder="Snippet / Article excerpt" required style="padding:16px;border-radius:12px;background:#fbfbfd;resize:vertical;"></textarea>
+        <textarea id="user-art-excerpt" class="admin-input" rows="3" placeholder="Snippet / Article excerpt" required 
+                  style="padding:14px;border-radius:10px;background:#16171a;border:1px solid rgba(255,255,255,0.08);color:#ffffff;outline:none;resize:vertical;transition:border-color 0.2s;"
+                  onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'"></textarea>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <textarea id="user-art-body" class="admin-input" rows="10" placeholder="Full Article Content (appears when opening the article)" required style="padding:16px;border-radius:12px;background:#fbfbfd;resize:vertical;margin-bottom:24px;"></textarea>
+        <textarea id="user-art-body" class="admin-input" rows="8" placeholder="Full Article Content (appears when opening the article)" required 
+                  style="padding:14px;border-radius:10px;background:#16171a;border:1px solid rgba(255,255,255,0.08);color:#ffffff;outline:none;resize:vertical;margin-bottom:12px;transition:border-color 0.2s;"
+                  onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'"></textarea>
       </div>
 
-      <div style="display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;"><button type="button" class="btn-secondary" onclick="closeUserArticleModal()" style="border-radius:12px;width:140px;border-color:transparent;font-weight:600;color:#86868b;">Cancel</button>
-        <button type="submit" class="btn-primary" style="height:54px;width:220px;font-size:1.1rem;border-radius:12px;">Submit Article for Approval 🚀</button>
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:16px;flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" onclick="closeUserArticleModal()" 
+                style="background:transparent;border:none;font-weight:600;color:#a1a1a6;cursor:pointer;padding:12px 24px;border-radius:10px;transition:color 0.2s;"
+                onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a1a1a6'">Cancel</button>
+        <button type="submit" class="btn-primary" 
+                style="height:48px;width:220px;font-size:0.95rem;font-weight:700;border-radius:10px;background:#0071e3;color:#ffffff;border:none;cursor:pointer;transition:transform 0.2s,background 0.2s;"
+                onmouseover="this.style.background='#0077ed';this.style.transform='scale(1.02)'" onmouseout="this.style.background='#0071e3';this.style.transform='scale(1)'">Submit Article for Approval 🚀</button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- ABOUT PAGE -->
-<div id="page-about" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px;">
-  <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft);">
-    <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 24px;">About</h2>
-    <p style="font-size: 1.1rem; line-height: 1.8; color: #1d1d1f; margin-bottom: 16px;">
-      Welcome to our news platform. Established to provide real-time updates and news with full transparency and uncompromising professionalism.
+<div id="page-about" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px; direction: rtl; text-align: right;">
+  <div style="background:#0b0c0e; border-radius:20px; padding:40px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <h2 style="font-size:2.2rem; font-weight:800; color:#ffffff; margin-bottom:24px; font-family:'Inter', sans-serif; letter-spacing:-0.02em; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;">אודותינו / About</h2>
+    <p style="font-size:1.1rem; line-height:1.8; color:#e4e4e7; margin-bottom:16px; font-weight:500;">
+      ברוכים הבאים לפלטפורמת התוכן והמידע שלנו. האתר הוקם במטרה לספק עדכונים בזמן אמת, גרפים ונתונים בשקיפות מלאה ובמקצועיות ללא פשרות.
     </p>
-    <p style="font-size: 1.1rem; line-height: 1.8; color: #1d1d1f;">
-      We believe in innovation and continuous improvement, and invite our readers to participate in content creation. Our customer service is always available for you.
+    <p style="font-size:1.1rem; line-height:1.8; color:#a1a1a6;">
+      אנו מאמינים בחדשנות ובשיפור מתמיד, ומזמינים את הקוראים שלנו לקחת חלק ביצירת התוכן. שירות הלקוחות והתמיכה הישירה שלנו תמיד זמינים עבורכם בלחיצת כפתור.
     </p>
   </div>
 </div>
 
 <!-- WHATS NEW PAGE -->
-<div id="page-whats-new" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px;">
-  <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft);">
-    <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 24px;">What's New?</h2>
+<div id="page-whats-new" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px; direction: rtl; text-align: right;">
+  <div style="background:#0b0c0e; border-radius:20px; padding:40px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+    <h2 style="font-size:2.2rem; font-weight:800; color:#ffffff; margin-bottom:24px; font-family:'Inter', sans-serif; letter-spacing:-0.02em; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;">מה חדש? / What's New</h2>
     
-    <div style="margin-bottom: 32px;">
-      <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 8px;">✨ Improved User Experience</div>
-      <p style="font-size: 1rem; line-height: 1.6; color: #1d1d1f;">We've updated the design to be clean, premium, and more comfortable than ever on any device.</p>
+    <div style="margin-bottom:28px; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:16px;">
+      <div style="font-size:1.25rem; font-weight:800; color:#34c759; margin-bottom:8px; display:flex; align-items:center; gap:8px;">✨ חוויית משתמש משופרת</div>
+      <p style="font-size:1rem; line-height:1.6; color:#a1a1a6; margin:0;">עדכנו את עיצוב האתר למראה נקי, מהיר ויוקרתי המותאם בצורה מושלמת לכל מכשיר ומסך.</p>
     </div>
 
-    <div style="margin-bottom: 32px;">
-      <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 8px;">💬 Floating Customer Service</div>
-      <p style="font-size: 1rem; line-height: 1.6; color: #1d1d1f;">A floating button for quick and direct access to management messaging is now visible at the bottom of the screen.</p>
+    <div style="margin-bottom:28px; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:16px;">
+      <div style="font-size:1.25rem; font-weight:800; color:#0071e3; margin-bottom:8px; display:flex; align-items:center; gap:8px;">💬 שירות לקוחות צף</div>
+      <p style="font-size:1rem; line-height:1.6; color:#a1a1a6; margin:0;">השקנו לחצן תמיכה וצ'אט צף ומהיר המאפשר פנייה ישירה ומיידית להנהלת האתר.</p>
     </div>
 
-    <div style="margin-bottom: 32px;">
-      <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-bottom: 8px;">📝 Personal Content Upload</div>
-      <p style="font-size: 1rem; line-height: 1.6; color: #1d1d1f;">We've launched the ability for writers to suggest original articles for approval and publication on the site.</p>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:1.25rem; font-weight:800; color:#fb923c; margin-bottom:8px; display:flex; align-items:center; gap:8px;">📝 העלאת כתבות אישית</div>
+      <p style="font-size:1rem; line-height:1.6; color:#a1a1a6; margin:0;">הוספנו ממשק כתיבה והעלאת כתבות אישיות המאפשר ליוצרים להציע מאמרים לפרסום ישיר באתר.</p>
     </div>
   </div>
 </div>
@@ -1564,7 +1716,7 @@
 
 
 <!-- FLOATING SUPPORT BUTTON -->
-<div id="support-floating-btn-container" style="position:fixed; bottom:210px; right:28px; z-index:9000; display:inline-block;">
+<div id="support-floating-btn-container" style="position:fixed; bottom:30px; right:28px; z-index:9000; display:inline-block;">
   <span id="support-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:#ef4444; color:#fff; border-radius:50%; width:20px; height:20px; font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(239,68,68,0.4); z-index:9005;">0</span>
   <div id="support-floating-btn" onclick="openCustomerServiceModal()" title="Customer Service"
     style="width:52px;height:52px;background:#1c1c1e;border:1px solid rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.5);transition:transform 0.2s,background 0.2s;"
@@ -1578,16 +1730,25 @@
 
 <style>
   .floating-modal-overlay {
+    position: fixed !important;
+    top: auto !important;
+    left: auto !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    height: auto !important;
     display: flex !important;
-    pointer-events: none;
+    pointer-events: none !important;
     background: transparent !important;
     backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
     transition: opacity 0.3s ease, visibility 0.3s ease !important;
+    z-index: 9999 !important;
   }
   .floating-modal-overlay.active {
-    pointer-events: auto;
+    pointer-events: none !important;
     opacity: 1 !important;
     visibility: visible !important;
   }
@@ -1599,7 +1760,7 @@
   }
   .floating-modal-overlay.show .modal-content,
   .floating-modal-overlay.active .modal-content {
-    pointer-events: auto;
+    pointer-events: auto !important;
     transform: scale(1) translateY(0) !important;
     opacity: 1 !important;
   }
@@ -2405,6 +2566,40 @@
       if (inp) { inp.focus(); e.preventDefault(); }
     }
   });
+
+  window.toggleRecentActivityCard = function() {
+    const card = document.querySelector('.recent-activity-floating-card');
+    if (card) {
+      card.classList.toggle('active');
+    }
+  };
   </script>
+
+  <!-- FLOATING RECENT ACTIVITY BUTTON -->
+  <div id="recent-activity-floating-btn-container" style="position:fixed; bottom:96px; right:28px; z-index:9000; display:inline-block; transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;">
+    <div id="recent-activity-floating-btn" onclick="toggleRecentActivityCard()" title="Recent Activity"
+      style="width:52px;height:52px;background:#1c1c1e;border:1px solid rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.5);transition:transform 0.2s,background 0.2s;"
+      onmouseover="this.style.background='#2c2c2e';this.style.transform='scale(1.08)'"
+      onmouseout="this.style.background='#1c1c1e';this.style.transform='scale(1)'">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 8v4l3 3" />
+        <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Floating Recent Activity Card (Direct child of body to guarantee viewport-fixed positioning) -->
+  <div class="recent-activity-floating-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <span style="font-size: 0.75rem; font-weight: 700; color: #818384; letter-spacing: 0.5px; text-transform: uppercase;">פעילות אחרונה / RECENT ACTIVITY</span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="javascript:void(0)" onclick="clearRecentActivity()" style="font-size: 0.75rem; font-weight: 700; color: #0079d3; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#1493f0'" onmouseout="this.style.color='#0079d3'">Clear</a>
+        <a href="javascript:void(0)" onclick="toggleRecentActivityCard()" style="font-size: 0.95rem; font-weight: 700; color: #818384; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#818384'">✕</a>
+      </div>
+    </div>
+    <div id="recent-activity-list" style="display: flex; flex-direction: column; gap: 12px;">
+      <!-- Populated dynamically by JS -->
+    </div>
+  </div>
 </body>
 </html>

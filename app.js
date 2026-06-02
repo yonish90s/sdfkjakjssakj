@@ -414,7 +414,7 @@ function showPage(pageId) {
   }
 
   // Trigger rendering logic based on pageId
-  if (pageId === 'home') renderNewsLayout();
+  if (pageId === 'home') { renderNewsLayout(); if (window.renderRecentActivity) window.renderRecentActivity(); }
   if (pageId === 'store') showPage('shop');
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
@@ -964,6 +964,11 @@ function showArticle(id) {
   const a = newsArticles.find(x => x.id === id);
   if (!a) return;
 
+  let processedContent = a.content || '';
+  if (processedContent) {
+    processedContent = processedContent.replace(/<p[^>]*style="[^"]*background:#f3f4f6[^"]*"[^>]*>/gi, '<p class="article-source-box">');
+  }
+
   document.getElementById('article-content').innerHTML = `
     <header class="article-header">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -986,7 +991,7 @@ function showArticle(id) {
     </div>
     <div class="article-body">
       <div id="inline-content">
-        ${a.content ? a.content : `
+        ${processedContent ? processedContent : `
         <p>This is placeholder text to illustrate the article. In the full news system, this area will be pulled from the database and contain paragraphs, extended quotes, image galleries, and social sharing options.</p>
         <p>The leading technology company recently unveiled all the updates for the highly anticipated new system. At the event, thousands of technology journalists from around the world participated, getting a first look at the advanced software tools and hardware.</p>
         <p>In addition, special emphasis was placed on AI capabilities, privacy, and data security, with improvements that will make every action more efficient, convenient, and secure than ever before.</p>
@@ -1000,7 +1005,7 @@ function showArticle(id) {
         
         if (hasAccess) {
           return `
-            <div class="article-text">${a.content || a.text || ''}</div>
+            <div class="article-text">${processedContent || a.text || ''}</div>
             ${(() => {
               const ytId = getYouTubeId(a.youtube);
               if (!ytId) return '';
@@ -1757,6 +1762,9 @@ function switchAdminTab(tabId, btnEl) {
   if (tabId === 'pdfstore') renderPdfAdminList();
   if (tabId === 'images') renderAdminImageLinks();
   if (tabId === 'manager-msgs') renderManagerMessages();
+  if (tabId === 'links') {
+    if (window.loadAdminLinks) window.loadAdminLinks();
+  }
 }
 
 async function renderManagerMessages() {
@@ -3232,8 +3240,21 @@ function openCustomerServiceModal() {
   const modal = document.getElementById('contact-modal');
   if (modal) {
     modal.classList.toggle('active');
-    // Ensure chat widget is correctly localized whenever opened
+    
+    // Switch to direct support messages mode automatically so the user can write to support immediately
+    window._supportChatMode = 'assistant'; // reset to force transition to direct mode
+    if (typeof toggleSupportChatMode === 'function') {
+      toggleSupportChatMode();
+    }
+    
     updateNavbarLanguage();
+    
+    if (modal.classList.contains('active')) {
+      setTimeout(() => {
+        const inp = document.getElementById('direct-chat-input');
+        if (inp) inp.focus();
+      }, 350);
+    }
   }
 }
 
@@ -3607,7 +3628,7 @@ function updateUserUI() {
   if (isUserLoggedIn || isAdminLoggedIn) {
     btnJoin.style.display = 'none';
     profileBadge.style.display = 'flex';
-    btnLogoutNav.style.display = 'block'; // User connected -> Show logout
+    btnLogoutNav.style.display = 'none'; // Replaced by Reddit profile dropdown logout button!
 
     if (isAdminLoggedIn && !isUserLoggedIn) {
       document.getElementById('user-badge-avatar').style.display = 'none';
@@ -3678,7 +3699,7 @@ function updateUserUI() {
   }
 }
 
-function submitComment(type) {
+function submitLocalComment(type) {
   const textarea = document.getElementById(`${type}-new-comment`);
   const text = textarea.value.trim();
   
@@ -3703,7 +3724,9 @@ function submitComment(type) {
   textarea.value = '';
   renderComments(type, targetId);
   showToast('✅ Comment posted!');
+  if (window.renderRecentActivity) window.renderRecentActivity();
 }
+window.submitLocalComment = submitLocalComment;
 
 function renderComments(type, targetId) {
   const list = document.getElementById(`${type}-comments-list`);
@@ -5089,6 +5112,12 @@ function updateNavbarLanguage() {
   try {
     const isHeb = (currentLocation && currentLocation.id === 'Israel');
 
+    // Update language label inside profile dropdown
+    const dropLangLabel = document.getElementById('dropdown-language-label');
+    if (dropLangLabel) {
+      dropLangLabel.textContent = isHeb ? 'עברית' : 'English';
+    }
+
   // Flip navbar sections: RTL (Hebrew) = logo on right (row-reverse), LTR (English) = logo on left (row)
   const navInner = document.querySelector('.nav-inner-apple');
   if (navInner) navInner.style.flexDirection = isHeb ? 'row-reverse' : 'row';
@@ -5163,6 +5192,12 @@ function updateNavbarLanguage() {
     if (sidebarArchive) sidebarArchive.textContent = 'ארכיון';
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'הרכישות שלי';
 
+    // Sidebar inline buttons Hebrew translation
+    const btnHistoryHeb = document.getElementById('sidebar-btn-history');
+    const btnSupportHeb = document.getElementById('sidebar-btn-support');
+    if (btnHistoryHeb) btnHistoryHeb.setAttribute('title', 'פעילות אחרונה');
+    if (btnSupportHeb) btnSupportHeb.setAttribute('title', 'שירות לקוחות');
+
     // Hebrew Chat Translation
     if (chatModeBtn) chatModeBtn.textContent = window._supportChatMode === 'direct' ? 'עוזר וירטואלי' : 'הודעות';
     if (directChatInput) directChatInput.placeholder = 'כתוב הודעה לתומך...';
@@ -5195,6 +5230,12 @@ function updateNavbarLanguage() {
     if (sidebarMyArticles) sidebarMyArticles.textContent = 'My Articles';
     if (sidebarArchive) sidebarArchive.textContent = 'Archive';
     if (sidebarMyPurchases) sidebarMyPurchases.textContent = 'My Purchases';
+
+    // Sidebar inline buttons English translation
+    const btnHistoryEng = document.getElementById('sidebar-btn-history');
+    const btnSupportEng = document.getElementById('sidebar-btn-support');
+    if (btnHistoryEng) btnHistoryEng.setAttribute('title', 'Recent Activity');
+    if (btnSupportEng) btnSupportEng.setAttribute('title', 'Customer Service');
 
     // English Chat Translation
     if (chatModeBtn) chatModeBtn.textContent = window._supportChatMode === 'direct' ? 'AI Assistant' : 'Messages';
@@ -6271,9 +6312,28 @@ window.openPost = async function(postId) {
   currentPostId = postId;
   document.getElementById('group-detail-view').style.display = 'none';
   document.getElementById('post-detail-view').style.display = 'block';
+  document.getElementById('post-detail-view').style.paddingBottom = '90px';
+
+  // Show floating bottom comment bar and inject active user avatar
+  const floatingBar = document.getElementById('floating-post-reply-bar');
+  if (floatingBar) {
+    floatingBar.style.display = 'flex';
+    const avatarContainer = document.getElementById('floating-reply-avatar-container');
+    if (avatarContainer) {
+      const uName = currentUser?.name || 'Guest';
+      const initials = uName.charAt(0).toUpperCase();
+      const colors = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#06b6d4'];
+      const color = colors[initials.charCodeAt(0) % colors.length];
+      const avatarHtml = (currentUser?.avatar || currentUser?.photoURL)
+        ? `<img src="${currentUser?.avatar || currentUser?.photoURL}" style="width:38px; height:38px; border-radius:50%; object-fit:cover;">`
+        : `<div style="width:38px; height:38px; border-radius:50%; background:${color}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem;">${initials}</div>`;
+      avatarContainer.innerHTML = avatarHtml;
+    }
+  }
 
   const backBtn = document.getElementById('post-back-btn');
   backBtn.onclick = () => {
+    if (floatingBar) floatingBar.style.display = 'none';
     if (currentGroupId) {
       openGroup(currentGroupId);
     } else {
@@ -6416,12 +6476,30 @@ window.openPost = async function(postId) {
         </div>
       </div>
 
-      <!-- Reply input row -->
-      <div style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:14px 18px;display:flex;align-items:center;gap:12px;direction:rtl;">
-        ${buildAvatar(currentUser?.name||'Guest', currentUser?.photoURL||'', 38)}
-        <div onclick="document.getElementById('new-comment-input').focus()" style="flex:1;color:#71767b;font-size:0.97rem;cursor:text;padding:10px 0;">כתוב תגובה...</div>
-        <button onclick="submitComment()" style="background:#e7e9ea;color:#000;border:none;padding:8px 20px;border-radius:980px;font-weight:700;font-size:0.9rem;cursor:pointer;flex-shrink:0;transition:background 0.15s;" onmouseover="this.style.background='#cfd3d7'" onmouseout="this.style.background='#e7e9ea'">שלח</button>
+        <!-- Sort and Search filters underneath just like the screenshot! -->
+        <div style="display:flex; align-items:center; gap:16px; margin-top:16px; padding:12px 14px 12px 14px; border-top:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.06); direction:ltr; text-align:left; background:#000; position:relative;">
+          <div style="font-size:0.85rem; color:#71767b; display:flex; align-items:center; gap:6px; position:relative; user-select:none;">
+            <span>Sort by:</span>
+            <span id="comment-sort-btn" onclick="window.toggleCommentSortDropdown(event)" style="color:#e7e9ea; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition: color 0.15s;">
+              <span id="current-sort-label">Best</span> <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#71767b;"></i>
+            </span>
+            <!-- Sort dropdown menu -->
+            <div id="comment-sort-dropdown" style="display:none; position:absolute; top:24px; left:50px; background:#1a1a1b; border:1px solid #343536; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.5); z-index:100; min-width:100px; padding:4px 0;">
+              <div onclick="window.setCommentSort('best')" style="color:#e7e9ea; padding:6px 12px; font-size:0.85rem; cursor:pointer; font-weight:700;" onmouseover="this.style.background='#272729'" onmouseout="this.style.background='transparent'">Best</div>
+              <div onclick="window.setCommentSort('new')" style="color:#e7e9ea; padding:6px 12px; font-size:0.85rem; cursor:pointer; font-weight:700;" onmouseover="this.style.background='#272729'" onmouseout="this.style.background='transparent'">New</div>
+            </div>
+          </div>
+          
+          <!-- Search input box matching the premium Reddit look exactly! -->
+          <div style="display:flex; align-items:center; background:#1a1a1b; border:1px solid rgba(255,255,255,0.08); border-radius:9999px; padding:4px 12px; gap:8px; flex:1; max-width:240px; transition: border-color 0.2s, background-color 0.2s;" id="comment-search-box-container">
+            <i class="fas fa-search" style="color:#71767b; font-size:0.75rem;"></i>
+            <input type="text" id="comment-search-input" oninput="window.onCommentSearch(this.value)" placeholder="Search Comments" style="background:transparent; border:none; color:#e7e9ea; font-size:0.82rem; font-weight:500; outline:none; width:100%; font-family:inherit;" onfocus="document.getElementById('comment-search-box-container').style.borderColor='rgba(255,255,255,0.2)'; document.getElementById('comment-search-box-container').style.backgroundColor='#272729';" onblur="document.getElementById('comment-search-box-container').style.borderColor='rgba(255,255,255,0.08)'; document.getElementById('comment-search-box-container').style.backgroundColor='#1a1a1b';" />
+          </div>
+        </div>
       </div>
+      
+      <!-- Comments Wrapper -->
+      <div id="post-comments-list-wrapper" style="background:#000;"></div>
     `;
 
     // ── Marketplace actions ──
@@ -6434,22 +6512,15 @@ window.openPost = async function(postId) {
       `;
     }
 
-    // ── Comments (Reddit Nested Thread Tree style) ──
-    const rootComments = [];
-    const childCommentsMap = {};
-    comments.forEach(c => {
-      const pId = c.data.parentId;
-      if (!pId) {
-        rootComments.push(c);
-      } else {
-        if (!childCommentsMap[pId]) {
-          childCommentsMap[pId] = [];
-        }
-        childCommentsMap[pId].push(c);
-      }
-    });
+    threadContainer.innerHTML = html;
 
-    function renderCommentTree(c, depth = 0) {
+    // Save comments in state and render initially
+    window.activePostComments = comments;
+    window.activePostSortType = 'best';
+    window.activePostSearchQuery = '';
+
+    // Define single comment renderer locally or dynamically
+    window.renderCommentSingle = function(c, depth, childrenHtml = '') {
       const cAuthor = c.data.author || c.data.authorName || 'Anonymous';
       const cHandle = '@' + cAuthor.toLowerCase().replace(/\s+/g,'');
       const cAvatar = buildAvatar(cAuthor, c.data.authorAvatar||'', 34);
@@ -6457,7 +6528,6 @@ window.openPost = async function(postId) {
       const cContent = (c.data.content||'').replace(/<[^>]+>/g,'');
       const cId = c.id;
       
-      const children = childCommentsMap[cId] || [];
       const replyInputId = `reply-input-${cId}`;
       const inlineReplyContainerId = `reply-container-${cId}`;
 
@@ -6465,11 +6535,6 @@ window.openPost = async function(postId) {
       const marginStyle = depth > 0 
         ? `margin-left: 12px; padding-left: 16px; border-left: 2px solid rgba(255,255,255,0.06); border-top-left-radius: 4px; border-bottom-left-radius: 4px;` 
         : `border-bottom: 1px solid rgba(255,255,255,0.06);`;
-
-      let childrenHtml = '';
-      if (children.length > 0) {
-        childrenHtml = children.map(child => renderCommentTree(child, depth + 1)).join('');
-      }
 
       const commentVotes = c.data.votes || 0;
 
@@ -6532,15 +6597,111 @@ window.openPost = async function(postId) {
           </div>
         </div>
       `;
-    }
+    };
 
-    if (rootComments.length === 0) {
-      html += `<div style="padding: 24px; text-align: center; color: #71767b; font-size: 0.95rem; background: #000; border-bottom:1px solid rgba(255,255,255,0.1);">No comments yet. Be the first to share your thoughts!</div>`;
-    } else {
-      html += rootComments.map(c => renderCommentTree(c, 0)).join('');
-    }
+    // Global comment sorting/searching helper functions
+    window.toggleCommentSortDropdown = function(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('comment-sort-dropdown');
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      }
+    };
 
-    threadContainer.innerHTML = html;
+    // Close dropdown on click outside
+    document.addEventListener('click', function() {
+      const dropdown = document.getElementById('comment-sort-dropdown');
+      if (dropdown) dropdown.style.display = 'none';
+    });
+
+    window.setCommentSort = function(sortType) {
+      window.renderCommentsList(sortType, window.activePostSearchQuery || '');
+    };
+
+    window.onCommentSearch = function(query) {
+      window.renderCommentsList(window.activePostSortType || 'best', query);
+    };
+
+    window.renderCommentsList = function(sortType = 'best', searchQuery = '') {
+      window.activePostSortType = sortType;
+      window.activePostSearchQuery = searchQuery;
+
+      // Update active sort label
+      const labelEl = document.getElementById('current-sort-label');
+      if (labelEl) {
+        labelEl.innerText = sortType === 'best' ? 'Best' : 'New';
+      }
+
+      const listWrapper = document.getElementById('post-comments-list-wrapper');
+      if (!listWrapper) return;
+
+      // Filter comments
+      let filteredComments = [...window.activePostComments];
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase().trim();
+        filteredComments = filteredComments.filter(c => {
+          const content = (c.data.content || '').toLowerCase();
+          const author = (c.data.author || c.data.authorName || '').toLowerCase();
+          return content.includes(q) || author.includes(q);
+        });
+      }
+
+      // Sort comments
+      if (sortType === 'best') {
+        filteredComments.sort((a, b) => {
+          const votesA = a.data.votes || 0;
+          const votesB = b.data.votes || 0;
+          if (votesB !== votesA) return votesB - votesA;
+          return new Date(b.data.timestamp) - new Date(a.data.timestamp);
+        });
+      } else {
+        filteredComments.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
+      }
+
+      // Render Tree or Flat depending on Search
+      if (searchQuery.trim() !== '') {
+        if (filteredComments.length === 0) {
+          listWrapper.innerHTML = `<div style="padding: 24px; text-align: center; color: #71767b; font-size: 0.95rem; background: #000; border-bottom:1px solid rgba(255,255,255,0.1);">No comments match your search.</div>`;
+          return;
+        }
+        listWrapper.innerHTML = filteredComments.map(c => window.renderCommentSingle(c, 0)).join('');
+      } else {
+        const rootComments = [];
+        const childCommentsMap = {};
+        filteredComments.forEach(c => {
+          const pId = c.data.parentId;
+          if (!pId) {
+            rootComments.push(c);
+          } else {
+            if (!childCommentsMap[pId]) {
+              childCommentsMap[pId] = [];
+            }
+            childCommentsMap[pId].push(c);
+          }
+        });
+
+        function renderCommentTree(c, depth = 0) {
+          const children = childCommentsMap[c.id] || [];
+          if (sortType === 'best') {
+            children.sort((a, b) => (b.data.votes || 0) - (a.data.votes || 0));
+          } else {
+            children.sort((a, b) => new Date(b.data.timestamp) - new Date(a.data.timestamp));
+          }
+          const childrenHtml = children.map(child => renderCommentTree(child, depth + 1)).join('');
+          return window.renderCommentSingle(c, depth, childrenHtml);
+        }
+
+        if (rootComments.length === 0) {
+          listWrapper.innerHTML = `<div style="padding: 24px; text-align: center; color: #71767b; font-size: 0.95rem; background: #000; border-bottom:1px solid rgba(255,255,255,0.1);">No comments yet. Be the first to share your thoughts!</div>`;
+        } else {
+          listWrapper.innerHTML = rootComments.map(c => renderCommentTree(c, 0)).join('');
+        }
+      }
+    };
+
+    // Render initially
+    window.renderCommentsList('best', '');
+
   } catch (err) {
     console.error('Error loading post:', err);
     threadContainer.innerHTML = '<div style="color:#ef4444; padding:16px; direction:rtl;">שגיאה בטעינת הפוסט.</div>';
@@ -8994,3 +9155,200 @@ async function sendAdminDirectReply(userId) {
   input.value = '';
   renderAdminDirectChats();
 }
+
+window.renderRecentActivity = function() {
+  const container = document.getElementById('recent-activity-list');
+  if (!container) return;
+
+  let activities = [];
+
+  // Retrieve custom local comments to show real-time user comment activity
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('comments_article_')) {
+      const articleId = parseInt(key.replace('comments_article_', ''));
+      const article = typeof newsArticles !== 'undefined' ? newsArticles.find(x => x.id === articleId) : null;
+      if (article) {
+        try {
+          const comments = JSON.parse(localStorage.getItem(key) || '[]');
+          comments.forEach(comment => {
+            activities.push({
+              type: 'comment',
+              userName: comment.userName || 'xd xd',
+              userAvatar: comment.userAvatar || 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png',
+              actionText: 'הגיב/ה בכתבה:',
+              title: article.title,
+              subDetails: comment.text.substring(0, 50) + (comment.text.length > 50 ? '...' : ''),
+              timestamp: comment.date || 'עכשיו',
+              link: `showArticle(${article.id})`
+            });
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }
+
+  // Fallback high-quality mock actions matching the Reddit screenshot style
+  const mockActivities = [
+    {
+      type: 'post',
+      userName: 'r/blender',
+      userAvatar: 'https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png',
+      actionText: 'העלה/תה פוסט חדש בפורום:',
+      title: 'Vintage cartoon shaders in Blender',
+      subDetails: '8.7K upvotes • 63 comments',
+      timestamp: 'לפני 6 ימים',
+      link: 'showPage("groups")'
+    },
+    {
+      type: 'comment',
+      userName: 'r/comics',
+      userAvatar: 'https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png',
+      actionText: 'הגיב/ה בפורום:',
+      title: 'tradition (swipe right)',
+      subDetails: '6K upvotes • 136 comments',
+      timestamp: 'לפני 8 שעות',
+      link: 'showPage("groups")'
+    },
+    {
+      type: 'post',
+      userName: 'r/Gamesir',
+      userAvatar: 'https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png',
+      actionText: 'שאל/ה שאלה בפורום:',
+      title: 'Gamesir not connecting correctly to Mac.',
+      subDetails: '4 upvotes • 7 comments',
+      timestamp: 'לפני 9 חודשים',
+      link: 'showPage("groups")'
+    },
+    {
+      type: 'comment',
+      userName: 'r/PleX',
+      userAvatar: 'https://www.redditstatic.com/desktop2x/img/favicon/apple-icon-57x57.png',
+      actionText: 'הגיב/ה בפורום:',
+      title: 'Setting up Plex Media Server - Massive Beginner',
+      subDetails: '23 upvotes • 28 comments',
+      timestamp: 'לפני 6 חודשים',
+      link: 'showPage("groups")'
+    }
+  ];
+
+  activities = activities.concat(mockActivities);
+
+  // If cleared by user
+  const isCleared = localStorage.getItem('recent_activity_cleared') === 'true';
+  if (isCleared) {
+    const clearedTime = parseInt(localStorage.getItem('recent_activity_cleared_time') || '0');
+    activities = activities.filter(act => {
+      // Keep only custom comments created after clear
+      if (act.type === 'comment' && act.userName === (typeof currentUser !== 'undefined' && currentUser ? currentUser.name : 'xd xd')) {
+        return true; 
+      }
+      return false;
+    });
+  }
+
+  if (activities.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: #818384; font-size: 0.85rem; padding: 24px 0; direction: rtl;">
+        אין פעילות אחרונה להצגה
+      </div>
+    `;
+    return;
+  }
+
+  // Render list of activities with hover and divider line separators
+  container.innerHTML = activities.slice(0, 6).map(act => {
+    return `
+      <div onclick="${act.link}" style="display: flex; gap: 12px; padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s; align-items: flex-start; text-align: right; direction: rtl;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+        <!-- Avatar Icon -->
+        <img src="${act.userAvatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'" />
+        
+        <!-- Text details -->
+        <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #d1d1d6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${act.userName}</span>
+            <span style="font-size: 0.72rem; color: #818384; flex-shrink: 0;">${act.timestamp}</span>
+          </div>
+          <span style="font-size: 0.7rem; color: #818384;">${act.actionText}</span>
+          <span style="font-size: 0.82rem; font-weight: 600; color: #f2f2f7; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">${act.title}</span>
+          ${act.subDetails ? `<span style="font-size: 0.72rem; color: #0079d3; font-weight: 600; margin-top: 2px;">${act.subDetails}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('<div style="height: 1px; background: rgba(255,255,255,0.05); margin: 4px 0;"></div>');
+};
+
+window.clearRecentActivity = function() {
+  localStorage.setItem('recent_activity_cleared', 'true');
+  localStorage.setItem('recent_activity_cleared_time', Date.now().toString());
+  showToast('🧹 פעילות אחרונה נוקתה');
+  window.renderRecentActivity();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (window.renderRecentActivity) window.renderRecentActivity();
+  }, 1000);
+  
+  if (window.loadAdminLinks) window.loadAdminLinks();
+});
+
+// ========== LINKS MANAGER LOGIC ==========
+const defaultLinks = {
+  x: 'https://x.com',
+  linkedin: 'https://linkedin.com',
+  facebook: 'https://facebook.com',
+  instagram: 'https://instagram.com',
+  youtube: 'https://youtube.com',
+  mastodon: 'https://mastodon.social',
+  threads: 'https://threads.net',
+  bluesky: 'https://bsky.app',
+  appstore: 'https://apps.apple.com',
+  googleplay: 'https://play.google.com'
+};
+
+window.loadAdminLinks = function() {
+  const saved = localStorage.getItem('soki_admin_links');
+  const links = saved ? JSON.parse(saved) : defaultLinks;
+  
+  // Fill inputs if they exist
+  const fields = ['x', 'linkedin', 'facebook', 'instagram', 'youtube', 'mastodon', 'threads', 'bluesky', 'appstore', 'googleplay'];
+  fields.forEach(f => {
+    const el = document.getElementById('inp-link-' + f);
+    if (el) el.value = links[f] || '';
+  });
+
+  // Apply links to the DOM elements (footer social icons and app store badges)
+  const xEl = document.getElementById('link-social-x'); if (xEl) xEl.href = links.x || '#';
+  const linkedinEl = document.getElementById('link-social-linkedin'); if (linkedinEl) linkedinEl.href = links.linkedin || '#';
+  const facebookEl = document.getElementById('link-social-facebook'); if (facebookEl) facebookEl.href = links.facebook || '#';
+  const instagramEl = document.getElementById('link-social-instagram'); if (instagramEl) instagramEl.href = links.instagram || '#';
+  const youtubeEl = document.getElementById('link-social-youtube'); if (youtubeEl) youtubeEl.href = links.youtube || '#';
+  const mastodonEl = document.getElementById('link-social-mastodon'); if (mastodonEl) mastodonEl.href = links.mastodon || '#';
+  const threadsEl = document.getElementById('link-social-threads'); if (threadsEl) threadsEl.href = links.threads || '#';
+  const blueskyEl = document.getElementById('link-social-bluesky'); if (blueskyEl) blueskyEl.href = links.bluesky || '#';
+  const appstoreEl = document.getElementById('link-app-appstore'); if (appstoreEl) appstoreEl.href = links.appstore || '#';
+  const googleplayEl = document.getElementById('link-app-googleplay'); if (googleplayEl) googleplayEl.href = links.googleplay || '#';
+};
+
+window.saveAdminLinks = function(e) {
+  if (e) e.preventDefault();
+  const links = {
+    x: document.getElementById('inp-link-x').value,
+    linkedin: document.getElementById('inp-link-linkedin').value,
+    facebook: document.getElementById('inp-link-facebook').value,
+    instagram: document.getElementById('inp-link-instagram').value,
+    youtube: document.getElementById('inp-link-youtube').value,
+    mastodon: document.getElementById('inp-link-mastodon').value,
+    threads: document.getElementById('inp-link-threads').value,
+    bluesky: document.getElementById('inp-link-bluesky').value,
+    appstore: document.getElementById('inp-link-appstore').value,
+    googleplay: document.getElementById('inp-link-googleplay').value
+  };
+
+  localStorage.setItem('soki_admin_links', JSON.stringify(links));
+  showToast('💾 הקישורים נשמרו בהצלחה!');
+  window.loadAdminLinks();
+};
