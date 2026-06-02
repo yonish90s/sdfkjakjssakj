@@ -9293,6 +9293,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1000);
   
   if (window.loadAdminLinks) window.loadAdminLinks();
+  if (window.restoreLayoutOrder) window.restoreLayoutOrder();
 });
 
 // ========== LINKS MANAGER LOGIC ==========
@@ -9351,4 +9352,200 @@ window.saveAdminLinks = function(e) {
   localStorage.setItem('soki_admin_links', JSON.stringify(links));
   showToast('💾 הקישורים נשמרו בהצלחה!');
   window.loadAdminLinks();
+};
+
+// ========== DRAG & DROP LAYOUT DESIGNER MODE ==========
+window.enableLayoutDesignerMode = function() {
+  window._layoutArrangeMode = true;
+  
+  // Create and add floating glassmorphism control bar
+  let bar = document.getElementById('layout-designer-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'layout-designer-bar';
+    bar.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100000;
+      background: rgba(20, 20, 22, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      direction: rtl;
+      text-align: right;
+      transition: all 0.3s ease;
+      min-width: 320px;
+    `;
+    bar.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-weight:800; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:6px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation: pulse 1.5s infinite;"></span>
+          מצב סידור מיקומים פעיל
+        </span>
+        <span style="font-size:0.75rem; color:#a1a1aa;">גרור בלוקים כדי לסדר מחדש, לחץ על "שמור וצא" לסיום.</span>
+      </div>
+      <button onclick="saveLayoutDesignerOrder()" style="background:#10b981; color:#fff; border:none; padding:8px 18px; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">שמור וצא 💾</button>
+    `;
+    document.body.appendChild(bar);
+  } else {
+    bar.style.display = 'flex';
+  }
+
+  // Setup draggable blocks
+  const home = document.getElementById('page-home');
+  if (home) {
+    home.classList.add('layout-designer-active');
+    
+    // Find rearrangable sections
+    const blocks = getLayoutBlocks();
+    blocks.forEach(block => {
+      block.setAttribute('draggable', 'true');
+      block.classList.add('layout-designer-block');
+      
+      // Add visual drag handle indicator if not exists
+      let handle = block.querySelector('.layout-drag-handle');
+      if (!handle) {
+        handle = document.createElement('div');
+        handle.className = 'layout-drag-handle';
+        handle.innerHTML = `<i class="fas fa-arrows-alt"></i> גרור לשינוי מיקום / Drag to move`;
+        block.insertBefore(handle, block.firstChild);
+      }
+      
+      // Drag events
+      block.addEventListener('dragstart', handleDragStart);
+      block.addEventListener('dragover', handleDragOver);
+      block.addEventListener('drop', handleDrop);
+      block.addEventListener('dragend', handleDragEnd);
+    });
+  }
+};
+
+function getLayoutBlocks() {
+  const ids = ['category-filter-bar', 'featured-carousel-container', 'top-news-grid'];
+  const blocks = [];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) blocks.push(el);
+  });
+  // Also main-news-layout
+  const mainNews = document.querySelector('.main-news-layout');
+  if (mainNews) blocks.push(mainNews);
+  return blocks;
+}
+
+let dragSrcEl = null;
+
+function handleDragStart(e) {
+  dragSrcEl = this;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+  this.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault();
+  }
+  e.dataTransfer.dropEffect = 'move';
+  
+  // Visual position indicator
+  const home = document.getElementById('page-home');
+  const draggingBlock = document.querySelector('.layout-designer-block.dragging');
+  if (!draggingBlock || this === draggingBlock) return false;
+  
+  const rect = this.getBoundingClientRect();
+  const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+  
+  if (next) {
+    this.parentNode.insertBefore(draggingBlock, this.nextSibling);
+  } else {
+    this.parentNode.insertBefore(draggingBlock, this);
+  }
+  return false;
+}
+
+function handleDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation();
+  }
+  return false;
+}
+
+function handleDragEnd(e) {
+  const blocks = getLayoutBlocks();
+  blocks.forEach(block => {
+    block.classList.remove('dragging');
+    block.classList.remove('drag-over');
+  });
+}
+
+window.saveLayoutDesignerOrder = function() {
+  window._layoutArrangeMode = false;
+  
+  // Hide bar
+  const bar = document.getElementById('layout-designer-bar');
+  if (bar) bar.style.display = 'none';
+
+  // Save current order
+  const home = document.getElementById('page-home');
+  if (home) {
+    home.classList.remove('layout-designer-active');
+    
+    const blocks = getLayoutBlocks();
+    const order = [];
+    const children = Array.from(home.children);
+    children.forEach(child => {
+      if (child.id) {
+        order.push(child.id);
+      } else if (child.classList.contains('main-news-layout')) {
+        order.push('main-news-layout');
+      }
+    });
+
+    localStorage.setItem('soki_home_layout_order', JSON.stringify(order));
+    
+    // Remove drag handles and attributes
+    blocks.forEach(block => {
+      block.removeAttribute('draggable');
+      block.classList.remove('layout-designer-block');
+      const handle = block.querySelector('.layout-drag-handle');
+      if (handle) handle.remove();
+    });
+    
+    showToast('💾 מיקומי החלונות נשמרו בהצלחה!');
+  }
+};
+
+// Auto restore layout order on initialization
+window.restoreLayoutOrder = function() {
+  const saved = localStorage.getItem('soki_home_layout_order');
+  if (!saved) return;
+  
+  try {
+    const order = JSON.parse(saved);
+    const home = document.getElementById('page-home');
+    if (!home) return;
+    
+    order.forEach(id => {
+      let el = document.getElementById(id);
+      if (!el && id === 'main-news-layout') {
+        el = document.querySelector('.main-news-layout');
+      }
+      if (el && el.parentNode === home) {
+        home.appendChild(el); // Re-appends to the end, effectively sorting them in order
+      }
+    });
+    
+    // Always keep footer at the bottom
+    const footer = home.querySelector('.soki-footer-premium');
+    if (footer) home.appendChild(footer);
+  } catch(e) {}
 };
