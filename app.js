@@ -377,6 +377,22 @@ function showPage(pageId) {
     openUserArticleModal();
     return;
   }
+  if (pageId === 'about') {
+    window.openAboutModal();
+    return;
+  }
+  if (pageId === 'whats-new') {
+    window.openWhatsNewModal();
+    return;
+  }
+  if (pageId === 'subscription') {
+    window.openSubscriptionModal();
+    return;
+  }
+  if (pageId === 'ads') {
+    window.openAdsModal();
+    return;
+  }
   const pages = document.querySelectorAll('.page');
   pages.forEach(p => p.classList.remove('active'));
   
@@ -914,14 +930,66 @@ function renderNewsLayout(page = 1) {
     if (totalPages <= 1) {
       paginationEl.innerHTML = '';
     } else {
-      paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
-        <button onclick="renderNewsLayout(${p}); window.scrollTo({top:0,behavior:'smooth'});"
-          style="padding: 8px 16px; border-radius: 980px; border: 1px solid ${p === page ? '#0071e3' : '#ccc'};
-          background: ${p === page ? '#0071e3' : '#fff'}; color: ${p === page ? '#fff' : '#1d1d1f'};
-          font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">
-          ${p}
-        </button>
-      `).join('');
+      let html = '';
+      
+      // 1. Info Label: "עמוד X מתוך Y"
+      html += `
+        <div style="padding: 8px 16px; border-radius: 8px; border: 1px solid #d2d2d7; background: #fff; color: #1d1d1f; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; direction: rtl;">
+          עמוד ${page} מתוך ${totalPages.toLocaleString()}
+        </div>
+      `;
+      
+      // Helper function to render a single button
+      const btn = (p, label = p) => {
+        const isCurrent = p === page;
+        return `
+          <button onclick="renderNewsLayout(${p}); window.scrollTo({top:0,behavior:'smooth'});"
+            style="padding: 8px 16px; border-radius: 8px; border: 1px solid ${isCurrent ? '#b0b0b5' : '#d2d2d7'};
+            background: ${isCurrent ? '#e5e5ea' : '#fff'}; color: #1d1d1f;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; min-width: 40px; display: inline-flex; align-items: center; justify-content: center;">
+            ${label}
+          </button>
+        `;
+      };
+      
+      // Helper function to render ellipsis
+      const dots = () => `
+        <span style="padding: 8px 8px; color: #86868b; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">...</span>
+      `;
+      
+      // Generate pages to show
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) {
+          html += btn(i);
+        }
+      } else {
+        // Show 1, 2, 3
+        html += btn(1);
+        html += btn(2);
+        html += btn(3);
+        
+        // Ellipsis
+        html += dots();
+        
+        // Show 10, 20, 30 if they exist
+        const tens = [10, 20, 30];
+        let tensRendered = false;
+        tens.forEach(t => {
+          if (t > 3 && t < totalPages) {
+            html += btn(t);
+            tensRendered = true;
+          }
+        });
+        
+        if (tensRendered) {
+          html += dots();
+        }
+        
+        // Last page number button
+        html += btn(totalPages);
+      }
+      
+      paginationEl.innerHTML = html;
     }
   }
   
@@ -977,12 +1045,20 @@ function showArticle(id) {
     <header class="article-header">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <div class="article-category">${escHtml(a.category)}</div>
-        <button class="btn-save-article ${myArticlesList.some(x => x.id === a.id) ? 'active' : ''}" 
-          onclick="toggleMyArticle(${a.id}, this);" 
-          style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-          <i class="${myArticlesList.some(x => x.id === a.id) ? 'fas' : 'far'} fa-bookmark"></i>
-          <span>${myArticlesList.some(x => x.id === a.id) ? 'Saved' : 'Save for later'}</span>
-        </button>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <!-- Book Mode Button -->
+          <button class="btn-book-reader" onclick="window.openBookReader(${a.id});" style="background:none; border:1px solid #0071e3; color:#0071e3; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='rgba(0,113,227,0.05)'" onmouseout="this.style.background='none'">
+            <i class="fas fa-book-open"></i>
+            <span>קרא כמו ספר / Read Book</span>
+          </button>
+
+          <button class="btn-save-article ${myArticlesList.some(x => x.id === a.id) ? 'active' : ''}" 
+            onclick="toggleMyArticle(${a.id}, this);" 
+            style="background:none; border:1px solid #d2d2d7; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
+            <i class="${myArticlesList.some(x => x.id === a.id) ? 'fas' : 'far'} fa-bookmark"></i>
+            <span>${myArticlesList.some(x => x.id === a.id) ? 'Saved' : 'Save for later'}</span>
+          </button>
+        </div>
       </div>
       <h1 class="article-title-main" id="inline-title">${escHtml(a.title)}</h1>
       <div class="article-meta-main">
@@ -10174,7 +10250,7 @@ window.renderGiantArticle = function() {
     // Crossfade transition: lower opacity, update image, fade back in
     bgCover.style.opacity = '0.3';
     setTimeout(() => {
-      bgCover.style.backgroundImage = `url('${item.img}')`;
+      bgCover.src = item.img;
       bgCover.style.opacity = '1';
     }, 250);
   }
@@ -10232,4 +10308,253 @@ window.renderGiantSocialRow = function() {
     `;
   }).join('');
 };
+
+// ========== MODAL POPUP DIALOGS ENGINE ==========
+window.openAboutModal = function() {
+  const modal = document.getElementById('page-about');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex'; // Centered overlay
+  }
+};
+
+window.closeAboutModal = function() {
+  const modal = document.getElementById('page-about');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+};
+
+window.openWhatsNewModal = function() {
+  const modal = document.getElementById('page-whats-new');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex'; // Centered overlay
+  }
+};
+
+window.closeWhatsNewModal = function() {
+  const modal = document.getElementById('page-whats-new');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+};
+
+window.openSubscriptionModal = function() {
+  const modal = document.getElementById('page-subscription-modal');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex'; // Centered overlay
+  }
+};
+
+window.closeSubscriptionModal = function() {
+  const modal = document.getElementById('page-subscription-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+};
+
+window.openAdsModal = function() {
+  const modal = document.getElementById('page-ads-modal');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex'; // Centered overlay
+  }
+};
+
+window.closeAdsModal = function() {
+  const modal = document.getElementById('page-ads-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+};
+
+// ====== BOOK READER ENGINE ======
+let bookReaderTimer = null;
+let bookReaderTimeLeft = 0;
+let bookReaderInterval = 0; // in seconds
+let bookReaderCurrentPageIndex = 0; // active double-page index
+let bookReaderPages = []; // array of HTML content for each single page
+
+window.openBookReader = function(articleId) {
+  const a = newsArticles.find(x => x.id === articleId);
+  if (!a) return;
+  
+  // Parse content into pages
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = a.content || '';
+  
+  // Extract all paragraphs/headings
+  const elements = Array.from(tempDiv.querySelectorAll('p, blockquote, h2, h3, ul, ol'));
+  
+  // Bundle elements into pages
+  bookReaderPages = [];
+  let currentPageHTML = '';
+  let elementCount = 0;
+  
+  elements.forEach((el) => {
+    if (el.classList.contains('article-source-box')) return;
+    
+    currentPageHTML += el.outerHTML;
+    elementCount++;
+    
+    if (elementCount >= 2 || el.textContent.length > 400) {
+      bookReaderPages.push(currentPageHTML);
+      currentPageHTML = '';
+      elementCount = 0;
+    }
+  });
+  
+  if (currentPageHTML.trim()) {
+    bookReaderPages.push(currentPageHTML);
+  }
+  
+  if (bookReaderPages.length === 0) {
+    bookReaderPages.push(a.content || 'אין תוכן בכתבה זו.');
+  }
+  
+  bookReaderCurrentPageIndex = 0;
+  
+  const modal = document.getElementById('page-book-reader-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+  
+  const selectEl = document.getElementById('book-timer-select');
+  if (selectEl) selectEl.value = '0';
+  bookReaderInterval = 0;
+  
+  renderBookPages();
+  resetBookTimer();
+};
+
+window.closeBookReader = function() {
+  const modal = document.getElementById('page-book-reader-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  stopBookTimer();
+};
+
+function renderBookPages() {
+  const totalPages = bookReaderPages.length;
+  const rightPageIndex = bookReaderCurrentPageIndex * 2;
+  const leftPageIndex = bookReaderCurrentPageIndex * 2 + 1;
+  
+  const rightContent = bookReaderPages[rightPageIndex] || '<div style="display:flex; align-items:center; justify-content:center; height:100%; color:#8e8e93; font-family:\'Inter\', sans-serif;">סוף הכתבה 📖</div>';
+  const leftContent = leftPageIndex < totalPages ? bookReaderPages[leftPageIndex] : '<div style="display:flex; align-items:center; justify-content:center; height:100%; color:#8e8e93; font-family:\'Inter\', sans-serif;">סוף הכתבה 📖</div>';
+  
+  const rightPageEl = document.getElementById('book-page-right');
+  const leftPageEl = document.getElementById('book-page-left');
+  if (rightPageEl) rightPageEl.innerHTML = rightContent;
+  if (leftPageEl) leftPageEl.innerHTML = leftContent;
+  
+  const rightPageNumEl = document.getElementById('book-page-num-right');
+  const leftPageNumEl = document.getElementById('book-page-num-left');
+  if (rightPageNumEl) rightPageNumEl.textContent = rightPageIndex + 1;
+  if (leftPageNumEl) leftPageNumEl.textContent = leftPageIndex < totalPages ? leftPageIndex + 1 : '';
+  
+  const progressTextEl = document.getElementById('book-progress-text');
+  if (progressTextEl) {
+    progressTextEl.textContent = `דפים ${rightPageIndex + 1}-${Math.min(leftPageIndex + 1, totalPages)} מתוך ${totalPages}`;
+  }
+  
+  const prevBtn = document.getElementById('book-btn-prev');
+  const nextBtn = document.getElementById('book-btn-next');
+  
+  if (prevBtn) prevBtn.disabled = bookReaderCurrentPageIndex === 0;
+  if (nextBtn) nextBtn.disabled = (bookReaderCurrentPageIndex + 1) * 2 >= totalPages;
+  
+  if (prevBtn) {
+    if (prevBtn.disabled) {
+      prevBtn.style.opacity = '0.4';
+      prevBtn.style.cursor = 'not-allowed';
+    } else {
+      prevBtn.style.opacity = '1';
+      prevBtn.style.cursor = 'pointer';
+    }
+  }
+  if (nextBtn) {
+    if (nextBtn.disabled) {
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+    } else {
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
+  }
+}
+
+window.turnBookPage = function(direction) {
+  const totalPages = bookReaderPages.length;
+  if (direction === 'next') {
+    if ((bookReaderCurrentPageIndex + 1) * 2 < totalPages) {
+      bookReaderCurrentPageIndex++;
+      renderBookPages();
+      resetBookTimer();
+    }
+  } else if (direction === 'prev') {
+    if (bookReaderCurrentPageIndex > 0) {
+      bookReaderCurrentPageIndex--;
+      renderBookPages();
+      resetBookTimer();
+    }
+  }
+};
+
+window.handleTimerSelect = function(selectElement) {
+  bookReaderInterval = parseInt(selectElement.value) || 0;
+  resetBookTimer();
+};
+
+function resetBookTimer() {
+  stopBookTimer();
+  const timerBar = document.getElementById('book-timer-bar');
+  if (bookReaderInterval <= 0) {
+    if (timerBar) timerBar.style.width = '0%';
+    return;
+  }
+  
+  bookReaderTimeLeft = bookReaderInterval;
+  updateTimerProgress();
+  
+  bookReaderTimer = setInterval(() => {
+    bookReaderTimeLeft--;
+    updateTimerProgress();
+    
+    if (bookReaderTimeLeft <= 0) {
+      const totalPages = bookReaderPages.length;
+      if ((bookReaderCurrentPageIndex + 1) * 2 < totalPages) {
+        window.turnBookPage('next');
+      } else {
+        bookReaderCurrentPageIndex = 0;
+        renderBookPages();
+        resetBookTimer();
+      }
+    }
+  }, 1000);
+}
+
+function stopBookTimer() {
+  if (bookReaderTimer) {
+    clearInterval(bookReaderTimer);
+    bookReaderTimer = null;
+  }
+}
+
+function updateTimerProgress() {
+  if (bookReaderInterval <= 0) return;
+  const percentage = ((bookReaderInterval - bookReaderTimeLeft) / bookReaderInterval) * 100;
+  const timerBar = document.getElementById('book-timer-bar');
+  if (timerBar) {
+    timerBar.style.width = `${percentage}%`;
+  }
+}
+
+
 

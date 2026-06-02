@@ -142,10 +142,6 @@
             <i class="fas fa-chart-line"></i>
             <span id="sidebar-link-graphs">גרפים ונתונים</span>
           </a>
-          <a href="#" class="sidebar-link" data-page="subscription" onclick="showPage('subscription'); return false;">
-            <i class="fas fa-crown"></i>
-            <span id="sidebar-link-premium">פרימיום</span>
-          </a>
 
 
           <a href="#" class="sidebar-link" data-page="groups" onclick="showPage('groups'); return false;">
@@ -320,8 +316,19 @@
             <i class="fas fa-comments" style="font-size:1.1rem;"></i>
           </button>
 
+          <!-- Download App Button -->
+          <button onclick="showPage('download')" class="cart-nav-btn" title="Download SOKI Desktop Hub" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#a1a1a6'">
+            <i class="fas fa-download" style="font-size:1.1rem;"></i>
+          </button>
+
           <!-- Premium Pill -->
-          <button class="btn-orange subscription-btn" onclick="showPage('subscription')" style="cursor:pointer; background: #fb923c; border: none; color: #000; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);">
+          <!-- Ads Pill -->
+          <button class="btn-blue ads-btn" onclick="window.openAdsModal()" style="cursor:pointer; background: #2563eb; border: none; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);">
+            <i class="fas fa-ad" style="color:#fff; font-size:0.95rem;"></i> <span>Ads</span>
+          </button>
+
+          <!-- Premium Pill -->
+          <button class="btn-orange subscription-btn" onclick="window.openSubscriptionModal()" style="cursor:pointer; background: #fb923c; border: none; color: #000; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);">
             <i class="fas fa-crown" style="color:#000; font-size:0.95rem;"></i> <span id="nav-text-premium">Premium</span>
           </button>
 
@@ -353,6 +360,7 @@
                 <span id="dropdown-language-label" style="color:#a1a1a6; font-size:0.8rem; font-weight:600;">English</span>
               </div>
               <div class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Settings</div>
+              <div class="dropdown-item-reddit" onclick="showPage('download'); closeUserDropdown()" style="color:#30d158; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Download Desktop Hub 💻</div>
               
               <div style="height:1px; background:rgba(255,255,255,0.06); margin:6px 0;"></div>
 
@@ -574,8 +582,9 @@
         <div class="soki-footer-col">
           <h4 id="footer-title-information">Information</h4>
           <ul>
-            <li><a href="#" id="footer-about-us" onclick="showPage('about')">About Us</a></li>
-            <li><a href="#" id="footer-whats-new" onclick="showPage('whats-new')">What's New</a></li>
+            <li><a href="#" id="footer-about-us" onclick="showPage('about'); return false;">About Us</a></li>
+            <li><a href="#" id="footer-whats-new" onclick="showPage('whats-new'); return false;">What's New</a></li>
+            <li><a href="#" id="footer-download-app" onclick="showPage('download'); return false;">הורד אפליקציה / Download App</a></li>
           </ul>
         </div>
 
@@ -597,6 +606,208 @@
       </div>
   </footer>
 </div>
+
+<!-- ====== DOWNLOAD PAGE ====== -->
+<div id="page-download" class="page" style="background:#0f1013; color:#fff; min-height:100vh; padding:80px 24px; font-family:'Inter', sans-serif;">
+  <div style="max-width:1200px; margin:0 auto;">
+    
+    <!-- Top Brand Logo & Headline -->
+    <div style="text-align:center; margin-bottom:60px;">
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:24px;">
+        <i class="fas fa-crown" style="color:#f59e0b; font-size:2.8rem; filter:drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i>
+        <span style="font-weight:900; font-size:2.5rem; color:#fff; text-transform:uppercase; letter-spacing:-0.03em; font-family:'Inter', sans-serif;">SOKI <span style="font-weight:300; color:#a1a1a6;">Hub</span></span>
+      </div>
+      <h1 style="font-size:3rem; font-weight:800; letter-spacing:-0.04em; color:#fff; margin:0 0 16px 0;">Your download will begin automatically.</h1>
+      <p style="color:#86868b; font-size:1.1rem; margin:0; font-weight:500;">
+        If it doesn't begin in a few seconds, select a package format below. Learn more about <a href="#" onclick="openLegalModal('terms'); return false;" style="color:#0071e3; text-decoration:none; font-weight:600;">licensing</a>.
+      </p>
+    </div>
+
+    <!-- Platform Selection (3 columns in a row) -->
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:32px; margin-bottom:80px; direction:ltr; text-align:left;">
+      
+      <!-- macOS -->
+      <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:32px; display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; align-items:center; justify-content:between; width:100%;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <i class="fab fa-apple" style="font-size:2rem; color:#fff;"></i>
+            <span style="font-size:1.25rem; font-weight:700; color:#fff;">macOS</span>
+          </div>
+          <span style="background:#0071e3; color:#fff; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:99px; margin-left:auto;">Detected</span>
+        </div>
+        <a href="#" onclick="showToast('Starting macOS download...', 3000); return false;" style="color:#0071e3; text-decoration:none; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:6px;">
+          Learn more <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i>
+        </a>
+        <div style="display:flex; gap:12px; margin-top:auto;">
+          <button onclick="showToast('📥 Downloading SOKI Hub for Apple Silicon...', 4000)" style="flex:1; background:#fff; border:none; color:#000; font-weight:700; font-size:0.85rem; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-download"></i> Apple Silicon
+          </button>
+          <button onclick="showToast('📥 Downloading SOKI Hub for Intel...', 4000)" style="flex:1; background:#2c2c2e; border:1px solid rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:0.85rem; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-download"></i> Intel
+          </button>
+        </div>
+      </div>
+
+      <!-- Linux -->
+      <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:32px; display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <i class="fab fa-linux" style="font-size:2rem; color:#fff;"></i>
+          <span style="font-size:1.25rem; font-weight:700; color:#fff;">Linux</span>
+        </div>
+        <a href="#" onclick="showToast('Starting Linux package download...', 3000); return false;" style="color:#0071e3; text-decoration:none; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:6px;">
+          Learn more <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i>
+        </a>
+        <div style="display:flex; gap:12px; margin-top:auto;">
+          <button onclick="showToast('📥 Downloading SOKI Hub .deb package...', 4000)" style="flex:1; background:#2c2c2e; border:1px solid rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:0.85rem; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-download"></i> .deb
+          </button>
+          <button onclick="showToast('📥 Downloading SOKI Hub .rpm package...', 4000)" style="flex:1; background:#2c2c2e; border:1px solid rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:0.85rem; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-download"></i> .rpm
+          </button>
+        </div>
+      </div>
+
+      <!-- Windows -->
+      <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:32px; display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <i class="fab fa-windows" style="font-size:2rem; color:#fff;"></i>
+          <span style="font-size:1.25rem; font-weight:700; color:#fff;">Windows</span>
+        </div>
+        <a href="#" onclick="showToast('Starting Windows download...', 3000); return false;" style="color:#0071e3; text-decoration:none; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:6px;">
+          Learn more <i class="fas fa-arrow-right" style="font-size:0.8rem;"></i>
+        </a>
+        <div style="display:flex; gap:12px; margin-top:auto;">
+          <button onclick="showToast('📥 Downloading SOKI Hub x64 Installer...', 4000)" style="flex:1; background:#2c2c2e; border:1px solid rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:0.85rem; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-download"></i> x64
+          </button>
+          <button onclick="showToast('📥 Downloading SOKI Hub ARM64 Installer...', 4000)" style="flex:1; background:#2c2c2e; border:1px solid rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:0.85rem; padding:12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-download"></i> Arm64
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Steps Grid (3 columns in a row) -->
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:32px; direction:ltr; text-align:left; margin-bottom:40px;">
+      
+      <!-- STEP 1 -->
+      <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:32px; display:flex; flex-direction:column; gap:16px;">
+        <span style="color:#86868b; font-size:0.75rem; font-weight:800; letter-spacing:0.05em; text-transform:uppercase;">Step One</span>
+        <h3 style="font-size:1.5rem; font-weight:700; color:#fff; margin:0;">Open</h3>
+        <p style="color:#a1a1a6; font-size:0.9rem; line-height:1.6; margin:0;">
+          Open the <strong>SOKIHubSetup.dmg</strong> installer file from the downloads list at the top right corner of this window.
+        </p>
+        
+        <!-- Premium CSS Mockup of Browser Download -->
+        <div style="background:#0f1013; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; margin-top:auto; display:flex; flex-direction:column; gap:12px; font-family:system-ui, sans-serif;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px;">
+            <div style="display:flex; gap:6px;">
+              <span style="width:10px; height:10px; border-radius:50%; background:#ff453a;"></span>
+              <span style="width:10px; height:10px; border-radius:50%; background:#ff9f0a;"></span>
+              <span style="width:10px; height:10px; border-radius:50%; background:#30d158;"></span>
+            </div>
+            <div style="width:24px; height:24px; border-radius:50%; border:2px solid #0071e3; display:flex; align-items:center; justify-content:center; animation:pulse 2s infinite;">
+              <i class="fas fa-download" style="font-size:0.75rem; color:#0071e3;"></i>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+            <i class="fab fa-apple" style="font-size:1.5rem; color:#a1a1a6;"></i>
+            <div style="flex:1;">
+              <div style="font-size:0.8rem; font-weight:700; color:#fff; margin-bottom:2px;">SOKIHubSetup.dmg</div>
+              <div style="font-size:0.7rem; color:#86868b;">151 MB • Completed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:32px; display:flex; flex-direction:column; gap:16px;">
+        <span style="color:#86868b; font-size:0.75rem; font-weight:800; letter-spacing:0.05em; text-transform:uppercase;">Step Two</span>
+        <h3 style="font-size:1.5rem; font-weight:700; color:#fff; margin:0;">Install</h3>
+        <p style="color:#a1a1a6; font-size:0.9rem; line-height:1.6; margin:0;">
+          Drag and drop the SOKI Hub to the <strong>Applications</strong> folder. You might be asked to enter the admin password.
+        </p>
+
+        <!-- Premium CSS Mockup of Drag and Drop Installation -->
+        <div style="background:#0f1013; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:24px; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:20px; position:relative; min-height:92px;">
+          <!-- App Icon -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #0071e3 0%, #30d158 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 20px rgba(0,0,0,0.3);">
+              <i class="fas fa-crown" style="color:#fff; font-size:1.5rem;"></i>
+            </div>
+            <span style="font-size:0.7rem; color:#86868b; font-weight:600;">SOKI Hub</span>
+          </div>
+
+          <!-- Drag Arrow -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+            <i class="fas fa-long-arrow-alt-right" style="color:#0071e3; font-size:1.8rem; animation:slideRight 1.5s infinite;"></i>
+          </div>
+
+          <!-- Applications Folder -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="width:48px; height:48px; border-radius:12px; background:#1c1c1e; border:1px dashed rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; color:#0071e3;">
+              <i class="fas fa-folder" style="font-size:1.8rem;"></i>
+            </div>
+            <span style="font-size:0.7rem; color:#86868b; font-weight:600;">Applications</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:32px; display:flex; flex-direction:column; gap:16px;">
+        <span style="color:#86868b; font-size:0.75rem; font-weight:800; letter-spacing:0.05em; text-transform:uppercase;">Step Three</span>
+        <h3 style="font-size:1.5rem; font-weight:700; color:#fff; margin:0;">Launch</h3>
+        <p style="color:#a1a1a6; font-size:0.9rem; line-height:1.6; margin:0;">
+          Open the Launchpad, type SOKI Hub and launch the application to start monitoring market data.
+        </p>
+
+        <!-- Premium CSS Mockup of Launchpad / Dock -->
+        <div style="background:#0f1013; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; margin-top:auto; display:flex; align-items:center; justify-content:center; gap:16px;">
+          <!-- Finder -->
+          <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:#0071e3;">
+            <i class="far fa-smile" style="font-size:1.3rem;"></i>
+          </div>
+          <!-- Safari -->
+          <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:#30d158;">
+            <i class="fas fa-compass" style="font-size:1.3rem;"></i>
+          </div>
+          <!-- SOKI Hub (Active) -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; position:relative;">
+            <div style="width:38px; height:38px; border-radius:8px; background:linear-gradient(135deg, #0071e3 0%, #30d158 100%); display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(0,113,227,0.4); animation:bounce 2s infinite;">
+              <i class="fas fa-crown" style="color:#fff; font-size:1.15rem;"></i>
+            </div>
+            <!-- Active indicator dot below app -->
+            <span style="width:4px; height:4px; border-radius:50%; background:#fff; position:absolute; bottom:-6px;"></span>
+          </div>
+          <!-- System Settings -->
+          <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:#86868b;">
+            <i class="fas fa-cog" style="font-size:1.3rem;"></i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<style>
+  @keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(0, 113, 227, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 113, 227, 0); }
+  }
+  @keyframes slideRight {
+    0% { transform: translateX(-5px); opacity: 0.3; }
+    50% { transform: translateX(5px); opacity: 1; }
+    100% { transform: translateX(-5px); opacity: 0.3; }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+</style>
 
 <!-- APPOINTMENTS PAGE -->
 <div id="page-appointments" class="page">
@@ -1053,61 +1264,207 @@
   </div>
 </div>
 
-<div id="page-subscription" class="page">
-  <div class="apple-container" style="max-width: 1000px; margin: 0 auto; padding: 0 24px;">
-    <div style="text-align: center; margin-bottom: 60px;">
-      <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">Choose Your Plan</h2>
-      <p style="color: #86868b; font-size: 1.2rem;">Get access to premium content, unlimited downloads and personal support.</p>
-    </div>
-
-    <div class="pricing-grid">
-    <!-- BASIC -->
-    <div class="pricing-card" onclick="selectPricingTier(this)">
-      <div class="pricing-header">
-        <div class="tier-name">Basic</div>
-        <div class="tier-price">$10<span>/month</span></div>
+<!-- SUBSCRIPTION MODAL -->
+<div id="page-subscription-modal" onclick="if(event.target===this)closeSubscriptionModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;direction: rtl;text-align: right;">
+  <div style="background:#0b0c0e; border-radius:20px; max-width:1040px; width:100%; padding:40px; position:relative; border:1px solid rgba(255,255,255,0.08); box-shadow:0 24px 60px rgba(0,0,0,0.6); max-height:90vh; overflow-y:auto;">
+    <button type="button" onclick="closeSubscriptionModal()" style="position:absolute; top:20px; right:20px; background:transparent; border:none; color:#86868b; font-size:1.4rem; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#86868b'">✕</button>
+    
+    <div class="apple-container" style="max-width: 1000px; margin: 0 auto; padding: 0;">
+      <div style="text-align: center; margin-bottom: 40px; direction: rtl; text-align: center;">
+        <h2 style="font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px; color:#fff;">בחר את המסלול שלך / Choose Your Plan</h2>
+        <p style="color: #86868b; font-size: 1.15rem; margin:0;">קבל גישה לתוכן פרימיום, הורדות גרפים ללא הגבלה ותמיכה אישית מהירה.</p>
       </div>
-      <ul class="pricing-features">
-        <li><i class="fa-solid fa-check"></i> Full access to all articles</li>
-        <li><i class="fa-solid fa-check"></i> Ad-free browsing</li>
-        <li><i class="fa-solid fa-check"></i> Weekly email updates</li>
-      </ul>
-      <button onclick="redirectToPayment(10, 'Basic Plan')" class="btn-paypal-tier">Select Basic Plan</button>
-    </div>
 
-    <!-- ADVANCED -->
-    <div class="pricing-card selected" onclick="selectPricingTier(this)">
-      <div class="popular-badge">Bestseller</div>
-      <div class="pricing-header">
-        <div class="tier-name">Advanced</div>
-        <div class="tier-price">$20<span>/month</span></div>
+      <div class="pricing-grid" style="direction: ltr;">
+      <!-- BASIC -->
+      <div class="pricing-card" onclick="selectPricingTier(this)">
+        <div class="pricing-header">
+          <div class="tier-name">Basic</div>
+          <div class="tier-price">$10<span>/month</span></div>
+        </div>
+        <ul class="pricing-features">
+          <li><i class="fa-solid fa-check"></i> Full access to all articles</li>
+          <li><i class="fa-solid fa-check"></i> Ad-free browsing</li>
+          <li><i class="fa-solid fa-check"></i> Weekly email updates</li>
+        </ul>
+        <button onclick="redirectToPayment(10, 'Basic Plan')" class="btn-paypal-tier">Select Basic Plan</button>
       </div>
-      <ul class="pricing-features">
-        <li><i class="fa-solid fa-check"></i> Everything in Basic</li>
-        <li><i class="fa-solid fa-check"></i> Download 5 PDF files/month</li>
-        <li><i class="fa-solid fa-check"></i> Exclusive deep-dive content</li>
-        <li><i class="fa-solid fa-check"></i> Basic technical support</li>
-      </ul>
-      <button onclick="redirectToPayment(20, 'Advanced Plan')" class="btn-paypal-tier featured-btn">Select Advanced Plan</button>
-    </div>
 
-    <!-- PREMIUM -->
-    <div class="pricing-card" onclick="selectPricingTier(this)">
-      <div class="pricing-header">
-        <div class="tier-name">Premium</div>
-        <div class="tier-price">$30<span>/month</span></div>
+      <!-- ADVANCED -->
+      <div class="pricing-card selected" onclick="selectPricingTier(this)">
+        <div class="popular-badge">Bestseller</div>
+        <div class="pricing-header">
+          <div class="tier-name">Advanced</div>
+          <div class="tier-price">$20<span>/month</span></div>
+        </div>
+        <ul class="pricing-features">
+          <li><i class="fa-solid fa-check"></i> Everything in Basic</li>
+          <li><i class="fa-solid fa-check"></i> Download 5 PDF files/month</li>
+          <li><i class="fa-solid fa-check"></i> Exclusive deep-dive content</li>
+          <li><i class="fa-solid fa-check"></i> Basic technical support</li>
+        </ul>
+        <button onclick="redirectToPayment(20, 'Advanced Plan')" class="btn-paypal-tier featured-btn">Select Advanced Plan</button>
       </div>
-      <ul class="pricing-features">
-        <li><i class="fa-solid fa-check"></i> Everything in Advanced</li>
-        <li><i class="fa-solid fa-check"></i> Unlimited PDF downloads</li>
-        <li><i class="fa-solid fa-check"></i> VIP Support (Fast response)</li>
-        <li><i class="fa-solid fa-check"></i> Early access to products</li>
-        <li><i class="fa-solid fa-check"></i> "Gold Member" badge on profile</li>
-      </ul>
-      <button onclick="redirectToPayment(30, 'Premium Plan')" class="btn-paypal-tier">Select Premium Plan</button>
+
+      <!-- PREMIUM -->
+      <div class="pricing-card" onclick="selectPricingTier(this)">
+        <div class="pricing-header">
+          <div class="tier-name">Premium</div>
+          <div class="tier-price">$30<span>/month</span></div>
+        </div>
+        <ul class="pricing-features">
+          <li><i class="fa-solid fa-check"></i> Everything in Advanced</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited PDF downloads</li>
+          <li><i class="fa-solid fa-check"></i> VIP Support (Fast response)</li>
+          <li><i class="fa-solid fa-check"></i> Early access to products</li>
+          <li><i class="fa-solid fa-check"></i> "Gold Member" badge on profile</li>
+        </ul>
+        <button onclick="redirectToPayment(30, 'Premium Plan')" class="btn-paypal-tier">Select Premium Plan</button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- ADS MODAL -->
+<div id="page-ads-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;direction: rtl;text-align: right;">
+  <div style="background:#0b0c0e; border-radius:20px; max-width:1040px; width:100%; padding:40px; position:relative; border:1px solid rgba(255,255,255,0.08); box-shadow:0 24px 60px rgba(0,0,0,0.6); max-height:90vh; overflow-y:auto;">
+    <button type="button" onclick="closeAdsModal()" style="position:absolute; top:20px; right:20px; background:transparent; border:none; color:#86868b; font-size:1.4rem; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#86868b'">✕</button>
+    
+    <div class="apple-container" style="max-width: 1000px; margin: 0 auto; padding: 0;">
+      <div style="text-align: center; margin-bottom: 40px; direction: rtl; text-align: center;">
+        <h2 style="font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px; color:#fff;">פרסם אצלנו / Advertise With Us</h2>
+        <p style="color: #86868b; font-size: 1.15rem; margin:0;">קדם את העסק שלך מול אלפי קוראים משפיעים בכל יום.</p>
+      </div>
+
+      <div class="pricing-grid" style="direction: ltr;">
+      <!-- BASIC AD -->
+      <div class="pricing-card" onclick="selectPricingTier(this)">
+        <div class="pricing-header">
+          <div class="tier-name">Sidebar Banner</div>
+          <div class="tier-price">$10<span>/month</span></div>
+        </div>
+        <ul class="pricing-features" style="direction: rtl; text-align: right; padding-right: 20px; list-style: none;">
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> באנר פרסומי מעוצב בסרגל הצדי</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> חשיפה לכל המשתמשים במחשב</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> סטטיסטיקת הקלקות בסיסית</li>
+        </ul>
+        <button onclick="redirectToPayment(10, 'Sidebar Banner Ad')" class="btn-paypal-tier" style="margin-top: auto;">Select Sidebar Plan</button>
+      </div>
+
+      <!-- ADVANCED AD -->
+      <div class="pricing-card selected" onclick="selectPricingTier(this)">
+        <div class="popular-badge">Popular</div>
+        <div class="pricing-header">
+          <div class="tier-name">Article Banner</div>
+          <div class="tier-price">$20<span>/month</span></div>
+        </div>
+        <ul class="pricing-features" style="direction: rtl; text-align: right; padding-right: 20px; list-style: none;">
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> באנר מובנה בתוך גוף הכתבות</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> עדיפות בחשיפה ומיקום בולט</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> דוח ביצועים שבועי במייל</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> סטטיסטיקת הקלקות מלאה</li>
+        </ul>
+        <button onclick="redirectToPayment(20, 'Article Banner Ad')" class="btn-paypal-tier featured-btn" style="margin-top: auto;">Select Article Plan</button>
+      </div>
+
+      <!-- PREMIUM AD -->
+      <div class="pricing-card" onclick="selectPricingTier(this)">
+        <div class="pricing-header">
+          <div class="tier-name">Floating Popup</div>
+          <div class="tier-price">$30<span>/month</span></div>
+        </div>
+        <ul class="pricing-features" style="direction: rtl; text-align: right; padding-right: 20px; list-style: none;">
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> חלון פרסום צף ואינטראקטיבי</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> חשיפה מקסימלית לכל הגולשים</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> תמיכה אישית בעיצוב המודעה</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> עדכון תוכן מודעה בזמן אמת</li>
+          <li><i class="fa-solid fa-check" style="color: #30d158; margin-left: 8px;"></i> לוח בקרה מתקדם בזמן אמת</li>
+        </ul>
+        <button onclick="redirectToPayment(30, 'Floating Popup Ad')" class="btn-paypal-tier" style="margin-top: auto;">Select Floating Plan</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ====== BOOK READER MODAL ====== -->
+<div id="page-book-reader-modal" onclick="if(event.target===this)closeBookReader()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:100000; align-items:center; justify-content:center; backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:24px; direction:rtl; font-family:'Georgia', serif;">
+  <div style="background:#0d0d0d; border:1px solid rgba(255,255,255,0.08); border-radius:24px; width:100%; max-width:1100px; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,0.8); overflow:hidden; position:relative; max-height:92vh;">
+    
+    <!-- Top Control Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); gap:16px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <span style="color:#ffffff; font-weight:700; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+          <i class="fas fa-book-open" style="color:#30d158;"></i> קריאה במצב ספר / Book Mode
+        </span>
+        <span id="book-progress-text" style="color:#86868b; font-size:0.85rem; font-family:'Inter', sans-serif;"></span>
+      </div>
+
+      <!-- Timer & Page Flip Speed Selector -->
+      <div style="display:flex; align-items:center; gap:12px; font-family:'Inter', sans-serif;">
+        <span style="color:#e5e5ea; font-size:0.9rem; font-weight:600;">⏱️ דפדוף אוטומטי (Auto-flip):</span>
+        <select id="book-timer-select" onchange="handleTimerSelect(this)" style="background:#1c1c1e; border:1px solid #3a3a3c; color:#fff; padding:6px 12px; border-radius:8px; outline:none; font-size:0.85rem; cursor:pointer; font-weight:600;">
+          <option value="0">כבוי / Off</option>
+          <option value="5">5 שניות / Sec</option>
+          <option value="10">10 שניות / Sec</option>
+          <option value="15">15 שניות / Sec</option>
+          <option value="20">20 שניות / Sec</option>
+          <option value="30">30 שניות / Sec</option>
+        </select>
+      </div>
+
+      <button onclick="closeBookReader()" style="background:none; border:none; color:#a1a1a6; font-size:1.6rem; cursor:pointer; padding:4px; line-height:1; transition:color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a1a1a6'">✕</button>
+    </div>
+
+    <!-- Timer Countdown Progress Bar -->
+    <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); position:relative;">
+      <div id="book-timer-bar" style="width:0%; height:100%; background:#30d158; transition:width 1s linear; position:absolute; right:0; top:0;"></div>
+    </div>
+
+    <!-- The Realistic Book Container -->
+    <div style="padding:40px; display:flex; align-items:center; justify-content:center; flex:1; overflow-y:auto; background:#121214;">
+      <div style="display:flex; width:100%; max-width:960px; background:#fdfbf7; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.5); position:relative; overflow:hidden; border:8px solid #2c2c2e; min-height:480px;">
+        
+        <!-- Book Spine Shadow (Center Crease) -->
+        <div style="position:absolute; top:0; bottom:0; left:50%; width:30px; transform:translateX(-50%); background:linear-gradient(to right, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.03) 100%); z-index:10; pointer-events:none;"></div>
+
+        <!-- RIGHT PAGE (First page in Hebrew RTL) -->
+        <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; position:relative; border-left:1px solid rgba(0,0,0,0.08); background:linear-gradient(to left, #fdfbf7 95%, #eae6dc 100%);">
+          <div id="book-page-right" style="font-size:1.15rem; line-height:1.8; color:#1c1c1e; font-family:'Georgia', serif; text-align:right; flex:1; overflow-y:auto; max-height:360px;"></div>
+          <div id="book-page-num-right" style="position:absolute; bottom:16px; right:24px; font-size:0.85rem; color:#8e8e93; font-weight:700; font-family:'Inter', sans-serif;">1</div>
+        </div>
+
+        <!-- LEFT PAGE (Second page in Hebrew RTL) -->
+        <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; position:relative; background:linear-gradient(to right, #fdfbf7 95%, #eae6dc 100%);">
+          <div id="book-page-left" style="font-size:1.15rem; line-height:1.8; color:#1c1c1e; font-family:'Georgia', serif; text-align:right; flex:1; overflow-y:auto; max-height:360px;"></div>
+          <div id="book-page-num-left" style="position:absolute; bottom:16px; left:24px; font-size:0.85rem; color:#8e8e93; font-weight:700; font-family:'Inter', sans-serif;">2</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 32px; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.06); font-family:'Inter', sans-serif;">
+      
+      <!-- Right Page Flip Button (Previous in Hebrew RTL / Next in layout LTR order but logically RTL) -->
+      <!-- Since right page is Page 1, going back means moving to the right -->
+      <button id="book-btn-prev" onclick="turnBookPage('prev')" style="background:#1c1c1e; border:1px solid #3a3a3c; color:#fff; padding:10px 24px; border-radius:12px; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'">
+        <i class="fas fa-chevron-right"></i> דף הקודם / Prev
+      </button>
+
+      <div style="color:#86868b; font-size:0.85rem; font-weight:600;">
+        💡 לחץ מחוץ לספר כדי לחזור לקריאה רגילה
+      </div>
+
+      <!-- Left Page Flip Button (Next in Hebrew RTL) -->
+      <button id="book-btn-next" onclick="turnBookPage('next')" style="background:#0071e3; border:none; color:#fff; padding:10px 24px; border-radius:12px; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">
+        דף הבא / Next <i class="fas fa-chevron-left"></i>
+      </button>
+
+    </div>
+
+  </div>
 </div>
 
 <!-- ARTICLE REVIEWS PAGE -->
@@ -1818,23 +2175,29 @@
   </div>
 </div>
 
-<!-- ABOUT PAGE -->
-<div id="page-about" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px; direction: rtl; text-align: right;">
-  <div style="background:#0b0c0e; border-radius:20px; padding:40px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 24px 60px rgba(0,0,0,0.6);">
-    <h2 style="font-size:2.2rem; font-weight:800; color:#ffffff; margin-bottom:24px; font-family:'Inter', sans-serif; letter-spacing:-0.02em; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;">אודותינו / About</h2>
+<!-- ABOUT MODAL -->
+<div id="page-about" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;direction: rtl;text-align:right;">
+  <div style="background:#0b0c0e;border-radius:20px;padding:36px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.6);max-width:680px;width:100%;position:relative;">
+    <button type="button" onclick="closeAboutModal()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.6rem;color:#a1a1a6;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a1a1a6'">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;">
+      <h2 style="font-size:1.8rem;font-weight:800;color:#ffffff;margin:0;font-family:'Inter', sans-serif;letter-spacing:-0.02em;">אודותינו / About Us</h2>
+    </div>
     <p style="font-size:1.1rem; line-height:1.8; color:#e4e4e7; margin-bottom:16px; font-weight:500;">
       ברוכים הבאים לפלטפורמת התוכן והמידע שלנו. האתר הוקם במטרה לספק עדכונים בזמן אמת, גרפים ונתונים בשקיפות מלאה ובמקצועיות ללא פשרות.
     </p>
-    <p style="font-size:1.1rem; line-height:1.8; color:#a1a1a6;">
+    <p style="font-size:1.1rem; line-height:1.8; color:#a1a1a6; margin:0;">
       אנו מאמינים בחדשנות ובשיפור מתמיד, ומזמינים את הקוראים שלנו לקחת חלק ביצירת התוכן. שירות הלקוחות והתמיכה הישירה שלנו תמיד זמינים עבורכם בלחיצת כפתור.
     </p>
   </div>
 </div>
 
-<!-- WHATS NEW PAGE -->
-<div id="page-whats-new" class="page" style="display:none; max-width: 860px; margin: 0 auto; padding: 40px 20px; direction: rtl; text-align: right;">
-  <div style="background:#0b0c0e; border-radius:20px; padding:40px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 24px 60px rgba(0,0,0,0.6);">
-    <h2 style="font-size:2.2rem; font-weight:800; color:#ffffff; margin-bottom:24px; font-family:'Inter', sans-serif; letter-spacing:-0.02em; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;">מה חדש? / What's New</h2>
+<!-- WHATS NEW MODAL -->
+<div id="page-whats-new" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:100000;align-items:center;justify-content:center;overflow:auto;padding:24px;direction: rtl;text-align:right;">
+  <div style="background:#0b0c0e;border-radius:20px;padding:36px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.6);max-width:680px;width:100%;position:relative;">
+    <button type="button" onclick="closeWhatsNewModal()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.6rem;color:#a1a1a6;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a1a1a6'">×</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;">
+      <h2 style="font-size:1.8rem;font-weight:800;color:#ffffff;margin:0;font-family:'Inter', sans-serif;letter-spacing:-0.02em;">מה חדש? / What's New</h2>
+    </div>
     
     <div style="margin-bottom:28px; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:16px;">
       <div style="font-size:1.25rem; font-weight:800; color:#34c759; margin-bottom:8px; display:flex; align-items:center; gap:8px;">✨ חוויית משתמש משופרת</div>
@@ -2763,12 +3126,9 @@
     </div>
   </div>
   <!-- Giant Article Cinema Mode Overlay -->
-  <div id="page-giant-hero" onclick="if(!event.target.closest('#giant-social-icons-row')) closeGiantArticlePage()" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999900; background: #000; flex-direction: column; overflow: hidden; cursor: pointer;" title="לחץ בכל מקום כדי לצאת ✕">
-    <!-- Giant Background Cover Image (with crossfade transition) -->
-    <div id="giant-bg-cover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: background-image 0.8s ease-in-out; z-index: 1;"></div>
-    
-    <!-- Dark subtle overlay for premium visual comfort -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.05); z-index: 2; pointer-events: none;"></div>
+  <div id="page-giant-hero" onclick="if(!event.target.closest('#giant-social-icons-row')) closeGiantArticlePage()" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999900; background: #050508; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;" title="לחץ בכל מקום כדי לצאת ✕">
+    <!-- Clean high-quality centered image, 30% smaller (70vw / 70vh) than screen, rendering at maximum crisp quality -->
+    <img id="giant-bg-cover" src="" style="max-width: 70vw; max-height: 70vh; width: auto; height: auto; object-fit: contain; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.08); transition: opacity 0.5s ease-in-out; z-index: 2; transform: translateY(-20px);" />
 
     <!-- Fixed Bottom Social Networks Bar -->
     <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; gap: 24px; z-index: 10;">
@@ -2824,6 +3184,90 @@
       <div id="time-machine-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0071e3 0%, #eab308 100%); border-radius: 99px; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(234,179,8,0.5);"></div>
     </div>
   </div>
+
+<!-- ====== APPLE COOKIE CONSENT BANNER ====== -->
+<div id="apple-cookie-banner" style="display:none; position:fixed; bottom:-120px; left:0; right:0; background:rgba(255,255,255,0.96); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); border-top:1px solid rgba(0,0,0,0.08); box-shadow:0 -10px 40px rgba(0,0,0,0.06); z-index:999999; padding:20px 40px; transition:bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1); direction:rtl; font-family:'Inter', sans-serif;">
+  <div style="max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+    
+    <!-- Text Block -->
+    <div style="flex:1; min-width:300px; text-align:right;">
+      <p style="margin:0; font-size:0.88rem; line-height:1.6; color:#1d1d1f; font-weight:500;">
+        על ידי לחיצה על "אשר הכל", אתה מסכים לאחסון עוגיות במכשיר שלך לשיפור הניווט באתר, ניתוח השימוש וסיוע במאמצי השיווק שלנו.
+        <br>
+        <span style="font-size:0.78rem; color:#86868b;">By clicking "Accept All Cookies", you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and assist in our marketing efforts.</span>
+      </p>
+    </div>
+
+    <!-- Buttons Block -->
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; direction:ltr;">
+      <button onclick="dismissCookieBanner()" style="background:none; border:none; color:#1d1d1f; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit; padding:8px 12px; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Cookie Settings</button>
+      <button onclick="dismissCookieBanner()" style="background:none; border:1px solid #1d1d1f; color:#1d1d1f; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit; padding:8px 20px; border-radius:980px; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='#1d1d1f'; this.style.color='#fff';" onmouseout="this.style.background='none'; this.style.color='#1d1d1f';">Reject All</button>
+      <button onclick="dismissCookieBanner()" style="background:#1d1d1f; border:none; color:#fff; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit; padding:8px 24px; border-radius:980px; transition:background 0.2s, transform 0.2s;" onmouseover="this.style.background='#000'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='#1d1d1f'; this.style.transform='scale(1)'">Accept All Cookies</button>
+      <button onclick="dismissCookieBanner()" style="background:none; border:none; color:#86868b; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; line-height:1; transition:color 0.2s;" onmouseover="this.style.color='#1d1d1f'" onmouseout="this.style.color='#86868b'">✕</button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  body.dark-theme #apple-cookie-banner {
+    background: rgba(28, 28, 30, 0.96) !important;
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5) !important;
+  }
+  body.dark-theme #apple-cookie-banner p {
+    color: #fff !important;
+  }
+  body.dark-theme #apple-cookie-banner button {
+    color: #fff !important;
+  }
+  body.dark-theme #apple-cookie-banner button:hover {
+    color: #fff !important;
+  }
+  body.dark-theme #apple-cookie-banner button[onclick*="dismissCookieBanner()"]:nth-child(2) {
+    border-color: #fff !important;
+  }
+  body.dark-theme #apple-cookie-banner button[onclick*="dismissCookieBanner()"]:nth-child(2):hover {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body.dark-theme #apple-cookie-banner button[onclick*="dismissCookieBanner()"]:nth-child(3) {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body.dark-theme #apple-cookie-banner button[onclick*="dismissCookieBanner()"]:nth-child(3):hover {
+    background: #eaeaea !important;
+  }
+</style>
+
+<script>
+  function showCookieBanner() {
+    if (!localStorage.getItem('cookiesAccepted')) {
+      const banner = document.getElementById('apple-cookie-banner');
+      if (banner) {
+        banner.style.display = 'block';
+        setTimeout(() => {
+          banner.style.bottom = '0px';
+        }, 100);
+      }
+    }
+  }
+
+  function dismissCookieBanner() {
+    const banner = document.getElementById('apple-cookie-banner');
+    if (banner) {
+      banner.style.bottom = '-120px';
+      setTimeout(() => {
+        banner.style.display = 'none';
+      }, 600);
+      localStorage.setItem('cookiesAccepted', 'true');
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(showCookieBanner, 1500);
+  });
+</script>
 
 </body>
 </html>
