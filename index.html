@@ -708,11 +708,35 @@
       <div id="post-thread-container" style="display:flex; flex-direction:column; gap:0; margin-bottom:0; border:1px solid rgba(255,255,255,0.1); border-radius:16px; overflow:hidden;">
         <!-- Thread cards injected by JS -->
       </div>
-      <div id="post-reply-area" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:16px;">
-        <textarea id="new-comment-input" placeholder="כתוב תגובה..." style="width:100%; background:transparent; border:none; color:#fafafa; font-size:0.95rem; font-family:inherit; resize:vertical; min-height:80px; outline:none; margin-bottom:12px; direction:rtl; text-align:right; box-sizing:border-box;"></textarea>
-        <div style="display:flex; justify-content:flex-start;">
-          <button class="btn-primary" onclick="submitComment()" style="border-radius:980px; padding:8px 20px;">שלח תגובה</button>
+      <div id="post-reply-area" style="background:transparent; padding:0; margin-top:16px;">
+        
+        <!-- Collapsed state (Reddit pill) -->
+        <div id="reply-collapsed-pill" onclick="window.expandReplyArea()" style="display:flex; align-items:center; background:#000; border:1px solid rgba(255,255,255,0.1); border-radius:9999px; padding:12px 20px; cursor:text; transition:border-color 0.2s, background-color 0.2s; direction:ltr;" onmouseover="this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';">
+          <i class="fas fa-comment" style="color:#71767b; margin-right:10px; font-size:0.95rem;"></i>
+          <span style="color:#71767b; font-size:0.95rem; font-family:inherit; user-select:none;">Join the conversation</span>
         </div>
+
+        <!-- Expanded state (Reddit editor box) -->
+        <div id="reply-expanded-editor" style="display:none; background:#121212; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px; margin-top:0px;">
+          <textarea id="new-comment-input" placeholder="What are your thoughts?" style="width:100%; background:transparent; border:none; color:#fafafa; font-size:0.95rem; font-family:inherit; resize:vertical; min-height:100px; outline:none; margin-bottom:12px; direction:ltr; text-align:left; box-sizing:border-box;"></textarea>
+          <div style="display:flex; justify-content:flex-start; gap:8px;">
+            <button class="btn-primary" onclick="submitComment()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; cursor:pointer;">Comment</button>
+            <button class="btn-secondary" onclick="window.collapseReplyArea()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; background:#2c2c2e; border:none; color:#fff; cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Sort and Search filters underneath just like the screenshot! -->
+        <div style="display:flex; align-items:center; gap:16px; margin-top:16px; padding:0 8px; direction:ltr; text-align:left;">
+          <div style="font-size:0.85rem; color:#71767b; display:flex; align-items:center; gap:6px;">
+            <span>Sort by:</span>
+            <span style="color:#e7e9ea; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">Best <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i></span>
+          </div>
+          <div style="display:flex; align-items:center; background:#121212; border:1px solid rgba(255,255,255,0.06); border-radius:9999px; padding:6px 14px; gap:8px; cursor:pointer;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
+            <i class="fas fa-search" style="color:#71767b; font-size:0.75rem;"></i>
+            <span style="color:#71767b; font-size:0.78rem; font-weight:600;">Search Comments</span>
+          </div>
+        </div>
+
       </div>
     </div>
     

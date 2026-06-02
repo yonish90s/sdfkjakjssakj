@@ -6632,6 +6632,7 @@ window.submitComment = async function() {
     });
     
     input.value = '';
+    if (window.collapseReplyArea) window.collapseReplyArea();
     showToast('Reply posted!', 'success');
     openPost(currentPostId); // Refresh comments
   } catch (err) {
@@ -6643,6 +6644,28 @@ window.submitComment = async function() {
     }
   } finally {
     input.disabled = false;
+  }
+};
+
+window.expandReplyArea = function() {
+  const collapsed = document.getElementById('reply-collapsed-pill');
+  const expanded = document.getElementById('reply-expanded-editor');
+  if (collapsed && expanded) {
+    collapsed.style.display = 'none';
+    expanded.style.display = 'block';
+    const input = document.getElementById('new-comment-input');
+    if (input) input.focus();
+  }
+};
+
+window.collapseReplyArea = function() {
+  const collapsed = document.getElementById('reply-collapsed-pill');
+  const expanded = document.getElementById('reply-expanded-editor');
+  if (collapsed && expanded) {
+    collapsed.style.display = 'flex';
+    expanded.style.display = 'none';
+    const input = document.getElementById('new-comment-input');
+    if (input) input.value = '';
   }
 };
 
