@@ -1813,10 +1813,40 @@ async function renderManagerMessages() {
           <span style="color:#86868b; font-size:0.75rem;">${dateStr}</span>
         </div>
         <p style="color:#e5e5e5; font-size:0.9rem; margin:0 0 10px; line-height:1.5;">${m.message}</p>
-        <button onclick="markManagerMsgRead(${i})" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#a1a1aa; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer;">סמן כנקרא</button>
+        <div style="margin-top: 10px; display: flex; gap: 8px;">
+          <button onclick="markManagerMsgRead(${i})" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#a1a1aa; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer;">סמן כנקרא</button>
+          ${m.email ? `
+            <button onclick="replyContactInDirectChat('${m.email}', '${m.from}')" style="background:#10b981; border:none; color:#fff; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:4px; box-shadow:0 4px 10px rgba(16,185,129,0.2);" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+              <i class="fas fa-reply"></i> השב בצ'אט ישיר
+            </button>
+          ` : ''}
+        </div>
       </div>
     `;
   }).join('');
+}
+
+function replyContactInDirectChat(email, name) {
+  // 1. Set the active admin thread ID to their email (which is their userId)
+  window._activeAdminChatThreadId = email;
+  
+  // 2. Initialize a user contact placeholder message if thread doesn't exist
+  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  const hasMsgs = localMsgs.some(m => m.userId === email);
+  if (!hasMsgs) {
+    localMsgs.push({
+      userId: email,
+      senderName: name || 'Guest User',
+      text: `[פנייה מצור קשר / Contact Request]`,
+      timestamp: new Date().toISOString(),
+      isAdmin: false,
+      read: true
+    });
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  }
+  
+  // 3. Switch subtab to 'direct'
+  switchAdminMsgsSubtab('direct');
 }
 
 function markManagerMsgRead(index) {
