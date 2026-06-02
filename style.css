@@ -7971,3 +7971,40 @@ body.rtl-layout #user-nav-section {
   50% { transform: scale(1.2); opacity: 0.5; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* iOS Loading Spinner styles */
+.ios-spinner {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+}
+.ios-spinner div {
+  width: 8%;
+  height: 24%;
+  background: #8e8e93;
+  position: absolute;
+  left: 46%;
+  top: 38%;
+  opacity: 0;
+  border-radius: 50px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.1);
+  animation: iosSpinnerFade 1s linear infinite;
+}
+.ios-spinner .bar1 { transform:rotate(0deg) translate(0, -142%); animation-delay: 0s; }
+.ios-spinner .bar2 { transform:rotate(30deg) translate(0, -142%); animation-delay: -0.9167s; }
+.ios-spinner .bar3 { transform:rotate(60deg) translate(0, -142%); animation-delay: -0.833s; }
+.ios-spinner .bar4 { transform:rotate(90deg) translate(0, -142%); animation-delay: -0.75s; }
+.ios-spinner .bar5 { transform:rotate(120deg) translate(0, -142%); animation-delay: -0.667s; }
+.ios-spinner .bar6 { transform:rotate(150deg) translate(0, -142%); animation-delay: -0.583s; }
+.ios-spinner .bar7 { transform:rotate(180deg) translate(0, -142%); animation-delay: -0.5s; }
+.ios-spinner .bar8 { transform:rotate(210deg) translate(0, -142%); animation-delay: -0.4167s; }
+.ios-spinner .bar9 { transform:rotate(240deg) translate(0, -142%); animation-delay: -0.333s; }
+.ios-spinner .bar10 { transform:rotate(270deg) translate(0, -142%); animation-delay: -0.25s; }
+.ios-spinner .bar11 { transform:rotate(300deg) translate(0, -142%); animation-delay: -0.1667s; }
+.ios-spinner .bar12 { transform:rotate(330deg) translate(0, -142%); animation-delay: -0.083s; }
+
+@keyframes iosSpinnerFade {
+  from { opacity: 1; }
+  to { opacity: 0.25; }
+}

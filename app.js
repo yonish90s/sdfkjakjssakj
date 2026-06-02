@@ -890,39 +890,47 @@ function renderNewsLayout(page = 1) {
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
 
-  if (pageArticles.length === 0) {
-    feedList.innerHTML = `
-      <div style="text-align: center; padding: 60px 20px; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-        <i class="fas fa-search" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px; opacity: 0.6;"></i>
-        <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">לא נמצאו כתבות</h3>
-        <p style="font-size: 1rem; color: var(--text-muted);">נסה לחפש מונח אחר או בדוק שגיאות כתיב</p>
+  const articlesHTML = pageArticles.map(a => {
+    const isSaved = myArticlesList.some(x => x.id === a.id);
+    return `
+      <div class="feed-item" onclick="showArticle(${a.id})">
+        <div class="feed-image" style="background-image: url('${a.image}')"></div>
+        <div class="feed-content">
+          <h2 class="feed-title">${escHtml(a.title)}</h2>
+          <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
+            <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
+            <span class="meta-sep">|</span> 
+            <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
+            <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
+              onclick="event.stopPropagation(); toggleMyArticle(${a.id}, this);"
+              style="margin-right: auto; flex-shrink: 0;"
+              title="${isSaved ? 'Remove from My Articles' : 'Save to My Articles'}">
+              <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
+            </button>
+          </div>
+          ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
+          ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
+        </div>
       </div>
     `;
-  } else {
-    feedList.innerHTML = pageArticles.map(a => {
-      const isSaved = myArticlesList.some(x => x.id === a.id);
-      return `
-        <div class="feed-item" onclick="showArticle(${a.id})">
-          <div class="feed-image" style="background-image: url('${a.image}')"></div>
-          <div class="feed-content">
-            <h2 class="feed-title">${escHtml(a.title)}</h2>
-            <div class="feed-meta" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;">
-              <span class="author-name" style="white-space: nowrap;">${escHtml(a.author)}</span> 
-              <span class="meta-sep">|</span> 
-              <span class="meta-date" style="white-space: nowrap;">${escHtml(a.time)}</span>
-              <button class="meta-bookmark-btn ${isSaved ? 'active' : ''}" 
-                onclick="event.stopPropagation(); toggleMyArticle(${a.id}, this);"
-                style="margin-right: auto; flex-shrink: 0;"
-                title="${isSaved ? 'Remove from My Articles' : 'Save to My Articles'}">
-                <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
-              </button>
-            </div>
-            ${a.snippet ? `<p class="feed-snippet">${escHtml(a.snippet)}</p>` : ''}
-            ${a.isPremium ? `<div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#f9b233; display:flex; align-items:center; gap:4px;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
-          </div>
+  }).join('');
+
+  if (pageArticles.length === 0) {
+    if (page === 1) {
+      feedList.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+          <i class="fas fa-search" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px; opacity: 0.6;"></i>
+          <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">לא נמצאו כתבות</h3>
+          <p style="font-size: 1rem; color: var(--text-muted);">נסה לחפש מונח אחר או בדוק שגיאות כתיב</p>
         </div>
       `;
-    }).join('');
+    }
+  } else {
+    if (page === 1) {
+      feedList.innerHTML = articlesHTML;
+    } else {
+      feedList.insertAdjacentHTML('beforeend', articlesHTML);
+    }
   }
 
   // Render pagination buttons
@@ -10554,6 +10562,67 @@ function updateTimerProgress() {
   if (timerBar) {
     timerBar.style.width = `${percentage}%`;
   }
+}
+
+// ====== INFINITE SCROLL SYSTEM ======
+let isInfiniteScrollLoading = false;
+
+window.addEventListener('scroll', () => {
+  const homePage = document.getElementById('page-home');
+  if (!homePage || !homePage.classList.contains('active')) return;
+  
+  const feedList = document.getElementById('news-feed-list');
+  if (!feedList) return;
+  
+  const triggerHeight = window.innerHeight + window.scrollY;
+  const bottomOffset = document.documentElement.scrollHeight - 300;
+  
+  if (triggerHeight >= bottomOffset) {
+    const locationArticles = getLocationArticles();
+    let filteredArticles = currentCategory === 'all'
+      ? locationArticles
+      : locationArticles.filter(a => a.category === currentCategory);
+
+    if (searchQuery && searchQuery.trim() !== '') {
+      const queryLower = searchQuery.toLowerCase().trim();
+      filteredArticles = filteredArticles.filter(a => {
+        const titleMatch = (a.title || '').toLowerCase().includes(queryLower);
+        const snippetMatch = (a.snippet || '').toLowerCase().includes(queryLower);
+        const categoryMatch = (a.category || '').toLowerCase().includes(queryLower);
+        const authorMatch = (a.author || '').toLowerCase().includes(queryLower);
+        const contentMatch = (a.content || '').toLowerCase().includes(queryLower);
+        return titleMatch || snippetMatch || categoryMatch || authorMatch || contentMatch;
+      });
+    }
+
+    let displayFeatured = [];
+    const featuredCarousel = document.getElementById('featured-carousel-container');
+    if (featuredCarousel && featuredCarousel.style.display !== 'none') {
+      displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 12);
+    }
+    
+    const feedArticles = filteredArticles.filter(a => !displayFeatured.includes(a) && a.approved !== false);
+    const totalPages = Math.max(1, Math.ceil(feedArticles.length / ARTICLES_PER_PAGE));
+    
+    if (currentPage < totalPages && !isInfiniteScrollLoading) {
+      loadNextInfiniteScrollPage(totalPages);
+    }
+  }
+});
+
+function loadNextInfiniteScrollPage(totalPages) {
+  isInfiniteScrollLoading = true;
+  
+  const loader = document.getElementById('infinite-scroll-loader');
+  if (loader) loader.style.display = 'flex';
+  
+  setTimeout(() => {
+    currentPage++;
+    renderNewsLayout(currentPage);
+    
+    isInfiniteScrollLoading = false;
+    if (loader) loader.style.display = 'none';
+  }, 900);
 }
 
 
