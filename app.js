@@ -32,7 +32,11 @@ const SERVER_URL = (hostname === 'localhost' || hostname === '127.0.0.1' || host
   : currentOrigin.replace(/:\d+$/, ':4242');
 
 let storedArticles = localStorage.getItem('newsArticles');
-let newsArticles = storedArticles ? JSON.parse(storedArticles) : [...defaultNewsArticles];
+if (!storedArticles || JSON.parse(storedArticles).length === 0) {
+  localStorage.setItem('newsArticles', JSON.stringify(defaultNewsArticles));
+  storedArticles = localStorage.getItem('newsArticles');
+}
+let newsArticles = JSON.parse(storedArticles);
 let searchQuery = '';
 
 // Backup user articles before Firestore sync wipes them
