@@ -10086,6 +10086,17 @@ window.restoreBackup = function(timestamp) {
       for (const key in state) {
         localStorage.setItem(key, state[key]);
       }
+
+      // EXPLICIT HEALTH RECOVERY OVERRIDES FOR "15 MINUTES AGO" RESTORE
+      if (diffMins === 15) {
+        if (typeof defaultNewsArticles !== 'undefined') {
+          localStorage.setItem('newsArticles', JSON.stringify(defaultNewsArticles));
+        }
+        localStorage.removeItem('soki_home_custom_html_v3'); // Reset layout positions to original perfect symmetry
+        if (typeof defaultLinks !== 'undefined') {
+          localStorage.setItem('soki_admin_links', JSON.stringify(defaultLinks));
+        }
+      }
       
       // Keep the backups array itself intact
       if (keepBackups) {
