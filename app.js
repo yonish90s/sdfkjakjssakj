@@ -6434,40 +6434,174 @@ window.openPost = async function(postId) {
       `;
     }
 
-    // ── Comments (Twitter reply style) ──
-    comments.forEach((c) => {
+    // ── Comments (Reddit Nested Thread Tree style) ──
+    const rootComments = [];
+    const childCommentsMap = {};
+    comments.forEach(c => {
+      const pId = c.data.parentId;
+      if (!pId) {
+        rootComments.push(c);
+      } else {
+        if (!childCommentsMap[pId]) {
+          childCommentsMap[pId] = [];
+        }
+        childCommentsMap[pId].push(c);
+      }
+    });
+
+    function renderCommentTree(c, depth = 0) {
       const cAuthor = c.data.author || c.data.authorName || 'Anonymous';
       const cHandle = '@' + cAuthor.toLowerCase().replace(/\s+/g,'');
-      const cAvatar = buildAvatar(cAuthor, c.data.authorAvatar||'', 42);
+      const cAvatar = buildAvatar(cAuthor, c.data.authorAvatar||'', 34);
       const cTimeAgo = formatTimeAgo(new Date(c.data.timestamp));
       const cContent = (c.data.content||'').replace(/<[^>]+>/g,'');
-      html += `
-        <div style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;display:flex;gap:12px;direction:rtl;">
-          <div style="flex-shrink:0;">${cAvatar}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;direction:rtl;">
-              <span style="font-weight:700;color:#e7e9ea;font-size:0.97rem;">${cAuthor}</span>
-              <span style="color:#71767b;font-size:0.88rem;">${cHandle}</span>
-              <span style="color:#71767b;font-size:0.88rem;">·</span>
-              <span style="color:#71767b;font-size:0.88rem;">${cTimeAgo}</span>
-            </div>
-            <div style="color:#e7e9ea;font-size:0.95rem;line-height:1.6;white-space:pre-wrap;direction:rtl;text-align:right;">${cContent}</div>
-            <div style="display:flex;gap:20px;margin-top:10px;">
-              <button style="display:flex;align-items:center;gap:5px;background:none;border:none;color:#71767b;font-size:0.82rem;cursor:pointer;padding:4px;border-radius:4px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 7.879 3.77 7.879 8.022 0 4.422-3.556 8.011-7.879 8.011h-1.53l-2.059 2.254c-.4.439-1.013.616-1.585.46-.571-.155-.985-.65-1.049-1.236L9.54 18.5H9.756C5.351 18.5 1.751 14.924 1.751 10Z" stroke="currentColor" stroke-width="1.8"/></svg>
-              </button>
-              <button style="display:flex;align-items:center;gap:5px;background:none;border:none;color:#71767b;font-size:0.82rem;cursor:pointer;padding:4px;border-radius:4px;font-family:inherit;transition:color 0.15s;" onmouseover="this.style.color='#f91880'" onmouseout="this.style.color='#71767b'">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.53.771-.53-.77c-1.125-1.635-2.52-2.186-3.78-2.128-1.934.09-3.396 1.555-3.396 3.323 0 .92.364 1.896 1.25 2.9 2 2.284 5.86 5.11 6.455 5.54.596-.43 4.454-3.256 6.455-5.54.886-1.004 1.249-1.98 1.249-2.9 0-1.738-1.447-3.19-3.29-3.356z" stroke="currentColor" stroke-width="1.8"/></svg>
-              </button>
-            </div>
+      const cId = c.id;
+      
+      const children = childCommentsMap[cId] || [];
+      const replyInputId = `reply-input-${cId}`;
+      const inlineReplyContainerId = `reply-container-${cId}`;
+
+      // Left border and padding for nested replies (Reddit's thread lines)
+      const marginStyle = depth > 0 
+        ? `margin-left: 12px; padding-left: 16px; border-left: 2px solid rgba(255,255,255,0.06); border-top-left-radius: 4px; border-bottom-left-radius: 4px;` 
+        : `border-bottom: 1px solid rgba(255,255,255,0.06);`;
+
+      let childrenHtml = '';
+      if (children.length > 0) {
+        childrenHtml = children.map(child => renderCommentTree(child, depth + 1)).join('');
+      }
+
+      const commentVotes = c.data.votes || 0;
+
+      return `
+        <div style="background:#000; padding:16px 14px 10px 14px; display:flex; gap:12px; direction:ltr; text-align:left; ${marginStyle}">
+          
+          <!-- Avatar Column -->
+          <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
+            <div style="flex-shrink:0;">${cAvatar}</div>
+            <div style="flex:1; width:2px; background:rgba(255,255,255,0.04); margin-top:8px;"></div>
           </div>
-        </div>`;
-    });
+
+          <!-- Content Column -->
+          <div style="flex:1; min-width:0;">
+            
+            <!-- User Metadata Header -->
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+              <span style="font-weight:700; color:#e7e9ea; font-size:0.92rem;">${cAuthor}</span>
+              <span style="color:#71767b; font-size:0.85rem;">${cHandle}</span>
+              <span style="color:#71767b; font-size:0.85rem;">·</span>
+              <span style="color:#71767b; font-size:0.85rem;">${cTimeAgo}</span>
+            </div>
+
+            <!-- Comment Content Body -->
+            <div style="color:#e7e9ea; font-size:0.95rem; line-height:1.55; white-space:pre-wrap;">${cContent}</div>
+
+            <!-- Reddit Action Toolbar -->
+            <div style="display:flex; align-items:center; gap:16px; margin-top:8px; margin-bottom:8px;">
+              
+              <!-- Upvote / Downvote -->
+              <div style="display:flex; align-items:center; background:#18181b; border-radius:9999px; padding:3px 8px; gap:8px; border: 1px solid rgba(255,255,255,0.05);">
+                <button onclick="voteComment('${cId}', 1)" style="background:none; border:none; color:#71767b; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:2px; transition:color 0.15s;" onmouseover="this.style.color='#ff4500'" onmouseout="this.style.color='#71767b'">
+                  <i class="fas fa-arrow-up" style="font-size:0.75rem;"></i>
+                </button>
+                <span style="font-size:0.8rem; font-weight:700; color:#e7e9ea; min-width:12px; text-align:center;">${commentVotes}</span>
+                <button onclick="voteComment('${cId}', -1)" style="background:none; border:none; color:#71767b; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:2px; transition:color 0.15s;" onmouseover="this.style.color='#7193ff'" onmouseout="this.style.color='#71767b'">
+                  <i class="fas fa-arrow-down" style="font-size:0.75rem;"></i>
+                </button>
+              </div>
+
+              <!-- Reply button -->
+              <button onclick="window.toggleReplyInput('${cId}')" style="display:flex; align-items:center; gap:6px; background:none; border:none; color:#71767b; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-radius:4px; font-family:inherit; transition:color 0.15s;" onmouseover="this.style.color='#1d9bf0'; this.style.background='rgba(29,155,240,0.08)';" onmouseout="this.style.color='#71767b'; this.style.background='none';">
+                <i class="fas fa-comment" style="font-size:0.75rem;"></i> Reply
+              </button>
+
+            </div>
+
+            <!-- Dynamic Inline Reply Input Field -->
+            <div id="${inlineReplyContainerId}" style="display:none; margin-top:10px; border-left:2px solid #ff9500; padding-left:14px; margin-bottom:12px;">
+              <textarea id="${replyInputId}" style="width:100%; min-height:80px; background:#18181b; border:1px solid #27272a; border-radius:12px; padding:12px; color:#fff; font-size:0.92rem; resize:vertical; outline:none; font-family:inherit; box-sizing:border-box;" placeholder="Reply to this comment..."></textarea>
+              <div style="display:flex; gap:8px; margin-top:8px; justify-content:flex-start;">
+                <button class="btn-primary" onclick="window.submitNestedComment('${postId}', '${cId}', '${replyInputId}')" style="font-size:0.8rem; padding:6px 16px; border-radius:980px;">Reply</button>
+                <button class="btn-secondary" onclick="window.toggleReplyInput('${cId}')" style="font-size:0.8rem; padding:6px 16px; border-radius:980px; background:#27272a; border:none; color:#fff; cursor:pointer;">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Recursively rendered Nested replies -->
+            ${childrenHtml}
+
+          </div>
+        </div>
+      `;
+    }
+
+    if (rootComments.length === 0) {
+      html += `<div style="padding: 24px; text-align: center; color: #71767b; font-size: 0.95rem; background: #000; border-bottom:1px solid rgba(255,255,255,0.1);">No comments yet. Be the first to share your thoughts!</div>`;
+    } else {
+      html += rootComments.map(c => renderCommentTree(c, 0)).join('');
+    }
 
     threadContainer.innerHTML = html;
   } catch (err) {
     console.error('Error loading post:', err);
     threadContainer.innerHTML = '<div style="color:#ef4444; padding:16px; direction:rtl;">שגיאה בטעינת הפוסט.</div>';
+  }
+};
+
+window.voteComment = async function(commentId, delta) {
+  if (!currentUser) { showToast('התחבר כדי להצביע', 'error'); return; }
+  try {
+    const commentDocRef = window.fbDoc(window.fbDb, 'comments', commentId);
+    const { increment } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+    await window.fbUpdateDoc(commentDocRef, { votes: increment(delta) });
+    openPost(currentPostId); // Refresh comments
+  } catch(e) { console.error('Vote comment error', e); }
+};
+
+window.toggleReplyInput = function(commentId) {
+  const container = document.getElementById(`reply-container-${commentId}`);
+  if (container) {
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    if (container.style.display === 'block') {
+      const input = document.getElementById(`reply-input-${commentId}`);
+      if (input) input.focus();
+    }
+  }
+};
+
+window.submitNestedComment = async function(postId, parentCommentId, inputId) {
+  if (!currentUser || !currentUser.email) {
+    showToast('Please sign in to comment.', 'error');
+    openAuthModal('login');
+    return;
+  }
+  
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const content = input.value.trim();
+  if (!content) return;
+  
+  input.disabled = true;
+  
+  try {
+    const commentsRef = window.fbColl(window.fbDb, 'comments');
+    await window.fbAddDoc(commentsRef, {
+      postId: postId,
+      parentId: parentCommentId,
+      content: content,
+      author: currentUser.name || 'Anonymous',
+      authorEmail: currentUser.email,
+      timestamp: new Date().toISOString(),
+      votes: 0
+    });
+    
+    input.value = '';
+    showToast('Reply posted!', 'success');
+    openPost(postId); // Refresh comments
+  } catch (err) {
+    console.error('Error posting nested comment:', err);
+    alert('Failed to post reply: ' + err.message);
+  } finally {
+    input.disabled = false;
   }
 };
 
