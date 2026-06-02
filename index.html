@@ -1357,12 +1357,71 @@
       </div>
 
       <!-- 4. ANALYTICS TAB -->
-      <div id="admin-section-analytics" class="admin-section" style="display: none;">
-        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">ניתוח נתונים (Analytics)</h2>
-        <div style="background:#1c1c1e; border: 1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#a1a1aa; display:flex; flex-direction:column; align-items:center;">
-          <i class="fas fa-chart-line" style="font-size:3rem; margin-bottom:16px; color:#3f3f46;"></i>
-          <h3 style="color:#fafafa; margin-bottom:8px;">דוחות מכירות חודשיים</h3>
-          <p>כאן יופיעו בהמשך גרפים מתקדמים המציגים את אחוזי ההמרה ומקורות התנועה לאתר.</p>
+      <div id="admin-section-analytics" class="admin-section" style="display: none; direction: rtl; text-align: right;">
+        <h2 style="margin:0 0 8px 0; font-size:1.5rem; color: #fafafa;">📊 ניתוח נתונים ומפת חום (Analytics & Heatmap)</h2>
+        <p style="color: #a1a1aa; font-size: 0.95rem; margin-bottom: 24px;">נתוני גלישה בזמן אמת, התחברויות משתמשים ומפת קליקים חמה של משתמשי האתר</p>
+        
+        <!-- Row 1: Metrics Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <!-- Clicks Metric -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; text-align: center;">
+            <i class="fas fa-mouse-pointer" style="font-size: 1.8rem; color: #10b981; margin-bottom: 10px;"></i>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #fff;" id="analytics-total-clicks">0</div>
+            <div style="font-size: 0.8rem; color: #86868b; margin-top: 4px;">קליקים מוקלטים באתר</div>
+          </div>
+          <!-- Logins Metric -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; text-align: center;">
+            <i class="fas fa-user-check" style="font-size: 1.8rem; color: #0ea5e9; margin-bottom: 10px;"></i>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #fff;" id="analytics-total-logins">0</div>
+            <div style="font-size: 0.8rem; color: #86868b; margin-top: 4px;">התחברויות משתמשים</div>
+          </div>
+          <!-- Device breakdown progress bar -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; display:flex; flex-direction:column; justify-content:center; gap:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; color:#fff;">
+              <span>דסקטופ 💻</span>
+              <span id="analytics-desktop-pct">70%</span>
+            </div>
+            <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+              <div id="analytics-device-bar" style="height: 100%; background: linear-gradient(90deg, #0ea5e9, #10b981); width: 70%; transition: width 0.4s ease;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#86868b;">
+              <span>מובייל 📱</span>
+              <span id="analytics-mobile-pct">30%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Live Heatmap & Logins Log Split View -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 480px; align-items: stretch; margin-bottom: 30px;">
+          <!-- Left: User Logins list -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 16px; padding: 24px; display:flex; flex-direction:column; gap:16px;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #fff; display:flex; align-items:center; gap:8px;"><i class="fas fa-users-cog" style="color:#0ea5e9;"></i> מחוברים לאחרונה / User Logins</h3>
+            <div id="analytics-logins-list" style="flex:1; overflow-y:auto; max-height:400px; display:flex; flex-direction:column; gap:12px; padding-left:6px;">
+              <div style="text-align:center; padding:40px; color:#86868b;">אין התחברויות רשומות עדיין</div>
+            </div>
+          </div>
+
+          <!-- Right: Heatmap Preview Screen -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 16px; padding: 24px; display:flex; flex-direction:column; gap:16px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #fff; display:flex; align-items:center; gap:8px;"><i class="fas fa-fire" style="color:#ef4444;"></i> מפת חום אינטראקטיבית (Click Heatmap)</h3>
+              <button onclick="clearHeatmapData()" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; font-size:0.75rem; border-radius:6px; padding:4px 10px; cursor:pointer;">איפוס 🧹</button>
+            </div>
+            <!-- Scaled Interactive Page Sandbox with overlaid glowing absolute click dots -->
+            <div id="heatmap-preview-container" style="flex:1; background:#0b0b0c; border:1px solid #2c2c2e; border-radius:12px; position:relative; overflow:hidden; min-height:360px;">
+              <!-- Graphic homepage mockup wrapper -->
+              <div style="width:100%; height:100%; padding:20px; display:flex; flex-direction:column; gap:12px; opacity:0.25; filter:blur(0.5px); pointer-events:none; user-select:none;">
+                <div style="height:32px; background:#1c1c1e; border-radius:6px; width:100%;"></div>
+                <div style="height:120px; background:#1c1c1e; border-radius:6px; width:100%;"></div>
+                <div style="display:flex; gap:12px; flex:1;">
+                  <div style="flex:2; background:#1c1c1e; border-radius:6px;"></div>
+                  <div style="flex:1; background:#1c1c1e; border-radius:6px;"></div>
+                </div>
+              </div>
+              <!-- Floating Click Overlay Spots will be drawn dynamically by JS here -->
+              <div id="heatmap-overlay-spots" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
+            </div>
+          </div>
         </div>
       </div>
 

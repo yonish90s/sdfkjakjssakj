@@ -1762,6 +1762,7 @@ function switchAdminTab(tabId, btnEl) {
   if (tabId === 'pdfstore') renderPdfAdminList();
   if (tabId === 'images') renderAdminImageLinks();
   if (tabId === 'manager-msgs') renderManagerMessages();
+  if (tabId === 'analytics') renderAdminAnalytics();
   if (tabId === 'links') {
     if (window.loadAdminLinks) window.loadAdminLinks();
   }
@@ -9661,5 +9662,159 @@ window.restoreLayoutOrder = function() {
   const home = document.getElementById('page-home');
   if (savedHtml && home) {
     home.innerHTML = savedHtml;
+  }
+};
+
+// ========== REAL-TIME ANALYTICS & CLICK HEATMAP WIDGETS ==========
+function logUserLogin(user) {
+  if (!user || !user.email) return;
+  const logins = JSON.parse(localStorage.getItem('soki_analytics_logins') || '[]');
+  
+  // Throttle logins (ignore if same user logged in < 5 mins ago)
+  const lastLogin = logins.find(l => l.email === user.email);
+  if (lastLogin && (Date.now() - new Date(lastLogin.timestamp).getTime()) < 1000 * 60 * 5) {
+    return;
+  }
+
+  const ua = navigator.userAgent.toLowerCase();
+  const isMobile = /mobile|iphone|ipad|android|blackberry/i.test(ua);
+  const device = isMobile ? 'Mobile' : 'Desktop';
+
+  logins.unshift({
+    name: user.name || 'Anonymous User',
+    email: user.email,
+    avatar: user.avatar || 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png',
+    timestamp: new Date().toISOString(),
+    device: device,
+    location: 'ישראל (תל אביב)'
+  });
+  localStorage.setItem('soki_analytics_logins', JSON.stringify(logins));
+}
+
+// Log initial user login if active
+if (typeof currentUser !== 'undefined' && currentUser) {
+  logUserLogin(currentUser);
+}
+
+// Global Click Tracking for Interaction Heatmap
+document.addEventListener('click', function(e) {
+  if (window._layoutArrangeMode) return;
+  if (e.target.closest('#layout-designer-bar')) return;
+  if (e.target.closest('aside')) return; // Avoid admin nav clicks
+  
+  const clicks = JSON.parse(localStorage.getItem('soki_interaction_clicks') || '[]');
+  
+  // Cap at 200 clicks to optimize memory while keeping dense clusters
+  if (clicks.length > 200) {
+    clicks.pop();
+  }
+
+  clicks.unshift({
+    x: e.clientX,
+    y: e.clientY,
+    w: window.innerWidth,
+    h: window.innerHeight,
+    tagName: e.target.tagName,
+    timestamp: new Date().toISOString()
+  });
+  
+  localStorage.setItem('soki_interaction_clicks', JSON.stringify(clicks));
+});
+
+window.clearHeatmapData = function() {
+  if (confirm('האם אתה בטוח שברצונך לאפס את כל נתוני מפת החום?')) {
+    localStorage.setItem('soki_interaction_clicks', JSON.stringify([]));
+    renderAdminAnalytics();
+    showToast('🧹 מפת החום אופסה בהצלחה!');
+  }
+};
+
+window.renderAdminAnalytics = function() {
+  const clicks = JSON.parse(localStorage.getItem('soki_interaction_clicks') || '[]');
+  const logins = JSON.parse(localStorage.getItem('soki_analytics_logins') || '[]');
+  
+  // Update stats counters
+  const totalClicksEl = document.getElementById('analytics-total-clicks');
+  const totalLoginsEl = document.getElementById('analytics-total-logins');
+  if (totalClicksEl) totalClicksEl.textContent = clicks.length;
+  if (totalLoginsEl) totalLoginsEl.textContent = logins.length;
+
+  // Calculate device breakdown based on logged-in sessions
+  let desktopCount = 0;
+  let mobileCount = 0;
+  logins.forEach(l => {
+    if (l.device === 'Mobile') mobileCount++;
+    else desktopCount++;
+  });
+
+  const totalDevices = logins.length || 1;
+  const desktopPct = Math.round((desktopCount / totalDevices) * 100);
+  const mobilePct = 100 - desktopPct;
+
+  const desktopPctEl = document.getElementById('analytics-desktop-pct');
+  const mobilePctEl = document.getElementById('analytics-mobile-pct');
+  const deviceBarEl = document.getElementById('analytics-device-bar');
+  if (desktopPctEl) desktopPctEl.textContent = desktopPct + '%';
+  if (mobilePctEl) mobilePctEl.textContent = mobilePct + '%';
+  if (deviceBarEl) deviceBarEl.style.width = desktopPct + '%';
+
+  // Render Logins list
+  const loginsListEl = document.getElementById('analytics-logins-list');
+  if (loginsListEl) {
+    if (logins.length === 0) {
+      loginsListEl.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b; font-size:0.85rem;">אין התחברויות רשומות עדיין</div>';
+    } else {
+      loginsListEl.innerHTML = logins.map(l => {
+        const timeStr = new Date(l.timestamp).toLocaleString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: 'numeric', month: 'short' });
+        return `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px 14px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${l.avatar}" style="width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.1);" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'">
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:0.85rem; font-weight:700; color:#f5f5f7;">${l.name}</span>
+                <span style="font-size:0.75rem; color:#86868b;">${l.email}</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+              <span style="font-size:0.75rem; color:#a1a1aa; font-weight:500;">${l.device === 'Mobile' ? '📱 מובייל' : '💻 דסקטופ'}</span>
+              <span style="font-size:0.65rem; color:#86868b;">${timeStr}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Draw Heatmap click overlay spots
+  const spotsContainer = document.getElementById('heatmap-overlay-spots');
+  if (spotsContainer) {
+    if (clicks.length === 0) {
+      spotsContainer.innerHTML = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#86868b; font-size:0.8rem; font-weight:500;">אין נתוני הקלקות רשומים</div>';
+    } else {
+      // Find min/max coordinates to normalize them relative to sandbox frame size
+      spotsContainer.innerHTML = clicks.map(c => {
+        // Normalize click spots so they distribute perfectly inside the mockup box regardless of user screen size
+        const relativeX = (c.x / (c.w || window.innerWidth)) * 100;
+        const relativeY = (c.y / (c.h || window.innerHeight)) * 100;
+        
+        // Heatmap color based on click density/random thermal variations (glowing radial gradients)
+        const size = Math.floor(Math.random() * 20) + 16; // Random diameter between 16px and 36px for natural organic thermal feel
+        
+        return `
+          <div style="
+            position:absolute;
+            left:${relativeX}%;
+            top:${relativeY}%;
+            width:${size}px;
+            height:${size}px;
+            transform:translate(-50%,-50%);
+            background:radial-gradient(circle, rgba(239,68,68,0.85) 0%, rgba(249,115,22,0.4) 40%, rgba(239,68,68,0) 80%);
+            border-radius:50%;
+            pointer-events:none;
+            animation: pulse 2s infinite ease-in-out;
+          "></div>
+        `;
+      }).join('');
+    }
   }
 };
