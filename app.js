@@ -4207,30 +4207,56 @@ async function loadAliExpressProducts() {
 
 const shopProducts = [
   {
-    id: 'p1',
-    title: 'Sports Shoes Pro 3D',
-    cat: 'Fashion',
-    desc: 'Advanced running shoes with shock absorption technology. Rotate to see the sole!',
-    price: '$450',
-    img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=600',
-    model3d: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' // Example model (Astronaut for illustration)
-  },
-  {
-    id: 'p2',
-    title: 'Designer Chair 360',
+    id: 'meadow-pillow',
+    title: 'Meadow High Pile Cushion',
+    brand: 'Ferm Living',
     cat: 'Home',
-    desc: 'Ergonomic chair providing perfect back support. Luxury minimalist design.',
-    price: '$890',
-    img: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&q=80&w=600',
-    model3d: 'https://modelviewer.dev/shared-assets/models/Chair.glb' // Real chair model
+    desc: 'Shaggy high pile cushion made of premium organic wool and filled with luxury feathers.',
+    price: '$195.00',
+    img: 'assets/meadow_high_pile_cushion.png',
+    optionsText: null,
+    colors: ['Beige/Cream', 'Soft Rose', 'Sage', 'Charcoal'],
+    colorSwatches: ['#c4a882', '#d4a0a0', '#8faa8b', '#4a4a4a'],
+    quickShip: true
   },
   {
-    id: 'p3',
-    title: 'Studio Headphones 3D',
-    cat: 'Electronics',
-    desc: 'Immersive sound experience. Rotate to see the metallic finish.',
-    price: '$1,200',
-    img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600'
+    id: 'oleo-pillow',
+    title: 'Oleo Cushion',
+    brand: 'Ferm Living',
+    cat: 'Home',
+    desc: 'Striped linen throw pillow with thick vertical contrast stitching. Extremely popular.',
+    price: '$115.00',
+    img: 'assets/oleo_cushion.png',
+    optionsText: '4 options available',
+    colors: ['NATURAL/BLACK', 'SEASHELL/GOLD', 'CHARCOAL/DARK'],
+    colorSwatches: ['#c08060', '#d4b483', '#5a6a72', '#1c1c1e'],
+    quickShip: true
+  },
+  {
+    id: 'weaver-throw',
+    title: 'Weaver Throw',
+    brand: 'Ferm Living',
+    cat: 'Home',
+    desc: 'Luxurious woven throw blanket with fringe details. Perfectly styled for contemporary living rooms.',
+    price: '$155.00',
+    img: 'assets/weaver_throw.png',
+    optionsText: '5 options available',
+    colors: ['Off-White', 'Muted Rose', 'Sage Green', 'Mustard', 'Oatmeal'],
+    colorSwatches: ['#e8e0d4', '#c9a0a0', '#8faa8b', '#c8a85a', '#d4c4a8'],
+    quickShip: true
+  },
+  {
+    id: 'naive-pillow',
+    title: 'Naive Cushion',
+    brand: 'Ferm Living',
+    cat: 'Home',
+    desc: 'Embroidered cotton canvas cushion with a beautiful artistic bird and celestial elements.',
+    price: '$85.00',
+    img: 'assets/naive_cushion.png',
+    optionsText: '2 options available',
+    colors: ['Cream/Multi', 'Navy/Gold'],
+    colorSwatches: ['#c08060', '#d4b483', '#8faa8b', '#1c1c1e'],
+    quickShip: true
   }
 ];
 
@@ -4259,47 +4285,48 @@ function renderShopGrid() {
   const grid = document.getElementById('shop-grid');
   if (!grid) return;
 
-  const shopHtml = shopProducts.map(p => `
-    <div class="shop-card">
-      <div class="shop-card-image" style="position:relative; overflow:hidden;">
-        ${p.model3d ? `
-          <model-viewer
-            src="${p.model3d}"
-            camera-controls
-            auto-rotate
-            shadow-intensity="1"
-            style="width:100%; height:250px; background:#f5f5f7;"
-            alt="${p.title}">
-          </model-viewer>
-        ` : `
-          <img src="${p.img}" alt="${p.title}" loading="lazy">
-        `}
+  const shopHtml = shopProducts.map(p => {
+    const swatches = (p.colorSwatches || []).slice(0, 4).map(c =>
+      `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1.5px solid rgba(0,0,0,0.1);flex-shrink:0;"></span>`
+    ).join('');
+    const optionsLabel = p.optionsText || (p.colors ? `${p.colors.length} options available` : '');
+    return `
+    <div class="shop-card" onclick="window.openProductDetailsModal('${p.id}')">
+      <div class="shop-card-image">
+        ${p.quickShip ? `<div class="quick-ship-badge"><span>QUICK</span><span>SHIP</span></div>` : ''}
+        <img src="${p.img}" alt="${p.title}" loading="lazy">
       </div>
       <div class="shop-card-body">
-        <span class="shop-card-cat">${p.cat}</span>
         <h3 class="shop-card-title">${p.title}</h3>
-        <p class="shop-card-desc">${p.desc}</p>
-        <div class="shop-card-footer">
-          <span class="shop-card-price">${p.price}</span>
-          <button class="shop-card-btn" onclick="addToCart('${p.id}', 'product')">+ Add to Cart</button>
-        </div>
+        <span class="shop-card-brand">${p.brand || 'Ferm Living'}</span>
+        ${optionsLabel ? `
+          <div class="shop-card-options">
+            ${swatches}
+            <span>${optionsLabel}</span>
+          </div>
+        ` : ''}
+        <span class="shop-card-price">${p.price}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   const softwareHtml = store3dProducts.map(p => `
-    <div class="shop-card">
-      <div class="shop-card-image" style="position:relative; overflow:hidden;">
+    <div class="shop-card" onclick="window.openProductDetailsModal('${p.id}')">
+      <div class="shop-card-image">
+        <div class="quick-ship-badge" style="background:#5a31f4;">
+          <span>PRO</span>
+          <span>APPS</span>
+        </div>
         <img src="${p.image}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600'">
       </div>
       <div class="shop-card-body">
-        <span class="shop-card-cat">Software</span>
         <h3 class="shop-card-title">${p.title}</h3>
-        <p class="shop-card-desc">${p.desc}</p>
-        <div class="shop-card-footer">
-          <span class="shop-card-price">$${p.price}</span>
-          <button class="shop-card-btn" onclick="addToCart('${p.id}', 'store3d')">+ Add to Cart</button>
+        <span class="shop-card-brand">Antigravity Pro</span>
+        <div class="shop-card-options">
+          <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#5a31f4;border:1.5px solid rgba(0,0,0,0.1);"></span>
+          <span>Instant Download</span>
         </div>
+        <span class="shop-card-price">$${p.price}.00</span>
       </div>
     </div>
   `).join('');
