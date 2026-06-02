@@ -10121,17 +10121,17 @@ window.openGiantArticlePage = function() {
   overlay.style.display = 'flex';
   window._giantArticleIndex = 0;
   
-  // Render current article
+  // Render first slide
   window.renderGiantArticle();
   
   // Render bottom social row dynamically using real configuration values
   window.renderGiantSocialRow();
 
-  // Setup auto-rotate interval of 6 seconds
+  // Setup auto-rotate interval of 5 seconds
   if (window._giantArticleInterval) clearInterval(window._giantArticleInterval);
-  window._giantArticleInterval = setInterval(window.nextGiantArticle, 6000);
+  window._giantArticleInterval = setInterval(window.nextGiantArticle, 5000);
   
-  showToast('📺 נכנס למצב קולנוע: מצגת כתבות ענקית');
+  showToast('📺 מצגת מסך ענק פעילה. לחץ בכל מקום כדי לצאת.');
 };
 
 window.closeGiantArticlePage = function() {
@@ -10145,12 +10145,19 @@ window.closeGiantArticlePage = function() {
 };
 
 window.renderGiantArticle = function() {
-  // Use newsArticles global list or fall back to defaultNewsArticles
+  // 1. Fetch custom images set by the admin in "תמונות למסך ענק" tab
   let list = [];
-  if (typeof newsArticles !== 'undefined') {
-    list = newsArticles;
-  } else if (typeof defaultNewsArticles !== 'undefined') {
-    list = defaultNewsArticles;
+  if (window.getAdminMediaLinks) {
+    list = window.getAdminMediaLinks();
+  }
+
+  // 2. Fallback to newsArticles cover images if no custom images exist
+  if (list.length === 0) {
+    if (typeof newsArticles !== 'undefined') {
+      list = newsArticles.map(a => ({ img: a.image }));
+    } else if (typeof defaultNewsArticles !== 'undefined') {
+      list = defaultNewsArticles.map(a => ({ img: a.image }));
+    }
   }
 
   if (list.length === 0) return;
@@ -10159,42 +10166,18 @@ window.renderGiantArticle = function() {
   if (window._giantArticleIndex >= list.length) window._giantArticleIndex = 0;
   if (window._giantArticleIndex < 0) window._giantArticleIndex = list.length - 1;
 
-  const article = list[window._giantArticleIndex];
-  
-  // Grab DOM elements
+  const item = list[window._giantArticleIndex];
+  if (!item || !item.img) return;
+
   const bgCover = document.getElementById('giant-bg-cover');
-  const slideContainer = document.getElementById('giant-slide-container');
-  const catSpan = document.getElementById('giant-category');
-  const timeSpan = document.getElementById('giant-time');
-  const titleH = document.getElementById('giant-title');
-  const authorSpan = document.getElementById('giant-author');
-  const snippetP = document.getElementById('giant-snippet');
-  const imgFrame = document.getElementById('giant-img-frame');
-  const readBtn = document.getElementById('giant-btn-read');
-
-  if (!article) return;
-
-  // Crossfade effect: briefly lower opacity
-  if (slideContainer) slideContainer.style.opacity = '0.3';
-
-  setTimeout(() => {
-    if (bgCover) bgCover.style.backgroundImage = `url('${article.image}')`;
-    if (imgFrame) imgFrame.src = article.image;
-    if (catSpan) catSpan.textContent = article.category || 'חדשות';
-    if (timeSpan) timeSpan.textContent = article.time || 'עכשיו';
-    if (titleH) titleH.textContent = article.title || 'כותרת הכתבה';
-    if (authorSpan) authorSpan.textContent = `מאת: ${article.author || 'כתב מערכת'}`;
-    if (snippetP) snippetP.textContent = article.snippet || '';
-    
-    if (readBtn) {
-      readBtn.onclick = function() {
-        window.closeGiantArticlePage();
-        if (window.showArticle) window.showArticle(article.id);
-      };
-    }
-
-    if (slideContainer) slideContainer.style.opacity = '1';
-  }, 200);
+  if (bgCover) {
+    // Crossfade transition: lower opacity, update image, fade back in
+    bgCover.style.opacity = '0.3';
+    setTimeout(() => {
+      bgCover.style.backgroundImage = `url('${item.img}')`;
+      bgCover.style.opacity = '1';
+    }, 250);
+  }
 };
 
 window.nextGiantArticle = function() {

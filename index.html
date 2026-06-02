@@ -1295,6 +1295,7 @@
         <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
         <button class="admin-nav-btn" data-admin-tab="links" onclick="switchAdminTab('links', this)" style="color: #a1a1aa;"><i class="fas fa-link"></i> ניהול קישורים</button>
         <button class="admin-nav-btn" data-admin-tab="backup" onclick="switchAdminTab('backup', this)" style="color: #a1a1aa;"><i class="fas fa-history"></i> גיבוי ושחזור</button>
+        <button class="admin-nav-btn" data-admin-tab="images" onclick="switchAdminTab('images', this)" style="color: #a1a1aa;"><i class="fas fa-images"></i> תמונות למסך ענק</button>
         
         <button class="admin-nav-btn" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)" style="color: #a1a1aa;"><i class="fas fa-comment-dots"></i> הודעות למנהל <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.7rem; margin-right:4px;"></span></button>
         <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
@@ -1594,6 +1595,51 @@
 
         <div id="backup-timeline-container" style="display:flex; flex-direction:column; gap:12px; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:20px; min-height:150px;">
           <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+
+      <!-- 9. IMAGES TAB FOR CINEMA MODE -->
+      <div id="admin-section-images" class="admin-section" style="display: none; direction: rtl; text-align: right;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:24px; gap:16px;">
+          <div>
+            <h2 style="margin: 0 0 8px 0; font-size: 1.5rem; color: #fafafa;">🖼️ ניהול תמונות למסך ענק</h2>
+            <p style="color: #a1a1aa; font-size: 0.95rem; margin:0;">הוסף ונהל תמונות למצגת מסך ענק במצב קולנוע. התמונות יתחלפו אוטומטית בצורה נקייה וחלקה.</p>
+          </div>
+          <button onclick="openAdminImageEditor()" class="btn-primary" style="height: 40px; padding: 0 20px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; background: #0071e3; border: none; border-radius: 8px;">
+            <i class="fas fa-plus"></i> הוסף תמונה חדשה
+          </button>
+        </div>
+
+        <!-- Image Editor Modal Form (Inline) -->
+        <div id="admin-image-editor" class="hidden" style="background: #1c1c1e; border: 1px solid #2c2c2e; padding: 24px; border-radius: 16px; display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px;">
+          <h3 style="margin: 0 0 8px 0; color: #fff; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-edit" style="color:#0071e3;"></i> ערוך פרטי תמונה
+          </h3>
+          <input type="hidden" id="image-edit-id">
+          
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 700; color: #a1a1aa; font-size: 0.88rem;">כותרת התמונה (לזיהוי בפאנל)</label>
+            <input type="text" id="image-title" class="admin-input" placeholder="לדוגמה: רקע טכנולוגי, שקף מבצעים" style="width: 100%; border-radius: 8px; border: 1px solid #3a3a3c; padding: 12px; background: #0b0b0c; color: #fff; font-size: 0.9rem;">
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 700; color: #a1a1aa; font-size: 0.88rem;">כתובת קישור לתמונה (URL)</label>
+            <input type="url" id="image-url" class="admin-input" placeholder="https://images.unsplash.com/photo-..." style="width: 100%; border-radius: 8px; border: 1px solid #3a3a3c; padding: 12px; background: #0b0b0c; color: #fff; font-size: 0.9rem;">
+          </div>
+
+          <!-- Keep hidden links input so it doesn't crash app.js saving logic -->
+          <div style="display: none;">
+            <input type="text" id="image-link" value="#">
+          </div>
+          
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <button onclick="saveAdminImageLink()" class="btn-primary" style="height: 42px; padding: 0 24px; font-weight: 700; background:#0071e3; border:none; border-radius:8px;">שמור תמונה 💾</button>
+            <button onclick="closeAdminImageEditor()" class="btn-primary" style="height: 42px; padding: 0 24px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius:8px;">ביטול ✕</button>
+          </div>
+        </div>
+
+        <div id="admin-images-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 12px;">
+          <!-- Loaded dynamically by app.js -->
         </div>
       </div>
 
@@ -2717,69 +2763,12 @@
     </div>
   </div>
   <!-- Giant Article Cinema Mode Overlay -->
-  <div id="page-giant-hero" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999900; background: #050508; flex-direction: column; overflow: hidden; font-family: system-ui, -apple-system, sans-serif;">
-    <!-- Giant Background Cover Image (with blur and dark overlay) -->
-    <div id="giant-bg-cover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(30px) brightness(0.25); transform: scale(1.15); transition: background-image 0.8s ease; z-index: 1;"></div>
+  <div id="page-giant-hero" onclick="if(!event.target.closest('#giant-social-icons-row')) closeGiantArticlePage()" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999900; background: #000; flex-direction: column; overflow: hidden; cursor: pointer;" title="לחץ בכל מקום כדי לצאת ✕">
+    <!-- Giant Background Cover Image (with crossfade transition) -->
+    <div id="giant-bg-cover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: background-image 0.8s ease-in-out; z-index: 1;"></div>
     
-    <!-- Premium radial/vignette overlay for cinema focus -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 100%); z-index: 2; pointer-events: none;"></div>
-
-    <!-- Close Button -->
-    <button onclick="closeGiantArticlePage()" style="position: absolute; top: 24px; left: 24px; z-index: 10; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.25s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'; this.style.borderColor='rgba(239,68,68,0.4)'; this.style.transform='scale(1.08)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.12)'; this.style.transform='none'">
-      ✕
-    </button>
-
-    <!-- Main Viewport Content Layout -->
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px 100px 24px; z-index: 5; position: relative;">
-      
-      <!-- Slide Container (Holds cover + details centered) -->
-      <div id="giant-slide-container" style="max-width: 1200px; width: 100%; display: flex; gap: 40px; align-items: center; justify-content: center; direction: rtl; text-align: right; transition: opacity 0.5s ease;">
-        
-        <!-- Left Side: Massive Premium Article Details -->
-        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 16px; min-width: 320px;">
-          
-          <!-- Category & Time Row -->
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span id="giant-category" style="background: #818cf8; color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(129,140,248,0.35);">קטגוריה</span>
-            <span id="giant-time" style="color: #a1a1aa; font-size: 0.9rem; font-weight: 500;">זמן פרסום</span>
-          </div>
-
-          <!-- Giant Headline -->
-          <h1 id="giant-title" style="font-size: 3.5rem; font-weight: 900; line-height: 1.2; color: #fff; margin: 8px 0; text-shadow: 0 4px 20px rgba(0,0,0,0.6); font-family: 'Inter', system-ui, sans-serif;">כותרת הכתבה</h1>
-          
-          <!-- Author -->
-          <span id="giant-author" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; font-weight: 600;">מאת: כתב מערכת</span>
-
-          <!-- Snippet -->
-          <p id="giant-snippet" style="font-size: 1.15rem; color: #d1d1d6; line-height: 1.6; margin: 8px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">תקציר הכתבה...</p>
-
-          <!-- Buttons -->
-          <div style="display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
-            <button id="giant-btn-read" class="btn-primary" style="background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%); border: none; box-shadow: 0 4px 20px rgba(129,140,248,0.3); font-weight: 800; padding: 14px 28px; font-size: 1rem; border-radius: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.25s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(129,140,248,0.45)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 20px rgba(129,140,248,0.3)'">
-              קרא את הכתבה המלאה <i class="fas fa-book-open"></i>
-            </button>
-            <div style="display: flex; gap: 10px;">
-              <button onclick="prevGiantArticle()" style="width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-                <i class="fas fa-arrow-right"></i>
-              </button>
-              <button onclick="nextGiantArticle()" style="width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-                <i class="fas fa-arrow-left"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Side: Beautiful Giant Cover Image (Framed) -->
-        <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
-          <div style="position: relative; width: 100%; max-width: 500px; aspect-ratio: 16/10; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.12);">
-            <img id="giant-img-frame" src="" style="width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease;" />
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 50%);"></div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
+    <!-- Dark subtle overlay for premium visual comfort -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.05); z-index: 2; pointer-events: none;"></div>
 
     <!-- Fixed Bottom Social Networks Bar -->
     <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; gap: 24px; z-index: 10;">
