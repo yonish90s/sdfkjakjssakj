@@ -9418,9 +9418,9 @@ window.enableLayoutDesignerMode = function() {
       <div style="display:flex; flex-direction:column; gap:2px;">
         <span style="font-weight:800; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:6px;">
           <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation: pulse 1.5s infinite;"></span>
-          מצב סידור מיקומים פעיל
+          מצב סידור חופשי פעיל 🔧
         </span>
-        <span style="font-size:0.75rem; color:#a1a1aa;">גרור בלוקים כדי לסדר מחדש, לחץ על "שמור וצא" לסיום.</span>
+        <span style="font-size:0.75rem; color:#a1a1aa;">לחץ לחיצה כפולה (Double Click) על כל אלמנט/אות באתר וגרור אותו לכל מקום!</span>
       </div>
       <button onclick="saveLayoutDesignerOrder()" style="background:#10b981; color:#fff; border:none; padding:8px 18px; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">שמור וצא 💾</button>
     `;
@@ -9517,6 +9517,112 @@ function handleDragEnd(e) {
   });
 }
 
+// Global event listeners for Free Drag Mode
+document.addEventListener('dblclick', function(e) {
+  if (!window._layoutArrangeMode) return;
+  if (e.target.closest('#layout-designer-bar')) return;
+  if (e.target.closest('aside')) return; // Don't drag admin sidebar items
+
+  const el = e.target;
+  el.setAttribute('draggable', 'true');
+  el.classList.add('free-draggable-element');
+  
+  el.style.border = '2px dashed #10b981';
+  el.style.background = 'rgba(16, 185, 129, 0.05)';
+  el.style.cursor = 'grab';
+  
+  showToast('✋ אלמנט מוכן לגרירה! גרור אותו לכל מקום.');
+});
+
+document.addEventListener('dragstart', function(e) {
+  if (!window._layoutArrangeMode) return;
+  window._freeDraggingElement = e.target;
+  e.target.style.opacity = '0.5';
+});
+
+document.addEventListener('dragover', function(e) {
+  if (!window._layoutArrangeMode || !window._freeDraggingElement) return;
+  e.preventDefault();
+  
+  const target = e.target;
+  if (target === window._freeDraggingElement || target.closest('#layout-designer-bar')) return;
+  
+  // Show visual drop cue
+  if (target.style && !target.classList.contains('free-draggable-element')) {
+    target.style.borderTop = '3px solid #10b981';
+  }
+});
+
+document.addEventListener('dragleave', function(e) {
+  if (!window._layoutArrangeMode) return;
+  if (e.target && e.target.style) {
+    e.target.style.borderTop = '';
+  }
+});
+
+document.addEventListener('drop', function(e) {
+  if (!window._layoutArrangeMode || !window._freeDraggingElement) return;
+  e.preventDefault();
+  
+  const target = e.target;
+  if (target.style) target.style.borderTop = '';
+  
+  if (target === window._freeDraggingElement || target.closest('#layout-designer-bar')) return;
+  
+  const rect = target.getBoundingClientRect();
+  const next = e.clientY > rect.top + rect.height / 2;
+  
+  if (target.parentNode) {
+    if (next) {
+      target.parentNode.insertBefore(window._freeDraggingElement, target.nextSibling);
+    } else {
+      target.parentNode.insertBefore(window._freeDraggingElement, target);
+    }
+  }
+  
+  saveFreeLayoutState();
+});
+
+document.addEventListener('dragend', function(e) {
+  if (!window._layoutArrangeMode) return;
+  if (window._freeDraggingElement) {
+    window._freeDraggingElement.style.opacity = '1';
+  }
+  
+  // Clean up dragover border highlights
+  document.querySelectorAll('*').forEach(el => {
+    if (el.style && el.style.borderTop === '3px solid rgb(16, 185, 129)') {
+      el.style.borderTop = '';
+    }
+  });
+});
+
+function saveFreeLayoutState() {
+  const home = document.getElementById('page-home');
+  if (!home) return;
+  
+  // Create a clone to clean up styles before saving
+  const clone = home.cloneNode(true);
+  
+  // Remove drag indicators and handle divs from the clone
+  clone.querySelectorAll('.free-draggable-element').forEach(el => {
+    el.removeAttribute('draggable');
+    el.classList.remove('free-draggable-element');
+    el.style.border = '';
+    el.style.background = '';
+    el.style.cursor = '';
+    el.style.opacity = '';
+  });
+  clone.querySelectorAll('.layout-drag-handle').forEach(el => el.remove());
+  clone.querySelectorAll('.layout-designer-block').forEach(el => {
+    el.removeAttribute('draggable');
+    el.classList.remove('layout-designer-block');
+  });
+
+  // Save the cleaned innerHTML
+  localStorage.setItem('soki_home_custom_html_v3', clone.innerHTML);
+}
+
 window.saveLayoutDesignerOrder = function() {
   window._layoutArrangeMode = false;
   
@@ -9524,58 +9630,36 @@ window.saveLayoutDesignerOrder = function() {
   const bar = document.getElementById('layout-designer-bar');
   if (bar) bar.style.display = 'none';
 
-  // Save current order
+  // Save custom innerHTML of page home
   const home = document.getElementById('page-home');
   if (home) {
     home.classList.remove('layout-designer-active');
     
-    const blocks = getLayoutBlocks();
-    const order = [];
-    const children = Array.from(home.children);
-    children.forEach(child => {
-      if (child.id) {
-        order.push(child.id);
-      } else if (child.classList.contains('main-news-layout')) {
-        order.push('main-news-layout');
-      }
-    });
-
-    localStorage.setItem('soki_home_layout_order', JSON.stringify(order));
-    
-    // Remove drag handles and attributes
-    blocks.forEach(block => {
-      block.removeAttribute('draggable');
-      block.classList.remove('layout-designer-block');
-      const handle = block.querySelector('.layout-drag-handle');
-      if (handle) handle.remove();
+    // Clean up temporary draggable styling
+    document.querySelectorAll('[draggable="true"]').forEach(el => {
+      el.removeAttribute('draggable');
+      el.classList.remove('free-draggable-element');
+      el.classList.remove('layout-designer-block');
+      el.style.border = '';
+      el.style.background = '';
+      el.style.cursor = '';
+      el.style.opacity = '';
     });
     
-    showToast('💾 מיקומי החלונות נשמרו בהצלחה!');
+    // Remove drag handles
+    document.querySelectorAll('.layout-drag-handle').forEach(handle => handle.remove());
+    
+    // Save final cleaned HTML state
+    saveFreeLayoutState();
+    
+    showToast('💾 מיקומי כל הרכיבים והאותיות נשמרו בהצלחה!');
   }
 };
 
-// Auto restore layout order on initialization
 window.restoreLayoutOrder = function() {
-  const saved = localStorage.getItem('soki_home_layout_order');
-  if (!saved) return;
-  
-  try {
-    const order = JSON.parse(saved);
-    const home = document.getElementById('page-home');
-    if (!home) return;
-    
-    order.forEach(id => {
-      let el = document.getElementById(id);
-      if (!el && id === 'main-news-layout') {
-        el = document.querySelector('.main-news-layout');
-      }
-      if (el && el.parentNode === home) {
-        home.appendChild(el); // Re-appends to the end, effectively sorting them in order
-      }
-    });
-    
-    // Always keep footer at the bottom
-    const footer = home.querySelector('.soki-footer-premium');
-    if (footer) home.appendChild(footer);
-  } catch(e) {}
+  const savedHtml = localStorage.getItem('soki_home_custom_html_v3');
+  const home = document.getElementById('page-home');
+  if (savedHtml && home) {
+    home.innerHTML = savedHtml;
+  }
 };
