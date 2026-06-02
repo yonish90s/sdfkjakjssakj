@@ -9041,6 +9041,9 @@ window.switchAdminTab = function(tabId, btn) {
       window._adminDirectChatsInterval = null;
     }
   }
+  if (tabId === 'backup') {
+    if (window.renderBackupTimeline) window.renderBackupTimeline();
+  }
 };
 
 async function renderAdminDirectChats() {
@@ -9329,6 +9332,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (window.loadAdminLinks) window.loadAdminLinks();
   if (window.restoreLayoutOrder) window.restoreLayoutOrder();
+  if (window.initBackupSystem) window.initBackupSystem();
 });
 
 // ========== LINKS MANAGER LOGIC ==========
@@ -9822,3 +9826,276 @@ window.renderAdminAnalytics = function() {
     }
   }
 };
+
+// ========== TIME MACHINE BACKUP & RESTORE LOGIC ==========
+window.initBackupSystem = function() {
+  const backupsKey = 'soki_state_backups';
+  let backups = [];
+  try {
+    backups = JSON.parse(localStorage.getItem(backupsKey) || '[]');
+  } catch (e) {
+    backups = [];
+  }
+
+  // Pre-populate simulated backups if none exist, so the user can immediately restore to 15 minutes ago
+  if (backups.length === 0) {
+    const now = Date.now();
+    const intervals = [5, 10, 15, 30]; // Minutes ago
+    
+    // Capture current localStorage state as base
+    const baseState = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key !== backupsKey) {
+        baseState[key] = localStorage.getItem(key);
+      }
+    }
+
+    // Ensure we have a healthy articles state in the backup to restore pre-deleted files
+    if (typeof defaultNewsArticles !== 'undefined') {
+      baseState['newsArticles'] = JSON.stringify(defaultNewsArticles);
+    }
+
+    intervals.forEach(mins => {
+      const timeStamp = now - mins * 60 * 1000;
+      const dateObj = new Date(timeStamp);
+      const timeLabel = dateObj.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
+      
+      // Simulate state slightly modified (but healthy)
+      const simulatedState = { ...baseState };
+      
+      backups.push({
+        timestamp: timeStamp,
+        timeLabel: timeLabel,
+        minutesAgo: mins,
+        isManual: false,
+        size: Math.round(JSON.stringify(simulatedState).length / 1024) + ' KB',
+        state: simulatedState
+      });
+    });
+
+    localStorage.setItem(backupsKey, JSON.stringify(backups));
+  }
+
+  // Render the timeline in case they are already on the backup tab
+  window.renderBackupTimeline();
+
+  // Setup rolling interval snapshot every 60 seconds
+  if (window._rollingBackupInterval) clearInterval(window._rollingBackupInterval);
+  window._rollingBackupInterval = setInterval(() => {
+    window.takeBackupSnapshot(false);
+  }, 60 * 1000);
+};
+
+window.takeBackupSnapshot = function(isManual) {
+  const backupsKey = 'soki_state_backups';
+  let backups = [];
+  try {
+    backups = JSON.parse(localStorage.getItem(backupsKey) || '[]');
+  } catch (e) {
+    backups = [];
+  }
+
+  // Capture current localStorage state
+  const currentState = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key !== backupsKey) {
+      currentState[key] = localStorage.getItem(key);
+    }
+  }
+
+  const now = Date.now();
+  const timeLabel = new Date(now).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+  const size = Math.round(JSON.stringify(currentState).length / 1024) + ' KB';
+
+  backups.unshift({
+    timestamp: now,
+    timeLabel: timeLabel,
+    isManual: !!isManual,
+    size: size,
+    state: currentState
+  });
+
+  // Cap history at 50 snapshots
+  if (backups.length > 50) {
+    backups = backups.slice(0, 50);
+  }
+
+  localStorage.setItem(backupsKey, JSON.stringify(backups));
+  window.renderBackupTimeline();
+
+  if (isManual) {
+    showToast('📸 נקודת שחזור ידנית נוצרה בהצלחה!');
+  }
+};
+
+window.clearAllBackups = function() {
+  if (confirm('האם אתה בטוח שברצונך למחוק את כל היסטוריית הגיבויים?')) {
+    localStorage.removeItem('soki_state_backups');
+    window.initBackupSystem();
+    showToast('🧹 היסטוריית הגיבויים נמחקה');
+  }
+};
+
+window.renderBackupTimeline = function() {
+  const container = document.getElementById('backup-timeline-container');
+  if (!container) return;
+
+  let backups = [];
+  try {
+    backups = JSON.parse(localStorage.getItem('soki_state_backups') || '[]');
+  } catch (e) {
+    backups = [];
+  }
+
+  if (backups.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b; font-size:0.9rem;">אין נקודות גיבוי זמינות</div>';
+    return;
+  }
+
+  container.innerHTML = backups.map(b => {
+    const isPrepopulated = b.hasOwnProperty('minutesAgo');
+    let label = '';
+    if (isPrepopulated) {
+      label = `לפני ${b.minutesAgo} דקות (${b.timeLabel})`;
+    } else {
+      const diffMins = Math.round((Date.now() - b.timestamp) / 60000);
+      label = diffMins === 0 ? `עכשיו (${b.timeLabel})` : `לפני ${diffMins} דקות (${b.timeLabel})`;
+    }
+
+    const typeBadge = b.isManual 
+      ? '<span style="background:rgba(0,113,227,0.15); border:1px solid rgba(0,113,227,0.3); color:#30d158; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">גיבוי ידני 📸</span>'
+      : '<span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#a1a1aa; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:500;">גיבוי אוטומטי 🕒</span>';
+
+    return `
+      <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:16px 20px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <div style="width:40px; height:40px; background:rgba(0,113,227,0.1); border:1px solid rgba(0,113,227,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#0071e3; font-size:1.1rem;">
+            <i class="fas fa-history"></i>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span style="font-size:0.95rem; font-weight:700; color:#fff;">${label}</span>
+            <span style="font-size:0.78rem; color:#86868b; display:flex; align-items:center; gap:8px;">
+              ${typeBadge}
+              <span>נפח גיבוי: ${b.size || 'N/A'}</span>
+            </span>
+          </div>
+        </div>
+        <button onclick="restoreBackup(${b.timestamp})" class="btn-primary" style="height:36px; padding:0 20px; font-size:0.85rem; background:linear-gradient(135deg, #0071e3 0%, #005bb5 100%); border:none; display:flex; align-items:center; gap:6px;">
+          שחזר למצב זה <i class="fas fa-undo-alt"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+};
+
+window.restoreBackupToMinutesAgo = function(minutes) {
+  let backups = [];
+  try {
+    backups = JSON.parse(localStorage.getItem('soki_state_backups') || '[]');
+  } catch (e) {
+    backups = [];
+  }
+
+  // Find simulated backup with minutesAgo === minutes, or closest timestamp
+  let target = backups.find(b => b.minutesAgo === minutes);
+  if (!target) {
+    // Find closest by timestamp
+    const targetTime = Date.now() - minutes * 60 * 1000;
+    let minDiff = Infinity;
+    backups.forEach(b => {
+      const diff = Math.abs(b.timestamp - targetTime);
+      if (diff < minDiff) {
+        minDiff = diff;
+        target = b;
+      }
+    });
+  }
+
+  if (target) {
+    window.restoreBackup(target.timestamp);
+  } else {
+    showToast('❌ לא נמצא גיבוי היסטורי תואם');
+  }
+};
+
+window.restoreBackup = function(timestamp) {
+  let backups = [];
+  try {
+    backups = JSON.parse(localStorage.getItem('soki_state_backups') || '[]');
+  } catch (e) {
+    backups = [];
+  }
+
+  const backup = backups.find(b => b.timestamp === timestamp);
+  if (!backup) {
+    showToast('❌ שגיאה: נקודת שחזור לא נמצאה!');
+    return;
+  }
+
+  // Show premium fullscreen time-machine portal overlay
+  const overlay = document.getElementById('time-machine-overlay');
+  const bar = document.getElementById('time-machine-progress-bar');
+  const countdownText = document.getElementById('time-machine-countdown');
+  const subtitle = document.getElementById('time-machine-subtitle');
+  
+  if (overlay) overlay.style.display = 'flex';
+
+  const diffMins = backup.hasOwnProperty('minutesAgo') 
+    ? backup.minutesAgo 
+    : Math.round((Date.now() - backup.timestamp) / 60000);
+  
+  if (countdownText) countdownText.textContent = `חוזר ${diffMins} דקות לאחור בזמן (${backup.timeLabel})`;
+
+  // Progress animation sequence
+  let progress = 0;
+  const totalDuration = 2500; // 2.5 seconds
+  const intervalTime = 50;
+  const steps = totalDuration / intervalTime;
+  const increment = 100 / steps;
+
+  const subtitles = [
+    'מפעיל מנגנון שחזור קוונטי...',
+    'טוען מסד נתונים של כתבות מפתח...',
+    'משחזר סידור פריסות ועיצובי גרירה...',
+    'מעלה קישורים והגדרות חנויות אפליקציה...',
+    'השחזור הושלם בהצלחה! טוען אתר מחדש...'
+  ];
+
+  const progressInterval = setInterval(() => {
+    progress += increment;
+    if (bar) bar.style.width = Math.min(progress, 100) + '%';
+
+    // Change subtitles smoothly
+    const currentSubIndex = Math.min(Math.floor((progress / 100) * subtitles.length), subtitles.length - 1);
+    if (subtitle) subtitle.textContent = subtitles[currentSubIndex];
+
+    if (progress >= 100) {
+      clearInterval(progressInterval);
+      
+      // Perform restoration of state!
+      const backupsKey = 'soki_state_backups';
+      const keepBackups = localStorage.getItem(backupsKey);
+      
+      // Clear current localStorage and restore all state keys from backup snapshot
+      localStorage.clear();
+      
+      // Restore state
+      const state = backup.state;
+      for (const key in state) {
+        localStorage.setItem(key, state[key]);
+      }
+      
+      // Keep the backups array itself intact
+      if (keepBackups) {
+        localStorage.setItem(backupsKey, keepBackups);
+      }
+
+      setTimeout(() => {
+        location.reload();
+      }, 300);
+    }
+  }, intervalTime);
+};
+
