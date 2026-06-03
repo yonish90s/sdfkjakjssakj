@@ -9329,16 +9329,16 @@ async function renderDrawerChatUsersList() {
     const isSelected = activeDrawerChatUserId === u.id;
     
     html += `
-      <div onclick="selectDrawerChatUser('${u.id}')" style="display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; transition:background 0.2s; background:${isSelected ? 'rgba(255,149,0,0.1)' : 'transparent'}; border-bottom:1px solid rgba(255,255,255,0.03);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='${isSelected ? 'rgba(255,149,0,0.1)' : 'transparent'}'">
+      <div onclick="selectDrawerChatUser('${u.id}')" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:20px; cursor:pointer; transition:transform 0.2s, background 0.2s, border-color 0.2s; background:${isSelected ? 'rgba(255,149,0,0.1)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${isSelected ? 'rgba(255,149,0,0.3)' : 'rgba(255,255,255,0.08)'}; border-radius:16px; text-align:center;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='${isSelected ? 'rgba(255,149,0,0.1)' : 'rgba(255,255,255,0.03)'}'">
         <div style="position:relative;">
-          <img src="${u.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-          <span style="position:absolute; bottom:0; right:0; width:10px; height:10px; background:#34c759; border:2px solid #141416; border-radius:50%;"></span>
+          <img src="${u.avatar}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.1);">
+          <span style="position:absolute; bottom:2px; right:2px; width:14px; height:14px; background:#34c759; border:2px solid #141416; border-radius:50%;"></span>
+          ${unreadCount > 0 ? `<span style="position:absolute; top:-6px; left:-6px; background:#ff3b30; color:#fff; font-size:0.8rem; font-weight:800; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(255,59,48,0.4);">${unreadCount}</span>` : ''}
         </div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:700; color:#fff; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
-          <div style="font-size:0.75rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${unreadCount > 0 ? `${unreadCount} new messages` : 'Tap to start chatting'}</div>
+        <div style="width:100%;">
+          <div style="font-weight:800; color:#fff; font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
+          <div style="font-size:0.8rem; color:#86868b; margin-top:6px;">${unreadCount > 0 ? `<span style="color:#ff3b30; font-weight:700;">${unreadCount} הודעות חדשות</span>` : 'הקש כדי לשוחח'}</div>
         </div>
-        ${unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; font-size:0.75rem; font-weight:700; padding:2px 6px; border-radius:10px;">${unreadCount}</span>` : ''}
       </div>
     `;
   }
