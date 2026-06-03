@@ -11531,5 +11531,33 @@ function loadNextInfiniteScrollPage(totalPages) {
   }, 900);
 }
 
+// Forum widget tabs
+window.switchForumWidgetTab = function(tabName, btn) {
+  // Update buttons
+  const buttons = document.querySelectorAll('.forum-widget-tab');
+  buttons.forEach(b => {
+    b.classList.remove('active');
+    b.style.borderBottom = '2px solid transparent';
+    b.style.color = '#86868b';
+    b.style.fontWeight = '600';
+  });
+  if (btn) {
+    btn.classList.add('active');
+    btn.style.borderBottom = '2px solid #facc15';
+    btn.style.color = '#fff';
+    btn.style.fontWeight = '800';
+  }
+  
+  // Update content
+  document.getElementById('fw-content-recent').style.display = 'none';
+  document.getElementById('fw-content-popular').style.display = 'none';
+  
+  const target = document.getElementById('fw-content-' + tabName);
+  if (target) {
+    target.style.display = 'flex';
+  }
+};
+
+
 
 
