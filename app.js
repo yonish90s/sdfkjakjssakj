@@ -11614,10 +11614,16 @@ window.renderBets = function() {
   const container = document.getElementById('bets-container');
   if (!container) return;
   
-  // Update balance display
+  // Update balance display on bets page
   const balanceDisplay = document.getElementById('betting-balance-display');
   if (balanceDisplay) {
     balanceDisplay.innerHTML = `${userBalance.toLocaleString()} <i class="fas fa-coins" style="font-size:1.1rem;"></i>`;
+  }
+  
+  // Update balance display in dropdown
+  const dropdownCoins = document.getElementById('dropdown-coins-amount');
+  if (dropdownCoins) {
+    dropdownCoins.innerHTML = `${userBalance.toLocaleString()} Coins`;
   }
   
   container.innerHTML = bettingEvents.map(event => `
@@ -11699,6 +11705,13 @@ window.showPage = function(pageId) {
   originalShowPageForBets(pageId);
   if (pageId === 'bets') {
     renderBets();
+  }
+};
+
+window.openOrderTrackingModal = function() {
+  const modal = document.getElementById('order-tracking-modal');
+  if (modal) {
+    modal.style.display = 'flex';
   }
 };
 
