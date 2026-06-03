@@ -8357,8 +8357,13 @@ body.dark-theme .tutorial-desc {
 /* Override page padding for admin */
 .shopify-admin-page {
   padding: 0 !important;
-  max-width: 100% !important;
+  max-width: 100vw !important;
+  width: 100vw !important;
+  margin: 0 !important;
   overflow: visible;
+  /* stretch to fill full width ignoring SOKI page constraints */
+  position: relative;
+  left: 0;
 }
 
 .shopify-admin-wrapper {
@@ -8366,6 +8371,7 @@ body.dark-theme .tutorial-desc {
   min-height: calc(100vh - 60px);
   direction: ltr;
   background: #f6f6f7;
+  width: 100%;
 }
 
 /* ---- SIDEBAR ---- */
@@ -8606,4 +8612,308 @@ body.dark-theme .tutorial-desc {
   .shopify-sidebar-nav { flex-direction: row; padding: 8px; }
   .shopify-nav-group-label { display: none; }
   .shopify-admin-main { padding: 20px 16px; }
+}
+
+/* ============================================ */
+/* SHOPIFY ADMIN — COMPONENTS                   */
+/* ============================================ */
+
+/* Page header */
+.sp-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+  direction: rtl;
+}
+.sp-page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+}
+.sp-page-subtitle { font-size: 0.78rem; color: #9ca3af; }
+
+/* Buttons */
+.sp-btn-primary {
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+.sp-btn-primary:hover { opacity: 0.85; }
+.sp-btn-outline {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.sp-btn-outline:hover { background: #f9fafb; }
+
+/* Card */
+.sp-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.sp-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 16px 0;
+}
+
+/* KPI strip */
+.sp-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.sp-kpi-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+.sp-kpi-label { font-size: 0.78rem; color: #6b7280; margin-bottom: 6px; }
+.sp-kpi-val { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+.sp-kpi-bar { height: 2px; background: #2563eb; width: 40px; margin-top: 8px; border-radius: 1px; }
+
+/* Charts grid */
+.sp-charts-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.sp-charts-3col {
+  grid-template-columns: repeat(3, 1fr);
+}
+.sp-chart-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+.sp-chart-wide { grid-column: span 1; }
+.sp-chart-title { font-size: 0.875rem; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; }
+.sp-chart-big-val { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin-bottom: 12px; }
+.sp-chart-placeholder { background: #f9fafb; border-radius: 6px; min-height: 120px; display:flex;align-items:flex-end;padding:12px; }
+.sp-no-data { display:flex;align-items:center;justify-content:center;min-height:100px;color:#9ca3af;font-size:0.875rem; }
+
+/* Breakdown list */
+.sp-breakdown-list { display:flex;flex-direction:column;gap:0; }
+.sp-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
+  color: #374151;
+}
+.sp-breakdown-total { font-weight: 700; color: #1a1a2e; border-bottom: none; padding-top: 12px; }
+
+/* Filter chip */
+.sp-filter-chip {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.sp-filter-chip.active { background: #f3f4f6; }
+
+/* Product form layout */
+.sp-product-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: flex-start;
+}
+.sp-product-main { display: flex; flex-direction: column; }
+.sp-product-side { display: flex; flex-direction: column; }
+
+/* Form fields */
+.sp-label { font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 6px; display:block; }
+.sp-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.sp-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.sp-textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.sp-field-group { margin-bottom: 16px; }
+.sp-field-group:last-child { margin-bottom: 0; }
+
+/* Input with prefix */
+.sp-input-prefix {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.sp-input-prefix span {
+  padding: 9px 12px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.875rem;
+  border-left: 1px solid #d1d5db;
+  font-weight: 600;
+}
+.sp-input-prefix input {
+  border: none;
+  outline: none;
+  padding: 9px 12px;
+  font-size: 0.875rem;
+  flex: 1;
+  font-family: inherit;
+}
+
+/* Richtext toolbar */
+.sp-richtext-toolbar {
+  display: flex;
+  gap: 2px;
+  border: 1px solid #d1d5db;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 6px 8px;
+  background: #f9fafb;
+}
+.sp-richtext-toolbar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #374151;
+  font-size: 0.875rem;
+}
+.sp-richtext-toolbar button:hover { background: #e5e7eb; }
+.sp-richtext-toolbar + .sp-textarea { border-radius: 0 0 8px 8px; }
+
+/* Media upload */
+.sp-media-upload {
+  border: 1.5px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 32px;
+  text-align: center;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tags */
+.sp-tag {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  color: #374151;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sp-tag-badge {
+  background: #e5e7eb;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Toggle */
+.sp-toggle-label { display:flex; align-items:center; gap:8px; cursor:pointer; }
+.sp-toggle { position:relative; display:inline-block; width:36px; height:20px; }
+.sp-toggle input { opacity:0; width:0; height:0; }
+.sp-toggle-slider {
+  position:absolute; inset:0;
+  background:#d1d5db; border-radius:20px;
+  transition:background 0.2s;
+}
+.sp-toggle-slider::before {
+  content:''; position:absolute;
+  width:14px; height:14px;
+  left:3px; top:3px;
+  background:#fff; border-radius:50%;
+  transition:transform 0.2s;
+}
+.sp-toggle input:checked + .sp-toggle-slider { background:#1a1a2e; }
+.sp-toggle input:checked + .sp-toggle-slider::before { transform:translateX(16px); }
+
+/* Add option button */
+.sp-add-option-btn {
+  background: none;
+  border: none;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.sp-add-option-btn:hover { color: #1a1a2e; }
+.sp-add-option-btn i { color: #6b7280; }
+
+@media (max-width: 900px) {
+  .sp-kpi-strip { grid-template-columns: repeat(2,1fr); }
+  .sp-charts-grid { grid-template-columns: 1fr; }
+  .sp-charts-3col { grid-template-columns: 1fr 1fr; }
+  .sp-product-layout { grid-template-columns: 1fr; }
 }

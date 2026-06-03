@@ -453,7 +453,15 @@ function showPage(pageId) {
       openAdminLoginModal();
       return;
     }
+    // Hide SOKI sidebar so admin takes full width
+    const appSidebar = document.getElementById('app-sidebar');
+    if (appSidebar) appSidebar.style.display = 'none';
+    document.body.classList.remove('sidebar-expanded');
     if (typeof initAdminDashboard === 'function') initAdminDashboard();
+  } else {
+    // Restore SOKI sidebar when leaving admin
+    const appSidebar = document.getElementById('app-sidebar');
+    if (appSidebar) appSidebar.style.display = '';
   }
   
   if (pageId === 'join') {
