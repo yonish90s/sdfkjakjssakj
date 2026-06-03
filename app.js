@@ -4349,7 +4349,7 @@ window.openProductDetailsModal = function(productId) {
   const titleEl = document.getElementById('detail-product-title');
   if (titleEl) titleEl.textContent = product.title;
   
-  let displayPrice = typeof product.price === 'number' ? \`$\${product.price.toFixed(2)}\` : product.price;
+  let displayPrice = typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : product.price;
   if (displayPrice && !displayPrice.toString().startsWith('$')) displayPrice = '$' + displayPrice;
   const priceEl = document.getElementById('detail-product-price');
   if (priceEl) priceEl.textContent = displayPrice;
