@@ -11558,6 +11558,150 @@ window.switchForumWidgetTab = function(tabName, btn) {
   }
 };
 
+// ==========================================
+// BETTING SYSTEM
+// ==========================================
+
+// Mock betting events
+const bettingEvents = [
+  {
+    id: 'bet1',
+    title: "ליגת האלופות: ריאל מדריד נגד מנצ'סטר סיטי",
+    category: "ספורט",
+    time: "הערב, 22:00",
+    options: [
+      { id: 'opt1', text: "ריאל מדריד", odds: 2.10 },
+      { id: 'opt2', text: "תיקו", odds: 3.40 },
+      { id: 'opt3', text: "מנצ'סטר סיטי", odds: 2.50 }
+    ]
+  },
+  {
+    id: 'bet2',
+    title: "מניית טסלה (TSLA) בסוף יום המסחר",
+    category: "שוק ההון",
+    time: "מחר, 23:00",
+    options: [
+      { id: 'opt1', text: "מעל $250", odds: 1.85 },
+      { id: 'opt2', text: "מתחת $250", odds: 1.95 }
+    ]
+  },
+  {
+    id: 'bet3',
+    title: "מנצחת העונה הקרובה של הישרדות",
+    category: "בידור",
+    time: "בעוד 3 ימים",
+    options: [
+      { id: 'opt1', text: "שבט אדום", odds: 1.50 },
+      { id: 'opt2', text: "שבט כחול", odds: 2.40 }
+    ]
+  },
+  {
+    id: 'bet4',
+    title: "מכבי תל אביב נגד פנאתינייקוס (כדורסל)",
+    category: "ספורט",
+    time: "יום חמישי, 21:05",
+    options: [
+      { id: 'opt1', text: "מכבי ת\"א", odds: 1.90 },
+      { id: 'opt2', text: "פנאתינייקוס", odds: 1.90 }
+    ]
+  }
+];
+
+let userBalance = parseInt(localStorage.getItem('userBettingBalance')) || 1000;
+let currentBetSelection = null; // { eventId, optionId, eventTitle, optionText, odds }
+
+window.renderBets = function() {
+  const container = document.getElementById('bets-container');
+  if (!container) return;
+  
+  // Update balance display
+  const balanceDisplay = document.getElementById('betting-balance-display');
+  if (balanceDisplay) {
+    balanceDisplay.innerHTML = `${userBalance.toLocaleString()} <i class="fas fa-coins" style="font-size:1.1rem;"></i>`;
+  }
+  
+  container.innerHTML = bettingEvents.map(event => `
+    <div style="background:#111; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+        <span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:980px; font-size:0.75rem; color:#a1a1aa; font-weight:600;">${event.category}</span>
+        <span style="font-size:0.8rem; color:#facc15; font-weight:600;"><i class="far fa-clock"></i> ${event.time}</span>
+      </div>
+      <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.4;">${event.title}</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${event.options.map(opt => `
+          <button onclick="openBetModal('${event.id}', '${opt.id}', '${event.title.replace(/'/g, "\\'")}', '${opt.text.replace(/'/g, "\\'")}', ${opt.odds})" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 16px; color:#fff; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+            <span style="font-weight:600; font-size:0.95rem;">${opt.text}</span>
+            <span style="background:#facc15; color:#000; padding:2px 8px; border-radius:6px; font-weight:800; font-size:0.9rem;">${opt.odds.toFixed(2)}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+};
+
+window.openBetModal = function(eventId, optionId, eventTitle, optionText, odds) {
+  currentBetSelection = { eventId, optionId, eventTitle, optionText, odds };
+  
+  document.getElementById('bet-modal-event-title').textContent = eventTitle;
+  document.getElementById('bet-modal-selection').textContent = optionText;
+  document.getElementById('bet-modal-odds').textContent = `יחס: ${odds.toFixed(2)}`;
+  
+  const amountInput = document.getElementById('bet-modal-amount');
+  amountInput.value = '';
+  document.getElementById('bet-modal-potential').textContent = '0';
+  
+  document.getElementById('bet-modal').style.display = 'flex';
+  setTimeout(() => amountInput.focus(), 100);
+};
+
+window.closeBetModal = function() {
+  document.getElementById('bet-modal').style.display = 'none';
+  currentBetSelection = null;
+};
+
+window.updateBetPotentialReturn = function() {
+  const amount = parseInt(document.getElementById('bet-modal-amount').value) || 0;
+  if (currentBetSelection) {
+    const potential = Math.floor(amount * currentBetSelection.odds);
+    document.getElementById('bet-modal-potential').textContent = potential.toLocaleString();
+  }
+};
+
+window.confirmBet = function() {
+  if (!currentBetSelection) return;
+  
+  const amount = parseInt(document.getElementById('bet-modal-amount').value);
+  if (isNaN(amount) || amount <= 0) {
+    alert("אנא הזן סכום תקין להימור.");
+    return;
+  }
+  
+  if (amount > userBalance) {
+    alert("אין לך מספיק מטבעות בארנק.");
+    return;
+  }
+  
+  // Deduct balance
+  userBalance -= amount;
+  localStorage.setItem('userBettingBalance', userBalance);
+  
+  // Confirmed!
+  closeBetModal();
+  renderBets();
+  
+  // Show notification
+  alert(`הימור על סך ${amount} מטבעות בוצע בהצלחה! בהצלחה! 🎲`);
+};
+
+// Hook into showPage to render bets when page is shown
+const originalShowPageForBets = window.showPage;
+window.showPage = function(pageId) {
+  originalShowPageForBets(pageId);
+  if (pageId === 'bets') {
+    renderBets();
+  }
+};
+
 
 
 
