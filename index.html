@@ -176,16 +176,24 @@
             <!-- Submenu items -->
           </div>
 
+          <!-- My Store -->
+          <a href="#" class="sidebar-link" onclick="openMyStoreDrawer(); return false;" id="link-my-store">
+            <i class="fas fa-store"></i>
+            <span>My Store</span>
+            <div class="sidebar-link-actions">
+              <span id="my-store-count" style="display:none; background:#f97316; color:#fff; border-radius:50%; width:18px; height:18px; font-size:0.65rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin-right:auto;"></span>
+            </div>
+          </a>
+
           <!-- Divider under Purchases -->
           <div class="sidebar-divider" id="purchases-divider" style="margin: 12px 16px;"></div>
 
           <!-- Inline icons below the divider -->
-          <div class="sidebar-inline-buttons" id="sidebar-inline-buttons" style="display: flex; gap: 16px; justify-content: center; padding: 4px 16px 12px 16px;">
+          <div class="sidebar-inline-buttons" id="sidebar-inline-buttons" style="display: flex; gap: 12px; justify-content: center; padding: 4px 16px 12px 16px;">
             <!-- History / Recent Activity Button -->
             <button onclick="toggleRecentActivityCard()" class="sidebar-inline-btn" id="sidebar-btn-history" title="Recent Activity" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.85);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='scale(1)'">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 8v4l3 3" />
-                <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
+                <path d="M12 8v4l3 3" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
               </svg>
             </button>
             <!-- Support / Chat Button -->
@@ -193,6 +201,10 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
                 <path d="M12 2C6.477 2 2 6.268 2 11.5c0 2.57 1.07 4.9 2.82 6.61L4 22l4.12-1.37C9.3 21.18 10.62 21.5 12 21.5c5.523 0 10-4.268 10-9.5S17.523 2 12 2z" />
               </svg>
+            </button>
+            <!-- AI Shopping Button -->
+            <button onclick="openAIShopAssistant()" class="sidebar-inline-btn" id="sidebar-btn-ai" title="AI Shopping Assistant" style="background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.2)); border: 1px solid rgba(124,58,237,0.35); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #a78bfa; font-weight: 900; font-size: 0.75rem; letter-spacing: -0.02em;" onmouseover="this.style.background='linear-gradient(135deg, rgba(124,58,237,0.35), rgba(59,130,246,0.35))'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.2))'; this.style.transform='scale(1)'">
+              AI
             </button>
           </div>
       </nav>
@@ -3953,6 +3965,60 @@
     setTimeout(showCookieBanner, 1500);
   });
 </script>
+
+<!-- MY STORE DRAWER -->
+<div id="my-store-drawer" style="display:none; position:fixed; top:0; right:0; width:360px; height:100vh; background:#111113; border-left:1px solid rgba(255,255,255,0.08); z-index:150000; flex-direction:column; box-shadow:-20px 0 60px rgba(0,0,0,0.6); direction:rtl;">
+  <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.07);">
+    <div>
+      <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#f5f5f7;">🏪 החנות שלי</h3>
+      <p style="margin:4px 0 0; font-size:0.78rem; color:#6e6e73;">המוצרים שפרסמת</p>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button onclick="openMarketplaceModal(); closeMyStoreDrawer();" style="background:#f97316; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.8rem; font-weight:700; cursor:pointer; font-family:inherit;">+ פרסם מוצר</button>
+      <button onclick="closeMyStoreDrawer()" style="background:none; border:none; color:#6e6e73; font-size:1.2rem; cursor:pointer; padding:4px;">✕</button>
+    </div>
+  </div>
+  <div id="my-store-drawer-list" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
+    <!-- populated by JS -->
+  </div>
+</div>
+<div id="my-store-backdrop" onclick="closeMyStoreDrawer()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:149999;"></div>
+
+<!-- AI SHOPPING ASSISTANT -->
+<div id="ai-shop-modal" class="modal-content chat-window recent-activity-floating-card" style="display:none; flex-direction:column; padding:0; overflow:hidden;">
+  <!-- Header -->
+  <div class="chat-drag-handle chat-header" style="padding: 12px 16px; border-top-left-radius: 16px; border-top-right-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px;">
+        <i class="fas fa-robot" style="color: #a78bfa;"></i> AI Shopping Assistant
+      </span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="modal-close" onclick="closeAIShopAssistant()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div style="padding: 16px; display:flex; flex-direction:column; flex:1; overflow:hidden;">
+    <!-- Chat messages -->
+    <div id="ai-shop-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px; min-height: 250px;">
+      <div class="ai-msg-bot" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color: #000;">
+        <span>👋 שלום! אני ה-AI של SOKI. תגיד לי מה אתה מחפש לקנות — ואני אמצא לך מוצרים רלוונטיים מהמשתמשים שלנו!</span>
+      </div>
+      <!-- Results will be injected here -->
+      <div id="ai-shop-results" style="display:none; flex-direction:column; gap:8px; margin-top:8px;"></div>
+    </div>
+
+    <!-- Input -->
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="ai-shop-input" class="admin-input" placeholder="לדוגמה: אייפון משומש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') aiShopSearch()">
+      <button class="btn-primary" onclick="aiShopSearch()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px;">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- =====================================================
      MARKETPLACE — SELL YOUR PRODUCT MODAL

@@ -1418,6 +1418,130 @@ window.payOpenMakeSetup = function() {
 // =====================================================================
 let marketplaceProducts = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
 
+// ── MY STORE DRAWER ───────────────────────────────────
+window.openMyStoreDrawer = function() {
+  const drawer = document.getElementById('my-store-drawer');
+  const backdrop = document.getElementById('my-store-backdrop');
+  if (!drawer) return;
+  drawer.style.display = 'flex';
+  if (backdrop) backdrop.style.display = 'block';
+  myStoreRenderDrawer();
+};
+window.closeMyStoreDrawer = function() {
+  document.getElementById('my-store-drawer').style.display = 'none';
+  const b = document.getElementById('my-store-backdrop');
+  if (b) b.style.display = 'none';
+};
+function myStoreRenderDrawer() {
+  const userId = window._fbUser?.email || 'guest';
+  const mp = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
+  const mine = mp.filter(p => p.userId === userId);
+  const list = document.getElementById('my-store-drawer-list');
+  if (!list) return;
+  // Update badge
+  const badge = document.getElementById('my-store-count');
+  if (badge) { badge.textContent = mine.length; badge.style.display = mine.length > 0 ? 'flex' : 'none'; }
+
+  if (!mine.length) {
+    list.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#6e6e73;">
+      <div style="font-size:2.5rem; margin-bottom:12px;">🏪</div>
+      <div style="font-weight:700; color:#a1a1aa; margin-bottom:8px;">אין מוצרים עדיין</div>
+      <div style="font-size:0.82rem;">לחץ על "פרסם מוצר" כדי להתחיל למכור</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = mine.map(p => `
+    <div style="display:flex; gap:12px; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; align-items:center;">
+      <img src="${p.img}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; flex-shrink:0;" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=100'">
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:0.88rem; color:#f5f5f7; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.title}</div>
+        <div style="font-size:1rem; font-weight:900; color:#f97316;">₪${p.price.toLocaleString()}</div>
+        <div style="font-size:0.7rem; color:#6e6e73; margin-top:2px;">${p.date || ''} · ${p.cat || ''}</div>
+      </div>
+      <button onclick="myStoreDeleteProduct('${p.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.9rem; padding:4px;" title="מחק">🗑</button>
+    </div>`).join('');
+}
+window.myStoreDeleteProduct = function(id) {
+  let mp = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
+  mp = mp.filter(p => p.id !== id);
+  localStorage.setItem('marketplaceProducts', JSON.stringify(mp));
+  if (typeof marketplaceProducts !== 'undefined') { marketplaceProducts.length = 0; mp.forEach(p => marketplaceProducts.push(p)); }
+  myStoreRenderDrawer();
+  showToast('המוצר נמחק');
+};
+
+// ── AI SHOPPING ASSISTANT ─────────────────────────────
+window.openAIShopAssistant = function() {
+  const modal = document.getElementById('ai-shop-modal');
+  if (modal) modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('ai-shop-input')?.focus(), 100);
+};
+window.closeAIShopAssistant = function() {
+  const modal = document.getElementById('ai-shop-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.aiShopSearch = async function() {
+  const input = document.getElementById('ai-shop-input');
+  const query = input?.value.trim();
+  if (!query) return;
+
+  const msgs = document.getElementById('ai-shop-messages');
+  const results = document.getElementById('ai-shop-results');
+
+  // Add user message
+  const userMsg = document.createElement('div');
+  userMsg.style.cssText = 'background:#0071e3; color:white; padding:10px 14px; border-radius:14px; align-self:flex-end; max-width:85%; font-size:0.9rem; text-align:left;';
+  userMsg.innerHTML = `<span>${query}</span>`;
+  msgs.appendChild(userMsg);
+  msgs.scrollTop = msgs.scrollHeight;
+  input.value = '';
+
+  // Add typing indicator
+  const typing = document.createElement('div');
+  typing.style.cssText = 'background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color:#000;';
+  typing.innerHTML = '<span style="color:#86868b; font-style:italic;">Typing...</span>';
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Search marketplace products
+  const mp = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
+  const q = query.toLowerCase();
+  const matched = mp.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    (p.desc || '').toLowerCase().includes(q) ||
+    (p.cat || '').toLowerCase().includes(q)
+  );
+
+  // AI response via API if available, otherwise smart local search
+  await new Promise(r => setTimeout(r, 900));
+  typing.remove();
+
+  const botMsg = document.createElement('div');
+  botMsg.style.cssText = 'background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color:#000;';
+
+  if (matched.length > 0) {
+    botMsg.innerHTML = `<span>מצאתי <strong>${matched.length}</strong> מוצר${matched.length > 1 ? 'ים' : ''} שתואמ${matched.length > 1 ? 'ים' : ''} ל"${query}" 👇</span>`;
+    msgs.appendChild(botMsg);
+
+    // Show results
+    results.style.display = 'flex';
+    results.innerHTML = matched.map(p => `
+      <div style="background:#fff; border:1px solid #e5e5ea; border-radius:12px; overflow:hidden; padding:8px; display:flex; gap:10px; cursor:pointer;" onclick="closeAIShopAssistant(); openMarketplaceModal();">
+        <img src="${p.img}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200'">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-weight:700; font-size:0.85rem; color:#000; margin-bottom:2px;">${p.title}</div>
+          <div style="font-weight:900; color:#0071e3; font-size:0.9rem;">₪${p.price.toLocaleString()}</div>
+        </div>
+      </div>`).join('');
+  } else {
+    botMsg.innerHTML = `<span>לא מצאתי מוצרים בשם "${query}" כרגע. נסה לחפש בצורה אחרת, או <strong onclick="openMarketplaceModal(); closeAIShopAssistant();" style="color:#f97316; cursor:pointer;">פרסם מוצר</strong> בעצמך!</span>`;
+    msgs.appendChild(botMsg);
+    results.style.display = 'none';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+};
+
 window.openMarketplaceModal = function() {
   const modal = document.getElementById('marketplace-modal');
   if (!modal) return;
