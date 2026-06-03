@@ -10081,7 +10081,93 @@ window.clearHeatmapData = function() {
 window.renderAdminAnalytics = function() {
   const clicks = JSON.parse(localStorage.getItem('soki_interaction_clicks') || '[]');
   const logins = JSON.parse(localStorage.getItem('soki_analytics_logins') || '[]');
-  
+  const orders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
+
+  // ── Timestamp / filter bar ──
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const refreshEl = document.getElementById('an-refresh-time');
+  if (refreshEl) refreshEl.textContent = timeStr;
+  const dateEl = document.getElementById('an-date-label');
+  if (dateEl) dateEl.textContent = dateStr;
+
+  // ── Sales metrics ──
+  const totalSales = orders.reduce((s, o) => s + (parseFloat(o.total) || 0), 0);
+  const fmt = v => v.toFixed(2);
+  ['an-gross-sales','an-total-sales','an-bd-gross','an-bd-net','an-bd-total'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = fmt(totalSales);
+  });
+  const avgOrder = orders.length ? (totalSales / orders.length) : 0;
+  const avgEl = document.getElementById('an-avg-order'); if (avgEl) avgEl.textContent = fmt(avgOrder);
+  const ordEl = document.getElementById('an-total-orders'); if (ordEl) ordEl.textContent = orders.length;
+  const fulEl = document.getElementById('an-orders-fulfilled'); if (fulEl) fulEl.textContent = orders.filter(o => o.status === 'fulfilled').length;
+
+  // ── Draw sales chart (24 hours buckets) ──
+  const canvas = document.getElementById('an-sales-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth || 600;
+    canvas.height = 180;
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Build hourly buckets for today
+    const buckets = Array(24).fill(0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    orders.forEach(o => {
+      const d = new Date(o.timestamp || o.date || Date.now());
+      if (d >= today) buckets[d.getHours()] += parseFloat(o.total) || 0;
+    });
+    const maxVal = Math.max(...buckets, 10);
+    const padL = 40, padR = 20, padT = 10, padB = 30;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+
+    // Grid lines
+    ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 1;
+    [0.25, 0.5, 0.75, 1].forEach(p => {
+      const y = padT + chartH * (1 - p);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillStyle = '#9ca3af'; ctx.font = '10px Inter';
+      ctx.fillText('₪' + Math.round(maxVal * p), 2, y + 3);
+    });
+
+    // Today line (solid blue)
+    ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2; ctx.beginPath();
+    buckets.forEach((v, i) => {
+      const x = padL + (i / 23) * chartW;
+      const y = padT + chartH * (1 - v / maxVal);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Fill gradient under today line
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
+    grad.addColorStop(0, 'rgba(37,99,235,0.15)');
+    grad.addColorStop(1, 'rgba(37,99,235,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    buckets.forEach((v, i) => {
+      const x = padL + (i / 23) * chartW;
+      const y = padT + chartH * (1 - v / maxVal);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.lineTo(padL + chartW, padT + chartH);
+    ctx.lineTo(padL, padT + chartH);
+    ctx.closePath(); ctx.fill();
+
+    // Yesterday (dashed light blue, all zeros)
+    ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    for (let i = 0; i <= 23; i++) {
+      const x = padL + (i / 23) * chartW;
+      const y = padT + chartH;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+
   // Update stats counters
   const totalClicksEl = document.getElementById('analytics-total-clicks');
   const totalLoginsEl = document.getElementById('analytics-total-logins');
@@ -10114,22 +10200,21 @@ window.renderAdminAnalytics = function() {
       loginsListEl.innerHTML = '<div style="text-align:center; padding:40px; color:#86868b; font-size:0.85rem;">אין התחברויות רשומות עדיין</div>';
     } else {
       loginsListEl.innerHTML = logins.map(l => {
-        const timeStr = new Date(l.timestamp).toLocaleString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: 'numeric', month: 'short' });
+        const timeStr = new Date(l.timestamp).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
         return `
-          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px 14px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="background:#fff; border:1px solid #f3f4f6; padding:10px 14px; border-radius:8px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${l.avatar}" style="width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.1);" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'">
-              <div style="display:flex; flex-direction:column; gap:2px;">
-                <span style="font-size:0.85rem; font-weight:700; color:#f5f5f7;">${l.name}</span>
-                <span style="font-size:0.75rem; color:#86868b;">${l.email}</span>
+              <img src="${l.avatar}" style="width:32px; height:32px; border-radius:50%; border:1px solid #e5e7eb;" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'">
+              <div>
+                <div style="font-size:0.85rem; font-weight:600; color:#111;">${l.name}</div>
+                <div style="font-size:0.75rem; color:#6b7280;">${l.email}</div>
               </div>
             </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
-              <span style="font-size:0.75rem; color:#a1a1aa; font-weight:500;">${l.device === 'Mobile' ? '📱 מובייל' : '💻 דסקטופ'}</span>
-              <span style="font-size:0.65rem; color:#86868b;">${timeStr}</span>
+            <div style="text-align:right;">
+              <div style="font-size:0.75rem; color:#374151; font-weight:500;">${l.device === 'Mobile' ? '📱 Mobile' : '💻 Desktop'}</div>
+              <div style="font-size:0.68rem; color:#9ca3af;">${timeStr}</div>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
   }

@@ -8614,3 +8614,80 @@ body.dark-theme .tutorial-desc {
   .ap-form-grid { grid-template-columns: 1fr; }
   .ap-col-side { order: -1; }
 }
+
+/* ============================================ */
+/* SHOPIFY ANALYTICS DASHBOARD                  */
+/* ============================================ */
+.an-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+}
+.an-title { font-size: 1.3rem; font-weight: 800; color: #111; }
+.an-refresh { font-size: 0.78rem; color: #9ca3af; }
+.an-btn-ghost  { background: none; border: 1px solid #e5e7eb; border-radius: 8px; padding: 7px 12px; cursor: pointer; font-size: 0.875rem; color: #374151; font-family: inherit; }
+.an-btn-outline{ background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 16px; cursor: pointer; font-size: 0.875rem; font-weight: 600; color: #374151; font-family: inherit; }
+.an-btn-dark   { background: #111; color: #fff; border: none; border-radius: 8px; padding: 7px 16px; cursor: pointer; font-size: 0.875rem; font-weight: 600; font-family: inherit; }
+
+.an-filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.an-filter-chip {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 20px;
+  padding: 6px 14px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  color: #374151; display: inline-flex; align-items: center; gap: 5px; font-family: inherit;
+}
+.an-filter-chip:hover { background: #f9fafb; }
+
+.an-kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.an-kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 20px; }
+.an-kpi-label { font-size: 0.78rem; color: #6b7280; margin-bottom: 6px; }
+.an-kpi-val   { font-size: 1rem; font-weight: 700; color: #111; }
+.an-kpi-bar   { height: 2px; background: #2563eb; width: 36px; margin-top: 10px; border-radius: 1px; }
+.an-dash      { color: #9ca3af; font-weight: 400; font-size: 0.9em; }
+
+.an-main-row { display: grid; grid-template-columns: 1.8fr 1fr; gap: 14px; margin-bottom: 14px; }
+.an-secondary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.an-bottom-row { display: flex; gap: 14px; margin-bottom: 14px; }
+
+.an-chart-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px 24px;
+}
+.an-chart-label { font-size: 0.875rem; font-weight: 600; color: #111; margin-bottom: 8px; border-bottom: 1.5px dotted #e5e7eb; padding-bottom: 8px; }
+.an-chart-big   { font-size: 1.4rem; font-weight: 800; color: #111; margin-bottom: 12px; }
+.an-chart-area  { position: relative; min-height: 120px; }
+.an-chart-empty-line {
+  position: absolute; bottom: 20px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, #2563eb 45%, transparent 45%), 
+              repeating-linear-gradient(to right, #93c5fd 0, #93c5fd 6px, transparent 6px, transparent 10px);
+  background-size: 100% 100%, 100% 100%;
+}
+.an-chart-x-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.68rem; color: #9ca3af; margin-top: 4px;
+}
+.an-legend { display: flex; gap: 16px; font-size: 0.75rem; color: #6b7280; margin-top: 8px; }
+.an-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 4px; }
+.an-no-data { display: flex; align-items: center; justify-content: center; min-height: 80px; font-size: 0.85rem; color: #9ca3af; }
+
+.an-breakdown { display: flex; flex-direction: column; gap: 0; }
+.an-brow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid #f3f4f6;
+  font-size: 0.85rem; color: #374151; gap: 8px;
+}
+.an-brow-total { font-weight: 700; color: #111; border-bottom: none; padding-top: 10px; }
+.an-blink { color: #2563eb; cursor: pointer; text-decoration: none; }
+.an-blink:hover { text-decoration: underline; }
+
+.an-conv-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 10px; font-size: 0.75rem; }
+.an-conv-label { color: #9ca3af; font-size: 0.7rem; margin-bottom: 2px; }
+.an-conv-val   { font-weight: 700; color: #111; }
+.an-conv-sub   { color: #9ca3af; font-size: 0.68rem; }
+
+@media (max-width: 1000px) {
+  .an-kpi-strip    { grid-template-columns: repeat(2,1fr); }
+  .an-main-row     { grid-template-columns: 1fr; }
+  .an-secondary-row{ grid-template-columns: 1fr 1fr; }
+  .an-bottom-row   { flex-direction: column; }
+}
+@media (max-width: 640px) {
+  .an-secondary-row { grid-template-columns: 1fr; }
+}
