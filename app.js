@@ -4212,11 +4212,18 @@ const shopProducts = [
     brand: 'Ferm Living',
     cat: 'Home',
     desc: 'Shaggy high pile cushion made of premium organic wool and filled with luxury feathers.',
-    price: '$195.00',
+    price: '$155.00',
+    originalPrice: '$195.00',
+    discount: 21,
     img: 'assets/meadow_high_pile_cushion.png',
-    optionsText: null,
     colors: ['Beige/Cream', 'Soft Rose', 'Sage', 'Charcoal'],
     colorSwatches: ['#c4a882', '#d4a0a0', '#8faa8b', '#4a4a4a'],
+    imagesByColor: {
+      'Beige/Cream': 'assets/meadow_high_pile_cushion.png',
+      'Soft Rose': 'https://images.unsplash.com/photo-1616627547584-bf28cee262db?auto=format&fit=crop&q=80&w=600',
+      'Sage': 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600',
+      'Charcoal': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=600'
+    },
     quickShip: true
   },
   {
@@ -4225,11 +4232,18 @@ const shopProducts = [
     brand: 'Ferm Living',
     cat: 'Home',
     desc: 'Striped linen throw pillow with thick vertical contrast stitching. Extremely popular.',
-    price: '$115.00',
+    price: '$82.00',
+    originalPrice: '$115.00',
+    discount: 29,
     img: 'assets/oleo_cushion.png',
-    optionsText: '4 options available',
-    colors: ['NATURAL/BLACK', 'SEASHELL/GOLD', 'CHARCOAL/DARK'],
-    colorSwatches: ['#c08060', '#d4b483', '#5a6a72', '#1c1c1e'],
+    colors: ['Natural/Black', 'Seashell/Gold', 'Charcoal/Dark', 'Sage/Cream'],
+    colorSwatches: ['#c08060', '#d4b483', '#5a6a72', '#8faa8b'],
+    imagesByColor: {
+      'Natural/Black': 'assets/oleo_cushion.png',
+      'Seashell/Gold': 'https://images.unsplash.com/photo-1567016432779-094069958ea5?auto=format&fit=crop&q=80&w=600',
+      'Charcoal/Dark': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=600',
+      'Sage/Cream': 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600'
+    },
     quickShip: true
   },
   {
@@ -4238,11 +4252,19 @@ const shopProducts = [
     brand: 'Ferm Living',
     cat: 'Home',
     desc: 'Luxurious woven throw blanket with fringe details. Perfectly styled for contemporary living rooms.',
-    price: '$155.00',
+    price: '$114.00',
+    originalPrice: '$155.00',
+    discount: 27,
     img: 'assets/weaver_throw.png',
-    optionsText: '5 options available',
     colors: ['Off-White', 'Muted Rose', 'Sage Green', 'Mustard', 'Oatmeal'],
     colorSwatches: ['#e8e0d4', '#c9a0a0', '#8faa8b', '#c8a85a', '#d4c4a8'],
+    imagesByColor: {
+      'Off-White': 'assets/weaver_throw.png',
+      'Muted Rose': 'https://images.unsplash.com/photo-1616627547584-bf28cee262db?auto=format&fit=crop&q=80&w=600',
+      'Sage Green': 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600',
+      'Mustard': 'https://images.unsplash.com/photo-1567016432779-094069958ea5?auto=format&fit=crop&q=80&w=600',
+      'Oatmeal': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=600'
+    },
     quickShip: true
   },
   {
@@ -4251,11 +4273,18 @@ const shopProducts = [
     brand: 'Ferm Living',
     cat: 'Home',
     desc: 'Embroidered cotton canvas cushion with a beautiful artistic bird and celestial elements.',
-    price: '$85.00',
+    price: '$66.00',
+    originalPrice: '$85.00',
+    discount: 22,
     img: 'assets/naive_cushion.png',
-    optionsText: '2 options available',
-    colors: ['Cream/Multi', 'Navy/Gold'],
-    colorSwatches: ['#c08060', '#d4b483', '#8faa8b', '#1c1c1e'],
+    colors: ['Cream/Multi', 'Navy/Gold', 'Sage/Multi', 'Rose/Multi'],
+    colorSwatches: ['#e8dcc8', '#2c3e6e', '#8faa8b', '#c9a0a0'],
+    imagesByColor: {
+      'Cream/Multi': 'assets/naive_cushion.png',
+      'Navy/Gold': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=600',
+      'Sage/Multi': 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600',
+      'Rose/Multi': 'https://images.unsplash.com/photo-1616627547584-bf28cee262db?auto=format&fit=crop&q=80&w=600'
+    },
     quickShip: true
   }
 ];
@@ -4281,55 +4310,91 @@ function renderServicesGrid() {
   `).join('');
 }
 
+// Switch shop card image when swatch is clicked
+window.shopSwatchClick = function(el, productId, colorName, imgSrc) {
+  event.stopPropagation();
+  // Update image
+  const card = el.closest('.shop-card');
+  const img = card.querySelector('.shop-card-img');
+  if (img) img.src = imgSrc;
+  // Highlight active swatch
+  card.querySelectorAll('.shop-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+};
+
+function buildShopCard(p, isAli) {
+  const colors = p.colors || [];
+  const swatches = p.colorSwatches || [];
+  const imagesByColor = p.imagesByColor || {};
+  const mainImg = p.img || p.image || '';
+  const extraCount = colors.length > 4 ? colors.length - 4 : 0;
+
+  const swatchHtml = colors.slice(0, 4).map((colorName, i) => {
+    const hex = swatches[i] || '#ccc';
+    const targetImg = imagesByColor[colorName] || mainImg;
+    const escapedImg = targetImg.replace(/'/g, "\\'");
+    return `<span class="shop-swatch${i === 0 ? ' active' : ''}"
+      style="background:${hex};"
+      title="${colorName}"
+      onclick="window.shopSwatchClick(this,'${p.id}','${colorName}','${escapedImg}')"></span>`;
+  }).join('');
+
+  const extraHtml = extraCount > 0 ? `<span class="shop-swatch-count">${extraCount}+</span>` : '';
+
+  const discountBadge = p.discount ? `
+    <div class="shop-badge-row">
+      <span class="shop-badge-deal">מבצע לזמן מוגבל</span>
+      <span class="shop-badge-pct">${p.discount}% הנחה</span>
+    </div>` : '';
+
+  const priceHtml = p.originalPrice ? `
+    <div class="shop-price-row">
+      <span class="shop-price-main">${p.price}</span>
+      <span class="shop-price-orig">${p.originalPrice}</span>
+    </div>` : `<div class="shop-price-row"><span class="shop-price-main">${p.price || `$${p.price}`}</span></div>`;
+
+  const swatchSection = colors.length > 0 ? `
+    <div class="shop-swatches-row">
+      ${swatchHtml}${extraHtml}
+      <span class="shop-swatch-label">${colors.length}+ צבעים/תבניות</span>
+    </div>` : '';
+
+  const brandLink = `<a class="shop-brand-link" onclick="event.stopPropagation(); window.openProductDetailsModal('${p.id}')">לקנות ${p.brand || 'במבצע'} במבצע</a>`;
+
+  return `
+  <div class="shop-card" onclick="window.openProductDetailsModal('${p.id}')">
+    <div class="shop-card-image">
+      <img class="shop-card-img" src="${mainImg}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600'">
+      <button class="shop-add-btn" onclick="event.stopPropagation(); addToCart('${p.id}','product')">+</button>
+    </div>
+    <div class="shop-card-body">
+      ${discountBadge}
+      ${priceHtml}
+      <p class="shop-card-title">${p.title}</p>
+      ${swatchSection}
+      ${brandLink}
+    </div>
+  </div>`;
+}
+
 function renderShopGrid() {
   const grid = document.getElementById('shop-grid');
   if (!grid) return;
 
-  const shopHtml = shopProducts.map(p => {
-    const swatches = (p.colorSwatches || []).slice(0, 4).map(c =>
-      `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};border:1.5px solid rgba(0,0,0,0.1);flex-shrink:0;"></span>`
-    ).join('');
-    const optionsLabel = p.optionsText || (p.colors ? `${p.colors.length} options available` : '');
-    return `
-    <div class="shop-card" onclick="window.openProductDetailsModal('${p.id}')">
-      <div class="shop-card-image">
-        ${p.quickShip ? `<div class="quick-ship-badge"><span>QUICK</span><span>SHIP</span></div>` : ''}
-        <img src="${p.img}" alt="${p.title}" loading="lazy">
-      </div>
-      <div class="shop-card-body">
-        <h3 class="shop-card-title">${p.title}</h3>
-        <span class="shop-card-brand">${p.brand || 'Ferm Living'}</span>
-        ${optionsLabel ? `
-          <div class="shop-card-options">
-            ${swatches}
-            <span>${optionsLabel}</span>
-          </div>
-        ` : ''}
-        <span class="shop-card-price">${p.price}</span>
-      </div>
-    </div>`;
-  }).join('');
+  const shopHtml = shopProducts.map(p => buildShopCard(p, false)).join('');
 
-  const softwareHtml = store3dProducts.map(p => `
-    <div class="shop-card" onclick="window.openProductDetailsModal('${p.id}')">
-      <div class="shop-card-image">
-        <div class="quick-ship-badge" style="background:#5a31f4;">
-          <span>PRO</span>
-          <span>APPS</span>
-        </div>
-        <img src="${p.image}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600'">
-      </div>
-      <div class="shop-card-body">
-        <h3 class="shop-card-title">${p.title}</h3>
-        <span class="shop-card-brand">Antigravity Pro</span>
-        <div class="shop-card-options">
-          <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#5a31f4;border:1.5px solid rgba(0,0,0,0.1);"></span>
-          <span>Instant Download</span>
-        </div>
-        <span class="shop-card-price">$${p.price}.00</span>
-      </div>
-    </div>
-  `).join('');
+  const softwareHtml = store3dProducts.map(p => buildShopCard({
+    id: p.id,
+    title: p.title,
+    brand: 'Antigravity Pro',
+    price: `$${p.price}.00`,
+    originalPrice: `$${Math.round(p.price * 1.3)}.00`,
+    discount: 23,
+    img: p.image,
+    colors: ['Black', 'Silver', 'Blue'],
+    colorSwatches: ['#1c1c1e', '#c0c0c0', '#3a7bd5'],
+    imagesByColor: {}
+  }, false)).join('');
 
   grid.innerHTML = shopHtml + softwareHtml;
 }
