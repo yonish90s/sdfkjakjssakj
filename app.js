@@ -4376,6 +4376,220 @@ const shopProducts = [
   }
 ];
 
+// ── DOWNLOADABLE PRODUCTS ─────────────────────────────
+const downloadProducts = [
+  // 3D Files
+  {
+    id: 'dl-3d-living-room',
+    type: 'download',
+    dlType: '3d',
+    cat: '3d',
+    title: 'Modern Living Room — 3D Scene',
+    brand: 'SOKI Assets',
+    desc: 'Full Blender / OBJ scene with furniture, lighting and materials. Ready to render.',
+    price: '$29.00',
+    originalPrice: '$49.00',
+    discount: 41,
+    img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=600',
+    badge: '📦 3D',
+    badgeColor: '#7c3aed',
+    fileFormat: 'Blender + OBJ + FBX',
+    fileSize: '84 MB',
+    password: 'soki3d2026',
+    downloadUrl: '#'
+  },
+  {
+    id: 'dl-3d-smartwatch',
+    type: 'download',
+    dlType: '3d',
+    cat: '3d',
+    title: 'Smartwatch 3D Model Pack',
+    brand: 'SOKI Assets',
+    desc: 'High-poly smartwatch model with 4 color variants. Perfect for product renders.',
+    price: '$19.00',
+    originalPrice: '$35.00',
+    discount: 46,
+    img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600',
+    badge: '📦 3D',
+    badgeColor: '#7c3aed',
+    fileFormat: 'OBJ + FBX + GLB',
+    fileSize: '32 MB',
+    password: 'soki3d2026',
+    downloadUrl: '#'
+  },
+  {
+    id: 'dl-3d-dashboard',
+    type: 'download',
+    dlType: '3d',
+    cat: '3d',
+    title: 'Futuristic Dashboard UI — 3D Kit',
+    brand: 'SOKI Assets',
+    desc: 'Isometric 3D UI kit for presentations. Includes 40+ component blocks.',
+    price: '$24.00',
+    originalPrice: '$44.00',
+    discount: 45,
+    img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600',
+    badge: '📦 3D',
+    badgeColor: '#7c3aed',
+    fileFormat: 'Blender + PNG sprites',
+    fileSize: '120 MB',
+    password: 'soki3d2026',
+    downloadUrl: '#'
+  },
+  // Videos
+  {
+    id: 'dl-video-trading',
+    type: 'download',
+    dlType: 'video',
+    cat: 'video',
+    title: 'Trading Strategies — Full Course (2h)',
+    brand: 'SOKI Academy',
+    desc: 'Complete video course on stock market strategies, technical analysis and risk management.',
+    price: '$49.00',
+    originalPrice: '$99.00',
+    discount: 51,
+    img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=600',
+    badge: '🎬 Video',
+    badgeColor: '#dc2626',
+    fileFormat: 'MP4 1080p',
+    fileSize: '2.4 GB',
+    password: 'sokivideo2026',
+    downloadUrl: '#'
+  },
+  {
+    id: 'dl-video-webdev',
+    type: 'download',
+    dlType: 'video',
+    cat: 'video',
+    title: 'Build a SaaS — Web Dev Masterclass',
+    brand: 'SOKI Academy',
+    desc: 'Step-by-step video guide to building a full SaaS product from scratch with React + Node.',
+    price: '$59.00',
+    originalPrice: '$120.00',
+    discount: 51,
+    img: 'https://images.unsplash.com/photo-1587620962725-abab19836100?auto=format&fit=crop&q=80&w=600',
+    badge: '🎬 Video',
+    badgeColor: '#dc2626',
+    fileFormat: 'MP4 4K',
+    fileSize: '5.1 GB',
+    password: 'sokivideo2026',
+    downloadUrl: '#'
+  },
+  // Website code
+  {
+    id: 'dl-code-news',
+    type: 'download',
+    dlType: 'code',
+    cat: 'code',
+    title: 'News Portal Template — Full Source',
+    brand: 'SOKI Code',
+    desc: 'Complete news & articles website source code. HTML/CSS/JS + Node backend. Ready to deploy.',
+    price: '$79.00',
+    originalPrice: '$149.00',
+    discount: 47,
+    img: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600',
+    badge: '💻 Code',
+    badgeColor: '#0284c7',
+    fileFormat: 'ZIP (HTML + JS + CSS + Node)',
+    fileSize: '8.2 MB',
+    password: 'sokicode2026',
+    downloadUrl: '#'
+  },
+  {
+    id: 'dl-code-ecommerce',
+    type: 'download',
+    dlType: 'code',
+    cat: 'code',
+    title: 'E-Commerce Starter Kit',
+    brand: 'SOKI Code',
+    desc: 'Full online store template with cart, checkout and admin panel. React + Firebase.',
+    price: '$99.00',
+    originalPrice: '$199.00',
+    discount: 50,
+    img: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=600',
+    badge: '💻 Code',
+    badgeColor: '#0284c7',
+    fileFormat: 'ZIP (React + Firebase)',
+    fileSize: '14 MB',
+    password: 'sokicode2026',
+    downloadUrl: '#'
+  },
+  {
+    id: 'dl-code-dashboard',
+    type: 'download',
+    dlType: 'code',
+    cat: 'code',
+    title: 'Analytics Dashboard Template',
+    brand: 'SOKI Code',
+    desc: 'Dark-mode analytics dashboard with charts, tables and real-time data hooks.',
+    price: '$59.00',
+    originalPrice: '$110.00',
+    discount: 46,
+    img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
+    badge: '💻 Code',
+    badgeColor: '#0284c7',
+    fileFormat: 'ZIP (HTML + Chart.js)',
+    fileSize: '3.8 MB',
+    password: 'sokicode2026',
+    downloadUrl: '#'
+  }
+];
+
+// ── CATEGORY FILTER ───────────────────────────────────
+let activeShopCat = 'all';
+
+window.filterShopCat = function(cat, btn) {
+  activeShopCat = cat;
+  document.querySelectorAll('.shop-cat-chip').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderShopGrid();
+};
+
+// ── DOWNLOAD PASSWORD MODAL ───────────────────────────
+let _dlCurrentProduct = null;
+
+window.dlOpenModal = function(productId) {
+  const p = downloadProducts.find(x => x.id === productId);
+  if (!p) return;
+  _dlCurrentProduct = p;
+  document.getElementById('dl-modal-icon').textContent = p.badge?.split(' ')[0] || '📦';
+  document.getElementById('dl-modal-title').textContent = p.title;
+  document.getElementById('dl-modal-desc').textContent = `${p.fileFormat} · ${p.fileSize}`;
+  document.getElementById('dl-password-input').value = '';
+  document.getElementById('dl-error-msg').style.display = 'none';
+  document.getElementById('dl-password-modal').style.display = 'flex';
+};
+
+window.dlCloseModal = function() {
+  document.getElementById('dl-password-modal').style.display = 'none';
+  _dlCurrentProduct = null;
+};
+
+window.dlCheckPassword = function() {
+  if (!_dlCurrentProduct) return;
+  const input = document.getElementById('dl-password-input').value;
+  if (input === _dlCurrentProduct.password) {
+    dlCloseModal();
+    showToast(`✅ Download started: ${_dlCurrentProduct.title}`);
+    // Simulate download
+    const a = document.createElement('a');
+    a.href = _dlCurrentProduct.downloadUrl || '#';
+    a.download = _dlCurrentProduct.title.replace(/\s+/g, '_') + '.zip';
+    a.click();
+  } else {
+    document.getElementById('dl-error-msg').style.display = 'block';
+    document.getElementById('dl-password-input').style.borderColor = '#ff453a';
+    setTimeout(() => {
+      document.getElementById('dl-password-input').style.borderColor = '';
+    }, 1500);
+  }
+};
+
+window.dlTogglePwd = function() {
+  const inp = document.getElementById('dl-password-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+};
+
 let pendingOrderItem = null;
 
 function renderServicesGrid() {
@@ -4464,26 +4678,76 @@ function buildShopCard(p, isAli) {
   </div>`;
 }
 
+function buildDownloadCard(p) {
+  const discountBadge = p.discount ? `
+    <div class="shop-badge-row">
+      <span class="shop-badge-deal">Limited Deal</span>
+      <span class="shop-badge-pct">${p.discount}% הנחה</span>
+    </div>` : '';
+
+  return `
+  <div class="shop-card dl-card" data-cat="${p.cat}">
+    <div class="shop-card-image" style="position:relative;">
+      <img class="shop-card-img" src="${p.img}" alt="${p.title}" loading="lazy" style="filter:brightness(0.85);">
+      <div class="dl-badge" style="background:${p.badgeColor || '#7c3aed'};">${p.badge || '📦'}</div>
+      <div class="dl-overlay">
+        <button class="dl-unlock-btn" onclick="dlOpenModal('${p.id}')">
+          🔒 Unlock Download
+        </button>
+      </div>
+    </div>
+    <div class="shop-card-body">
+      ${discountBadge}
+      <div class="shop-price-row">
+        <span class="shop-price-main">${p.price}</span>
+        ${p.originalPrice ? `<span class="shop-price-orig">${p.originalPrice}</span>` : ''}
+      </div>
+      <p class="shop-card-title">${p.title}</p>
+      <div class="dl-meta">
+        <span class="dl-meta-chip">${p.fileFormat}</span>
+        <span class="dl-meta-chip">${p.fileSize}</span>
+      </div>
+      <a class="shop-brand-link" onclick="event.stopPropagation(); dlOpenModal('${p.id}')">לקנות ${p.brand} במבצע</a>
+    </div>
+  </div>`;
+}
+
 function renderShopGrid() {
   const grid = document.getElementById('shop-grid');
   if (!grid) return;
+  const cat = activeShopCat || 'all';
 
-  const shopHtml = shopProducts.map(p => buildShopCard(p, false)).join('');
+  // Physical products (cat: 'home')
+  let physicalHtml = '';
+  if (cat === 'all' || cat === 'home') {
+    physicalHtml = shopProducts.map(p => buildShopCard(p, false)).join('');
+  }
 
-  const softwareHtml = store3dProducts.map(p => buildShopCard({
-    id: p.id,
-    title: p.title,
-    brand: 'Antigravity Pro',
-    price: `$${p.price}.00`,
-    originalPrice: `$${Math.round(p.price * 1.3)}.00`,
-    discount: 23,
-    img: p.image,
-    colors: ['Black', 'Silver', 'Blue'],
-    colorSwatches: ['#1c1c1e', '#c0c0c0', '#3a7bd5'],
-    imagesByColor: {}
-  }, false)).join('');
+  // Pro Apps (cat: 'apps')
+  let appsHtml = '';
+  if (cat === 'all' || cat === 'apps') {
+    appsHtml = store3dProducts.map(p => buildShopCard({
+      id: p.id, title: p.title, brand: 'Antigravity Pro',
+      price: `$${p.price}.00`, originalPrice: `$${Math.round(p.price * 1.3)}.00`, discount: 23,
+      img: p.image, cat: 'apps',
+      colors: ['Black', 'Silver', 'Blue'], colorSwatches: ['#1c1c1e', '#c0c0c0', '#3a7bd5'], imagesByColor: {}
+    }, false)).join('');
+  }
 
-  grid.innerHTML = shopHtml + softwareHtml;
+  // Download products (3d / video / code)
+  let dlHtml = '';
+  const filteredDl = cat === 'all'
+    ? downloadProducts
+    : downloadProducts.filter(p => p.cat === cat);
+  dlHtml = filteredDl.map(p => buildDownloadCard(p)).join('');
+
+  grid.innerHTML = physicalHtml + appsHtml + dlHtml;
+
+  // Show/hide empty state
+  const total = physicalHtml.length + appsHtml.length + dlHtml.length;
+  if (!total) {
+    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:#86868b;">No products in this category yet.</div>`;
+  }
 }
 
 window.openProductDetailsModal = function(productId) {

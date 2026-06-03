@@ -8683,3 +8683,119 @@ body.dark-theme .tutorial-desc {
 }
 .pay-radio-title { font-size: 0.9rem; font-weight: 600; color: #fafafa; }
 .pay-radio-desc  { font-size: 0.8rem; color: #a1a1aa; margin-top: 2px; }
+
+/* ============================================ */
+/* SHOP — CATEGORY SLIDER                       */
+/* ============================================ */
+.shop-cat-slider {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 28px;
+  scrollbar-width: none;
+}
+.shop-cat-slider::-webkit-scrollbar { display: none; }
+
+.shop-cat-chip {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 980px;
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.shop-cat-chip:hover {
+  border-color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.85);
+}
+.shop-cat-chip.active {
+  border-color: #fff;
+  color: #fff;
+  background: rgba(255,255,255,0.06);
+}
+
+/* Light theme overrides */
+body:not(.dark-theme) .shop-cat-chip {
+  border-color: rgba(0,0,0,0.15);
+  color: rgba(0,0,0,0.5);
+}
+body:not(.dark-theme) .shop-cat-chip:hover { color: #1d1d1f; border-color: rgba(0,0,0,0.4); }
+body:not(.dark-theme) .shop-cat-chip.active { border-color: #1d1d1f; color: #1d1d1f; background: rgba(0,0,0,0.04); }
+
+/* ============================================ */
+/* SHOP — DOWNLOAD CARDS                        */
+/* ============================================ */
+.dl-card .shop-card-image {
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+/* Floating type badge */
+.dl-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 980px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.03em;
+  z-index: 2;
+}
+
+/* Hover overlay with unlock button */
+.dl-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.dl-card:hover .dl-overlay { opacity: 1; }
+
+.dl-unlock-btn {
+  background: #fff;
+  color: #111;
+  border: none;
+  border-radius: 980px;
+  padding: 10px 22px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s;
+}
+.dl-unlock-btn:hover { transform: scale(1.05); }
+
+/* File meta chips */
+.dl-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.dl-meta-chip {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+body:not(.dark-theme) .dl-meta-chip {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
