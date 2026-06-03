@@ -453,15 +453,7 @@ function showPage(pageId) {
       openAdminLoginModal();
       return;
     }
-    // Hide SOKI sidebar so admin takes full width
-    const appSidebar = document.getElementById('app-sidebar');
-    if (appSidebar) appSidebar.style.display = 'none';
-    document.body.classList.remove('sidebar-expanded');
     if (typeof initAdminDashboard === 'function') initAdminDashboard();
-  } else {
-    // Restore SOKI sidebar when leaving admin
-    const appSidebar = document.getElementById('app-sidebar');
-    if (appSidebar) appSidebar.style.display = '';
   }
   
   if (pageId === 'join') {
@@ -1846,11 +1838,11 @@ function switchAdminTab(tabId, btnEl) {
   if (target) target.style.display = 'block';
   
   if (!btnEl) {
-    btnEl = document.querySelector(`button[data-admin-tab="${tabId}"]`);
+    btnEl = document.querySelector(`button.admin-nav-btn[data-admin-tab="${tabId}"]`);
   }
 
   if (btnEl) {
-    document.querySelectorAll('.admin-nav-btn, .shopify-nav-item').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
     btnEl.classList.add('active');
   }
 

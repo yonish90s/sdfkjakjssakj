@@ -1771,523 +1771,153 @@
 <!-- page-admin-login removed in favor of modal popup -->
 
 <!-- ADMIN DASHBOARD -->
-<div id="page-admin" class="page shopify-admin-page">
-  <div class="shopify-admin-wrapper">
-
-    <!-- SHOPIFY-STYLE SIDEBAR -->
-    <aside class="shopify-sidebar">
-      <!-- Store Header -->
-      <div class="shopify-sidebar-header">
-        <div class="shopify-store-logo">👑</div>
-        <div>
-          <div class="shopify-store-name">SOKI Admin</div>
-          <div class="shopify-store-plan">ניהול אתר</div>
-        </div>
-      </div>
-
-      <!-- Navigation -->
-      <nav class="shopify-sidebar-nav">
-        <!-- Main -->
-        <button class="shopify-nav-item active" data-admin-tab="home" onclick="switchAdminTab('home', this)">
-          <i class="fas fa-home"></i><span>בית</span>
-        </button>
-
-        <!-- Store group -->
-        <div class="shopify-nav-group-label">חנות</div>
-        <button class="shopify-nav-item" data-admin-tab="orders" onclick="switchAdminTab('orders', this)">
-          <i class="fas fa-box"></i><span>הזמנות</span>
-        </button>
-        <button class="shopify-nav-item" data-admin-tab="products" onclick="switchAdminTab('products', this)">
-          <i class="fas fa-tag"></i><span>מוצרים</span>
-        </button>
-
-        <!-- Marketing group -->
-        <div class="shopify-nav-group-label">שיווק</div>
-        <button class="shopify-nav-item" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)">
-          <i class="fas fa-chart-pie"></i><span>ניתוח נתונים</span>
-        </button>
-        <button class="shopify-nav-item" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)">
-          <i class="fas fa-comment-dots"></i>
-          <span>הודעות</span>
-          <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.65rem; margin-right:auto;"></span>
-        </button>
-
-        <!-- Settings group -->
-        <div class="shopify-nav-group-label">הגדרות</div>
-        <button class="shopify-nav-item" data-admin-tab="payments" onclick="switchAdminTab('payments', this)">
-          <i class="fas fa-credit-card"></i><span>תשלומים</span>
-        </button>
-        <button class="shopify-nav-item" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)">
-          <i class="fas fa-paint-roller"></i><span>עיצוב החנות</span>
-        </button>
-        <button class="shopify-nav-item" data-admin-tab="links" onclick="switchAdminTab('links', this)">
-          <i class="fas fa-link"></i><span>קישורים</span>
-        </button>
-        <button class="shopify-nav-item" data-admin-tab="backup" onclick="switchAdminTab('backup', this)">
-          <i class="fas fa-history"></i><span>גיבוי ושחזור</span>
-        </button>
-        <button class="shopify-nav-item" data-admin-tab="images" onclick="switchAdminTab('images', this)">
-          <i class="fas fa-images"></i><span>תמונות מסך</span>
-        </button>
-      </nav>
-
-      <!-- Logout at bottom -->
-      <div class="shopify-sidebar-footer">
-        <button class="shopify-nav-item shopify-logout-btn" onclick="adminLogout()">
-          <i class="fas fa-sign-out-alt"></i><span>יציאה</span>
-        </button>
+<div id="page-admin" class="page" style="max-width: 1400px;">
+  <div style="display: flex; gap: 32px; align-items: flex-start; direction: rtl;">
+    
+    <!-- SIDEBAR -->
+    <aside style="width: 250px; flex-shrink: 0; background: #1c1c1e; border-radius: 16px; padding: 24px; border: 1px solid #2c2c2e; box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
+      <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800; color: #fafafa;">תפריט ניהול</h3>
+      <div style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto;">
+        <button class="admin-nav-btn active" data-admin-tab="home" onclick="switchAdminTab('home', this)" style="color: #fafafa;"><i class="fas fa-home"></i> בית</button>
+        <button class="admin-nav-btn" data-admin-tab="products" onclick="switchAdminTab('products', this)" style="color: #a1a1aa;"><i class="fas fa-tag"></i> מוצרים</button>
+        <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)" style="color: #a1a1aa;"><i class="fas fa-box"></i> הזמנות</button>
+        <button class="admin-nav-btn" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)" style="color: #a1a1aa;"><i class="fas fa-chart-pie"></i> ניתוח נתונים</button>
+        <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
+        <button class="admin-nav-btn" data-admin-tab="links" onclick="switchAdminTab('links', this)" style="color: #a1a1aa;"><i class="fas fa-link"></i> ניהול קישורים</button>
+        <button class="admin-nav-btn" data-admin-tab="backup" onclick="switchAdminTab('backup', this)" style="color: #a1a1aa;"><i class="fas fa-history"></i> גיבוי ושחזור</button>
+        <button class="admin-nav-btn" data-admin-tab="images" onclick="switchAdminTab('images', this)" style="color: #a1a1aa;"><i class="fas fa-images"></i> תמונות למסך ענק</button>
+        
+        <button class="admin-nav-btn" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)" style="color: #a1a1aa;"><i class="fas fa-comment-dots"></i> הודעות למנהל <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.7rem; margin-right:4px;"></span></button>
+        <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
       </div>
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div class="shopify-admin-main">
+    <div style="flex: 1; min-width: 0; color: #fafafa;">
       <!-- 1. HOME TAB -->
       <div id="admin-section-home" class="admin-section">
-        <!-- Header -->
-        <div class="sp-page-header">
-          <div>
-            <h1 class="sp-page-title">בית</h1>
-            <span class="sp-page-subtitle">Last refreshed: <span id="admin-last-refresh"></span></span>
+        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">תמונת מצב יומית</h2>
+        <div style="display:flex; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:180px; background:#1c1c1e; border-radius:16px; padding:24px; text-align:center; border: 1px solid #2c2c2e;">
+            <div style="font-size:2rem; font-weight:800; color:#fafafa;" id="stat-sales-today">₪0</div>
+            <div style="font-size:0.9rem; color:#a1a1aa; margin-top:4px;">מכירות היום</div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button class="sp-btn-outline" onclick="switchAdminTab('analytics', null)"><i class="fas fa-chart-bar"></i> New exploration</button>
+          <div style="flex:1; min-width:180px; background:#1c1c1e; border-radius:16px; padding:24px; text-align:center; border: 1px solid #2c2c2e;">
+            <div style="font-size:2rem; font-weight:800; color:#fafafa;" id="stat-today">0</div>
+            <div style="font-size:0.9rem; color:#a1a1aa; margin-top:4px;">מבקרים היום</div>
           </div>
-        </div>
-        <!-- KPI strip -->
-        <div class="sp-kpi-strip">
-          <div class="sp-kpi-card">
-            <div class="sp-kpi-label">מכירות ברוטו</div>
-            <div class="sp-kpi-val" id="stat-sales-today">₪0</div>
-            <div class="sp-kpi-bar"></div>
-          </div>
-          <div class="sp-kpi-card">
-            <div class="sp-kpi-label">שיעור לקוחות חוזרים</div>
-            <div class="sp-kpi-val">0%</div>
-            <div class="sp-kpi-bar"></div>
-          </div>
-          <div class="sp-kpi-card">
-            <div class="sp-kpi-label">הזמנות שסופקו</div>
-            <div class="sp-kpi-val">0</div>
-            <div class="sp-kpi-bar"></div>
-          </div>
-          <div class="sp-kpi-card">
-            <div class="sp-kpi-label">מבקרים היום</div>
-            <div class="sp-kpi-val" id="stat-today">0</div>
-            <div class="sp-kpi-bar"></div>
-          </div>
-        </div>
-        <!-- Charts grid -->
-        <div class="sp-charts-grid">
-          <div class="sp-chart-card sp-chart-wide">
-            <div class="sp-chart-title">סה"כ מכירות לאורך זמן</div>
-            <div class="sp-chart-big-val">₪0.00 <span style="font-size:1rem;color:#6b7280;font-weight:400;">—</span></div>
-            <div class="sp-chart-placeholder"><canvas id="admin-sales-chart" height="120"></canvas></div>
-          </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">פירוט מכירות</div>
-            <div class="sp-breakdown-list">
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">מכירות ברוטו</span><span>₪0.00</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">הנחות</span><span>₪0.00</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">החזרות</span><span>₪0.00</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">מכירות נטו</span><span>₪0.00</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">דמי משלוח</span><span>₪0.00</span></div>
-              <div class="sp-breakdown-row sp-breakdown-total"><span>סה"כ מכירות</span><span>₪0.00</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="sp-charts-grid sp-charts-3col">
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">מכירות לפי ערוץ</div>
-            <div class="sp-no-data">No data for this date range</div>
-          </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">ממוצע ערך הזמנה</div>
-            <div class="sp-chart-big-val">₪0.00 <span style="font-size:1rem;color:#6b7280;">—</span></div>
-            <div class="sp-chart-placeholder" style="height:80px;"></div>
-          </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">מכירות לפי מוצר</div>
-            <div class="sp-no-data">No data for this date range</div>
+          <div style="flex:1; min-width:180px; background:#422006; border-radius:16px; padding:24px; text-align:center; border:1px solid #713f12;">
+            <div style="font-size:2rem; font-weight:800; color:#fde047;">3</div>
+            <div style="font-size:0.9rem; color:#fef08a; margin-top:4px;">הזמנות לאריזה</div>
           </div>
         </div>
       </div>
 
       <!-- 2. PRODUCTS TAB -->
       <div id="admin-section-products" class="admin-section" style="display: none;">
-        <!-- Products list view -->
-        <div id="admin-products-list-view">
-          <div class="sp-page-header">
-            <h1 class="sp-page-title">מוצרים</h1>
-            <button class="sp-btn-primary" onclick="document.getElementById('admin-products-list-view').style.display='none'; document.getElementById('admin-add-product-view').style.display='block';">
-              <i class="fas fa-plus"></i> הוסף מוצר
-            </button>
-          </div>
-          <div class="sp-card" style="overflow:hidden;">
-            <table class="admin-table">
-              <thead><tr>
-                <th>תמונה</th><th>שם מוצר</th><th>קטגוריה</th><th>מלאי</th><th>מחיר</th><th>פעולות</th>
-              </tr></thead>
-              <tbody id="admin-store-products-list"></tbody>
-            </table>
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <h2 style="margin:0; font-size:1.5rem; color: #fafafa;">ניהול מוצרים ומלאי</h2>
+          <button class="btn-primary">+ הוסף מוצר</button>
         </div>
-
-        <!-- Add product form (Shopify style) -->
-        <div id="admin-add-product-view" style="display:none;">
-          <div class="sp-page-header">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <button onclick="document.getElementById('admin-products-list-view').style.display='block'; document.getElementById('admin-add-product-view').style.display='none';" style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:1rem;"><i class="fas fa-arrow-right"></i></button>
-              <h1 class="sp-page-title">הוספת מוצר</h1>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="sp-btn-outline">שמור כטיוטה</button>
-              <button class="sp-btn-primary" onclick="adminSaveProduct()">שמור</button>
-            </div>
-          </div>
-
-          <div class="sp-product-layout">
-            <!-- LEFT column: main fields -->
-            <div class="sp-product-main">
-              <div class="sp-card">
-                <div class="sp-field-group">
-                  <label class="sp-label">כותרת</label>
-                  <input type="text" class="sp-input" id="prod-title" placeholder="Short sleeve t-shirt">
-                </div>
-                <div class="sp-field-group">
-                  <label class="sp-label">תיאור</label>
-                  <div class="sp-richtext-toolbar">
-                    <button type="button" title="Bold"><b>B</b></button>
-                    <button type="button" title="Italic"><i>I</i></button>
-                    <button type="button" title="Underline"><u>U</u></button>
-                    <button type="button">≡</button>
-                    <button type="button"><i class="fas fa-link"></i></button>
-                  </div>
-                  <textarea class="sp-textarea" id="prod-desc" rows="5" placeholder="תיאור המוצר..."></textarea>
-                </div>
-                <div class="sp-field-group">
-                  <label class="sp-label">מדיה</label>
-                  <div class="sp-media-upload">
-                    <i class="fas fa-image" style="font-size:2rem;color:#d1d5db;margin-bottom:8px;"></i>
-                    <div><button class="sp-btn-outline" style="font-size:0.8rem;">Upload new</button> <button class="sp-btn-outline" style="font-size:0.8rem;">Select existing</button></div>
-                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:8px;">Accepts images, videos, or 3D models</p>
-                  </div>
-                </div>
-                <div class="sp-field-group">
-                  <label class="sp-label">קטגוריה</label>
-                  <select class="sp-input" id="prod-category">
-                    <option value="">בחר קטגוריה</option>
-                    <option>Electronics</option><option>Home</option><option>Fashion</option><option>Sports</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Price card -->
-              <div class="sp-card">
-                <h3 class="sp-card-title">מחיר</h3>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                  <div class="sp-field-group">
-                    <label class="sp-label">מחיר</label>
-                    <div class="sp-input-prefix"><span>₪</span><input type="number" class="sp-input" id="prod-price" value="0.00" step="0.01"></div>
-                  </div>
-                  <div class="sp-field-group">
-                    <label class="sp-label">מחיר מוצלב (Compare-at)</label>
-                    <div class="sp-input-prefix"><span>₪</span><input type="number" class="sp-input" id="prod-compare-price" placeholder="0.00" step="0.01"></div>
-                  </div>
-                </div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-                  <span class="sp-tag">Compare-at</span>
-                  <span class="sp-tag">Unit price</span>
-                  <span class="sp-tag">Charge tax <span class="sp-tag-badge">Yes</span></span>
-                  <span class="sp-tag">Cost per item</span>
-                </div>
-              </div>
-
-              <!-- Inventory card -->
-              <div class="sp-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <h3 class="sp-card-title">מלאי</h3>
-                  <label class="sp-toggle-label"><span style="font-size:0.8rem;color:#6b7280;">Inventory not tracked</span><div class="sp-toggle"><input type="checkbox"><span class="sp-toggle-slider"></span></div></label>
-                </div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-                  <div class="sp-field-group" style="flex:1;min-width:120px;">
-                    <label class="sp-label">SKU (מק"ט)</label>
-                    <input type="text" class="sp-input" id="prod-sku" placeholder="SKU">
-                  </div>
-                  <div class="sp-field-group" style="flex:1;min-width:120px;">
-                    <label class="sp-label">Barcode</label>
-                    <input type="text" class="sp-input" id="prod-barcode" placeholder="Barcode">
-                  </div>
-                  <div class="sp-field-group" style="flex:1;min-width:120px;">
-                    <label class="sp-label">כמות במלאי</label>
-                    <input type="number" class="sp-input" id="prod-stock" value="0">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Shipping card -->
-              <div class="sp-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <h3 class="sp-card-title">משלוח</h3>
-                  <label class="sp-toggle-label"><span style="font-size:0.8rem;color:#6b7280;">Physical product</span><div class="sp-toggle"><input type="checkbox" checked><span class="sp-toggle-slider"></span></div></label>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;">
-                  <div class="sp-field-group">
-                    <label class="sp-label">משקל</label>
-                    <div style="display:flex;gap:8px;">
-                      <input type="number" class="sp-input" placeholder="0.0" style="flex:1;">
-                      <select class="sp-input" style="width:70px;"><option>kg</option><option>lb</option><option>g</option></select>
-                    </div>
-                  </div>
-                  <div class="sp-field-group">
-                    <label class="sp-label">ארץ מקור</label>
-                    <input type="text" class="sp-input" placeholder="ישראל">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Variants card -->
-              <div class="sp-card">
-                <h3 class="sp-card-title">וריאנטים</h3>
-                <button class="sp-add-option-btn" onclick="adminAddVariantOption()">
-                  <i class="fas fa-plus-circle"></i> Add options like size or color
-                </button>
-                <div id="prod-variants-list" style="margin-top:12px;"></div>
-              </div>
-
-              <!-- SEO card -->
-              <div class="sp-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <h3 class="sp-card-title">Search engine listing</h3>
-                  <button style="background:none;border:none;cursor:pointer;color:#9ca3af;"><i class="fas fa-pencil-alt"></i></button>
-                </div>
-                <p style="font-size:0.85rem;color:#6b7280;margin:0;">Add a title and description to see how this product might appear in a search engine listing</p>
-              </div>
-            </div>
-
-            <!-- RIGHT column: Status/Org -->
-            <div class="sp-product-side">
-              <div class="sp-card">
-                <h3 class="sp-card-title">סטטוס</h3>
-                <select class="sp-input" id="prod-status">
-                  <option value="active">Active</option>
-                  <option value="draft">Draft</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-              <div class="sp-card">
-                <h3 class="sp-card-title">Publishing</h3>
-                <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;color:#374151;">
-                  <input type="checkbox" checked style="width:16px;height:16px;"> All channels
-                </label>
-              </div>
-              <div class="sp-card">
-                <h3 class="sp-card-title">Product organization</h3>
-                <div class="sp-field-group">
-                  <label class="sp-label">Type</label>
-                  <select class="sp-input"><option>None</option><option>Electronics</option><option>Home</option></select>
-                </div>
-                <div class="sp-field-group">
-                  <label class="sp-label">Vendor</label>
-                  <select class="sp-input"><option>None</option></select>
-                </div>
-                <div class="sp-field-group">
-                  <label class="sp-label">Collections</label>
-                  <button class="sp-add-option-btn"><i class="fas fa-plus-circle"></i> Add collections</button>
-                </div>
-                <div class="sp-field-group">
-                  <label class="sp-label">Tags</label>
-                  <button class="sp-add-option-btn"><i class="fas fa-plus-circle"></i> Add tags</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <table class="admin-table" style="color: #fafafa;">
+          <thead>
+            <tr style="border-bottom: 1px solid #2c2c2e;">
+              <th style="color: #a1a1aa;">תמונה</th>
+              <th style="color: #a1a1aa;">שם מוצר</th>
+              <th style="color: #a1a1aa;">קטגוריה</th>
+              <th style="color: #a1a1aa;">מלאי</th>
+              <th style="color: #a1a1aa;">מחיר</th>
+              <th style="color: #a1a1aa;">פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="admin-store-products-list"></tbody>
+        </table>
       </div>
 
       <!-- 3. ORDERS TAB -->
       <div id="admin-section-orders" class="admin-section" style="display: none;">
-        <div class="sp-page-header">
-          <h1 class="sp-page-title">הזמנות</h1>
-          <button class="sp-btn-primary"><i class="fas fa-plus"></i> Create order</button>
-        </div>
-        <div class="sp-card" style="overflow:hidden;">
-          <table class="admin-table">
-            <thead><tr>
-              <th>מספר הזמנה</th><th>תאריך</th><th>לקוח</th><th>סטטוס</th><th>סה"כ</th><th>פעולות</th>
-            </tr></thead>
-            <tbody id="admin-orders-list-new"></tbody>
-          </table>
-        </div>
+        <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">מעקב הזמנות ומשלוחים</h2>
+        <table class="admin-table" style="color: #fafafa;">
+          <thead>
+            <tr style="border-bottom: 1px solid #2c2c2e;">
+              <th style="color: #a1a1aa;">מספר הזמנה</th>
+              <th style="color: #a1a1aa;">תאריך</th>
+              <th style="color: #a1a1aa;">לקוח</th>
+              <th style="color: #a1a1aa;">סטטוס</th>
+              <th style="color: #a1a1aa;">סה"כ</th>
+              <th style="color: #a1a1aa;">פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="admin-orders-list-new"></tbody>
+        </table>
       </div>
 
       <!-- 4. ANALYTICS TAB -->
-      <div id="admin-section-analytics" class="admin-section" style="display: none;">
-        <div class="sp-page-header">
-          <div style="display:flex;align-items:center;gap:16px;">
-            <h1 class="sp-page-title">Analytics</h1>
-            <span style="font-size:0.8rem;color:#6b7280;">Last refreshed: <span id="analytics-refresh-time"></span></span>
+      <div id="admin-section-analytics" class="admin-section" style="display: none; direction: rtl; text-align: right;">
+        <h2 style="margin:0 0 8px 0; font-size:1.5rem; color: #fafafa;">📊 ניתוח נתונים ומפת חום (Analytics & Heatmap)</h2>
+        <p style="color: #a1a1aa; font-size: 0.95rem; margin-bottom: 24px;">נתוני גלישה בזמן אמת, התחברויות משתמשים ומפת קליקים חמה של משתמשי האתר</p>
+        
+        <!-- Row 1: Metrics Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <!-- Clicks Metric -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; text-align: center;">
+            <i class="fas fa-mouse-pointer" style="font-size: 1.8rem; color: #10b981; margin-bottom: 10px;"></i>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #fff;" id="analytics-total-clicks">0</div>
+            <div style="font-size: 0.8rem; color: #86868b; margin-top: 4px;">קליקים מוקלטים באתר</div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button class="sp-btn-outline"><i class="fas fa-ellipsis-h"></i></button>
-            <button class="sp-btn-outline">Create target</button>
-            <button class="sp-btn-primary">New exploration</button>
+          <!-- Logins Metric -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; text-align: center;">
+            <i class="fas fa-user-check" style="font-size: 1.8rem; color: #0ea5e9; margin-bottom: 10px;"></i>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #fff;" id="analytics-total-logins">0</div>
+            <div style="font-size: 0.8rem; color: #86868b; margin-top: 4px;">התחברויות משתמשים</div>
           </div>
-        </div>
-        <!-- Filter bar -->
-        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-          <button class="sp-filter-chip active"><i class="far fa-calendar"></i> Today</button>
-          <button class="sp-filter-chip"><i class="far fa-calendar-alt"></i> <span id="analytics-date-label"></span></button>
-          <button class="sp-filter-chip">₪ ILS ₪</button>
-        </div>
-        <!-- KPI strip -->
-        <div class="sp-kpi-strip">
-          <div class="sp-kpi-card"><div class="sp-kpi-label">Gross sales</div><div class="sp-kpi-val">₪0 <span style="color:#9ca3af;font-size:0.8rem;font-weight:400;">—</span></div><div class="sp-kpi-bar"></div></div>
-          <div class="sp-kpi-card"><div class="sp-kpi-label">Returning customer rate</div><div class="sp-kpi-val">0% <span style="color:#9ca3af;font-size:0.8rem;font-weight:400;">—</span></div><div class="sp-kpi-bar"></div></div>
-          <div class="sp-kpi-card"><div class="sp-kpi-label">Orders fulfilled</div><div class="sp-kpi-val">0 <span style="color:#9ca3af;font-size:0.8rem;font-weight:400;">—</span></div><div class="sp-kpi-bar"></div></div>
-          <div class="sp-kpi-card"><div class="sp-kpi-label">Orders</div><div class="sp-kpi-val">0 <span style="color:#9ca3af;font-size:0.8rem;font-weight:400;">—</span></div><div class="sp-kpi-bar"></div></div>
-        </div>
-        <!-- Charts -->
-        <div class="sp-charts-grid">
-          <div class="sp-chart-card sp-chart-wide">
-            <div class="sp-chart-title">Total sales over time</div>
-            <div class="sp-chart-big-val">₪0.00 <span style="font-size:1rem;color:#6b7280;font-weight:400;">—</span></div>
-            <div class="sp-chart-placeholder"><canvas id="analytics-sales-chart" height="120"></canvas></div>
-            <div style="display:flex;gap:16px;font-size:0.75rem;color:#6b7280;margin-top:8px;">
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2563eb;"></span> Today</span>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#93c5fd;"></span> Yesterday</span>
+          <!-- Device breakdown progress bar -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; display:flex; flex-direction:column; justify-content:center; gap:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; color:#fff;">
+              <span>דסקטופ 💻</span>
+              <span id="analytics-desktop-pct">70%</span>
             </div>
-          </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">Total sales breakdown</div>
-            <div class="sp-breakdown-list">
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Gross sales</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Discounts</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Returns</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Net sales</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Shipping charges</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Return fees</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row"><span style="color:#2563eb;">Taxes</span><span>₪0.00 —</span></div>
-              <div class="sp-breakdown-row sp-breakdown-total"><span>Total sales</span><span>₪0.00 —</span></div>
+            <div style="height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+              <div id="analytics-device-bar" style="height: 100%; background: linear-gradient(90deg, #0ea5e9, #10b981); width: 70%; transition: width 0.4s ease;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#86868b;">
+              <span>מובייל 📱</span>
+              <span id="analytics-mobile-pct">30%</span>
             </div>
           </div>
         </div>
-        <div class="sp-charts-grid sp-charts-3col">
-          <div class="sp-chart-card"><div class="sp-chart-title">Total sales by sales channel</div><div class="sp-no-data">No data for this date range</div></div>
-          <div class="sp-chart-card"><div class="sp-chart-title">Average order value over time</div><div class="sp-chart-big-val">₪0.00 —</div><div class="sp-chart-placeholder" style="height:80px;"></div></div>
-          <div class="sp-chart-card"><div class="sp-chart-title">Total sales by product</div><div class="sp-no-data">No data for this date range</div></div>
-        </div>
-        <div class="sp-charts-grid sp-charts-3col">
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">Sessions over time</div>
-            <div class="sp-chart-big-val" id="analytics-total-clicks">0 —</div>
-            <div class="sp-chart-placeholder" style="height:80px;"></div>
-          </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">Conversion rate over time</div>
-            <div class="sp-chart-big-val">0% —</div>
-            <div class="sp-chart-placeholder" style="height:80px;"></div>
-          </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">Conversion rate breakdown</div>
-            <div class="sp-chart-big-val">0% —</div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;font-size:0.75rem;">
-              <div><div style="color:#6b7280;">Sessions</div><div style="font-weight:700;">0%</div><div>0</div><div style="color:#9ca3af;">↘ 0%</div></div>
-              <div><div style="color:#6b7280;">Added to cart</div><div style="font-weight:700;">0%</div><div>0</div><div style="color:#9ca3af;">↘ 0%</div></div>
-              <div><div style="color:#6b7280;">Reached checkout</div><div style="font-weight:700;">0%</div><div>0</div><div style="color:#9ca3af;">↘ 0%</div></div>
-              <div><div style="color:#6b7280;">Completed</div><div style="font-weight:700;">0%</div><div>0</div><div style="color:#9ca3af;">↘ 0%</div></div>
+
+        <!-- Row 2: Live Heatmap & Logins Log Split View -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 480px; align-items: stretch; margin-bottom: 30px;">
+          <!-- Left: User Logins list -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 16px; padding: 24px; display:flex; flex-direction:column; gap:16px;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #fff; display:flex; align-items:center; gap:8px;"><i class="fas fa-users-cog" style="color:#0ea5e9;"></i> מחוברים לאחרונה / User Logins</h3>
+            <div id="analytics-logins-list" style="flex:1; overflow-y:auto; max-height:400px; display:flex; flex-direction:column; gap:12px; padding-left:6px;">
+              <div style="text-align:center; padding:40px; color:#86868b;">אין התחברויות רשומות עדיין</div>
             </div>
           </div>
-        </div>
-        <!-- Heatmap section (existing logic) -->
-        <div class="sp-charts-grid">
-          <div class="sp-chart-card sp-chart-wide">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="sp-chart-title">מפת חום אינטראקטיבית (Click Heatmap)</div>
-              <button onclick="clearHeatmapData()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:0.75rem;border-radius:6px;padding:4px 10px;cursor:pointer;">איפוס 🧹</button>
+
+          <!-- Right: Heatmap Preview Screen -->
+          <div style="background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 16px; padding: 24px; display:flex; flex-direction:column; gap:16px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #fff; display:flex; align-items:center; gap:8px;"><i class="fas fa-fire" style="color:#ef4444;"></i> מפת חום אינטראקטיבית (Click Heatmap)</h3>
+              <button onclick="clearHeatmapData()" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#ef4444; font-size:0.75rem; border-radius:6px; padding:4px 10px; cursor:pointer;">איפוס 🧹</button>
             </div>
-            <div id="heatmap-preview-container" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;position:relative;overflow:hidden;min-height:280px;margin-top:12px;">
-              <div style="width:100%;height:100%;padding:16px;display:flex;flex-direction:column;gap:8px;opacity:0.2;pointer-events:none;">
-                <div style="height:24px;background:#e5e7eb;border-radius:4px;"></div>
-                <div style="height:80px;background:#e5e7eb;border-radius:4px;"></div>
-                <div style="display:flex;gap:8px;flex:1;"><div style="flex:2;background:#e5e7eb;border-radius:4px;"></div><div style="flex:1;background:#e5e7eb;border-radius:4px;"></div></div>
+            <!-- Scaled Interactive Page Sandbox with overlaid glowing absolute click dots -->
+            <div id="heatmap-preview-container" style="flex:1; background:#0b0b0c; border:1px solid #2c2c2e; border-radius:12px; position:relative; overflow:hidden; min-height:360px;">
+              <!-- Graphic homepage mockup wrapper -->
+              <div style="width:100%; height:100%; padding:20px; display:flex; flex-direction:column; gap:12px; opacity:0.25; filter:blur(0.5px); pointer-events:none; user-select:none;">
+                <div style="height:32px; background:#1c1c1e; border-radius:6px; width:100%;"></div>
+                <div style="height:120px; background:#1c1c1e; border-radius:6px; width:100%;"></div>
+                <div style="display:flex; gap:12px; flex:1;">
+                  <div style="flex:2; background:#1c1c1e; border-radius:6px;"></div>
+                  <div style="flex:1; background:#1c1c1e; border-radius:6px;"></div>
+                </div>
               </div>
-              <div id="heatmap-overlay-spots" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></div>
+              <!-- Floating Click Overlay Spots will be drawn dynamically by JS here -->
+              <div id="heatmap-overlay-spots" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
             </div>
           </div>
-          <div class="sp-chart-card">
-            <div class="sp-chart-title">התחברויות משתמשים</div>
-            <div id="analytics-total-logins" style="font-size:2rem;font-weight:800;color:#1a1a2e;margin-bottom:8px;">0</div>
-            <div id="analytics-logins-list" style="overflow-y:auto;max-height:240px;display:flex;flex-direction:column;gap:8px;">
-              <div style="text-align:center;padding:24px;color:#9ca3af;font-size:0.875rem;">אין התחברויות רשומות עדיין</div>
-            </div>
-          </div>
-
-      <!-- PAYMENTS TAB -->
-      <div id="admin-section-payments" class="admin-section" style="display:none;">
-        <div class="sp-page-header">
-          <h1 class="sp-page-title"><i class="fas fa-credit-card" style="margin-left:8px;"></i> Payments</h1>
-        </div>
-
-        <div class="sp-card">
-          <h3 class="sp-card-title">Payment providers</h3>
-          <p style="font-size:0.875rem;color:#6b7280;margin:4px 0 16px;">Providers that enable you to accept payment methods at a rate set by the third-party.</p>
-          <button class="sp-btn-outline">Choose a provider</button>
-        </div>
-
-        <div class="sp-card">
-          <h3 class="sp-card-title">Supported payment methods</h3>
-          <p style="font-size:0.875rem;color:#6b7280;margin:4px 0 16px;">Payment methods that are available with approved payment providers</p>
-          <div style="border:1px solid #e5e7eb;border-radius:10px;padding:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div>
-                <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">PayPal</div>
-                <div style="font-size:0.8rem;color:#6b7280;">Transaction fees vary by plan • Processing fees set by PayPal</div>
-                <div style="margin-top:8px;width:28px;height:28px;background:#003087;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.8rem;">P</div>
-              </div>
-              <span style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:20px;padding:4px 12px;font-size:0.78rem;color:#374151;font-weight:600;">Setup incomplete ›</span>
-            </div>
-            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:0.82rem;color:#1d4ed8;">
-              <i class="fas fa-info-circle" style="margin-left:6px;"></i> Complete your PayPal account setup to start receiving payouts from PayPal.
-            </div>
-          </div>
-          <button class="sp-add-option-btn" style="margin-top:12px;"><i class="fas fa-plus-circle"></i> Add payment method</button>
-        </div>
-
-        <div class="sp-card">
-          <h3 class="sp-card-title">Payment capture method</h3>
-          <p style="font-size:0.875rem;color:#6b7280;margin:4px 0 16px;">Payments are authorized when an order is placed. Select how to capture payments:</p>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-              <input type="radio" name="capture" checked style="margin-top:3px;">
-              <div><div style="font-weight:600;font-size:0.9rem;">Automatically at checkout</div><div style="font-size:0.8rem;color:#6b7280;">Capture payment when an order is placed</div></div>
-            </label>
-            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-              <input type="radio" name="capture" style="margin-top:3px;">
-              <div><div style="font-weight:600;font-size:0.9rem;">Automatically when the entire order is fulfilled</div><div style="font-size:0.8rem;color:#6b7280;">Authorize payment at checkout and capture once the entire order is fulfilled</div></div>
-            </label>
-            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-              <input type="radio" name="capture" style="margin-top:3px;">
-              <div><div style="font-weight:600;font-size:0.9rem;">Manually</div><div style="font-size:0.8rem;color:#6b7280;">Authorize payment at checkout and capture manually</div></div>
-            </label>
-          </div>
-        </div>
-
-        <div class="sp-card">
-          <h3 class="sp-card-title">Manual payment methods</h3>
-          <p style="font-size:0.875rem;color:#6b7280;margin:4px 0 12px;">Payments made outside your online store. Orders paid manually must be approved before being fulfilled.</p>
-          <button class="sp-add-option-btn"><i class="fas fa-plus-circle"></i> Manual payment method</button>
-        </div>
-
-        <div class="sp-card">
-          <h3 class="sp-card-title">Gift card expiration</h3>
-          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;"><input type="radio" name="giftcard" checked> Gift cards never expire</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;"><input type="radio" name="giftcard"> Gift cards expire</label>
-          </div>
-        </div>
-
-        <div style="text-align:center;padding:20px;font-size:0.875rem;font-weight:600;color:#374151;">
-          <a href="#" onclick="return false;" style="color:#374151;">Learn more about payments</a>
         </div>
       </div>
 
@@ -2503,9 +2133,9 @@
         </div>
       </div>
 
-    </div><!-- end shopify-admin-main -->
-  </div><!-- end shopify-admin-wrapper -->
-</div><!-- end page-admin -->
+    </div>
+  </div>
+</div>
 
 <!-- SHOP PAGE -->
 <div id="page-shop" class="page">
