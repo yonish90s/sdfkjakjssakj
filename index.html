@@ -1782,6 +1782,7 @@
         <button class="admin-nav-btn" data-admin-tab="products" onclick="switchAdminTab('products', this)" style="color: #a1a1aa;"><i class="fas fa-tag"></i> מוצרים</button>
         <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)" style="color: #a1a1aa;"><i class="fas fa-box"></i> הזמנות</button>
         <button class="admin-nav-btn" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)" style="color: #a1a1aa;"><i class="fas fa-chart-pie"></i> ניתוח נתונים</button>
+        <button class="admin-nav-btn" data-admin-tab="payments" onclick="switchAdminTab('payments', this)" style="color: #a1a1aa;"><i class="fas fa-credit-card"></i> תשלומים</button>
         <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
         <button class="admin-nav-btn" data-admin-tab="links" onclick="switchAdminTab('links', this)" style="color: #a1a1aa;"><i class="fas fa-link"></i> ניהול קישורים</button>
         <button class="admin-nav-btn" data-admin-tab="backup" onclick="switchAdminTab('backup', this)" style="color: #a1a1aa;"><i class="fas fa-history"></i> גיבוי ושחזור</button>
@@ -2253,6 +2254,184 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- PAYMENTS TAB -->
+      <div id="admin-section-payments" class="admin-section" style="display:none; direction:ltr; font-family:'Inter',sans-serif;">
+
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:28px;">
+          <i class="fas fa-hand-holding-usd" style="font-size:1.3rem; color:#a1a1aa;"></i>
+          <h2 style="margin:0; font-size:1.5rem; font-weight:800; color:#fafafa;">Payments</h2>
+        </div>
+
+        <!-- 1. Payment providers -->
+        <div class="pay-card">
+          <div class="pay-card-title">Payment providers</div>
+          <p class="pay-card-desc">Providers that enable you to accept payment methods at a rate set by the third-party. An additional fee will apply to new orders once you <a href="#" onclick="return false;" class="pay-link">select a plan</a>.</p>
+          <button class="pay-btn-outline">Choose a provider</button>
+        </div>
+
+        <!-- 2. Supported payment methods -->
+        <div class="pay-card">
+          <div class="pay-card-title">Supported payment methods</div>
+          <p class="pay-card-desc">Payment methods available with approved payment providers</p>
+
+          <!-- PayPal row -->
+          <div class="pay-provider-box">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <div style="font-weight:700; font-size:0.95rem; color:#fafafa; margin-bottom:4px;">PayPal</div>
+                <div style="font-size:0.8rem; color:#a1a1aa;">Transaction fees vary by plan • Processing fees set by PayPal</div>
+                <div style="margin-top:10px; width:32px; height:32px; background:#003087; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:0.85rem;">P</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="pay-badge-incomplete">Setup incomplete</span>
+                <span style="color:#a1a1aa; font-size:1rem;">›</span>
+              </div>
+            </div>
+            <div class="pay-info-box">
+              <i class="fas fa-info-circle" style="color:#60a5fa; flex-shrink:0;"></i>
+              <span>Complete your PayPal account setup to start receiving payouts from PayPal.</span>
+            </div>
+          </div>
+
+          <!-- Make/Grow integration row -->
+          <div class="pay-provider-box pay-provider-highlight">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <div style="width:28px; height:28px; background:linear-gradient(135deg,#7c3aed,#4f46e5); border-radius:6px; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-plug" style="color:#fff; font-size:0.7rem;"></i>
+                  </div>
+                  <span style="font-weight:700; font-size:0.95rem; color:#fafafa;">Make × Grow</span>
+                  <span class="pay-badge-soon">Coming soon</span>
+                </div>
+                <div style="font-size:0.8rem; color:#a1a1aa;">Automated payment flow via Make.com + Grow payment gateway</div>
+              </div>
+              <button class="pay-btn-outline pay-btn-sm" onclick="payOpenMakeSetup()">Connect</button>
+            </div>
+            <div class="pay-info-box" style="background:rgba(124,58,237,0.08); border-color:rgba(124,58,237,0.25); color:#a78bfa;">
+              <i class="fas fa-bolt" style="color:#a78bfa; flex-shrink:0;"></i>
+              <span>Connect your Make.com scenario to automate order processing through the Grow payment system.</span>
+            </div>
+          </div>
+
+          <button class="pay-add-method-btn">
+            <i class="fas fa-plus-circle" style="color:#a1a1aa;"></i> Add payment method
+          </button>
+        </div>
+
+        <!-- 3. Payment capture method -->
+        <div class="pay-card">
+          <div class="pay-card-title">Payment capture method</div>
+          <p class="pay-card-desc">Payments are authorized when an order is placed. Select how to <a href="#" onclick="return false;" class="pay-link">capture payments</a>:</p>
+          <div style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
+            <label class="pay-radio-row">
+              <input type="radio" name="pay-capture" checked>
+              <div>
+                <div class="pay-radio-title">Automatically at checkout</div>
+                <div class="pay-radio-desc">Capture payment when an order is placed</div>
+              </div>
+            </label>
+            <label class="pay-radio-row">
+              <input type="radio" name="pay-capture">
+              <div>
+                <div class="pay-radio-title">Automatically when the entire order is fulfilled</div>
+                <div class="pay-radio-desc">Authorize payment at checkout and capture once the entire order is fulfilled</div>
+              </div>
+            </label>
+            <label class="pay-radio-row">
+              <input type="radio" name="pay-capture">
+              <div>
+                <div class="pay-radio-title">Manually</div>
+                <div class="pay-radio-desc">Authorize payment at checkout and capture manually</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 4. Manual payment methods -->
+        <div class="pay-card">
+          <div class="pay-card-title">Manual payment methods</div>
+          <p class="pay-card-desc">Payments made outside your online store. Orders paid manually must be approved before being fulfilled.</p>
+          <div style="border:1px solid var(--ap-border); border-radius:8px; padding:12px 16px; cursor:pointer;" onclick="this.innerHTML='<input type=text placeholder=Method name (e.g. Bank transfer) class=ap-input style=width:100%;>')">
+            <i class="fas fa-plus-circle" style="color:#a1a1aa; margin-left:6px;"></i>
+            <span style="font-size:0.875rem; color:#fafafa;">Manual payment method</span>
+          </div>
+        </div>
+
+        <!-- 5. Payment method customizations -->
+        <div class="pay-card">
+          <div class="pay-card-title">Payment method customizations</div>
+          <p class="pay-card-desc">Control how payment methods appear to your customers at checkout.</p>
+          <button class="pay-btn-outline">View payment method customization apps</button>
+        </div>
+
+        <!-- 6. Gift card expiration -->
+        <div class="pay-card">
+          <div class="pay-card-title">Gift card expiration</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+            <label class="pay-radio-row">
+              <input type="radio" name="giftcard-exp" checked>
+              <div class="pay-radio-title">Gift cards never expire</div>
+            </label>
+            <label class="pay-radio-row">
+              <input type="radio" name="giftcard-exp">
+              <div class="pay-radio-title">Gift cards expire</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 7. Apple Wallet -->
+        <div class="pay-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="pay-card-title" style="margin:0 0 4px;">Apple Wallet passes</div>
+            <p class="pay-card-desc" style="margin:0;">Give customers a digital Apple Wallet pass to use online or in your retail stores</p>
+          </div>
+          <button class="pay-btn-outline">Customize</button>
+        </div>
+
+        <!-- Make.com Setup Modal (inline) -->
+        <div id="pay-make-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200000; align-items:center; justify-content:center; backdrop-filter:blur(10px);" onclick="if(event.target===this)payCloseMakeSetup()">
+          <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:20px; padding:36px; width:90%; max-width:520px; color:#fafafa; position:relative;">
+            <button onclick="payCloseMakeSetup()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:1.2rem; cursor:pointer;">✕</button>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+              <div style="width:40px; height:40px; background:linear-gradient(135deg,#7c3aed,#4f46e5); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-plug" style="color:#fff;"></i>
+              </div>
+              <div>
+                <div style="font-weight:800; font-size:1.1rem;">Connect Make × Grow</div>
+                <div style="font-size:0.78rem; color:#a1a1aa;">Automate payments via Make.com</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div>
+                <label class="ap-label">Make.com Webhook URL</label>
+                <input type="url" class="ap-input" id="pay-make-webhook" placeholder="https://hook.make.com/your-webhook-id">
+              </div>
+              <div>
+                <label class="ap-label">Grow API Key</label>
+                <input type="text" class="ap-input" id="pay-grow-key" placeholder="grow_live_xxxxxxxxxxxxxxxx">
+              </div>
+              <div>
+                <label class="ap-label">Grow Merchant ID</label>
+                <input type="text" class="ap-input" id="pay-grow-merchant" placeholder="merchant_id">
+              </div>
+              <div style="background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2); border-radius:8px; padding:12px; font-size:0.8rem; color:#a78bfa; line-height:1.6;">
+                <i class="fas fa-bolt" style="margin-left:6px;"></i>
+                כשלקוח משלם, Make.com יקבל webhook ויעביר את הנתונים אוטומטית למערכת Grow לעיבוד התשלום ואישור ההזמנה.
+              </div>
+              <div style="display:flex; gap:10px; margin-top:4px;">
+                <button class="ap-btn-dark" style="flex:1;" onclick="paySaveMakeSetup()">שמור חיבור</button>
+                <button class="ap-btn-outline-dark" onclick="payCloseMakeSetup()">ביטול</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center; padding:24px; font-size:0.875rem;">
+          <a href="#" onclick="return false;" style="color:#a1a1aa; text-decoration:underline;">Learn more about payments</a>
+        </div>
       </div>
 
       <!-- 5. STORE DESIGN TAB -->

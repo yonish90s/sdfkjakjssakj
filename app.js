@@ -1403,6 +1403,33 @@ window.apAddVariant = function() {
     <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:1.1rem;">✕</button>`;
   c.appendChild(div);
 };
+// ── PAYMENTS / MAKE × GROW ────────────────────────────
+window.payOpenMakeSetup = function() {
+  const modal = document.getElementById('pay-make-modal');
+  if (modal) { modal.style.display = 'flex'; }
+  // Pre-fill saved values
+  const saved = JSON.parse(localStorage.getItem('makeGrowConfig') || '{}');
+  if (saved.webhook)  document.getElementById('pay-make-webhook').value  = saved.webhook;
+  if (saved.growKey)  document.getElementById('pay-grow-key').value      = saved.growKey;
+  if (saved.merchant) document.getElementById('pay-grow-merchant').value = saved.merchant;
+};
+window.payCloseMakeSetup = function() {
+  const modal = document.getElementById('pay-make-modal');
+  if (modal) modal.style.display = 'none';
+};
+window.paySaveMakeSetup = function() {
+  const webhook  = document.getElementById('pay-make-webhook').value.trim();
+  const growKey  = document.getElementById('pay-grow-key').value.trim();
+  const merchant = document.getElementById('pay-grow-merchant').value.trim();
+  if (!webhook || !growKey) { showToast('אנא מלא Webhook URL ו-Grow API Key', 'error'); return; }
+  localStorage.setItem('makeGrowConfig', JSON.stringify({ webhook, growKey, merchant }));
+  // Update badge to show connected
+  const badge = document.querySelector('.pay-badge-soon');
+  if (badge) { badge.textContent = '✓ Connected'; badge.style.background = 'rgba(16,185,129,0.15)'; badge.style.color = '#10b981'; badge.style.borderColor = 'rgba(16,185,129,0.3)'; }
+  payCloseMakeSetup();
+  showToast('✅ חיבור Make × Grow נשמר בהצלחה!');
+};
+
 window.apSaveProduct = function() {
   const title = document.getElementById('ap-title').value.trim();
   if (!title) { showToast('אנא הזן שם מוצר', 'error'); return; }
