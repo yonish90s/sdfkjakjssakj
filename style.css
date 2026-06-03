@@ -483,12 +483,12 @@ body.dark-theme .apple-dropdown-content.mega-menu .apple-dropdown-item:hover {
 
 
 /* ========== PAGES ========== */
-.page { 
-  display: none; 
-  max-width: 100%; 
+.page {
+  display: none;
+  max-width: 1200px;
   width: 100%;
-  margin: 0 auto; 
-  padding: 60px 24px 100px; 
+  margin: 0 auto;
+  padding: 60px 40px 100px;
   box-sizing: border-box;
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -657,7 +657,7 @@ body.dark-theme .apple-dropdown-content.mega-menu .apple-dropdown-item:hover {
 .main-news-layout {
   display: flex;
   gap: 40px;
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
