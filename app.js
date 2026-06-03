@@ -1383,6 +1383,66 @@ async function adminLogin() {
   }
 }
 
+// ── ADD PRODUCT FORM HELPERS ──────────────────────────
+window.apShowForm = function() {
+  document.getElementById('ap-list-view').style.display = 'none';
+  document.getElementById('ap-form-view').style.display = 'block';
+};
+window.apShowList = function() {
+  document.getElementById('ap-form-view').style.display = 'none';
+  document.getElementById('ap-list-view').style.display = 'block';
+};
+window.apAddVariant = function() {
+  const c = document.getElementById('ap-variants-container');
+  const idx = c.children.length;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:12px;';
+  div.innerHTML = `
+    <input type="text" class="ap-input" placeholder="Option name (e.g. Size)" style="flex:1;">
+    <input type="text" class="ap-input" placeholder="Values (e.g. S, M, L)" style="flex:2;">
+    <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:1.1rem;">✕</button>`;
+  c.appendChild(div);
+};
+window.apSaveProduct = function() {
+  const title = document.getElementById('ap-title').value.trim();
+  if (!title) { showToast('אנא הזן שם מוצר', 'error'); return; }
+  const price = parseFloat(document.getElementById('ap-price').value) || 0;
+  const desc  = document.getElementById('ap-desc').value.trim();
+  const cat   = document.getElementById('ap-category').value || 'General';
+  const status = document.getElementById('ap-status').value;
+
+  // Save to shopProducts + localStorage
+  const newProduct = {
+    id: 'prod-' + Date.now(),
+    title, price,
+    desc,
+    cat,
+    brand: 'SOKI Store',
+    img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600',
+    colors: [],
+    colorSwatches: [],
+    imagesByColor: {},
+    status
+  };
+  shopProducts.push(newProduct);
+  const stored = JSON.parse(localStorage.getItem('storeItems') || '[]');
+  stored.push(newProduct);
+  localStorage.setItem('storeItems', JSON.stringify(stored));
+
+  showToast(`✅ המוצר "${title}" נשמר בחנות!`);
+  apShowList();
+  // Refresh table
+  const list = document.getElementById('ap-table-wrap');
+  const empty = document.getElementById('ap-empty-banner');
+  if (shopProducts.length > 0) { list.style.display='block'; empty.style.display='none'; }
+  const tbody = document.getElementById('admin-store-products-list');
+  if (tbody) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><div style="width:40px;height:40px;border-radius:6px;background:#2c2c2e;"></div></td><td>${title}</td><td>${cat}</td><td>—</td><td>₪${price.toFixed(2)}</td><td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:#ef4444;cursor:pointer;">מחק</button></td>`;
+    tbody.appendChild(tr);
+  }
+};
+
 function adminLogout() {
   isAdmin = false;
   localStorage.removeItem('isAdmin');

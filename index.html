@@ -1815,24 +1815,272 @@
 
       <!-- 2. PRODUCTS TAB -->
       <div id="admin-section-products" class="admin-section" style="display: none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-          <h2 style="margin:0; font-size:1.5rem; color: #fafafa;">ניהול מוצרים ומלאי</h2>
-          <button class="btn-primary">+ הוסף מוצר</button>
+
+        <!-- ── LIST VIEW ── -->
+        <div id="ap-list-view">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; direction:rtl;">
+            <h2 style="margin:0; font-size:1.5rem; color:#fafafa;">מוצרים</h2>
+            <button class="btn-primary" onclick="apShowForm()">+ הוסף מוצר</button>
+          </div>
+
+          <!-- Empty-state banner (shown when no products) -->
+          <div id="ap-empty-banner" class="ap-empty-banner">
+            <div class="ap-empty-text">
+              <h3>Add your products</h3>
+              <p>Start by stocking your store with products your customers will love</p>
+              <div style="display:flex;gap:10px;margin-top:16px;">
+                <button class="ap-btn-dark" onclick="apShowForm()">Add product</button>
+                <button class="ap-btn-outline-dark">Import</button>
+              </div>
+            </div>
+            <div class="ap-empty-visual">
+              <div class="ap-empty-box">+</div>
+            </div>
+          </div>
+
+          <!-- Products table (hidden when empty) -->
+          <div id="ap-table-wrap" style="display:none;">
+            <table class="admin-table" style="color:#fafafa;">
+              <thead>
+                <tr style="border-bottom:1px solid #2c2c2e;">
+                  <th style="color:#a1a1aa;">תמונה</th>
+                  <th style="color:#a1a1aa;">שם מוצר</th>
+                  <th style="color:#a1a1aa;">קטגוריה</th>
+                  <th style="color:#a1a1aa;">מלאי</th>
+                  <th style="color:#a1a1aa;">מחיר</th>
+                  <th style="color:#a1a1aa;">פעולות</th>
+                </tr>
+              </thead>
+              <tbody id="admin-store-products-list"></tbody>
+            </table>
+          </div>
         </div>
-        <table class="admin-table" style="color: #fafafa;">
-          <thead>
-            <tr style="border-bottom: 1px solid #2c2c2e;">
-              <th style="color: #a1a1aa;">תמונה</th>
-              <th style="color: #a1a1aa;">שם מוצר</th>
-              <th style="color: #a1a1aa;">קטגוריה</th>
-              <th style="color: #a1a1aa;">מלאי</th>
-              <th style="color: #a1a1aa;">מחיר</th>
-              <th style="color: #a1a1aa;">פעולות</th>
-            </tr>
-          </thead>
-          <tbody id="admin-store-products-list"></tbody>
-        </table>
-      </div>
+
+        <!-- ── ADD / EDIT PRODUCT FORM ── -->
+        <div id="ap-form-view" style="display:none; direction:ltr; color:#1d1d1f; font-family:'Inter',sans-serif;">
+          <!-- Top bar -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #e5e7eb;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button onclick="apShowList()" style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:1rem;" title="Back">◁</button>
+              <span style="color:#6b7280;font-size:0.85rem;">◇</span>
+              <span style="font-size:1.1rem;font-weight:700;color:#111;">Add product</span>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="ap-btn-outline-dark" onclick="apShowList()">Discard</button>
+              <button class="ap-btn-dark" onclick="apSaveProduct()">Save</button>
+            </div>
+          </div>
+
+          <!-- Two-column layout -->
+          <div class="ap-form-grid">
+
+            <!-- LEFT COLUMN -->
+            <div class="ap-col-main">
+
+              <!-- Title + Description + Media + Category card -->
+              <div class="ap-card">
+                <div class="ap-field">
+                  <label class="ap-label">Title</label>
+                  <input id="ap-title" type="text" class="ap-input" placeholder="Short sleeve t-shirt">
+                </div>
+
+                <div class="ap-field">
+                  <label class="ap-label">Description</label>
+                  <div class="ap-richtext-bar">
+                    <button type="button" class="ap-rt-btn" title="AI"><span style="font-size:0.7rem;">✦</span></button>
+                    <select class="ap-rt-select"><option>Paragraph</option><option>H1</option><option>H2</option></select>
+                    <button type="button" class="ap-rt-btn"><b>B</b></button>
+                    <button type="button" class="ap-rt-btn"><i>I</i></button>
+                    <button type="button" class="ap-rt-btn"><u>U</u></button>
+                    <button type="button" class="ap-rt-btn">A</button>
+                    <button type="button" class="ap-rt-btn">≡</button>
+                    <button type="button" class="ap-rt-btn">🔗</button>
+                    <button type="button" class="ap-rt-btn">&lt;/&gt;</button>
+                  </div>
+                  <textarea id="ap-desc" class="ap-textarea" rows="6" placeholder="Describe your product..."></textarea>
+                </div>
+
+                <div class="ap-field">
+                  <label class="ap-label">Media</label>
+                  <div class="ap-media-drop">
+                    <div style="display:flex;gap:10px;">
+                      <button type="button" class="ap-btn-outline-dark">Upload new</button>
+                      <button type="button" class="ap-btn-outline-dark">Select existing</button>
+                    </div>
+                    <p style="font-size:0.78rem;color:#9ca3af;margin:8px 0 0;">Accepts images, videos, or 3D models</p>
+                  </div>
+                </div>
+
+                <div class="ap-field">
+                  <label class="ap-label">Category</label>
+                  <div class="ap-select-wrap">
+                    <select id="ap-category" class="ap-input ap-select">
+                      <option value="">Choose a product category</option>
+                      <option>Electronics</option><option>Home & Living</option>
+                      <option>Fashion</option><option>Sports</option><option>Health & Beauty</option>
+                    </select>
+                  </div>
+                  <span style="font-size:0.75rem;color:#6b7280;margin-top:4px;display:block;">Determines tax rates and adds metafields to improve search, filters, and cross-channel sales</span>
+                </div>
+              </div>
+
+              <!-- Price card -->
+              <div class="ap-card">
+                <h3 class="ap-card-title">Price</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                  <div class="ap-field">
+                    <label class="ap-label">Price</label>
+                    <div class="ap-currency-input"><span>₪</span><input id="ap-price" type="number" value="0.00" step="0.01" class="ap-input" style="border:none;outline:none;width:100%;padding:8px 10px;font-size:0.9rem;"></div>
+                  </div>
+                  <div class="ap-field">
+                    <label class="ap-label">Compare-at price</label>
+                    <div class="ap-currency-input"><span>₪</span><input id="ap-compare" type="number" placeholder="—" step="0.01" class="ap-input" style="border:none;outline:none;width:100%;padding:8px 10px;font-size:0.9rem;"></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6;">
+                  <span class="ap-chip">Compare-at</span>
+                  <span class="ap-chip">Unit price</span>
+                  <span class="ap-chip">Charge tax <span class="ap-chip-badge">Yes</span></span>
+                  <span class="ap-chip">Cost per item</span>
+                  <span style="margin-right:auto;color:#9ca3af;font-size:1rem;cursor:pointer;">⌄</span>
+                </div>
+              </div>
+
+              <!-- Inventory card -->
+              <div class="ap-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                  <h3 class="ap-card-title" style="margin:0;">Inventory</h3>
+                  <label class="ap-toggle-wrap">
+                    <span style="font-size:0.8rem;color:#6b7280;">Inventory not tracked</span>
+                    <span style="font-size:0.8rem;color:#6b7280;margin-right:4px;">ⓘ</span>
+                    <div class="ap-toggle"><input type="checkbox" id="ap-inv-toggle"><span class="ap-toggle-slider"></span></div>
+                  </label>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #f3f4f6;">
+                  <span class="ap-chip">SKU</span>
+                  <span class="ap-chip">Barcode</span>
+                  <span style="margin-right:auto;color:#9ca3af;cursor:pointer;">⌄</span>
+                </div>
+              </div>
+
+              <!-- Shipping card -->
+              <div class="ap-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                  <h3 class="ap-card-title" style="margin:0;">Shipping</h3>
+                  <label class="ap-toggle-wrap">
+                    <span style="font-size:0.8rem;color:#6b7280;">Physical product</span>
+                    <div class="ap-toggle ap-toggle-on"><input type="checkbox" checked id="ap-ship-toggle"><span class="ap-toggle-slider"></span></div>
+                  </label>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;">
+                  <div class="ap-field">
+                    <label class="ap-label">Package <span style="color:#9ca3af;">ⓘ</span></label>
+                    <div class="ap-select-wrap">
+                      <select class="ap-input ap-select">
+                        <option>🗃 Store default • Sample box - 22 × 13.7 × 4.2 cm, 0 kg</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="ap-field" style="min-width:150px;">
+                    <label class="ap-label">Product weight</label>
+                    <div style="display:flex;gap:6px;">
+                      <input type="number" value="0.0" class="ap-input" style="flex:1;">
+                      <select class="ap-input" style="width:60px;"><option>kg</option><option>lb</option><option>g</option></select>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6;">
+                  <span class="ap-chip">Country of origin</span>
+                  <span class="ap-chip">HS Code</span>
+                  <span style="margin-right:auto;color:#9ca3af;cursor:pointer;">⌄</span>
+                </div>
+              </div>
+
+              <!-- Variants card -->
+              <div class="ap-card">
+                <h3 class="ap-card-title">Variants</h3>
+                <button type="button" class="ap-add-option" onclick="apAddVariant()">
+                  <span class="ap-add-icon">⊕</span> Add options like size or color
+                </button>
+                <div id="ap-variants-container"></div>
+              </div>
+
+              <!-- SEO card -->
+              <div class="ap-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <h3 class="ap-card-title" style="margin:0;">Search engine listing</h3>
+                  <button type="button" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:0.9rem;">✏️</button>
+                </div>
+                <p style="font-size:0.85rem;color:#6b7280;margin:8px 0 0;">Add a title and description to see how this product might appear in a search engine listing</p>
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="ap-col-side">
+              <!-- Status -->
+              <div class="ap-card">
+                <h3 class="ap-card-title">Status</h3>
+                <div class="ap-select-wrap">
+                  <select id="ap-status" class="ap-input ap-select">
+                    <option value="active">Active</option>
+                    <option value="draft">Draft</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Publishing -->
+              <div class="ap-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                  <h3 class="ap-card-title" style="margin:0;">Publishing</h3>
+                  <button style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:0.9rem;">⚙</button>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.875rem;color:#374151;cursor:pointer;">
+                  <i class="fas fa-users" style="color:#6b7280;"></i> All channels
+                </label>
+              </div>
+
+              <!-- Product organization -->
+              <div class="ap-card">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+                  <h3 class="ap-card-title" style="margin:0;">Product organization</h3>
+                  <span style="color:#9ca3af;font-size:0.85rem;">ⓘ</span>
+                </div>
+                <div class="ap-field">
+                  <label class="ap-label">Type</label>
+                  <div class="ap-select-wrap"><select class="ap-input ap-select"><option>None</option><option>Electronics</option><option>Apparel</option><option>Home</option></select></div>
+                </div>
+                <div class="ap-field">
+                  <label class="ap-label">Vendor</label>
+                  <div class="ap-select-wrap"><select class="ap-input ap-select"><option>None</option></select></div>
+                </div>
+                <div class="ap-field">
+                  <label class="ap-label">Collections</label>
+                  <div style="border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:0.85rem;color:#6b7280;cursor:pointer;" onclick="this.innerHTML='<input type=text placeholder=Search collections style=border:none;outline:none;width:100%;font-size:0.85rem;>')">
+                    ⊕ Add collections
+                  </div>
+                </div>
+                <div class="ap-field">
+                  <label class="ap-label">Tags</label>
+                  <div style="border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:0.85rem;color:#6b7280;cursor:pointer;" onclick="this.innerHTML='<input type=text placeholder=Search or create tags style=border:none;outline:none;width:100%;font-size:0.85rem;>')">
+                    ⊕ Add tags
+                  </div>
+                </div>
+              </div>
+
+              <!-- Theme template -->
+              <div class="ap-card">
+                <h3 class="ap-card-title">Theme template</h3>
+                <div class="ap-select-wrap">
+                  <select class="ap-input ap-select"><option>Default product</option></select>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- end ap-form-grid -->
+        </div><!-- end ap-form-view -->
+
+      </div><!-- end admin-section-products -->
 
       <!-- 3. ORDERS TAB -->
       <div id="admin-section-orders" class="admin-section" style="display: none;">
