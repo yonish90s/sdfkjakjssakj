@@ -1474,7 +1474,127 @@
   </div>
 </div>
 
-<!-- ARTICLE REVIEWS PAGE -->
+<!-- ====== PRODUCT DETAILS MODAL ====== -->
+<div id="product-details-modal" onclick="if(event.target===this)closeProductDetailsModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100000; align-items:center; justify-content:center; backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:24px; direction:ltr; text-align:left; font-family:'Inter', sans-serif;">
+  <div style="background:#fff; border-radius:24px; width:100%; max-width:1100px; display:flex; box-shadow:0 30px 80px rgba(0,0,0,0.5); overflow:hidden; position:relative; max-height:92vh; color:#1d1d1f;">
+    
+    <!-- Close Button -->
+    <button onclick="closeProductDetailsModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; color:#86868b; font-size:1.6rem; cursor:pointer; padding:4px; line-height:1; z-index:99; transition:color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#86868b'">✕</button>
+
+    <!-- LEFT COLUMN: Image Gallery -->
+    <div style="flex:1.2; background:#f5f5f7; display:flex; align-items:center; justify-content:center; position:relative; padding:40px; min-height:480px;">
+      <!-- Left Chevron Arrow -->
+      <button style="position:absolute; left:20px; background:none; border:none; font-size:2rem; color:#86868b; cursor:pointer; font-weight:300;">&lt;</button>
+      
+      <img id="detail-product-img" src="" alt="Product Image" style="max-width:85%; max-height:420px; object-fit:contain; filter:drop-shadow(0 10px 20px rgba(0,0,0,0.05));">
+      
+      <!-- Right Chevron Arrow -->
+      <button style="position:absolute; right:20px; background:none; border:none; font-size:2rem; color:#86868b; cursor:pointer; font-weight:300;">&gt;</button>
+    </div>
+
+    <!-- RIGHT COLUMN: Purchase Details -->
+    <div style="flex:1; padding:48px; display:flex; flex-direction:column; gap:20px; overflow-y:auto; max-height:92vh; background:#fff; border-left:1px solid rgba(0,0,0,0.06);">
+      
+      <!-- Brand Name -->
+      <div id="detail-product-brand" style="font-size:0.75rem; font-weight:800; color:#c79263; text-transform:uppercase; letter-spacing:0.15em;">FERM LIVING</div>
+      
+      <!-- Title -->
+      <h1 id="detail-product-title" style="font-size:2.2rem; font-family:'Georgia', serif; font-weight:400; color:#1c1c1e; margin:0; line-height:1.2;">Oleo Cushion</h1>
+      
+      <!-- Price -->
+      <div id="detail-product-price" style="font-size:1.3rem; font-weight:600; color:#1d1d1f; font-family:'Inter', sans-serif;">$115.00</div>
+      
+      <!-- Financing -->
+      <div style="font-size:0.8rem; color:#86868b; display:flex; align-items:center; gap:4px; font-weight:500;">
+        Starting at $11/mo with <span style="font-weight:900; color:#000;">affirm</span>. <a href="#" onclick="return false;" style="color:#86868b; text-decoration:underline;">See if you qualify</a>
+      </div>
+
+      <!-- Color Option & Quantity Selectors -->
+      <div style="display:flex; gap:20px; width:100%; margin-top:10px;">
+        <div style="flex:1.5;">
+          <label style="display:block; font-size:0.7rem; font-weight:800; color:#86868b; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Color</label>
+          <select id="detail-product-color" style="width:100%; border:1px solid #d2d2d7; border-radius:4px; padding:12px; font-size:0.85rem; font-weight:600; background:#fff; color:#1d1d1f; outline:none; cursor:pointer;">
+            <option>NATURAL/BLACK</option>
+            <option>SEASHELL/GOLD</option>
+            <option>CHARCOAL/DARK</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="display:block; font-size:0.7rem; font-weight:800; color:#86868b; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Quantity</label>
+          <div style="display:flex; align-items:center; border:1px solid #d2d2d7; border-radius:4px; overflow:hidden; height:42px;">
+            <button onclick="decrementDetailQty()" style="width:36px; height:100%; background:none; border:none; cursor:pointer; font-size:1rem; color:#1d1d1f;">-</button>
+            <input type="text" id="detail-product-qty" value="1" readonly style="width:40px; height:100%; border:none; text-align:center; font-size:0.9rem; font-weight:600; color:#1d1d1f; outline:none; background:none;">
+            <button onclick="incrementDetailQty()" style="width:36px; height:100%; background:none; border:none; cursor:pointer; font-size:1rem; color:#1d1d1f;">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Availability Box -->
+      <div style="background:#fcf8f2; border:1px solid #f5ebd6; border-radius:6px; padding:12px 16px; font-size:0.8rem; color:#a37d58; line-height:1.5; font-weight:600; margin-top:10px;">
+        AVAILABILITY: 10 in stock ships in 5-7 days, other quantities ship in 8-10 weeks
+      </div>
+
+      <!-- Call to Actions -->
+      <div style="display:flex; flex-direction:column; gap:12px; width:100%; margin-top:10px;">
+        <button id="detail-add-btn" onclick="addCurrentProductToCart()" style="width:100%; background:#fff; border:1px solid #c79263; color:#c79263; font-weight:700; font-size:0.85rem; padding:16px; border-radius:4px; cursor:pointer; text-transform:uppercase; letter-spacing:0.1em; transition:all 0.2s;" onmouseover="this.style.background='#c79263'; this.style.color='#fff'" onmouseout="this.style.background='#fff'; this.style.color='#c79263'">
+          Add to Cart
+        </button>
+        <button onclick="addCurrentProductToCart(); toggleCartDrawer(); closeProductDetailsModal();" style="width:100%; background:#5a31f4; border:none; color:#fff; font-weight:700; font-size:0.95rem; padding:16px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.2s;" onmouseover="this.style.background='#4415e6'" onmouseout="this.style.background='#5a31f4'">
+          Buy with <span style="font-weight:900; font-style:italic; letter-spacing:-0.05em; font-size:1.1rem;">shop</span>
+        </button>
+      </div>
+
+      <!-- Accordion List -->
+      <div style="display:flex; flex-direction:column; border-top:1px solid rgba(0,0,0,0.06); margin-top:20px;">
+        
+        <!-- Shipping -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.06);">
+          <span style="font-size:0.75rem; font-weight:800; color:#86868b; text-transform:uppercase; letter-spacing:0.05em;">Shipping</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:0.85rem; color:#1d1d1f; font-weight:500;">Free Shipping</span>
+            <i class="far fa-question-circle" style="color:#86868b; font-size:0.85rem; cursor:pointer;"></i>
+          </div>
+        </div>
+
+        <!-- Returns -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.06);">
+          <span style="font-size:0.75rem; font-weight:800; color:#86868b; text-transform:uppercase; letter-spacing:0.05em;">Returns</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:0.85rem; color:#1d1d1f; font-weight:500;">Free 90-day Returns</span>
+            <i class="far fa-question-circle" style="color:#86868b; font-size:0.85rem; cursor:pointer;"></i>
+          </div>
+        </div>
+
+        <!-- Ships Via -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.06);">
+          <span style="font-size:0.75rem; font-weight:800; color:#86868b; text-transform:uppercase; letter-spacing:0.05em;">Ships Via</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:0.85rem; color:#1d1d1f; font-weight:500;">UPS/FedEx/USPS</span>
+            <i class="far fa-question-circle" style="color:#86868b; font-size:0.85rem; cursor:pointer;"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Contact Us -->
+      <div style="margin-top:20px; display:flex; flex-direction:column; gap:12px;">
+        <span style="font-size:0.75rem; font-weight:800; color:#86868b; text-transform:uppercase; letter-spacing:0.05em;">Contact Us</span>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:0.85rem; color:#86868b;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="far fa-envelope"></i>
+            <a href="mailto:hello@shopHORNE.com" style="color:#86868b; text-decoration:none;">hello@shopHORNE.com</a>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-phone-alt"></i>
+            <span>(877) 404-6763</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
 <div id="page-article-reviews" class="page">
   <div style="text-align: center; margin-bottom: 60px;">
     <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 16px;">Articles</h2>

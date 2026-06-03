@@ -4334,6 +4334,88 @@ function renderShopGrid() {
   grid.innerHTML = shopHtml + softwareHtml;
 }
 
+window.openProductDetailsModal = function(productId) {
+  let product = shopProducts.find(p => p.id === productId) || store3dProducts.find(p => p.id === productId);
+  if (!product) {
+    product = (window.aliExpressProducts || []).find(p => p.id === productId);
+  }
+  if (!product) return;
+
+  window.currentDetailedProduct = product;
+
+  const brandEl = document.getElementById('detail-product-brand');
+  if (brandEl) brandEl.textContent = product.brand || 'FERM LIVING';
+  
+  const titleEl = document.getElementById('detail-product-title');
+  if (titleEl) titleEl.textContent = product.title;
+  
+  let displayPrice = typeof product.price === 'number' ? \`$\${product.price.toFixed(2)}\` : product.price;
+  if (displayPrice && !displayPrice.toString().startsWith('$')) displayPrice = '$' + displayPrice;
+  const priceEl = document.getElementById('detail-product-price');
+  if (priceEl) priceEl.textContent = displayPrice;
+
+  const imgEl = document.getElementById('detail-product-img');
+  if (imgEl) imgEl.src = product.img || product.image || '';
+
+  const colorSelect = document.getElementById('detail-product-color');
+  if (colorSelect) {
+    colorSelect.innerHTML = '';
+    const colors = product.colors || ['NATURAL/BLACK', 'SEASHELL/GOLD', 'CHARCOAL/DARK'];
+    colors.forEach(col => {
+      const opt = document.createElement('option');
+      opt.textContent = col;
+      colorSelect.appendChild(opt);
+    });
+  }
+
+  const qtyInput = document.getElementById('detail-product-qty');
+  if (qtyInput) qtyInput.value = '1';
+
+  const modal = document.getElementById('product-details-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+};
+
+window.closeProductDetailsModal = function() {
+  const modal = document.getElementById('product-details-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  window.currentDetailedProduct = null;
+};
+
+window.incrementDetailQty = function() {
+  const input = document.getElementById('detail-product-qty');
+  if (input) {
+    let val = parseInt(input.value) || 1;
+    input.value = val + 1;
+  }
+};
+
+window.decrementDetailQty = function() {
+  const input = document.getElementById('detail-product-qty');
+  if (input) {
+    let val = parseInt(input.value) || 1;
+    if (val > 1) {
+      input.value = val - 1;
+    }
+  }
+};
+
+window.addCurrentProductToCart = function() {
+  if (!window.currentDetailedProduct) return;
+  const product = window.currentDetailedProduct;
+  const qtyInput = document.getElementById('detail-product-qty');
+  const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+
+  let type = 'product';
+  if (store3dProducts.some(p => p.id === product.id)) {
+    type = 'store3d';
+  }
+  
+  addToCart(product.id, type, qty);
+};
 
 function openOrderModal(id, type) {
   const list = type === 'product' ? shopProducts : servicesItems;
@@ -4404,12 +4486,13 @@ function updateCartBadge() {
   badge.style.animation = '';
 }
 
-function addToCart(id, type) {
+function addToCart(id, type, qty = 1) {
+  const qtyNum = parseInt(qty) || 1;
   const existing = shoppingCart.find(c => c.id === id && c.type === type);
   if (existing) {
-    existing.qty += 1;
+    existing.qty += qtyNum;
   } else {
-    shoppingCart.push({ id, type, qty: 1 });
+    shoppingCart.push({ id, type, qty: qtyNum });
   }
   saveCart();
   updateCartBadge();
