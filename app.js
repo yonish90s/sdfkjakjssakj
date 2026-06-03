@@ -11626,6 +11626,12 @@ window.renderBets = function() {
     dropdownCoins.innerHTML = `${userBalance.toLocaleString()} Coins`;
   }
   
+  // Update balance display in integrations page
+  const integrationsCoins = document.getElementById('integrations-balance-display');
+  if (integrationsCoins) {
+    integrationsCoins.textContent = userBalance.toLocaleString();
+  }
+  
   container.innerHTML = bettingEvents.map(event => `
     <div style="background:#111; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
@@ -11703,7 +11709,7 @@ window.confirmBet = function() {
 const originalShowPageForBets = window.showPage;
 window.showPage = function(pageId) {
   originalShowPageForBets(pageId);
-  if (pageId === 'bets') {
+  if (pageId === 'bets' || pageId === 'integrations') {
     renderBets();
   }
 };
