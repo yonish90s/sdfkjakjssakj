@@ -1838,11 +1838,11 @@ function switchAdminTab(tabId, btnEl) {
   if (target) target.style.display = 'block';
   
   if (!btnEl) {
-    btnEl = document.querySelector(`button.admin-nav-btn[data-admin-tab="${tabId}"]`);
+    btnEl = document.querySelector(`button[data-admin-tab="${tabId}"]`);
   }
 
   if (btnEl) {
-    document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-btn, .shopify-nav-item').forEach(btn => btn.classList.remove('active'));
     btnEl.classList.add('active');
   }
 

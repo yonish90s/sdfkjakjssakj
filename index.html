@@ -1771,29 +1771,73 @@
 <!-- page-admin-login removed in favor of modal popup -->
 
 <!-- ADMIN DASHBOARD -->
-<div id="page-admin" class="page" style="max-width: 1400px;">
-  <div style="display: flex; gap: 32px; align-items: flex-start; direction: rtl;">
-    
-    <!-- SIDEBAR -->
-    <aside style="width: 250px; flex-shrink: 0; background: #1c1c1e; border-radius: 16px; padding: 24px; border: 1px solid #2c2c2e; box-shadow: var(--shadow-soft); position: sticky; top: 80px;">
-      <h3 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 800; color: #fafafa;">תפריט ניהול</h3>
-      <div style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto;">
-        <button class="admin-nav-btn active" data-admin-tab="home" onclick="switchAdminTab('home', this)" style="color: #fafafa;"><i class="fas fa-home"></i> בית</button>
-        <button class="admin-nav-btn" data-admin-tab="products" onclick="switchAdminTab('products', this)" style="color: #a1a1aa;"><i class="fas fa-tag"></i> מוצרים</button>
-        <button class="admin-nav-btn" data-admin-tab="orders" onclick="switchAdminTab('orders', this)" style="color: #a1a1aa;"><i class="fas fa-box"></i> הזמנות</button>
-        <button class="admin-nav-btn" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)" style="color: #a1a1aa;"><i class="fas fa-chart-pie"></i> ניתוח נתונים</button>
-        <button class="admin-nav-btn" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)" style="color: #a1a1aa;"><i class="fas fa-paint-roller"></i> עיצוב החנות</button>
-        <button class="admin-nav-btn" data-admin-tab="links" onclick="switchAdminTab('links', this)" style="color: #a1a1aa;"><i class="fas fa-link"></i> ניהול קישורים</button>
-        <button class="admin-nav-btn" data-admin-tab="backup" onclick="switchAdminTab('backup', this)" style="color: #a1a1aa;"><i class="fas fa-history"></i> גיבוי ושחזור</button>
-        <button class="admin-nav-btn" data-admin-tab="images" onclick="switchAdminTab('images', this)" style="color: #a1a1aa;"><i class="fas fa-images"></i> תמונות למסך ענק</button>
-        
-        <button class="admin-nav-btn" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)" style="color: #a1a1aa;"><i class="fas fa-comment-dots"></i> הודעות למנהל <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.7rem; margin-right:4px;"></span></button>
-        <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
+<div id="page-admin" class="page shopify-admin-page">
+  <div class="shopify-admin-wrapper">
+
+    <!-- SHOPIFY-STYLE SIDEBAR -->
+    <aside class="shopify-sidebar">
+      <!-- Store Header -->
+      <div class="shopify-sidebar-header">
+        <div class="shopify-store-logo">👑</div>
+        <div>
+          <div class="shopify-store-name">SOKI Admin</div>
+          <div class="shopify-store-plan">ניהול אתר</div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="shopify-sidebar-nav">
+        <!-- Main -->
+        <button class="shopify-nav-item active" data-admin-tab="home" onclick="switchAdminTab('home', this)">
+          <i class="fas fa-home"></i><span>בית</span>
+        </button>
+
+        <!-- Store group -->
+        <div class="shopify-nav-group-label">חנות</div>
+        <button class="shopify-nav-item" data-admin-tab="orders" onclick="switchAdminTab('orders', this)">
+          <i class="fas fa-box"></i><span>הזמנות</span>
+        </button>
+        <button class="shopify-nav-item" data-admin-tab="products" onclick="switchAdminTab('products', this)">
+          <i class="fas fa-tag"></i><span>מוצרים</span>
+        </button>
+
+        <!-- Marketing group -->
+        <div class="shopify-nav-group-label">שיווק</div>
+        <button class="shopify-nav-item" data-admin-tab="analytics" onclick="switchAdminTab('analytics', this)">
+          <i class="fas fa-chart-pie"></i><span>ניתוח נתונים</span>
+        </button>
+        <button class="shopify-nav-item" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)">
+          <i class="fas fa-comment-dots"></i>
+          <span>הודעות</span>
+          <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.65rem; margin-right:auto;"></span>
+        </button>
+
+        <!-- Settings group -->
+        <div class="shopify-nav-group-label">הגדרות</div>
+        <button class="shopify-nav-item" data-admin-tab="storedesign" onclick="switchAdminTab('storedesign', this)">
+          <i class="fas fa-paint-roller"></i><span>עיצוב החנות</span>
+        </button>
+        <button class="shopify-nav-item" data-admin-tab="links" onclick="switchAdminTab('links', this)">
+          <i class="fas fa-link"></i><span>קישורים</span>
+        </button>
+        <button class="shopify-nav-item" data-admin-tab="backup" onclick="switchAdminTab('backup', this)">
+          <i class="fas fa-history"></i><span>גיבוי ושחזור</span>
+        </button>
+        <button class="shopify-nav-item" data-admin-tab="images" onclick="switchAdminTab('images', this)">
+          <i class="fas fa-images"></i><span>תמונות מסך</span>
+        </button>
+      </nav>
+
+      <!-- Logout at bottom -->
+      <div class="shopify-sidebar-footer">
+        <button class="shopify-nav-item shopify-logout-btn" onclick="adminLogout()">
+          <i class="fas fa-sign-out-alt"></i><span>יציאה</span>
+        </button>
       </div>
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div style="flex: 1; min-width: 0; color: #fafafa;">
+    <div class="shopify-admin-main">
       <!-- 1. HOME TAB -->
       <div id="admin-section-home" class="admin-section">
         <h2 style="margin:0 0 24px 0; font-size:1.5rem; color: #fafafa;">תמונת מצב יומית</h2>
@@ -2133,9 +2177,9 @@
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
+    </div><!-- end shopify-admin-main -->
+  </div><!-- end shopify-admin-wrapper -->
+</div><!-- end page-admin -->
 
 <!-- SHOP PAGE -->
 <div id="page-shop" class="page">
