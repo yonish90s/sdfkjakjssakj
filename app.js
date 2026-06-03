@@ -1413,6 +1413,155 @@ window.payOpenMakeSetup = function() {
   if (saved.growKey)  document.getElementById('pay-grow-key').value      = saved.growKey;
   if (saved.merchant) document.getElementById('pay-grow-merchant').value = saved.merchant;
 };
+// =====================================================================
+// MARKETPLACE — User sell products
+// =====================================================================
+let marketplaceProducts = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
+
+window.openMarketplaceModal = function() {
+  const modal = document.getElementById('marketplace-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  // Pre-fill seller name from current user
+  const sellerInput = document.getElementById('mp-seller-name');
+  if (sellerInput && !sellerInput.value) {
+    const user = typeof currentUser !== 'undefined' ? currentUser : (window._fbUser || {});
+    sellerInput.value = user.name && user.name !== 'Guest' ? user.name : '';
+  }
+  mpSwitchTab('sell', document.querySelector('.mp-tab'));
+  mpSetupPreviewListeners();
+  mpRenderBrowse();
+};
+
+window.closeMarketplaceModal = function() {
+  document.getElementById('marketplace-modal').style.display = 'none';
+};
+
+window.mpSwitchTab = function(tab, btn) {
+  ['sell','listings','browse'].forEach(t => {
+    const el = document.getElementById(`mp-tab-${t}`);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.mp-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'listings') mpRenderMyListings();
+  if (tab === 'browse')   mpRenderBrowse();
+};
+
+function mpSetupPreviewListeners() {
+  const titleEl = document.getElementById('mp-prod-title');
+  const priceEl = document.getElementById('mp-prod-price');
+  const imgEl   = document.getElementById('mp-prod-img');
+  const sellerEl= document.getElementById('mp-seller-name');
+  const condEls = document.querySelectorAll('input[name="mp-cond"]');
+
+  const update = () => {
+    const img = document.getElementById('mp-prev-img');
+    const title = document.getElementById('mp-prev-title');
+    const price = document.getElementById('mp-prev-price');
+    const seller = document.getElementById('mp-prev-seller');
+    const badge  = document.getElementById('mp-prev-badge');
+    if (img && imgEl?.value) img.src = imgEl.value;
+    if (title) title.textContent = titleEl?.value || 'שם המוצר';
+    if (price) price.textContent = '₪' + (priceEl?.value || '0');
+    if (seller) seller.textContent = sellerEl?.value || 'המוכר';
+    const cond = document.querySelector('input[name="mp-cond"]:checked')?.value || 'new';
+    const condMap = { new:'חדש', 'like-new':'כמו חדש', used:'משומש', parts:'לחלקים' };
+    if (badge) badge.textContent = condMap[cond] || 'חדש';
+  };
+  [titleEl, priceEl, imgEl, sellerEl].forEach(el => el?.addEventListener('input', update));
+  condEls.forEach(el => el.addEventListener('change', update));
+}
+
+window.mpPublishProduct = function() {
+  const title  = document.getElementById('mp-prod-title')?.value.trim();
+  const price  = parseFloat(document.getElementById('mp-prod-price')?.value) || 0;
+  const seller = document.getElementById('mp-seller-name')?.value.trim();
+  if (!title) { showToast('אנא הזן שם מוצר', 'error'); return; }
+  if (!seller){ showToast('אנא הזן שם מוכר', 'error'); return; }
+
+  const product = {
+    id: 'mp_' + Date.now(),
+    title,
+    desc:  document.getElementById('mp-prod-desc')?.value.trim() || '',
+    img:   document.getElementById('mp-prod-img')?.value.trim()  || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400',
+    price,
+    cat:   document.getElementById('mp-prod-cat')?.value || 'general',
+    cond:  document.querySelector('input[name="mp-cond"]:checked')?.value || 'new',
+    seller,
+    phone: document.getElementById('mp-seller-phone')?.value.trim() || '',
+    date:  new Date().toLocaleDateString('he-IL'),
+    userId: window._fbUser?.email || 'guest'
+  };
+
+  marketplaceProducts.unshift(product);
+  localStorage.setItem('marketplaceProducts', JSON.stringify(marketplaceProducts));
+
+  // Clear form
+  ['mp-prod-title','mp-prod-desc','mp-prod-img','mp-prod-price','mp-seller-phone'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+
+  showToast(`✅ המוצר "${title}" פורסם בהצלחה!`);
+  mpSwitchTab('listings', document.querySelectorAll('.mp-tab')[1]);
+};
+
+function mpProductCard(p, showDelete) {
+  const condMap = { new:'חדש', 'like-new':'כמו חדש', used:'משומש', parts:'לחלקים' };
+  const condColors = { new:'#10b981', 'like-new':'#3b82f6', used:'#f59e0b', parts:'#ef4444' };
+  return `
+  <div class="mp-product-card">
+    <div class="mp-prod-img-wrap">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400'">
+      <span class="mp-cond-badge" style="background:${condColors[p.cond]||'#6b7280'};">${condMap[p.cond]||'חדש'}</span>
+    </div>
+    <div class="mp-prod-body">
+      <div class="mp-prod-price">₪${p.price.toLocaleString()}</div>
+      <div class="mp-prod-title">${p.title}</div>
+      ${p.desc ? `<div class="mp-prod-desc">${p.desc.substring(0,80)}${p.desc.length>80?'...':''}</div>` : ''}
+      <div class="mp-prod-meta">
+        <span>👤 ${p.seller}</span>
+        ${p.phone ? `<a href="https://wa.me/972${p.phone.replace(/^0/,'').replace(/-/g,'')}" target="_blank" class="mp-whatsapp-btn">📱 וואטסאפ</a>` : ''}
+      </div>
+      ${showDelete ? `<button class="mp-delete-btn" onclick="mpDeleteProduct('${p.id}')">🗑 מחק</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function mpRenderMyListings() {
+  const grid = document.getElementById('mp-my-listings-grid');
+  if (!grid) return;
+  const userId = window._fbUser?.email || 'guest';
+  const mine = marketplaceProducts.filter(p => p.userId === userId);
+  grid.innerHTML = mine.length
+    ? mine.map(p => mpProductCard(p, true)).join('')
+    : '<div class="mp-empty">עדיין לא פרסמת מוצרים. לחץ על "פרסם מוצר חדש" כדי להתחיל!</div>';
+}
+
+function mpRenderBrowse() {
+  const searchVal = document.getElementById('mp-search-input')?.value.toLowerCase() || '';
+  const catFilter = document.getElementById('mp-filter-cat')?.value || 'all';
+  const grid = document.getElementById('mp-browse-grid');
+  if (!grid) return;
+  const filtered = marketplaceProducts.filter(p => {
+    const matchCat = catFilter === 'all' || p.cat === catFilter;
+    const matchSearch = !searchVal || p.title.toLowerCase().includes(searchVal) || (p.desc||'').toLowerCase().includes(searchVal);
+    return matchCat && matchSearch;
+  });
+  grid.innerHTML = filtered.length
+    ? filtered.map(p => mpProductCard(p, false)).join('')
+    : '<div class="mp-empty">לא נמצאו מוצרים התואמים את החיפוש.</div>';
+}
+
+window.mpFilterBrowse = mpRenderBrowse;
+
+window.mpDeleteProduct = function(id) {
+  marketplaceProducts = marketplaceProducts.filter(p => p.id !== id);
+  localStorage.setItem('marketplaceProducts', JSON.stringify(marketplaceProducts));
+  mpRenderMyListings();
+  showToast('המוצר נמחק');
+};
+
 window.payCloseMakeSetup = function() {
   const modal = document.getElementById('pay-make-modal');
   if (modal) modal.style.display = 'none';

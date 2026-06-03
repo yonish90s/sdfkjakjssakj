@@ -335,6 +335,11 @@
             <span>Ads</span>
           </button>
 
+          <!-- Sell Product Button -->
+          <button onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1.5px solid #f97316; color:#f97316; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:20px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit;" onmouseover="this.style.background='#f97316';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='#f97316';">
+            <i class="fas fa-plus" style="font-size:0.78rem;"></i> <span>פרסם מוצר</span>
+          </button>
+
           <!-- Premium Pill -->
           <button class="btn-orange subscription-btn" onclick="window.openSubscriptionModal()" style="cursor:pointer; background: #fb923c; border: none; color: #000; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);">
             <i class="fas fa-crown" style="color:#000; font-size:0.95rem;"></i> <span id="nav-text-premium">Premium</span>
@@ -607,6 +612,7 @@
           <h4 id="footer-title-admin">Admin</h4>
           <ul>
             <li><a href="#" id="footer-upload-articles" onclick="event.preventDefault(); showPage('user-article');">Upload Articles</a></li>
+            <li><a href="#" onclick="event.preventDefault(); openMarketplaceModal();">Upload Products</a></li>
           </ul>
         </div>
 
@@ -3947,6 +3953,160 @@
     setTimeout(showCookieBanner, 1500);
   });
 </script>
+
+<!-- =====================================================
+     MARKETPLACE — SELL YOUR PRODUCT MODAL
+     ===================================================== -->
+<div id="marketplace-modal" onclick="if(event.target===this)closeMarketplaceModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:300000; align-items:flex-start; justify-content:center; overflow-y:auto; padding:60px 20px 40px; backdrop-filter:blur(16px);">
+  <div class="mp-container">
+
+    <!-- Close -->
+    <button onclick="closeMarketplaceModal()" class="mp-close">✕</button>
+
+    <!-- Header -->
+    <div class="mp-header">
+      <span class="mp-icon">🏪</span>
+      <div>
+        <h2 class="mp-title">פרסם מוצר</h2>
+        <p class="mp-subtitle">מכור מוצרים אישיים לכל משתמשי SOKI</p>
+      </div>
+    </div>
+
+    <!-- TABS: My Listings / Sell -->
+    <div class="mp-tabs">
+      <button class="mp-tab active" onclick="mpSwitchTab('sell', this)">➕ פרסם מוצר חדש</button>
+      <button class="mp-tab" onclick="mpSwitchTab('listings', this)">📋 המוצרים שלי</button>
+      <button class="mp-tab" onclick="mpSwitchTab('browse', this)">🛒 כל המוצרים</button>
+    </div>
+
+    <!-- ── SELL TAB ── -->
+    <div id="mp-tab-sell" class="mp-pane">
+      <div class="mp-form-grid">
+        <div class="mp-col-main">
+
+          <div class="mp-card">
+            <div class="mp-field">
+              <label class="mp-label">שם המוצר *</label>
+              <input type="text" id="mp-prod-title" class="mp-input" placeholder="לדוגמה: iPhone 14 Pro, כרסת עץ, קורס Photoshop...">
+            </div>
+            <div class="mp-field">
+              <label class="mp-label">תיאור</label>
+              <textarea id="mp-prod-desc" class="mp-textarea" rows="4" placeholder="תאר את המוצר — מצב, גיל, מפרט, מה כלול..."></textarea>
+            </div>
+            <div class="mp-field">
+              <label class="mp-label">תמונה (URL)</label>
+              <input type="url" id="mp-prod-img" class="mp-input" placeholder="https://...">
+              <p class="mp-hint">הכנס קישור לתמונה מ-Unsplash, Imgur, Google Drive וכד'</p>
+            </div>
+          </div>
+
+          <div class="mp-card">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+              <div class="mp-field">
+                <label class="mp-label">מחיר (₪) *</label>
+                <div class="mp-price-input"><span>₪</span><input type="number" id="mp-prod-price" class="mp-input" placeholder="0" min="0"></div>
+              </div>
+              <div class="mp-field">
+                <label class="mp-label">קטגוריה</label>
+                <select id="mp-prod-cat" class="mp-input mp-select">
+                  <option value="general">כללי</option>
+                  <option value="electronics">אלקטרוניקה</option>
+                  <option value="fashion">אופנה</option>
+                  <option value="home">בית וגינה</option>
+                  <option value="vehicles">רכבים</option>
+                  <option value="services">שירותים</option>
+                  <option value="digital">קבצים דיגיטליים</option>
+                  <option value="other">אחר</option>
+                </select>
+              </div>
+            </div>
+            <div class="mp-field" style="margin-top:8px;">
+              <label class="mp-label">מצב המוצר</label>
+              <div class="mp-condition-chips">
+                <label class="mp-cond-chip"><input type="radio" name="mp-cond" value="new" checked> <span>חדש</span></label>
+                <label class="mp-cond-chip"><input type="radio" name="mp-cond" value="like-new"> <span>כמו חדש</span></label>
+                <label class="mp-cond-chip"><input type="radio" name="mp-cond" value="used"> <span>משומש</span></label>
+                <label class="mp-cond-chip"><input type="radio" name="mp-cond" value="parts"> <span>לחלקים</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mp-card">
+            <div class="mp-field">
+              <label class="mp-label">שם מוכר (מוצג לקונים) *</label>
+              <input type="text" id="mp-seller-name" class="mp-input" placeholder="שמך המלא או שם עסק">
+            </div>
+            <div class="mp-field">
+              <label class="mp-label">טלפון / וואטסאפ ליצירת קשר</label>
+              <input type="tel" id="mp-seller-phone" class="mp-input" placeholder="050-0000000">
+            </div>
+          </div>
+
+        </div>
+        <div class="mp-col-side">
+          <!-- Preview -->
+          <div class="mp-card mp-preview-card">
+            <div class="mp-label" style="margin-bottom:12px;">תצוגה מקדימה</div>
+            <div class="mp-preview" id="mp-live-preview">
+              <div class="mp-prev-img-wrap">
+                <img id="mp-prev-img" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400" alt="">
+                <span class="mp-prev-badge" id="mp-prev-badge">חדש</span>
+              </div>
+              <div class="mp-prev-body">
+                <div class="mp-prev-price" id="mp-prev-price">₪0</div>
+                <div class="mp-prev-title" id="mp-prev-title">שם המוצר</div>
+                <div class="mp-prev-seller" id="mp-prev-seller">המוכר שלי</div>
+              </div>
+            </div>
+          </div>
+          <div class="mp-card" style="font-size:0.8rem; color:#a1a1aa; line-height:1.7;">
+            <div style="font-weight:700; color:#fafafa; margin-bottom:8px;">📋 כללים:</div>
+            <ul style="margin:0; padding-right:16px; display:flex; flex-direction:column; gap:4px;">
+              <li>ניתן לפרסם מוצרים חוקיים בלבד</li>
+              <li>מחיר מינימלי ₪1</li>
+              <li>כל מוצר נשמר ב-localStorage</li>
+              <li>קונים יצרו קשר דרך הטלפון שהזנת</li>
+              <li>SOKI אינה אחראית על עסקאות</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <button onclick="mpPublishProduct()" class="mp-btn-publish">
+          <i class="fas fa-plus"></i> פרסם מוצר עכשיו
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MY LISTINGS TAB ── -->
+    <div id="mp-tab-listings" class="mp-pane" style="display:none;">
+      <div id="mp-my-listings-grid" class="mp-grid">
+        <div class="mp-empty">עדיין לא פרסמת מוצרים. לחץ על "פרסם מוצר חדש" כדי להתחיל!</div>
+      </div>
+    </div>
+
+    <!-- ── BROWSE TAB ── -->
+    <div id="mp-tab-browse" class="mp-pane" style="display:none;">
+      <!-- Search + Filter -->
+      <div class="mp-search-bar">
+        <input type="text" id="mp-search-input" class="mp-input" placeholder="🔍 חפש מוצר..." oninput="mpFilterBrowse()">
+        <select id="mp-filter-cat" class="mp-input mp-select" style="max-width:180px;" onchange="mpFilterBrowse()">
+          <option value="all">כל הקטגוריות</option>
+          <option value="electronics">אלקטרוניקה</option>
+          <option value="fashion">אופנה</option>
+          <option value="home">בית וגינה</option>
+          <option value="vehicles">רכבים</option>
+          <option value="services">שירותים</option>
+          <option value="digital">קבצים דיגיטליים</option>
+        </select>
+      </div>
+      <div id="mp-browse-grid" class="mp-grid">
+        <div class="mp-empty">אין מוצרים עדיין. היה הראשון לפרסם!</div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>
