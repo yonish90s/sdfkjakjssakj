@@ -4442,6 +4442,28 @@ window.openProductDetailsModal = function(productId) {
   }
 };
 
+// =====================================================================
+// TUTORIAL VIDEO MODAL
+// =====================================================================
+// Change TUTORIAL_YOUTUBE_ID to your actual YouTube video ID
+const TUTORIAL_YOUTUBE_ID = 'dQw4w9WgXcQ';
+
+window.openTutorialVideo = function() {
+  const modal = document.getElementById('tutorial-modal');
+  const iframe = document.getElementById('tutorial-iframe');
+  if (!modal || !iframe) return;
+  iframe.src = `https://www.youtube.com/embed/${TUTORIAL_YOUTUBE_ID}?autoplay=1&rel=0`;
+  modal.style.display = 'flex';
+};
+
+window.closeTutorialVideo = function() {
+  const modal = document.getElementById('tutorial-modal');
+  const iframe = document.getElementById('tutorial-iframe');
+  if (!modal || !iframe) return;
+  iframe.src = '';
+  modal.style.display = 'none';
+};
+
 window.closeProductDetailsModal = function() {
   const modal = document.getElementById('product-details-modal');
   if (modal) {

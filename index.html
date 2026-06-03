@@ -534,6 +534,52 @@
     </div>
   </div>
 
+  <!-- ===== TUTORIAL / HOW-TO SECTION ===== -->
+  <section class="tutorial-hero" id="tutorial-section">
+    <!-- Left: Text -->
+    <div class="tutorial-text">
+      <span class="tutorial-eyebrow">📖 מדריך למשתמש</span>
+      <h2 class="tutorial-title">כל מה שצריך לדעת<br>על SOKI — בדקה אחת</h2>
+      <p class="tutorial-desc">
+        צפה בסרטון ההדרכה הקצר שלנו וגלה איך לקרוא כתבות, לעקוב אחרי שוק ההון, לבצע קניות ולהשתמש בכלי ה-AI שמובנים באתר.
+      </p>
+      <button class="tutorial-btn" onclick="openTutorialVideo()">
+        <span class="tutorial-btn-icon">▶</span> צפה עכשיו
+      </button>
+    </div>
+
+    <!-- Right: Video Thumbnail -->
+    <div class="tutorial-visual" onclick="openTutorialVideo()">
+      <img
+        src="https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?auto=format&fit=crop&q=80&w=1200"
+        alt="Tutorial preview"
+        class="tutorial-bg-img"
+      >
+      <div class="tutorial-play-overlay">
+        <div class="tutorial-play-btn">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <span class="tutorial-play-label">סרטון הדרכה · 2:30 דקות</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TUTORIAL VIDEO MODAL ===== -->
+  <div id="tutorial-modal" onclick="if(event.target===this)closeTutorialVideo()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:200000; align-items:center; justify-content:center; backdrop-filter:blur(12px);">
+    <div style="position:relative; width:90%; max-width:900px; aspect-ratio:16/9; border-radius:16px; overflow:hidden; box-shadow:0 40px 100px rgba(0,0,0,0.8);">
+      <button onclick="closeTutorialVideo()" style="position:absolute; top:12px; right:12px; z-index:10; background:rgba(0,0,0,0.5); border:none; color:#fff; width:36px; height:36px; border-radius:50%; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px);">✕</button>
+      <iframe id="tutorial-iframe"
+        width="100%" height="100%"
+        src=""
+        title="SOKI Tutorial"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        style="display:block; width:100%; height:100%;">
+      </iframe>
+    </div>
+  </div>
+
   <!-- SOKI PREMIUM TECHCRUNCH FOOTER -->
   <footer class="soki-footer-premium" style="margin-top: 80px; width: 100%;">
     <div class="soki-footer-inner">
