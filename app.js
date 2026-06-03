@@ -10251,7 +10251,8 @@ const defaultLinks = {
   threads: 'https://threads.net',
   bluesky: 'https://bsky.app',
   appstore: 'https://apps.apple.com',
-  googleplay: 'https://play.google.com'
+  googleplay: 'https://play.google.com',
+  telegram: 'https://t.me/yourusername'
 };
 
 window.loadAdminLinks = function() {
@@ -10259,7 +10260,7 @@ window.loadAdminLinks = function() {
   const links = saved ? JSON.parse(saved) : defaultLinks;
   
   // Fill inputs if they exist
-  const fields = ['x', 'linkedin', 'facebook', 'instagram', 'youtube', 'mastodon', 'threads', 'bluesky', 'appstore', 'googleplay'];
+  const fields = ['x', 'linkedin', 'facebook', 'instagram', 'youtube', 'mastodon', 'threads', 'bluesky', 'appstore', 'googleplay', 'telegram'];
   fields.forEach(f => {
     const el = document.getElementById('inp-link-' + f);
     if (el) el.value = links[f] || '';
@@ -10276,6 +10277,10 @@ window.loadAdminLinks = function() {
   const blueskyEl = document.getElementById('link-social-bluesky'); if (blueskyEl) blueskyEl.href = links.bluesky || '#';
   const appstoreEl = document.getElementById('link-app-appstore'); if (appstoreEl) appstoreEl.href = links.appstore || '#';
   const googleplayEl = document.getElementById('link-app-googleplay'); if (googleplayEl) googleplayEl.href = links.googleplay || '#';
+  
+  // Apply to top navbar telegram link if exists
+  const navTelegramEl = document.getElementById('nav-telegram-link');
+  if (navTelegramEl) navTelegramEl.href = links.telegram || 'https://t.me/';
 };
 
 window.saveAdminLinks = function(e) {
@@ -10290,7 +10295,8 @@ window.saveAdminLinks = function(e) {
     threads: document.getElementById('inp-link-threads').value,
     bluesky: document.getElementById('inp-link-bluesky').value,
     appstore: document.getElementById('inp-link-appstore').value,
-    googleplay: document.getElementById('inp-link-googleplay').value
+    googleplay: document.getElementById('inp-link-googleplay').value,
+    telegram: document.getElementById('inp-link-telegram') ? document.getElementById('inp-link-telegram').value : ''
   };
 
   localStorage.setItem('soki_admin_links', JSON.stringify(links));
