@@ -11909,56 +11909,72 @@ custObserver.observe(document.body, { childList: true, subtree: true });
 
 // Toggle contenteditable for elements
 function toggleTextEditable(active) {
-  const selector = 'h1, h2, h3, h4, h5, h6, p, span, li, button';
-  document.querySelectorAll(selector).forEach(el => {
-    if (
-      el.closest('#image-editor-modal') || 
-      el.closest('.sidebar') || 
-      el.closest('#user-profile-badge') || 
-      el.closest('.edit-modal-card') || 
-      el.id === 'user-badge-name' ||
-      el.closest('.panel-logo') ||
-      el.tagName === 'I' ||
-      el.closest('svg')
-    ) {
-      return;
-    }
-    
-    if (active) {
-      el.setAttribute('contenteditable', 'true');
-      if (!el.dataset.originalText) {
-        el.dataset.originalText = el.innerHTML;
+  try {
+    const selector = 'h1, h2, h3, h4, h5, h6, p, span, li, button';
+    document.querySelectorAll(selector).forEach(el => {
+      try {
+        if (
+          el.closest('#image-editor-modal') || 
+          el.closest('.sidebar') || 
+          el.closest('#user-profile-badge') || 
+          el.closest('.edit-modal-card') || 
+          el.id === 'user-badge-name' ||
+          el.closest('.panel-logo') ||
+          el.tagName === 'I' ||
+          el.closest('svg')
+        ) {
+          return;
+        }
+        
+        if (active) {
+          el.setAttribute('contenteditable', 'true');
+          if (!el.dataset.originalText) {
+            el.dataset.originalText = el.innerHTML;
+          }
+        } else {
+          el.removeAttribute('contenteditable');
+        }
+      } catch (err) {
+        console.warn('Skipping element in text edit toggle:', el, err);
       }
-    } else {
-      el.removeAttribute('contenteditable');
-    }
-  });
+    });
+  } catch (globalErr) {
+    console.error('Global error in toggleTextEditable:', globalErr);
+  }
 }
 
 // Enable/Disable Drag and Drop reordering
 function enableDragAndDrop(active) {
-  const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
-  containers.forEach(container => {
-    Array.from(container.children).forEach(child => {
-      if (child.id === 'nav-user-dropdown' || child.id === 'nav-coins-badge') {
-        return;
-      }
-      if (active) {
-        child.setAttribute('draggable', 'true');
-        child.style.cursor = 'grab';
-      } else {
-        child.removeAttribute('draggable');
-        child.style.cursor = '';
+  try {
+    const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
+    containers.forEach(container => {
+      try {
+        Array.from(container.children).forEach(child => {
+          if (child.id === 'nav-user-dropdown' || child.id === 'nav-coins-badge') {
+            return;
+          }
+          if (active) {
+            child.setAttribute('draggable', 'true');
+            child.style.cursor = 'grab';
+          } else {
+            child.removeAttribute('draggable');
+            child.style.cursor = '';
+          }
+        });
+
+        if (active) {
+          container.addEventListener('dragover', handleDragOver);
+          container.addEventListener('dragenter', e => e.preventDefault());
+        } else {
+          container.removeEventListener('dragover', handleDragOver);
+        }
+      } catch (containerErr) {
+        console.error('Error enabling drag and drop on container:', container, containerErr);
       }
     });
-
-    if (active) {
-      container.addEventListener('dragover', handleDragOver);
-      container.addEventListener('dragenter', e => e.preventDefault());
-    } else {
-      container.removeEventListener('dragover', handleDragOver);
-    }
-  });
+  } catch (globalDragErr) {
+    console.error('Global error in enableDragAndDrop:', globalDragErr);
+  }
 }
 
 document.body.addEventListener('dragstart', function(e) {
@@ -12205,21 +12221,26 @@ document.getElementById('btn-reset-image-edit').addEventListener('click', async 
 const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
 if (editToggleBtn) {
   editToggleBtn.addEventListener('click', function() {
-    window.isEditModeActive = !window.isEditModeActive;
-    if (window.isEditModeActive) {
-      document.body.classList.add('admin-edit-mode-active');
-      editToggleBtn.classList.add('active');
-      editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
-      toggleTextEditable(true);
-      enableDragAndDrop(true);
-      showToast('✏️ מצב עריכה פעיל. לחץ על תמונה, ערוך מלל או גרור לשינוי מיקומים!');
-    } else {
-      document.body.classList.remove('admin-edit-mode-active');
-      editToggleBtn.classList.remove('active');
-      editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
-      toggleTextEditable(false);
-      enableDragAndDrop(false);
-      showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
+    try {
+      window.isEditModeActive = !window.isEditModeActive;
+      if (window.isEditModeActive) {
+        document.body.classList.add('admin-edit-mode-active');
+        editToggleBtn.classList.add('active');
+        editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
+        toggleTextEditable(true);
+        enableDragAndDrop(true);
+        showToast('✏️ מצב עריכה פעיל. לחץ על תמונה, ערוך מלל או גרור לשינוי מיקומים!');
+      } else {
+        document.body.classList.remove('admin-edit-mode-active');
+        editToggleBtn.classList.remove('active');
+        editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
+        toggleTextEditable(false);
+        enableDragAndDrop(false);
+        showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
+      }
+    } catch (err) {
+      console.error('Error toggling admin edit mode:', err);
+      alert('שגיאה בהפעלת מצב עריכה: ' + err.message);
     }
   });
 }
