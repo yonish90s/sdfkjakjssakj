@@ -11738,10 +11738,27 @@ window.openOrderTrackingModal = function() {
 window.isEditModeActive = false;
 let currentEditingImg = null;
 let activeCustomizations = {};
+let activeDraggedEl = null;
+
+// Assign deterministic data-admin-id to sortable containers on load
+function initDeterministicIds() {
+  const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
+  containers.forEach((container, cIdx) => {
+    if (!container.getAttribute('data-admin-id')) {
+      container.setAttribute('data-admin-id', `container-${cIdx}`);
+    }
+    Array.from(container.children).forEach((child, idx) => {
+      if (!child.id && !child.getAttribute('data-admin-id')) {
+        child.setAttribute('data-admin-id', `container-${cIdx}-item-${idx}`);
+      }
+    });
+  });
+}
 
 // Helper to uniquely identify an element by CSS path or ID
 function getImageIdentifier(el) {
   if (el.id) return `#${el.id}`;
+  if (el.getAttribute('data-admin-id')) return `[data-admin-id="${el.getAttribute('data-admin-id')}"]`;
   const path = [];
   let current = el;
   while (current && current.nodeType === Node.ELEMENT_NODE && current.tagName !== 'BODY') {
@@ -11762,6 +11779,7 @@ function getImageIdentifier(el) {
 // Helper to resolve an element from its path
 function getElementFromIdentifier(id) {
   if (id.startsWith('#')) return document.querySelector(id);
+  if (id.startsWith('[')) return document.querySelector(id);
   const parts = id.split('>');
   let el = document.body;
   for (let part of parts) {
@@ -11797,8 +11815,22 @@ function applyAllCustomizations() {
     if (el) {
       const cust = activeCustomizations[key];
       
+      // If it is an order customization
+      if (cust.order && Array.isArray(cust.order)) {
+        const childMap = new Map();
+        for (let child of Array.from(el.children)) {
+          const childId = getImageIdentifier(child);
+          childMap.set(childId, child);
+        }
+        for (let childId of cust.order) {
+          const child = childMap.get(childId);
+          if (child) {
+            el.appendChild(child);
+          }
+        }
+      }
       // If it is a text customization
-      if (cust.text !== undefined) {
+      else if (cust.text !== undefined) {
         if (el.innerHTML !== cust.text) {
           el.innerHTML = cust.text;
         }
@@ -11848,6 +11880,7 @@ async function saveCustomizationsToServer() {
 
 // Fetch customizations from server API on init
 async function initCustomizations() {
+  initDeterministicIds();
   try {
     const res = await fetch('/api/customizations');
     if (res.ok) {
@@ -11861,6 +11894,18 @@ async function initCustomizations() {
 
 // Initialize Customizations
 initCustomizations();
+
+// Watch for DOM changes to apply styles dynamically to elements
+const custObserver = new MutationObserver(() => {
+  custObserver.disconnect();
+  applyAllCustomizations();
+  if (window.isEditModeActive) {
+    toggleTextEditable(true);
+    enableDragAndDrop(true);
+  }
+  custObserver.observe(document.body, { childList: true, subtree: true });
+});
+custObserver.observe(document.body, { childList: true, subtree: true });
 
 // Toggle contenteditable for elements
 function toggleTextEditable(active) {
@@ -11890,14 +11935,83 @@ function toggleTextEditable(active) {
   });
 }
 
-// Watch for DOM changes to apply styles dynamically to elements
-const custObserver = new MutationObserver(() => {
-  applyAllCustomizations();
-  if (window.isEditModeActive) {
-    toggleTextEditable(true);
+// Enable/Disable Drag and Drop reordering
+function enableDragAndDrop(active) {
+  const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
+  containers.forEach(container => {
+    Array.from(container.children).forEach(child => {
+      if (child.id === 'nav-user-dropdown' || child.id === 'nav-coins-badge') {
+        return;
+      }
+      if (active) {
+        child.setAttribute('draggable', 'true');
+        child.style.cursor = 'grab';
+      } else {
+        child.removeAttribute('draggable');
+        child.style.cursor = '';
+      }
+    });
+
+    if (active) {
+      container.addEventListener('dragover', handleDragOver);
+      container.addEventListener('dragenter', e => e.preventDefault());
+    } else {
+      container.removeEventListener('dragover', handleDragOver);
+    }
+  });
+}
+
+document.body.addEventListener('dragstart', function(e) {
+  if (!window.isEditModeActive) return;
+  const target = e.target.closest('[draggable="true"]');
+  if (target) {
+    activeDraggedEl = target;
+    target.classList.add('dragging');
   }
 });
-custObserver.observe(document.body, { childList: true, subtree: true });
+
+document.body.addEventListener('dragend', async function(e) {
+  if (!window.isEditModeActive || !activeDraggedEl) return;
+  activeDraggedEl.classList.remove('dragging');
+  
+  const parent = activeDraggedEl.parentNode;
+  if (parent && parent.getAttribute('data-admin-id')) {
+    const parentId = getImageIdentifier(parent);
+    const childrenIds = Array.from(parent.children).map(child => getImageIdentifier(child));
+    activeCustomizations[parentId] = {
+      order: childrenIds
+    };
+    await saveCustomizationsToServer();
+  }
+  activeDraggedEl = null;
+});
+
+function handleDragOver(e) {
+  e.preventDefault();
+  const container = e.currentTarget;
+  const afterElement = getDragAfterElement(container, e.clientY, e.clientX, true);
+  if (activeDraggedEl && activeDraggedEl.parentNode === container) {
+    if (afterElement == null) {
+      container.appendChild(activeDraggedEl);
+    } else {
+      container.insertBefore(activeDraggedEl, afterElement);
+    }
+  }
+}
+
+function getDragAfterElement(container, y, x, horizontal = true) {
+  const draggableElements = [...container.querySelectorAll(':scope > [draggable="true"]:not(.dragging)')];
+  
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = x - (box.left + box.width / 2);
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
 
 // Listen for clicks on images/background-images when Edit Mode is active, or handle custom links
 document.body.addEventListener('click', function(e) {
@@ -12097,12 +12211,14 @@ if (editToggleBtn) {
       editToggleBtn.classList.add('active');
       editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
       toggleTextEditable(true);
-      showToast('✏️ מצב עריכה פעיל. לחץ על כל תמונה או ערוך מלל ישירות בדף!');
+      enableDragAndDrop(true);
+      showToast('✏️ מצב עריכה פעיל. לחץ על תמונה, ערוך מלל או גרור לשינוי מיקומים!');
     } else {
       document.body.classList.remove('admin-edit-mode-active');
       editToggleBtn.classList.remove('active');
       editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
       toggleTextEditable(false);
+      enableDragAndDrop(false);
       showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
     }
   });
