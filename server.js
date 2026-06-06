@@ -254,17 +254,7 @@ app.post('/api/customizations', (req, res) => {
     const filePath = path.join(process.cwd(), 'site_customizations.json');
     fs.writeFileSync(filePath, JSON.stringify(customizations, null, 2));
 
-    // Git push in the background to trigger Vercel deploy automatically
-    const { exec } = require('child_process');
-    exec('git add site_customizations.json && git commit -m "chore: update site customizations [skip ci]" && git push origin main', (err, stdout, stderr) => {
-      if (err) {
-        console.error('[Git Auto-Push] Failed:', err.message);
-      } else {
-        console.log('[Git Auto-Push] Succeeded:', stdout);
-      }
-    });
-
-    res.json({ success: true, message: 'Customizations saved and pushed to GitHub' });
+    res.json({ success: true, message: 'Customizations saved to server locally' });
   } catch (err) {
     console.error('Customizations save error:', err.message);
     res.status(500).json({ error: err.message });

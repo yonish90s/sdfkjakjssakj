@@ -11739,22 +11739,22 @@ window.isEditModeActive = false;
 let currentEditingImg = null;
 let activeCustomizations = {};
 
-// Helper to uniquely identify an image by CSS path or ID
-function getImageIdentifier(img) {
-  if (img.id) return `#${img.id}`;
+// Helper to uniquely identify an element by CSS path or ID
+function getImageIdentifier(el) {
+  if (el.id) return `#${el.id}`;
   const path = [];
-  let el = img;
-  while (el && el.nodeType === Node.ELEMENT_NODE && el.tagName !== 'BODY') {
+  let current = el;
+  while (current && current.nodeType === Node.ELEMENT_NODE && current.tagName !== 'BODY') {
     let sibIndex = 0;
-    let sibling = el.previousSibling;
+    let sibling = current.previousSibling;
     while (sibling) {
-      if (sibling.nodeType === Node.ELEMENT_NODE && sibling.tagName === el.tagName) {
+      if (sibling.nodeType === Node.ELEMENT_NODE && sibling.tagName === current.tagName) {
         sibIndex++;
       }
       sibling = sibling.previousSibling;
     }
-    path.unshift(`${el.tagName.toLowerCase()}[${sibIndex}]`);
-    el = el.parentNode;
+    path.unshift(`${current.tagName.toLowerCase()}[${sibIndex}]`);
+    current = current.parentNode;
   }
   return path.join('>');
 }
@@ -11794,21 +11794,36 @@ function getElementFromIdentifier(id) {
 function applyAllCustomizations() {
   for (let key in activeCustomizations) {
     const el = getElementFromIdentifier(key);
-    if (el && el.tagName === 'IMG') {
+    if (el) {
       const cust = activeCustomizations[key];
-      if (cust.src && el.src !== cust.src) {
-        el.src = cust.src;
-      }
-      if (cust.width && el.style.width !== cust.width) {
-        el.style.width = cust.width;
-        el.style.maxWidth = '100%';
-      }
-      if (cust.link) {
-        if (el.getAttribute('data-custom-link') !== cust.link) {
-          el.setAttribute('data-custom-link', cust.link);
+      
+      // If it is a text customization
+      if (cust.text !== undefined) {
+        if (el.innerHTML !== cust.text) {
+          el.innerHTML = cust.text;
         }
-      } else {
-        el.removeAttribute('data-custom-link');
+      } 
+      // If it is an image/background-image customization
+      else {
+        if (cust.src) {
+          if (el.tagName === 'IMG') {
+            if (el.src !== cust.src) el.src = cust.src;
+          } else {
+            const bgUrl = `url("${cust.src}")`;
+            if (el.style.backgroundImage !== bgUrl) el.style.backgroundImage = bgUrl;
+          }
+        }
+        if (cust.width && el.style.width !== cust.width) {
+          el.style.width = cust.width;
+          el.style.maxWidth = '100%';
+        }
+        if (cust.link) {
+          if (el.getAttribute('data-custom-link') !== cust.link) {
+            el.setAttribute('data-custom-link', cust.link);
+          }
+        } else {
+          el.removeAttribute('data-custom-link');
+        }
       }
     }
   }
@@ -11816,7 +11831,7 @@ function applyAllCustomizations() {
 
 // Save active customizations to server API
 async function saveCustomizationsToServer() {
-  showToast('⏳ שומר שינויים לשרת ומעדכן...');
+  showToast('⏳ שומר שינויים לשרת...');
   try {
     const res = await fetch('/api/customizations', {
       method: 'POST',
@@ -11824,7 +11839,7 @@ async function saveCustomizationsToServer() {
       body: JSON.stringify(activeCustomizations)
     });
     if (!res.ok) throw new Error('שגיאה בשמירה לשרת');
-    showToast('✅ השינויים נשמרו בהצלחה ועולים כעת ל-GitHub!');
+    showToast('✅ השינויים נשמרו בהצלחה בשרת!');
   } catch (err) {
     console.error(err);
     showToast('❌ שגיאה בשמירה לשרת');
@@ -11847,35 +11862,84 @@ async function initCustomizations() {
 // Initialize Customizations
 initCustomizations();
 
-// Watch for DOM changes to apply styles dynamically to lazily loaded images
+// Toggle contenteditable for elements
+function toggleTextEditable(active) {
+  const selector = 'h1, h2, h3, h4, h5, h6, p, span, li, button';
+  document.querySelectorAll(selector).forEach(el => {
+    if (
+      el.closest('#image-editor-modal') || 
+      el.closest('.sidebar') || 
+      el.closest('#user-profile-badge') || 
+      el.closest('.edit-modal-card') || 
+      el.id === 'user-badge-name' ||
+      el.closest('.panel-logo') ||
+      el.tagName === 'I' ||
+      el.closest('svg')
+    ) {
+      return;
+    }
+    
+    if (active) {
+      el.setAttribute('contenteditable', 'true');
+      if (!el.dataset.originalText) {
+        el.dataset.originalText = el.innerHTML;
+      }
+    } else {
+      el.removeAttribute('contenteditable');
+    }
+  });
+}
+
+// Watch for DOM changes to apply styles dynamically to elements
 const custObserver = new MutationObserver(() => {
   applyAllCustomizations();
+  if (window.isEditModeActive) {
+    toggleTextEditable(true);
+  }
 });
 custObserver.observe(document.body, { childList: true, subtree: true });
 
-// Listen for clicks on images when Edit Mode is active, or handle custom links
+// Listen for clicks on images/background-images when Edit Mode is active, or handle custom links
 document.body.addEventListener('click', function(e) {
-  const img = e.target.closest('img');
-  if (!img) return;
+  // Find img or element with inline background-image
+  const target = e.target.closest('img') || e.target.closest('[style*="background-image"]');
+  if (!target) return;
 
   // Ignore UI elements like icons or inside the editor itself
-  if (img.closest('.edit-modal-card') || img.id === 'user-badge-avatar' || img.closest('.panel-logo') || img.classList.contains('chat-user-avatar')) {
+  if (target.closest('.edit-modal-card') || target.id === 'user-badge-avatar' || target.closest('.panel-logo') || target.classList.contains('chat-user-avatar')) {
     return;
   }
 
   if (window.isEditModeActive) {
     e.preventDefault();
     e.stopPropagation();
-    openImageEditor(img);
+    openImageEditor(target);
   } else {
     // Navigate if link is configured
-    const link = img.getAttribute('data-custom-link');
+    const link = target.getAttribute('data-custom-link');
     if (link) {
       e.preventDefault();
       window.location.href = link;
     }
   }
-}, true); // Use capturing phase to intercept before other click handlers
+}, true);
+
+// Listen for blur event on editable texts to save modifications
+document.body.addEventListener('blur', async function(e) {
+  if (!window.isEditModeActive) return;
+  const el = e.target;
+  if (el.getAttribute('contenteditable') === 'true') {
+    const currentVal = el.innerHTML;
+    if (currentVal !== el.dataset.originalText) {
+      el.dataset.originalText = currentVal;
+      const id = getImageIdentifier(el);
+      activeCustomizations[id] = {
+        text: currentVal
+      };
+      await saveCustomizationsToServer();
+    }
+  }
+}, true);
 
 // Open editor modal
 function openImageEditor(img) {
@@ -11887,7 +11951,17 @@ function openImageEditor(img) {
   const linkInput = document.getElementById('image-editor-link');
   const fileInput = document.getElementById('image-editor-file');
 
-  preview.src = img.src;
+  // Load preview src depending on element type
+  let src = '';
+  if (img.tagName === 'IMG') {
+    src = img.src;
+  } else {
+    const bg = img.style.backgroundImage || window.getComputedStyle(img).backgroundImage;
+    const match = bg.match(/url\(['"]?(.*?)['"]?\)/);
+    src = match ? match[1] : '';
+  }
+
+  preview.src = src;
   fileInput.value = '';
 
   // Get current width percentage
@@ -11960,7 +12034,11 @@ document.getElementById('btn-apply-image-edit').addEventListener('click', async 
   const widthVal = document.getElementById('image-editor-width').value;
   const linkVal = document.getElementById('image-editor-link').value.trim();
 
-  currentEditingImg.src = previewSrc;
+  if (currentEditingImg.tagName === 'IMG') {
+    currentEditingImg.src = previewSrc;
+  } else {
+    currentEditingImg.style.backgroundImage = `url("${previewSrc}")`;
+  }
   currentEditingImg.style.width = `${widthVal}%`;
   currentEditingImg.style.maxWidth = '100%';
 
@@ -11997,8 +12075,10 @@ document.getElementById('btn-reset-image-edit').addEventListener('click', async 
     // Clear styles and attributes
     currentEditingImg.style.width = '';
     currentEditingImg.removeAttribute('data-custom-link');
+    if (currentEditingImg.tagName !== 'IMG') {
+      currentEditingImg.style.backgroundImage = '';
+    }
     
-    // Reload original src from server or trigger location reload to default
     closeImageEditor();
     showToast('✓ התמונה אופסה. טוען מחדש...');
     
@@ -12016,11 +12096,13 @@ if (editToggleBtn) {
       document.body.classList.add('admin-edit-mode-active');
       editToggleBtn.classList.add('active');
       editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
-      showToast('✏️ מצב עריכה פעיל. לחץ על כל תמונה כדי לערוך אותה.');
+      toggleTextEditable(true);
+      showToast('✏️ מצב עריכה פעיל. לחץ על כל תמונה או ערוך מלל ישירות בדף!');
     } else {
       document.body.classList.remove('admin-edit-mode-active');
       editToggleBtn.classList.remove('active');
       editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
+      toggleTextEditable(false);
       showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
     }
   });

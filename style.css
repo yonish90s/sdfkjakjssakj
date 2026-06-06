@@ -9130,3 +9130,24 @@ body.admin-edit-mode-active img:hover {
   background: rgba(239,68,68,0.25);
 }
 
+body.admin-edit-mode-active [contenteditable="true"] {
+  outline: 1px dashed rgba(226, 135, 67, 0.5) !important;
+  cursor: text !important;
+}
+body.admin-edit-mode-active [contenteditable="true"]:focus {
+  outline: 2px solid #e28743 !important;
+  background: rgba(226, 135, 67, 0.05) !important;
+}
+
+body.admin-edit-mode-active [style*="background-image"] {
+  cursor: pointer !important;
+  outline: 2px dashed #e28743 !important;
+  outline-offset: -3px;
+  transition: all 0.2s ease;
+}
+body.admin-edit-mode-active [style*="background-image"]:hover {
+  outline: 2px solid #e28743 !important;
+  filter: brightness(0.85);
+}
+
+
