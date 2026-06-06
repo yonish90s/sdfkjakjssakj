@@ -9618,57 +9618,65 @@ window.selectDrawerForum = function(groupId) {
 // =====================================================================
 
 function enableLiveEditMode() {
-  document.body.classList.add('live-edit-mode');
-  document.body.addEventListener('click', handleLiveEditClick, true);
-
-  let exitBtn = document.getElementById('live-edit-exit-btn');
-  if (!exitBtn) {
-    exitBtn = document.createElement('button');
-    exitBtn.id = 'live-edit-exit-btn';
-    exitBtn.innerHTML = '❌ Exit Edit Mode';
-    exitBtn.style.cssText = 'position:fixed; bottom:20px; left:20px; z-index:99999; background:#ef4444; color:#fff; border:none; padding:12px 24px; border-radius:980px; font-weight:700; box-shadow:0 4px 12px rgba(0,0,0,0.3); cursor:pointer; font-size:1rem;';
-    exitBtn.onclick = disableLiveEditMode;
-    document.body.appendChild(exitBtn);
+  try {
+    window.isEditModeActive = true;
+    document.body.classList.add('admin-edit-mode-active');
+    
+    // Display the float button in active state
+    const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
+    if (editToggleBtn) {
+      editToggleBtn.style.display = 'flex';
+      editToggleBtn.classList.add('active');
+      editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
+    }
+    
+    toggleTextEditable(true);
+    enableDragAndDrop(true);
+    
+    // Also show the red Exit Edit Mode button if they want to exit using it
+    let exitBtn = document.getElementById('live-edit-exit-btn');
+    if (!exitBtn) {
+      exitBtn = document.createElement('button');
+      exitBtn.id = 'live-edit-exit-btn';
+      exitBtn.innerHTML = '❌ Exit Edit Mode';
+      exitBtn.style.cssText = 'position:fixed; bottom:20px; left:20px; z-index:99999; background:#ef4444; color:#fff; border:none; padding:12px 24px; border-radius:980px; font-weight:700; box-shadow:0 4px 12px rgba(0,0,0,0.3); cursor:pointer; font-size:1rem;';
+      exitBtn.onclick = disableLiveEditMode;
+      document.body.appendChild(exitBtn);
+    }
+    exitBtn.style.display = 'block';
+    
+    showToast('✏️ מצב עריכה פעיל. לחץ על תמונה, ערוך מלל או גרור לשינוי מיקומים!');
+  } catch (err) {
+    console.error('Error enabling live edit:', err);
   }
-  exitBtn.style.display = 'block';
 }
 
 function disableLiveEditMode() {
-  document.body.classList.remove('live-edit-mode');
-  document.body.removeEventListener('click', handleLiveEditClick, true);
-  localStorage.removeItem('isEditor');
-  const exitBtn = document.getElementById('live-edit-exit-btn');
-  if (exitBtn) exitBtn.style.display = 'none';
-  showToast('✅ יצאת ממצב עריכה');
+  try {
+    window.isEditModeActive = false;
+    document.body.classList.remove('admin-edit-mode-active');
+    
+    const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
+    if (editToggleBtn) {
+      editToggleBtn.classList.remove('active');
+      editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
+    }
+    
+    toggleTextEditable(false);
+    enableDragAndDrop(false);
+    
+    const exitBtn = document.getElementById('live-edit-exit-btn');
+    if (exitBtn) exitBtn.style.display = 'none';
+    
+    localStorage.removeItem('isEditor');
+    showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
+  } catch (err) {
+    console.error('Error disabling live edit:', err);
+  }
 }
 
 function handleLiveEditClick(e) {
-  if (!document.body.classList.contains('live-edit-mode')) return;
-  if (e.target.closest('#live-edit-exit-btn') || e.target.closest('.modal-overlay')) return;
-
-  const validTags = ['H1', 'H2', 'H3', 'H4', 'H5', 'P', 'SPAN', 'A', 'BUTTON', 'IMG', 'DIV'];
-  if (!validTags.includes(e.target.tagName)) return;
-
-  // For DIVs, only allow editing if it looks like a leaf node or text container
-  if (e.target.tagName === 'DIV' && e.target.children.length > 2) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (e.target.tagName === 'IMG') {
-    const newSrc = prompt('ערוך תמונה (הכנס כתובת URL):', e.target.src);
-    if (newSrc) e.target.src = newSrc;
-  } else {
-    // Find text content
-    const textNode = Array.from(e.target.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0);
-    if (textNode) {
-      const newText = prompt('ערוך טקסט:', textNode.textContent.trim());
-      if (newText !== null) textNode.textContent = newText;
-    } else if (e.target.children.length === 0) {
-      const newText = prompt('ערוך טקסט:', e.target.innerText);
-      if (newText !== null) e.target.innerText = newText;
-    }
-  }
+  // Disabled to allow the new inline text and modal image editors to handle everything cleanly
 }
 
 // =====================================================================
