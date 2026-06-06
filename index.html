@@ -4533,5 +4533,48 @@
   </div>
 </div>
 
+<!-- Admin Edit Mode Button -->
+<button id="admin-edit-mode-toggle" class="admin-edit-toggle-btn" style="display: none;">
+  <span>מצב עריכה</span> ✏️
+</button>
+
+<!-- Premium Image Editor Modal -->
+<div id="image-editor-modal" class="edit-modal-backdrop">
+  <div class="edit-modal-card">
+    <div class="edit-modal-header">
+      <h3 class="edit-modal-title">עריכת תמונה ✏️</h3>
+      <button class="edit-modal-close" id="btn-close-image-editor">&times;</button>
+    </div>
+    <div class="edit-modal-body">
+      <div class="edit-modal-preview-box">
+        <img id="image-editor-preview" src="" alt="תצוגה מקדימה" />
+      </div>
+      
+      <div class="edit-control-group">
+        <label>העלאת תמונה חדשה</label>
+        <input type="file" id="image-editor-file" class="edit-control-input" accept="image/*" />
+      </div>
+      
+      <div class="edit-control-group">
+        <label id="image-editor-width-label">רוחב תמונה: 100%</label>
+        <div class="edit-slider-wrap">
+          <input type="range" id="image-editor-width" min="10" max="100" value="100" />
+        </div>
+      </div>
+      
+      <div class="edit-control-group">
+        <label>קישור בלחיצה (URL)</label>
+        <input type="text" id="image-editor-link" class="edit-control-input" placeholder="https://example.com" />
+      </div>
+    </div>
+    
+    <div class="edit-modal-footer">
+      <button class="edit-modal-btn edit-modal-btn-primary" id="btn-apply-image-edit">החל שינויים</button>
+      <button class="edit-modal-btn edit-modal-btn-danger" id="btn-reset-image-edit">אפס תמונה</button>
+      <button class="edit-modal-btn edit-modal-btn-secondary" id="btn-cancel-image-edit">ביטול</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

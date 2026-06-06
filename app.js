@@ -4104,6 +4104,11 @@ function updateUserUI() {
   const isUserLoggedIn = !!currentUser && !!currentUser.email;
   const isAdminLoggedIn = !!isAdmin;
 
+  const adminEditBtn = document.getElementById('admin-edit-mode-toggle');
+  if (adminEditBtn) {
+    adminEditBtn.style.display = isAdminLoggedIn ? 'flex' : 'none';
+  }
+
   if (isUserLoggedIn || isAdminLoggedIn) {
     btnJoin.style.display = 'none';
     profileBadge.style.display = 'flex';
@@ -11726,6 +11731,300 @@ window.openOrderTrackingModal = function() {
     modal.style.display = 'flex';
   }
 };
+
+// ==========================================
+// ADMIN EDIT MODE IMPLEMENTATION
+// ==========================================
+window.isEditModeActive = false;
+let currentEditingImg = null;
+let activeCustomizations = {};
+
+// Helper to uniquely identify an image by CSS path or ID
+function getImageIdentifier(img) {
+  if (img.id) return `#${img.id}`;
+  const path = [];
+  let el = img;
+  while (el && el.nodeType === Node.ELEMENT_NODE && el.tagName !== 'BODY') {
+    let sibIndex = 0;
+    let sibling = el.previousSibling;
+    while (sibling) {
+      if (sibling.nodeType === Node.ELEMENT_NODE && sibling.tagName === el.tagName) {
+        sibIndex++;
+      }
+      sibling = sibling.previousSibling;
+    }
+    path.unshift(`${el.tagName.toLowerCase()}[${sibIndex}]`);
+    el = el.parentNode;
+  }
+  return path.join('>');
+}
+
+// Helper to resolve an element from its path
+function getElementFromIdentifier(id) {
+  if (id.startsWith('#')) return document.querySelector(id);
+  const parts = id.split('>');
+  let el = document.body;
+  for (let part of parts) {
+    if (!part) continue;
+    const match = part.match(/^([a-z0-9]+)\[(\d+)\]$/i);
+    if (match) {
+      const tag = match[1];
+      const index = parseInt(match[2]);
+      let childIndex = 0;
+      let found = null;
+      for (let child of el.children) {
+        if (child.tagName.toLowerCase() === tag.toLowerCase()) {
+          if (childIndex === index) {
+            found = child;
+            break;
+          }
+          childIndex++;
+        }
+      }
+      if (!found) return null;
+      el = found;
+    } else {
+      return null;
+    }
+  }
+  return el;
+}
+
+// Apply loaded customizations to the page
+function applyAllCustomizations() {
+  for (let key in activeCustomizations) {
+    const el = getElementFromIdentifier(key);
+    if (el && el.tagName === 'IMG') {
+      const cust = activeCustomizations[key];
+      if (cust.src && el.src !== cust.src) {
+        el.src = cust.src;
+      }
+      if (cust.width && el.style.width !== cust.width) {
+        el.style.width = cust.width;
+        el.style.maxWidth = '100%';
+      }
+      if (cust.link) {
+        if (el.getAttribute('data-custom-link') !== cust.link) {
+          el.setAttribute('data-custom-link', cust.link);
+        }
+      } else {
+        el.removeAttribute('data-custom-link');
+      }
+    }
+  }
+}
+
+// Save active customizations to server API
+async function saveCustomizationsToServer() {
+  showToast('⏳ שומר שינויים לשרת ומעדכן...');
+  try {
+    const res = await fetch('/api/customizations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(activeCustomizations)
+    });
+    if (!res.ok) throw new Error('שגיאה בשמירה לשרת');
+    showToast('✅ השינויים נשמרו בהצלחה ועולים כעת ל-GitHub!');
+  } catch (err) {
+    console.error(err);
+    showToast('❌ שגיאה בשמירה לשרת');
+  }
+}
+
+// Fetch customizations from server API on init
+async function initCustomizations() {
+  try {
+    const res = await fetch('/api/customizations');
+    if (res.ok) {
+      activeCustomizations = await res.json();
+      applyAllCustomizations();
+    }
+  } catch (err) {
+    console.error('Failed to load customizations:', err);
+  }
+}
+
+// Initialize Customizations
+initCustomizations();
+
+// Watch for DOM changes to apply styles dynamically to lazily loaded images
+const custObserver = new MutationObserver(() => {
+  applyAllCustomizations();
+});
+custObserver.observe(document.body, { childList: true, subtree: true });
+
+// Listen for clicks on images when Edit Mode is active, or handle custom links
+document.body.addEventListener('click', function(e) {
+  const img = e.target.closest('img');
+  if (!img) return;
+
+  // Ignore UI elements like icons or inside the editor itself
+  if (img.closest('.edit-modal-card') || img.id === 'user-badge-avatar' || img.closest('.panel-logo') || img.classList.contains('chat-user-avatar')) {
+    return;
+  }
+
+  if (window.isEditModeActive) {
+    e.preventDefault();
+    e.stopPropagation();
+    openImageEditor(img);
+  } else {
+    // Navigate if link is configured
+    const link = img.getAttribute('data-custom-link');
+    if (link) {
+      e.preventDefault();
+      window.location.href = link;
+    }
+  }
+}, true); // Use capturing phase to intercept before other click handlers
+
+// Open editor modal
+function openImageEditor(img) {
+  currentEditingImg = img;
+  const modal = document.getElementById('image-editor-modal');
+  const preview = document.getElementById('image-editor-preview');
+  const widthInput = document.getElementById('image-editor-width');
+  const widthLabel = document.getElementById('image-editor-width-label');
+  const linkInput = document.getElementById('image-editor-link');
+  const fileInput = document.getElementById('image-editor-file');
+
+  preview.src = img.src;
+  fileInput.value = '';
+
+  // Get current width percentage
+  let widthVal = 100;
+  if (img.style.width && img.style.width.endsWith('%')) {
+    widthVal = parseInt(img.style.width) || 100;
+  }
+  widthInput.value = widthVal;
+  widthLabel.textContent = `רוחב תמונה: ${widthVal}%`;
+
+  // Get current link
+  linkInput.value = img.getAttribute('data-custom-link') || '';
+
+  modal.classList.add('active');
+}
+
+// Modal control listeners
+document.getElementById('image-editor-width').addEventListener('input', function(e) {
+  const val = e.target.value;
+  document.getElementById('image-editor-width-label').textContent = `רוחב תמונה: ${val}%`;
+  document.getElementById('image-editor-preview').style.width = `${val}%`;
+});
+
+// File upload handler for editor
+document.getElementById('image-editor-file').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  showToast('⏳ מעבד תמונה...');
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 800; // Optimize Base64 size
+      let width = img.width;
+      let height = img.height;
+      if (width > MAX_WIDTH) {
+        height *= MAX_WIDTH / width;
+        width = MAX_WIDTH;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      const compressedUrl = canvas.toDataURL('image/jpeg', 0.85);
+      document.getElementById('image-editor-preview').src = compressedUrl;
+      showToast('✅ תמונה הועלתה בהצלחה לתצוגה מקדימה');
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Close modal helper
+function closeImageEditor() {
+  document.getElementById('image-editor-modal').classList.remove('active');
+  currentEditingImg = null;
+}
+
+document.getElementById('btn-close-image-editor').addEventListener('click', closeImageEditor);
+document.getElementById('btn-cancel-image-edit').addEventListener('click', closeImageEditor);
+
+// Apply edits
+document.getElementById('btn-apply-image-edit').addEventListener('click', async function() {
+  if (!currentEditingImg) return;
+
+  const previewSrc = document.getElementById('image-editor-preview').src;
+  const widthVal = document.getElementById('image-editor-width').value;
+  const linkVal = document.getElementById('image-editor-link').value.trim();
+
+  currentEditingImg.src = previewSrc;
+  currentEditingImg.style.width = `${widthVal}%`;
+  currentEditingImg.style.maxWidth = '100%';
+
+  if (linkVal) {
+    currentEditingImg.setAttribute('data-custom-link', linkVal);
+  } else {
+    currentEditingImg.removeAttribute('data-custom-link');
+  }
+
+  // Update active customizations
+  const id = getImageIdentifier(currentEditingImg);
+  activeCustomizations[id] = {
+    src: previewSrc,
+    width: `${widthVal}%`,
+    link: linkVal || null
+  };
+
+  closeImageEditor();
+  showToast('✓ שינויים מקומיים הוחלו');
+  
+  // Auto save to server
+  await saveCustomizationsToServer();
+});
+
+// Reset image edit
+document.getElementById('btn-reset-image-edit').addEventListener('click', async function() {
+  if (!currentEditingImg) return;
+  if (confirm('האם אתה בטוח שברצונך לאפס את התמונה למקור?')) {
+    const id = getImageIdentifier(currentEditingImg);
+    
+    // Remove from customizations
+    delete activeCustomizations[id];
+    
+    // Clear styles and attributes
+    currentEditingImg.style.width = '';
+    currentEditingImg.removeAttribute('data-custom-link');
+    
+    // Reload original src from server or trigger location reload to default
+    closeImageEditor();
+    showToast('✓ התמונה אופסה. טוען מחדש...');
+    
+    await saveCustomizationsToServer();
+    window.location.reload();
+  }
+});
+
+// Admin Edit Mode Button Click handler
+const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
+if (editToggleBtn) {
+  editToggleBtn.addEventListener('click', function() {
+    window.isEditModeActive = !window.isEditModeActive;
+    if (window.isEditModeActive) {
+      document.body.classList.add('admin-edit-mode-active');
+      editToggleBtn.classList.add('active');
+      editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
+      showToast('✏️ מצב עריכה פעיל. לחץ על כל תמונה כדי לערוך אותה.');
+    } else {
+      document.body.classList.remove('admin-edit-mode-active');
+      editToggleBtn.classList.remove('active');
+      editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
+      showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
+    }
+  });
+}
 
 
 
