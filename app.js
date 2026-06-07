@@ -12669,9 +12669,15 @@ function openImageEditor(img) {
   // Get current link
   linkInput.value = img.getAttribute('data-custom-link') || '';
 
-  // Reset Crop Tool Toggle to False on open
-  const cropToggle = document.getElementById('image-editor-crop-toggle');
-  if (cropToggle) cropToggle.checked = false;
+  // Reset Crop Tool Button to OFF state on open
+  const cropBtn = document.getElementById('btn-toggle-crop-tool');
+  const cropBtnText = document.getElementById('crop-btn-text');
+  if (cropBtn && cropBtnText) {
+    cropBtn.style.background = '#27272a';
+    cropBtn.style.borderColor = '#3f3f46';
+    cropBtn.style.color = '#fafafa';
+    cropBtnText.textContent = 'הפעל כלי חיתוך (Crop Tool)';
+  }
   window.toggleCropTool(false);
 
   modal.classList.add('active');
@@ -12906,6 +12912,28 @@ window.updateCropBoxDimensionsFromInputs = function() {
 // Crop box dragging/resizing interaction logic
 let isCropActive = false;
 let cropStart = null;
+
+window.toggleCropToolBtnClick = function() {
+  const btn = document.getElementById('btn-toggle-crop-tool');
+  const text = document.getElementById('crop-btn-text');
+  if (!btn || !text) return;
+
+  const nextState = !isCropActive;
+  
+  if (nextState) {
+    btn.style.background = '#e28743';
+    btn.style.borderColor = '#f4b27a';
+    btn.style.color = '#000';
+    text.textContent = 'כלי חיתוך: פעיל (לחץ לביטול)';
+  } else {
+    btn.style.background = '#27272a';
+    btn.style.borderColor = '#3f3f46';
+    btn.style.color = '#fafafa';
+    text.textContent = 'הפעל כלי חיתוך (Crop Tool)';
+  }
+  
+  window.toggleCropTool(nextState);
+};
 
 window.toggleCropTool = function(checked) {
   isCropActive = checked;
