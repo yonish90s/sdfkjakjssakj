@@ -4141,9 +4141,14 @@ function updateUserUI() {
   const isUserLoggedIn = !!currentUser && !!currentUser.email;
   const isAdminLoggedIn = !!isAdmin;
 
-  const adminEditBtn = document.getElementById('admin-edit-mode-toggle');
-  if (adminEditBtn) {
-    adminEditBtn.style.display = isAdminLoggedIn ? 'flex' : 'none';
+  if (isAdminLoggedIn) {
+    if (!window.isEditModeActive) {
+      enableLiveEditMode();
+    }
+  } else {
+    if (window.isEditModeActive) {
+      disableLiveEditMode();
+    }
   }
 
   if (isUserLoggedIn || isAdminLoggedIn) {
@@ -13239,18 +13244,6 @@ window.resetImageEdit = async function() {
   }
 };
 
-// Admin Edit Mode Button — toggle handler
-const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
-if (editToggleBtn) {
-  editToggleBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    if (window.isEditModeActive) {
-      disableLiveEditMode();
-    } else {
-      enableLiveEditMode();
-    }
-  });
-}
 
 // -------------------------------------------------------------
 // Live Block Resizing Functionality (Stretch/Shrink Cards/Blocks)
