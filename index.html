@@ -3270,16 +3270,61 @@
           </form>
         </div>
 
+        <!-- Submitted Offers Box -->
+        <div id="b2b-my-offers-box" style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; display:none;">
+          <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin:0 0 8px 0; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.3rem;">📬</span> הצעות שהגשת
+          </h3>
+          <p style="color:#a1a1aa; font-size:0.85rem; margin:0 0 16px 0;">ההצעות האחרונות שהגשת למפעלים דרך הפלטפורמה:</p>
+          <div id="b2b-my-offers-list" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
         <!-- Info Card -->
         <div style="background:linear-gradient(135deg, rgba(255,149,0,0.05), rgba(255,204,0,0.05)); border:1px solid rgba(255,149,0,0.2); border-radius:16px; padding:20px; color:#d2d2d7; font-size:0.85rem; line-height:1.7;">
           <h4 style="color:#ff9500; font-weight:800; margin:0 0 10px 0; font-size:0.95rem;">💡 כיצד זה עובד?</h4>
           <ul style="margin:0; padding-right:16px; display:flex; flex-direction:column; gap:6px;">
             <li>סנן את המפעלים לפי חומרי הגלם שהם מספקים (עץ, מתכת וכו').</li>
             <li>צור קשר ישירות עם המפעל בוואטסאפ או בטלפון בלחיצה אחת.</li>
+            <li>הגש הצעת מחיר או הצעה עסקית מותאמת אישית ישירות למפעל ספציפי.</li>
             <li>אם לא מצאת מפעל מתאים, השתמש בטופס בקשת הצעת המחיר כדי שהם יחזרו אליך.</li>
           </ul>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- B2B OFFER MODAL -->
+  <div id="b2b-offer-modal" onclick="if(event.target===this)closeB2bOfferModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:350000; align-items:center; justify-content:center; backdrop-filter:blur(8px); direction:rtl; text-align:right;">
+    <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:24px; padding:32px; width:90%; max-width:500px; box-shadow:0 20px 40px rgba(0,0,0,0.5); position:relative; box-sizing:border-box;">
+      <button onclick="closeB2bOfferModal()" style="position:absolute; top:20px; left:20px; background:none; border:none; color:#86868b; font-size:1.5rem; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#86868b'">✕</button>
+      <h2 style="color:#fff; font-size:1.6rem; font-weight:800; margin:0 0 8px 0;">הגשת הצעה למפעל</h2>
+      <p id="b2b-offer-subtitle" style="color:#ff9500; font-size:0.95rem; font-weight:700; margin:0 0 24px 0;">שם המפעל</p>
+      
+      <form onsubmit="submitB2bOffer(event)" style="display:flex; flex-direction:column; gap:16px;">
+        <input type="hidden" id="b2b-offer-factory-id">
+        <input type="hidden" id="b2b-offer-factory-name">
+        <div>
+          <label style="display:block; font-size:0.85rem; color:#a1a1aa; margin-bottom:6px;">שם השולח / העסק המציע *</label>
+          <input type="text" id="b2b-offer-sender" placeholder="למשל: נגריית השלום בע״מ" style="width:100%; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; color:#fff; font-size:0.95rem; outline:none; box-sizing:border-box;" required>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.85rem; color:#a1a1aa; margin-bottom:6px;">נושא ההצעה *</label>
+          <input type="text" id="b2b-offer-subject" placeholder="למשל: הצעה לשיתוף פעולה באספקת עץ אורן" style="width:100%; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; color:#fff; font-size:0.95rem; outline:none; box-sizing:border-box;" required>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.85rem; color:#a1a1aa; margin-bottom:6px;">פרטי הצעה והמחיר המוצע *</label>
+          <textarea id="b2b-offer-content" rows="4" placeholder="פרט כאן את הצעת המחיר, הכמויות ותנאי האספקה..." style="width:100%; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; color:#fff; font-size:0.95rem; outline:none; font-family:inherit; resize:vertical; box-sizing:border-box;" required></textarea>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.85rem; color:#a1a1aa; margin-bottom:6px;">פרטי קשר (טלפון או אימייל) *</label>
+          <input type="text" id="b2b-offer-contact" placeholder="למשל: 052-1234567 / office@shalomwood.co.il" style="width:100%; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; color:#fff; font-size:0.95rem; outline:none; box-sizing:border-box;" required>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; background:linear-gradient(135deg,#ff9500,#ffcc00); color:#000; border:none; padding:14px; border-radius:14px; font-weight:800; cursor:pointer; font-size:1rem; margin-top:10px; box-shadow:0 8px 24px rgba(255,149,0,0.3);">
+          שלח הצעה למפעל ✉️
+        </button>
+      </form>
     </div>
   </div>
 

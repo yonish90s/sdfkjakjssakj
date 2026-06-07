@@ -13501,6 +13501,7 @@ window.initB2bPage = function() {
   }
   renderB2bFilters();
   renderB2bFactories();
+  renderB2bMyOffers();
 };
 
 function renderB2bFilters() {
@@ -13581,7 +13582,10 @@ window.renderB2bFactories = function() {
             </div>
           </div>
           <!-- Contact buttons -->
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button onclick="openB2bOfferModal('${f.id}', '${escHtml(f.name.replace(/'/g, "\\'"))}')" style="background:linear-gradient(135deg,#ff9500,#ffcc00); color:#000; border:none; padding:10px 18px; border-radius:10px; font-weight:700; font-size:0.88rem; display:flex; align-items:center; gap:6px; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <i class="fas fa-paper-plane" style="font-size:0.85rem;"></i> הגש הצעה
+            </button>
             <a href="${whatsAppUrl}" target="_blank" style="background:#25D366; color:#fff; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
               <i class="fab fa-whatsapp" style="font-size:1rem;"></i> וואטסאפ
             </a>
@@ -13666,6 +13670,79 @@ window.submitB2bRequest = function(e) {
 
   showToast('✓ בקשתך נשלחה למפעלים בקטגוריה!');
   e.target.reset();
+};
+
+window.openB2bOfferModal = function(factoryId, factoryName) {
+  const modal = document.getElementById('b2b-offer-modal');
+  if (!modal) return;
+  
+  document.getElementById('b2b-offer-factory-id').value = factoryId;
+  document.getElementById('b2b-offer-factory-name').value = factoryName;
+  document.getElementById('b2b-offer-subtitle').textContent = `עבור: ${factoryName}`;
+  
+  modal.style.display = 'flex';
+};
+
+window.closeB2bOfferModal = function() {
+  const modal = document.getElementById('b2b-offer-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.submitB2bOffer = function(e) {
+  e.preventDefault();
+  const factoryId = document.getElementById('b2b-offer-factory-id').value;
+  const factoryName = document.getElementById('b2b-offer-factory-name').value;
+  const sender = document.getElementById('b2b-offer-sender').value.trim();
+  const subject = document.getElementById('b2b-offer-subject').value.trim();
+  const content = document.getElementById('b2b-offer-content').value.trim();
+  const contact = document.getElementById('b2b-offer-contact').value.trim();
+
+  const newOffer = {
+    id: Date.now(),
+    factoryId,
+    factoryName,
+    sender,
+    subject,
+    content,
+    contact,
+    date: new Date().toLocaleDateString('he-IL')
+  };
+
+  const offers = JSON.parse(localStorage.getItem('b2bOffers') || '[]');
+  offers.unshift(newOffer);
+  localStorage.setItem('b2bOffers', JSON.stringify(offers));
+
+  showToast('✓ הצעתך הוגשה בהצלחה למפעל!');
+  closeB2bOfferModal();
+  e.target.reset();
+  renderB2bMyOffers();
+};
+
+window.renderB2bMyOffers = function() {
+  const box = document.getElementById('b2b-my-offers-box');
+  const list = document.getElementById('b2b-my-offers-list');
+  if (!box || !list) return;
+
+  const offers = JSON.parse(localStorage.getItem('b2bOffers') || '[]');
+  if (offers.length === 0) {
+    box.style.display = 'none';
+    return;
+  }
+
+  box.style.display = 'block';
+  list.innerHTML = offers.map(o => `
+    <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:12px; font-size:0.85rem; text-align:right;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="color:#fff;">${escHtml(o.factoryName)}</strong>
+        <span style="font-size:0.75rem; color:#86868b;">${o.date}</span>
+      </div>
+      <div style="color:#ff9500; font-weight:700; margin-bottom:4px;">נושא: ${escHtml(o.subject)}</div>
+      <div style="color:#d2d2d7; margin-bottom:6px; line-height:1.4;">${escHtml(o.content)}</div>
+      <div style="color:#86868b; font-size:0.8rem; border-top:1px solid rgba(255,255,255,0.05); padding-top:4px; margin-top:4px;">
+        מאת: ${escHtml(o.sender)} • קשר: ${escHtml(o.contact)}
+      </div>
+    </div>
+  `).join('');
 };
 
 
