@@ -32,5 +32,13 @@
     "width": null,
     "positionY": "50%",
     "link": null
+  },
+  "div[0]>div[3]>div[0]>div[3]>div[1]>div[0]>div[0]>div[9]": {
+    "blockWidth": "1284px",
+    "blockHeight": "277px"
+  },
+  "div[0]>div[3]>div[0]>div[3]>div[1]>div[0]>div[0]>div[9]>div[0]": {
+    "blockWidth": "80px",
+    "blockHeight": "50px"
   }
 }
