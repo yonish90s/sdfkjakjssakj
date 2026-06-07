@@ -868,6 +868,9 @@ function renderNewsLayout(page = 1) {
             <div class="carousel-track" id="main-carousel-track">
               ${displayFeatured.map(a => {
                 const actionsHtml = window.isEditModeActive ? `
+                  <button class="article-crop-btn" onclick="event.stopPropagation(); openCropForArticle(this);" title="חתוך תמונה" style="position: absolute; top: 12px; left: 120px; z-index: 99; background: rgba(226, 135, 67, 0.9); border: 1px solid rgba(226, 135, 67, 0.6); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
+                    <i class="fas fa-crop-alt"></i> חתוך
+                  </button>
                   <button class="article-duplicate-btn" onclick="event.stopPropagation(); duplicateArticle(${a.id});" title="שכפל כתבה">
                     <i class="fas fa-copy"></i> שכפל
                   </button>
@@ -911,6 +914,9 @@ function renderNewsLayout(page = 1) {
   const articlesHTML = pageArticles.map(a => {
     const isSaved = myArticlesList.some(x => x.id === a.id);
     const actionsHtml = window.isEditModeActive ? `
+      <button class="article-crop-btn" onclick="event.stopPropagation(); openCropForArticle(this);" title="חתוך תמונה" style="position: absolute; top: 12px; left: 120px; z-index: 99; background: rgba(226, 135, 67, 0.9); border: 1px solid rgba(226, 135, 67, 0.6); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
+        <i class="fas fa-crop-alt"></i> חתוך
+      </button>
       <button class="article-duplicate-btn" onclick="event.stopPropagation(); duplicateArticle(${a.id});" title="שכפל כתבה">
         <i class="fas fa-copy"></i> שכפל
       </button>
@@ -9919,6 +9925,7 @@ document.addEventListener('click', function(e) {
     target.closest('.section-hide-btn') ||
     target.closest('.article-duplicate-btn') ||
     target.closest('.article-delete-btn') ||
+    target.closest('.article-crop-btn') ||
     target.closest('#user-profile-badge') ||
     target.closest('[data-no-edit]')
   ) return;
@@ -12907,6 +12914,28 @@ window.updateCropBoxDimensionsFromInputs = function() {
 
   if (boxL + boxW > cw) cropBox.style.left = `${cw - boxW}px`;
   if (boxT + boxH > ch) cropBox.style.top = `${ch - boxH}px`;
+};
+
+window.openCropForArticle = function(btn) {
+  const parent = btn.parentElement;
+  let img = parent.querySelector('img');
+  if (!img) {
+    const bgEl = parent.querySelector('.feed-image');
+    if (bgEl) {
+      img = bgEl;
+    } else {
+      img = parent.querySelector('[style*="background-image"]');
+    }
+  }
+  if (img) {
+    openImageEditor(img);
+    // Auto trigger the Crop activation on opening
+    setTimeout(() => {
+      window.toggleCropToolBtnClick();
+    }, 150);
+  } else {
+    showToast('⚠️ לא נמצאה תמונה לחיתוך בבלוק זה', 'error');
+  }
 };
 
 // Crop box dragging/resizing interaction logic
