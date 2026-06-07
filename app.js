@@ -422,6 +422,8 @@ function showPage(pageId) {
       subtextEl.textContent = isHeb ? 'פורום' : 'Forum';
     } else if (pageId === 'shop') {
       subtextEl.textContent = isHeb ? 'חנות' : 'Store';
+    } else if (pageId === 'b2b') {
+      subtextEl.textContent = isHeb ? 'מפעלים' : 'B2B Connect';
     } else {
       subtextEl.textContent = isHeb ? 'מאמרים' : 'Articles';
     }
@@ -445,6 +447,7 @@ function showPage(pageId) {
   if (pageId === 'store') showPage('shop');
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
+  if (pageId === 'b2b') { initB2bPage(); }
   if (pageId === 'services') renderServicesGrid();
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
@@ -6170,6 +6173,7 @@ function updateNavbarLanguage() {
   const elSignin = document.getElementById('nav-text-signin');
   const elLogout = document.getElementById('nav-text-logout');
   const elPremium = document.getElementById('nav-text-premium');
+  const elB2b = document.getElementById('nav-text-b2b');
   const elLogoSubtext = document.getElementById('nav-logo-subtext');
   const searchInput = document.getElementById('navbar-search-input');
   const adminLoginTitle = document.getElementById('admin-login-title');
@@ -6328,6 +6332,7 @@ function updateNavbarLanguage() {
     if (elSignin) elSignin.textContent = 'התחבר';
     if (elLogout) elLogout.textContent = 'התנתק';
     if (elPremium) elPremium.textContent = 'פרימיום';
+    if (elB2b) elB2b.textContent = 'חיבור מפעלים';
     const activePage = document.querySelector('.page.active');
     const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
     if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'גרפים' : 'מאמרים';
@@ -6362,6 +6367,7 @@ function updateNavbarLanguage() {
     if (elSignin) elSignin.textContent = 'Sign In';
     if (elLogout) elLogout.textContent = 'Logout';
     if (elPremium) elPremium.textContent = 'Premium';
+    if (elB2b) elB2b.textContent = 'B2B Connect';
     const activePage = document.querySelector('.page.active');
     const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
     if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'Graphs' : 'Articles';
@@ -13435,6 +13441,229 @@ window.approveChangesClick = async function() {
   await saveCustomizationsToServer();
   disableLiveEditMode();
   showToast('✓ השינויים אושרו ונשמרו בהצלחה!');
+};
+
+// =============================================================
+// B2B FACTORY SYSTEM
+// =============================================================
+const defaultB2bFactories = [
+  {
+    id: 'fac_1',
+    name: 'מפעל עץ הגליל',
+    category: 'wood',
+    materials: 'עץ אורן, עץ אלון, לוחות MDF, עץ גושני, משטחי עץ',
+    moq: '10 קוב',
+    location: 'כרמיאל',
+    phone: '0521234567',
+    description: 'מפעל לעיבוד עץ מוביל בצפון. מספקים חומרי גלם לנגריות, קבלנים ומפעלי רהיטים.'
+  },
+  {
+    id: 'fac_2',
+    name: 'תעשיות מתכת נגב בע"מ',
+    category: 'metal',
+    materials: 'לוחות פלדה, פרופילי ברזל, צינורות אלומיניום, ריתוך תעשייתי, חיתוך לייזר',
+    moq: '500 ק"ג',
+    location: 'באר שבע',
+    phone: '0547654321',
+    description: 'ייצור ואספקת מוצרי מתכת כבדה וקלה לתעשייה ולבנייה.'
+  },
+  {
+    id: 'fac_3',
+    name: 'סיליקון ופלסטיק מרכז',
+    category: 'plastics',
+    materials: 'יריעות פוליאתילן, פלסטיק קשיח לתעשייה, תבניות הזרקה, סיליקון נוזלי',
+    moq: '5,000 יחידות',
+    location: 'ראשון לציון',
+    phone: '0509876543',
+    description: 'פתרונות פלסטיק מתקדמים ומותאמים אישית למוצרי צריכה ואריזה.'
+  },
+  {
+    id: 'fac_4',
+    name: 'טקסטיל העמק',
+    category: 'textiles',
+    materials: 'בדי כותנה, גלילי בד תעשייתיים, חוטי תפירה, בדי ריפוד חסיני אש',
+    moq: '100 גלילים',
+    location: 'עפולה',
+    phone: '0531112223',
+    description: 'אספקת בדי איכות מעולים למפעלי אופנה, עיצוב וריפוד.'
+  }
+];
+
+let b2bCategory = 'all';
+
+window.initB2bPage = function() {
+  let factories = localStorage.getItem('b2bFactories');
+  if (!factories) {
+    localStorage.setItem('b2bFactories', JSON.stringify(defaultB2bFactories));
+    factories = JSON.stringify(defaultB2bFactories);
+  }
+  renderB2bFilters();
+  renderB2bFactories();
+};
+
+function renderB2bFilters() {
+  const chips = document.getElementById('b2b-category-chips');
+  if (!chips) return;
+  const cats = [
+    { id: 'all', label: 'הכל', emoji: '🌐' },
+    { id: 'wood', label: 'עצים ומוצרי עץ', emoji: '🪵' },
+    { id: 'metal', label: 'מתכות ועיבוד', emoji: '⚙️' },
+    { id: 'plastics', label: 'פלסטיק וסיליקון', emoji: '🧪' },
+    { id: 'textiles', label: 'בדים וטקסטיל', emoji: '🧵' },
+    { id: 'other', label: 'אחר', emoji: '📦' }
+  ];
+  chips.innerHTML = cats.map(c => `
+    <button onclick="setB2bCategory('${c.id}', this)" class="category-pill ${b2bCategory === c.id ? 'active' : ''}" style="white-space:nowrap; padding:8px 16px; border-radius:980px; border:1px solid rgba(255,255,255,0.1); background:${b2bCategory === c.id ? 'linear-gradient(135deg,#ff9500,#ffcc00)' : 'rgba(255,255,255,0.05)'}; color:${b2bCategory === c.id ? '#000' : '#fff'}; font-weight:700; cursor:pointer; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <span>${c.emoji}</span> <span>${c.label}</span>
+    </button>
+  `).join('');
+}
+
+window.setB2bCategory = function(cat, btn) {
+  b2bCategory = cat;
+  renderB2bFilters();
+  renderB2bFactories();
+};
+
+window.renderB2bFactories = function() {
+  const list = document.getElementById('b2b-factories-list');
+  if (!list) return;
+
+  const factories = JSON.parse(localStorage.getItem('b2bFactories') || '[]');
+  const searchInput = document.getElementById('b2b-search-input');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  let filtered = factories;
+  if (b2bCategory !== 'all') {
+    filtered = filtered.filter(f => f.category === b2bCategory);
+  }
+  if (query) {
+    filtered = filtered.filter(f =>
+      f.name.toLowerCase().includes(query) ||
+      f.materials.toLowerCase().includes(query) ||
+      (f.location || '').toLowerCase().includes(query) ||
+      (f.description || '').toLowerCase().includes(query)
+    );
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:60px 20px; text-align:center; color:#86868b;">
+        <i class="fas fa-industry" style="font-size:3rem; margin-bottom:16px; opacity:0.4; color:#fff;"></i>
+        <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem;">לא נמצאו מפעלים תואמים</h3>
+        <p style="margin:0; font-size:0.9rem;">נסה לשנות את הסינון או את מילות החיפוש.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const categoryLabels = { wood: '🪵 עצים', metal: '⚙️ מתכות', plastics: '🧪 פלסטיק', textiles: '🧵 טקסטיל', other: '📦 אחר' };
+
+  list.innerHTML = filtered.map(f => {
+    const materialsList = f.materials.split(',').map(m => m.trim()).filter(Boolean);
+    const whatsAppUrl = `https://wa.me/972${f.phone.replace(/^0/, '')}?text=${encodeURIComponent('היי, הגעתי דרך SOKI B2B. רציתי לברר לגבי אספקת חומרים.')}`;
+
+    return `
+      <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:16px; transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+        <!-- Top header -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+              <h2 style="margin:0; font-size:1.3rem; font-weight:800; color:#fff;">${escHtml(f.name)}</h2>
+              <span style="font-size:0.75rem; background:rgba(255,255,255,0.05); color:#a1a1aa; padding:4px 10px; border-radius:980px; font-weight:700;">${categoryLabels[f.category] || 'אחר'}</span>
+            </div>
+            <div style="display:flex; gap:16px; font-size:0.85rem; color:#86868b; align-items:center;">
+              <span>📍 מיקום: <strong>${escHtml(f.location)}</strong></span>
+              <span>•</span>
+              <span>📦 MOQ (מינימום הזמנה): <strong>${escHtml(f.moq || 'ללא')}</strong></span>
+            </div>
+          </div>
+          <!-- Contact buttons -->
+          <div style="display:flex; gap:10px;">
+            <a href="${whatsAppUrl}" target="_blank" style="background:#25D366; color:#fff; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <i class="fab fa-whatsapp" style="font-size:1rem;"></i> וואטסאפ
+            </a>
+            <a href="tel:${f.phone}" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <i class="fas fa-phone-alt" style="font-size:0.85rem;"></i> התקשר
+            </a>
+          </div>
+        </div>
+
+        <!-- Description -->
+        ${f.description ? `<p style="color:#d2d2d7; font-size:0.95rem; margin:0; line-height:1.6; text-align:right;">${escHtml(f.description)}</p>` : ''}
+
+        <!-- Materials tags -->
+        <div>
+          <div style="font-size:0.8rem; font-weight:700; color:#86868b; text-transform:uppercase; margin-bottom:8px;">חומרי גלם וכושר ייצור:</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            ${materialsList.map(mat => `
+              <span style="font-size:0.8rem; background:rgba(0,113,227,0.08); border:1px solid rgba(0,113,227,0.25); color:#0071e3; padding:5px 12px; border-radius:8px; font-weight:600;">${escHtml(mat)}</span>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.filterB2bFactories = function() {
+  renderB2bFactories();
+};
+
+window.openB2bRegisterModal = function() {
+  const modal = document.getElementById('b2b-register-modal');
+  if (modal) modal.style.display = 'flex';
+};
+
+window.closeB2bRegisterModal = function() {
+  const modal = document.getElementById('b2b-register-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.submitB2bRegister = function(e) {
+  e.preventDefault();
+  const name = document.getElementById('b2b-reg-name').value.trim();
+  const category = document.getElementById('b2b-reg-category').value;
+  const location = document.getElementById('b2b-reg-location').value.trim();
+  const materials = document.getElementById('b2b-reg-materials').value.trim();
+  const moq = document.getElementById('b2b-reg-moq').value.trim() || 'ללא מינימום';
+  const phone = document.getElementById('b2b-reg-phone').value.trim();
+  const description = document.getElementById('b2b-reg-description').value.trim();
+
+  const newFactory = {
+    id: 'fac_' + Date.now(),
+    name,
+    category,
+    materials,
+    moq,
+    location,
+    phone,
+    description
+  };
+
+  const factories = JSON.parse(localStorage.getItem('b2bFactories') || '[]');
+  factories.unshift(newFactory);
+  localStorage.setItem('b2bFactories', JSON.stringify(factories));
+
+  showToast('✓ המפעל נרשם בהצלחה במאגר!');
+  closeB2bRegisterModal();
+  e.target.reset();
+  renderB2bFactories();
+};
+
+window.submitB2bRequest = function(e) {
+  e.preventDefault();
+  const cat = document.getElementById('b2b-req-cat').value;
+  const desc = document.getElementById('b2b-req-desc').value.trim();
+  const contact = document.getElementById('b2b-req-contact').value.trim();
+
+  // Save request in a local log for demo purposes
+  const reqs = JSON.parse(localStorage.getItem('b2bRequests') || '[]');
+  reqs.unshift({ id: Date.now(), cat, desc, contact, date: new Date().toLocaleString() });
+  localStorage.setItem('b2bRequests', JSON.stringify(reqs));
+
+  showToast('✓ בקשתך נשלחה למפעלים בקטגוריה!');
+  e.target.reset();
 };
 
 
