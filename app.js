@@ -9667,6 +9667,10 @@ function enableLiveEditMode() {
     const span = btn.querySelector('span');
     if (span) span.textContent = 'צא ממצב עריכה';
   }
+  const approveBtn = document.getElementById('admin-approve-changes-btn');
+  if (approveBtn) {
+    approveBtn.style.display = 'flex';
+  }
   enableDragAndDrop(true);
   showToast('✏️ מצב עריכה פעיל — לחץ על כל טקסט או תמונה לעריכה');
 }
@@ -9682,6 +9686,10 @@ function disableLiveEditMode() {
     btn.classList.remove('active');
     const span = btn.querySelector('span');
     if (span) span.textContent = 'מצב עריכה';
+  }
+  const approveBtn = document.getElementById('admin-approve-changes-btn');
+  if (approveBtn) {
+    approveBtn.style.display = 'none';
   }
   enableDragAndDrop(false);
   localStorage.removeItem('isEditor');
@@ -13376,6 +13384,13 @@ const observer = new MutationObserver(() => {
   }, 100);
 });
 observer.observe(document.body, { childList: true, subtree: true });
+
+window.approveChangesClick = async function() {
+  showToast('💾 שומר ומאשר את השינויים...', 'info');
+  await saveCustomizationsToServer();
+  disableLiveEditMode();
+  showToast('✓ השינויים אושרו ונשמרו בהצלחה!');
+};
 
 
 
