@@ -9747,7 +9747,7 @@ function closeTextEditPopup() {
 }
 
 // ---- Edit mode click listener ----
-// Single listener: click on text → popup, click on image → image editor
+// Single listener: click on image → image editor
 document.addEventListener('click', function(e) {
   if (!window.isEditModeActive) return;
 
@@ -9774,6 +9774,26 @@ document.addEventListener('click', function(e) {
     openImageEditor(imgEl);
     return;
   }
+}, true);
+
+// Double-click listener: double click on text → text edit popup
+document.addEventListener('dblclick', function(e) {
+  if (!window.isEditModeActive) return;
+
+  const target = e.target;
+  if (!target || typeof target.closest !== 'function') return;
+
+  // Ignore double clicks inside our own UI
+  if (
+    target.closest('#text-edit-popup') ||
+    target.closest('#image-editor-modal') ||
+    target.closest('#admin-edit-mode-toggle') ||
+    target.closest('.section-drag-handle') ||
+    target.closest('.section-move-btn') ||
+    target.closest('.section-hide-btn') ||
+    target.closest('#user-profile-badge') ||
+    target.closest('[data-no-edit]')
+  ) return;
 
   // Check for text element click — headings, paragraphs, list items, spans, and text-only divs
   const textEl = target.closest('h1, h2, h3, h4, h5, h6, p, li, span, div');
