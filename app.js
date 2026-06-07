@@ -12181,6 +12181,14 @@ function applyAllCustomizations() {
       
       const el = getElementFromIdentifier(key);
       if (!el) continue;
+
+      // Apply custom block dimensions if present
+      if (cust.blockWidth && el.style.width !== cust.blockWidth) {
+        el.style.width = cust.blockWidth;
+      }
+      if (cust.blockHeight && el.style.height !== cust.blockHeight) {
+        el.style.height = cust.blockHeight;
+      }
         
       // If it is a text customization
       if (cust.text !== undefined) {
@@ -13287,6 +13295,139 @@ if (cropToggleBtn) {
     window.toggleCropMode();
   });
 }
+
+// -------------------------------------------------------------
+// Live Block Resizing Functionality (Stretch/Shrink Cards/Blocks)
+// -------------------------------------------------------------
+window.updateBlockResizeHandles = function() {
+  // Remove existing block resize handles first
+  document.querySelectorAll('.block-resize-handle').forEach(h => h.remove());
+
+  if (!window.isEditModeActive) return;
+
+  // Find all cards and blocks on the homepage to make resizable
+  const targets = document.querySelectorAll('.featured-card, .feed-item, .feed-image');
+  targets.forEach(block => {
+    const origPos = window.getComputedStyle(block).position;
+    if (origPos !== 'absolute' && origPos !== 'fixed' && origPos !== 'relative') {
+      block.style.position = 'relative';
+    }
+
+    const handle = document.createElement('div');
+    handle.className = 'block-resize-handle';
+    handle.style.position = 'absolute';
+    handle.style.right = '4px';
+    handle.style.bottom = '4px';
+    handle.style.width = '16px';
+    handle.style.height = '16px';
+    handle.style.cursor = 'se-resize';
+    handle.style.zIndex = '999';
+    // Diagonal stripes (three lines)
+    handle.style.background = 'linear-gradient(135deg, transparent 40%, #e28743 40%, #e28743 60%, transparent 60%, transparent 80%, #e28743 80%)';
+    handle.style.borderRadius = '2px';
+
+    handle.addEventListener('click', e => e.stopPropagation());
+    handle.addEventListener('mousedown', startBlockResize);
+    handle.addEventListener('touchstart', startBlockResize, { passive: false });
+
+    block.appendChild(handle);
+  });
+};
+
+let resizeBlock = null;
+let resizeStartW = 0;
+let resizeStartH = 0;
+let resizeStartX = 0;
+let resizeStartY = 0;
+
+function startBlockResize(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const handle = e.target;
+  resizeBlock = handle.parentElement;
+
+  resizeStartW = resizeBlock.clientWidth;
+  resizeStartH = resizeBlock.clientHeight;
+  
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  resizeStartX = clientX;
+  resizeStartY = clientY;
+
+  document.addEventListener('mousemove', handleBlockResize);
+  document.addEventListener('touchmove', handleBlockResize, { passive: false });
+  document.addEventListener('mouseup', stopBlockResize);
+  document.addEventListener('touchend', stopBlockResize);
+}
+
+function handleBlockResize(e) {
+  if (!resizeBlock) return;
+
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  const dx = clientX - resizeStartX;
+  const dy = clientY - resizeStartY;
+
+  let newW = resizeStartW + dx;
+  let newH = resizeStartH + dy;
+
+  if (newW < 80) newW = 80;
+  if (newH < 50) newH = 50;
+
+  resizeBlock.style.width = `${newW}px`;
+  resizeBlock.style.height = `${newH}px`;
+}
+
+async function stopBlockResize(e) {
+  document.removeEventListener('mousemove', handleBlockResize);
+  document.removeEventListener('touchmove', handleBlockResize);
+  document.removeEventListener('mouseup', stopBlockResize);
+  document.removeEventListener('touchend', stopBlockResize);
+
+  if (!resizeBlock) return;
+
+  const block = resizeBlock;
+  resizeBlock = null;
+
+  // Save the custom block dimensions to server
+  const id = getImageIdentifier(block);
+  activeCustomizations[id] = activeCustomizations[id] || {};
+  activeCustomizations[id].blockWidth = block.style.width;
+  activeCustomizations[id].blockHeight = block.style.height;
+
+  showToast('✓ מידות הבלוק נשמרו בהצלחה');
+  await saveCustomizationsToServer();
+}
+
+// Hook resize handles update inside edit toggles
+const origEnableLiveEdit = window.enableLiveEditMode;
+window.enableLiveEditMode = function() {
+  origEnableLiveEdit();
+  window.updateBlockResizeHandles();
+};
+
+const origDisableLiveEdit = window.disableLiveEditMode;
+window.disableLiveEditMode = function() {
+  origDisableLiveEdit();
+  window.updateBlockResizeHandles();
+};
+
+// -------------------------------------------------------------
+// Debounced MutationObserver to auto apply customizations to dynamic content
+// -------------------------------------------------------------
+let mutationTimeout = null;
+const observer = new MutationObserver(() => {
+  if (mutationTimeout) clearTimeout(mutationTimeout);
+  mutationTimeout = setTimeout(() => {
+    observer.disconnect();
+    applyAllCustomizations();
+    window.updateBlockResizeHandles();
+    observer.observe(document.body, { childList: true, subtree: true });
+  }, 100);
+});
+observer.observe(document.body, { childList: true, subtree: true });
 
 
 
