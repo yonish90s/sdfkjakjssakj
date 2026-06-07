@@ -1129,7 +1129,9 @@ function showArticle(id) {
 
   let processedContent = a.content || '';
   if (processedContent) {
-    processedContent = processedContent.replace(/<p[^>]*style="[^"]*background:#f3f4f6[^"]*"[^>]*>/gi, '<p class="article-source-box">');
+    // Strip the source box paragraph completely
+    processedContent = processedContent.replace(/<p[^>]*style="[^"]*background:#f3f4f6[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
+    processedContent = processedContent.replace(/<p[^>]*class="article-source-box"[^>]*>[\s\S]*?<\/p>/gi, '');
   }
 
   document.getElementById('article-content').innerHTML = `

@@ -1440,14 +1440,7 @@ body.dark-theme .toast {
 .article-detail p[style*="background"],
 .article-body p[style*="background"],
 .article-source-box {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  padding: 12px !important;
-  border-radius: 8px !important;
-  font-size: 0.9em !important;
-  margin-bottom: 16px !important;
-  display: block !important;
+  display: none !important;
 }
 .article-detail p[style*="background"] a,
 .article-body p[style*="background"] a,
