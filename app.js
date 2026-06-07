@@ -4142,8 +4142,12 @@ function updateUserUI() {
   const isAdminLoggedIn = !!isAdmin;
 
   const adminEditBtn = document.getElementById('admin-edit-mode-toggle');
+  const adminCropBtn = document.getElementById('admin-crop-mode-toggle');
   if (adminEditBtn) {
     adminEditBtn.style.display = isAdminLoggedIn ? 'flex' : 'none';
+  }
+  if (adminCropBtn) {
+    adminCropBtn.style.display = isAdminLoggedIn ? 'flex' : 'none';
   }
 
   if (isUserLoggedIn || isAdminLoggedIn) {
@@ -9923,6 +9927,7 @@ document.addEventListener('click', function(e) {
     target.closest('.section-drag-handle') ||
     target.closest('.section-move-btn') ||
     target.closest('.section-hide-btn') ||
+    target.closest('#admin-crop-mode-toggle') ||
     target.closest('.article-duplicate-btn') ||
     target.closest('.article-delete-btn') ||
     target.closest('.article-crop-btn') ||
@@ -9936,6 +9941,13 @@ document.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     openImageEditor(imgEl);
+    
+    // Automatically turn on Crop Box if Crop Mode is active globally
+    if (window.isCropModeActive) {
+      setTimeout(() => {
+        window.toggleCropToolBtnClick();
+      }, 150);
+    }
     return;
   }
 }, true);
@@ -13230,9 +13242,49 @@ if (editToggleBtn) {
     e.stopPropagation();
     if (window.isEditModeActive) {
       disableLiveEditMode();
+      // If we exit edit mode, also turn off crop mode
+      if (window.isCropModeActive) {
+        window.toggleCropMode();
+      }
     } else {
       enableLiveEditMode();
     }
+  });
+}
+
+// Admin Crop Mode Button — toggle handler
+window.isCropModeActive = false;
+window.toggleCropMode = function() {
+  const cropBtn = document.getElementById('admin-crop-mode-toggle');
+  if (!cropBtn) return;
+  
+  window.isCropModeActive = !window.isCropModeActive;
+  
+  if (window.isCropModeActive) {
+    cropBtn.classList.add('active');
+    cropBtn.style.background = '#e28743';
+    cropBtn.style.borderColor = '#f4b27a';
+    cropBtn.style.color = '#000';
+    showToast('✂️ מצב חיתוך פעיל — לחץ על כל תמונה כדי לחתוך אותה ישירות');
+    
+    // Force enable Edit Mode if disabled
+    if (!window.isEditModeActive) {
+      enableLiveEditMode();
+    }
+  } else {
+    cropBtn.classList.remove('active');
+    cropBtn.style.background = '#27272a';
+    cropBtn.style.borderColor = '#3f3f46';
+    cropBtn.style.color = '#fafafa';
+    showToast('🔒 מצב חיתוך כבוי');
+  }
+};
+
+const cropToggleBtn = document.getElementById('admin-crop-mode-toggle');
+if (cropToggleBtn) {
+  cropToggleBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    window.toggleCropMode();
   });
 }
 
