@@ -424,6 +424,12 @@ function showPage(pageId) {
       subtextEl.textContent = isHeb ? 'חנות' : 'Store';
     } else if (pageId === 'b2b') {
       subtextEl.textContent = isHeb ? 'מפעלים' : 'B2B Connect';
+    } else if (pageId === 'realestate') {
+      subtextEl.textContent = isHeb ? 'נדל"ן' : 'Real Estate';
+    } else if (pageId === 'sharing') {
+      subtextEl.textContent = isHeb ? 'השאלות' : 'Sharing';
+    } else if (pageId === 'uber') {
+      subtextEl.textContent = isHeb ? 'נסיעות' : 'Uber';
     } else {
       subtextEl.textContent = isHeb ? 'מאמרים' : 'Articles';
     }
@@ -448,6 +454,8 @@ function showPage(pageId) {
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
   if (pageId === 'b2b') { initB2bPage(); }
+  if (pageId === 'realestate') { initRealEstatePage(); }
+  if (pageId === 'sharing') { initSharingPage(); }
   if (pageId === 'services') renderServicesGrid();
   if (pageId === 'subscription') window.scrollTo({ top: 0, behavior: 'smooth' });
   if (pageId === 'appointments') initBookingWidget();
@@ -12132,6 +12140,12 @@ window.showPage = function(pageId) {
   originalShowPageForBets(pageId);
   if (pageId === 'bets' || pageId === 'integrations') {
     renderBets();
+  } else if (pageId === 'sharing') {
+    if (window.initSharingPage) window.initSharingPage();
+  } else if (pageId === 'uber') {
+    if (window.initUberPage) window.initUberPage();
+  } else if (pageId === 'realestate') {
+    if (window.initRealEstatePage) window.initRealEstatePage();
   }
   // Re-apply contenteditable after page render if edit mode is active
   if (window.isEditModeActive) {
@@ -13491,30 +13505,143 @@ const defaultB2bFactories = [
   }
 ];
 
+let b2bTab = 'factories'; // 'factories', 'delivery', or 'market'
 let b2bCategory = 'all';
+
+const defaultB2bDeliveries = [
+  {
+    id: 'del_1',
+    name: 'שליחויות הצפון וקווי הפצה בע"מ',
+    category: 'light',
+    materials: 'הפצה יומית, שליחויות מהירות, רכבים מסחריים קלים, שירות קירור קל',
+    moq: 'אין מינימום',
+    location: 'חיפה והצפון',
+    phone: '0522223334',
+    description: 'פתרונות הפצה ושליחויות לעסקים ומפעלים בצפון הארץ. שירות מהיר מהיום להיום.'
+  },
+  {
+    id: 'del_2',
+    name: 'מובילי הנגב והמרכז - הובלות כבדות',
+    category: 'heavy',
+    materials: 'משאיות סמיטריילר, הובלת מכולות, הובלת חומרי גלם בתפזורת, שירותי מנוף',
+    moq: 'משלוח אחד',
+    location: 'כל הארץ',
+    phone: '0543334445',
+    description: 'חברת הובלות ולוגיסטיקה מובילה המתמחה בשינוע מטענים כבדים, לוחות מתכת, ועצים מכל המפעלים.'
+  },
+  {
+    id: 'del_3',
+    name: 'אקספרס קרגו לוגיסטיקה',
+    category: 'express',
+    materials: 'שילוח מהיר ארצי, לוגיסטיקה משולבת, אחסון סחורות, הפצת משטחים',
+    moq: '3 משטחים',
+    location: 'מרכז הארץ',
+    phone: '0504445556',
+    description: 'מערך הפצה מתקדם וצי רכבים חדיש לשינוע מהיר של סחורות ומארזי פלסטיק וטקסטיל.'
+  }
+];
+
+const defaultB2bMarket = [
+  { id: 'm1', name: 'עץ אורן פיני לבן', category: 'עצים', price: '1,800 - 2,200 ₪ לקוב', trend: 'stable', supply: 'גבוהה', demand: 'בינונית', filterKey: 'אורן' },
+  { id: 'm2', name: 'עץ אלון אירופאי', category: 'עצים', price: '5,500 - 6,800 ₪ לקוב', trend: 'up', supply: 'נמוכה', demand: 'גבוהה', filterKey: 'אלון' },
+  { id: 'm3', name: 'לוחות פלדה חמה (הוט רולד)', category: 'מתכות', price: '3.2 - 3.8 ₪ לק"ג', trend: 'up', supply: 'בינונית', demand: 'גבוהה', filterKey: 'פלדה' },
+  { id: 'm4', name: 'אלומיניום 6061-T6', category: 'מתכות', price: '14 - 18 ₪ לק"ג', trend: 'down', supply: 'גבוהה', demand: 'גבוהה', filterKey: 'אלומיניום' },
+  { id: 'm5', name: 'פוליאתילן HDPE לתעשייה', category: 'פלסטיק', price: '5.8 - 6.5 ₪ לק"ג', trend: 'stable', supply: 'בינונית', demand: 'בינונית', filterKey: 'פוליאתילן' },
+  { id: 'm6', name: 'בד כותנה סרוק', category: 'טקסטיל', price: '12 - 16 ₪ למטר', trend: 'stable', supply: 'גבוהה', demand: 'בינונית', filterKey: 'כותנה' }
+];
 
 window.initB2bPage = function() {
   let factories = localStorage.getItem('b2bFactories');
   if (!factories) {
     localStorage.setItem('b2bFactories', JSON.stringify(defaultB2bFactories));
-    factories = JSON.stringify(defaultB2bFactories);
   }
-  renderB2bFilters();
-  renderB2bFactories();
-  renderB2bMyOffers();
+  let deliveries = localStorage.getItem('b2bDeliveries');
+  if (!deliveries) {
+    localStorage.setItem('b2bDeliveries', JSON.stringify(defaultB2bDeliveries));
+  }
+  let market = localStorage.getItem('b2bMarket');
+  if (!market) {
+    localStorage.setItem('b2bMarket', JSON.stringify(defaultB2bMarket));
+  }
+  
+  // Set default active tab style
+  switchB2bTab(b2bTab);
+};
+
+window.switchB2bTab = function(tab) {
+  b2bTab = tab;
+  b2bCategory = 'all';
+
+  // Toggle visual tabs
+  const tabFac = document.getElementById('b2b-tab-factories');
+  const tabDel = document.getElementById('b2b-tab-delivery');
+  const tabMkt = document.getElementById('b2b-tab-market');
+
+  if (tabFac) {
+    tabFac.style.borderBottomColor = tab === 'factories' ? '#ff9500' : 'transparent';
+    tabFac.style.color = tab === 'factories' ? '#fff' : '#86868b';
+  }
+  if (tabDel) {
+    tabDel.style.borderBottomColor = tab === 'delivery' ? '#ff9500' : 'transparent';
+    tabDel.style.color = tab === 'delivery' ? '#fff' : '#86868b';
+  }
+  if (tabMkt) {
+    tabMkt.style.borderBottomColor = tab === 'market' ? '#ff9500' : 'transparent';
+    tabMkt.style.color = tab === 'market' ? '#fff' : '#86868b';
+  }
+
+  // Toggle page sections
+  const dirSection = document.getElementById('b2b-directory-section');
+  const mktSection = document.getElementById('b2b-market-section');
+
+  if (tab === 'market') {
+    if (dirSection) dirSection.style.display = 'none';
+    if (mktSection) mktSection.style.display = 'block';
+    renderB2bMarket();
+  } else {
+    if (dirSection) dirSection.style.display = 'grid';
+    if (mktSection) mktSection.style.display = 'none';
+    
+    // Update register button text
+    const regBtnText = document.getElementById('b2b-register-btn-text');
+    if (regBtnText) {
+      regBtnText.textContent = tab === 'factories' ? 'רשום מפעל חדש' : 'רשום חברת הובלה';
+    }
+
+    // Update search placeholder
+    const searchInput = document.getElementById('b2b-search-input');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.placeholder = tab === 'factories' 
+        ? 'חפש מפעלים, חומרי גלם (עץ, ברזל, פלסטיק...)' 
+        : 'חפש חברות הובלה, אזורי פעילות, סוגי רכבים...';
+    }
+
+    renderB2bFilters();
+    renderB2bFactories();
+    renderB2bMyOffers();
+  }
 };
 
 function renderB2bFilters() {
   const chips = document.getElementById('b2b-category-chips');
   if (!chips) return;
-  const cats = [
+
+  const cats = (b2bTab === 'factories') ? [
     { id: 'all', label: 'הכל', emoji: '🌐' },
     { id: 'wood', label: 'עצים ומוצרי עץ', emoji: '🪵' },
     { id: 'metal', label: 'מתכות ועיבוד', emoji: '⚙️' },
     { id: 'plastics', label: 'פלסטיק וסיליקון', emoji: '🧪' },
     { id: 'textiles', label: 'בדים וטקסטיל', emoji: '🧵' },
     { id: 'other', label: 'אחר', emoji: '📦' }
+  ] : [
+    { id: 'all', label: 'הכל', emoji: '🌐' },
+    { id: 'light', label: 'הובלות קלות', emoji: '📦' },
+    { id: 'heavy', label: 'משאיות והובלה כבדה', emoji: '🚛' },
+    { id: 'express', label: 'שליחויות ואקספרס', emoji: '⚡' },
+    { id: 'other', label: 'אחר', emoji: '⚙️' }
   ];
+
   chips.innerHTML = cats.map(c => `
     <button onclick="setB2bCategory('${c.id}', this)" class="category-pill ${b2bCategory === c.id ? 'active' : ''}" style="white-space:nowrap; padding:8px 16px; border-radius:980px; border:1px solid rgba(255,255,255,0.1); background:${b2bCategory === c.id ? 'linear-gradient(135deg,#ff9500,#ffcc00)' : 'rgba(255,255,255,0.05)'}; color:${b2bCategory === c.id ? '#000' : '#fff'}; font-weight:700; cursor:pointer; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
       <span>${c.emoji}</span> <span>${c.label}</span>
@@ -13532,11 +13659,12 @@ window.renderB2bFactories = function() {
   const list = document.getElementById('b2b-factories-list');
   if (!list) return;
 
-  const factories = JSON.parse(localStorage.getItem('b2bFactories') || '[]');
+  const isFactories = (b2bTab === 'factories');
+  const items = JSON.parse(localStorage.getItem(isFactories ? 'b2bFactories' : 'b2bDeliveries') || '[]');
   const searchInput = document.getElementById('b2b-search-input');
   const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-  let filtered = factories;
+  let filtered = items;
   if (b2bCategory !== 'all') {
     filtered = filtered.filter(f => f.category === b2bCategory);
   }
@@ -13552,19 +13680,22 @@ window.renderB2bFactories = function() {
   if (filtered.length === 0) {
     list.innerHTML = `
       <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:60px 20px; text-align:center; color:#86868b;">
-        <i class="fas fa-industry" style="font-size:3rem; margin-bottom:16px; opacity:0.4; color:#fff;"></i>
-        <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem;">לא נמצאו מפעלים תואמים</h3>
+        <i class="fas ${isFactories ? 'fa-industry' : 'fa-truck'}" style="font-size:3rem; margin-bottom:16px; opacity:0.4; color:#fff;"></i>
+        <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem;">לא נמצאו תוצאות תואמות</h3>
         <p style="margin:0; font-size:0.9rem;">נסה לשנות את הסינון או את מילות החיפוש.</p>
       </div>
     `;
     return;
   }
 
-  const categoryLabels = { wood: '🪵 עצים', metal: '⚙️ מתכות', plastics: '🧪 פלסטיק', textiles: '🧵 טקסטיל', other: '📦 אחר' };
+  const categoryLabels = isFactories 
+    ? { wood: '🪵 עצים', metal: '⚙️ מתכות', plastics: '🧪 פלסטיק', textiles: '🧵 טקסטיל', other: '📦 אחר' }
+    : { light: '📦 הובלות קלות', heavy: '🚛 הובלה כבדה', express: '⚡ אקספרס', other: '⚙️ אחר' };
 
   list.innerHTML = filtered.map(f => {
     const materialsList = f.materials.split(',').map(m => m.trim()).filter(Boolean);
-    const whatsAppUrl = `https://wa.me/972${f.phone.replace(/^0/, '')}?text=${encodeURIComponent('היי, הגעתי דרך SOKI B2B. רציתי לברר לגבי אספקת חומרים.')}`;
+    const textMsg = isFactories ? 'היי, הגעתי דרך SOKI B2B. רציתי לברר לגבי אספקת חומרים.' : 'היי, הגעתי דרך SOKI B2B. רציתי לברר לגבי שירותי הובלה ומשלוח.';
+    const whatsAppUrl = `https://wa.me/972${f.phone.replace(/^0/, '')}?text=${encodeURIComponent(textMsg)}`;
 
     return `
       <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:16px; transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
@@ -13576,7 +13707,7 @@ window.renderB2bFactories = function() {
               <span style="font-size:0.75rem; background:rgba(255,255,255,0.05); color:#a1a1aa; padding:4px 10px; border-radius:980px; font-weight:700;">${categoryLabels[f.category] || 'אחר'}</span>
             </div>
             <div style="display:flex; gap:16px; font-size:0.85rem; color:#86868b; align-items:center;">
-              <span>📍 מיקום: <strong>${escHtml(f.location)}</strong></span>
+              <span>📍 אזור פעילות/מיקום: <strong>${escHtml(f.location)}</strong></span>
               <span>•</span>
               <span>📦 MOQ (מינימום הזמנה): <strong>${escHtml(f.moq || 'ללא')}</strong></span>
             </div>
@@ -13600,7 +13731,9 @@ window.renderB2bFactories = function() {
 
         <!-- Materials tags -->
         <div>
-          <div style="font-size:0.8rem; font-weight:700; color:#86868b; text-transform:uppercase; margin-bottom:8px;">חומרי גלם וכושר ייצור:</div>
+          <div style="font-size:0.8rem; font-weight:700; color:#86868b; text-transform:uppercase; margin-bottom:8px;">
+            ${isFactories ? 'חומרי גלם וכושר ייצור:' : 'שירותי הובלה וציוד זמין:'}
+          </div>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
             ${materialsList.map(mat => `
               <span style="font-size:0.8rem; background:rgba(0,113,227,0.08); border:1px solid rgba(0,113,227,0.25); color:#0071e3; padding:5px 12px; border-radius:8px; font-weight:600;">${escHtml(mat)}</span>
@@ -13618,7 +13751,10 @@ window.filterB2bFactories = function() {
 
 window.openB2bRegisterModal = function() {
   const modal = document.getElementById('b2b-register-modal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    toggleRegFields(); // Initialize default label styles
+  }
 };
 
 window.closeB2bRegisterModal = function() {
@@ -13626,8 +13762,40 @@ window.closeB2bRegisterModal = function() {
   if (modal) modal.style.display = 'none';
 };
 
+window.toggleRegFields = function() {
+  const type = document.getElementById('b2b-reg-type').value;
+  const catSelect = document.getElementById('b2b-reg-category');
+  const nameLabel = document.getElementById('b2b-reg-name-label');
+  const materialsLabel = document.getElementById('b2b-reg-materials-label');
+  const moqLabel = document.getElementById('b2b-reg-moq-label');
+  
+  if (type === 'factory') {
+    nameLabel.textContent = 'שם המפעל *';
+    materialsLabel.textContent = 'חומרי גלם ומוצרים (מופרדים בפסיק) *';
+    moqLabel.textContent = 'כמות הזמנה מינימלית (MOQ)';
+    catSelect.innerHTML = `
+      <option value="wood">עצים ומוצרי עץ</option>
+      <option value="metal">מתכות ועיבוד שבבי</option>
+      <option value="plastics">פלסטיק וסיליקון</option>
+      <option value="textiles">בדים וטקסטיל</option>
+      <option value="other">אחר</option>
+    `;
+  } else {
+    nameLabel.textContent = 'שם חברת ההובלה / מוביל *';
+    materialsLabel.textContent = 'שירותי הובלה וציוד (למשל: משאיות מנוף, סמיטריילר) *';
+    moqLabel.textContent = 'מינימום להזמנת הובלה (MOQ)';
+    catSelect.innerHTML = `
+      <option value="light">הובלות קלות</option>
+      <option value="heavy">משאיות והובלה כבדה</option>
+      <option value="express">שליחויות ואקספרס</option>
+      <option value="other">אחר</option>
+    `;
+  }
+};
+
 window.submitB2bRegister = function(e) {
   e.preventDefault();
+  const type = document.getElementById('b2b-reg-type') ? document.getElementById('b2b-reg-type').value : 'factory';
   const name = document.getElementById('b2b-reg-name').value.trim();
   const category = document.getElementById('b2b-reg-category').value;
   const location = document.getElementById('b2b-reg-location').value.trim();
@@ -13636,8 +13804,8 @@ window.submitB2bRegister = function(e) {
   const phone = document.getElementById('b2b-reg-phone').value.trim();
   const description = document.getElementById('b2b-reg-description').value.trim();
 
-  const newFactory = {
-    id: 'fac_' + Date.now(),
+  const newItem = {
+    id: (type === 'factory' ? 'fac_' : 'del_') + Date.now(),
     name,
     category,
     materials,
@@ -13647,11 +13815,18 @@ window.submitB2bRegister = function(e) {
     description
   };
 
-  const factories = JSON.parse(localStorage.getItem('b2bFactories') || '[]');
-  factories.unshift(newFactory);
-  localStorage.setItem('b2bFactories', JSON.stringify(factories));
+  if (type === 'factory') {
+    const factories = JSON.parse(localStorage.getItem('b2bFactories') || '[]');
+    factories.unshift(newItem);
+    localStorage.setItem('b2bFactories', JSON.stringify(factories));
+    showToast('✓ המפעל נרשם בהצלחה במאגר!');
+  } else {
+    const deliveries = JSON.parse(localStorage.getItem('b2bDeliveries') || '[]');
+    deliveries.unshift(newItem);
+    localStorage.setItem('b2bDeliveries', JSON.stringify(deliveries));
+    showToast('✓ חברת ההובלה נרשמה בהצלחה במאגר!');
+  }
 
-  showToast('✓ המפעל נרשם בהצלחה במאגר!');
   closeB2bRegisterModal();
   e.target.reset();
   renderB2bFactories();
@@ -13712,7 +13887,7 @@ window.submitB2bOffer = function(e) {
   offers.unshift(newOffer);
   localStorage.setItem('b2bOffers', JSON.stringify(offers));
 
-  showToast('✓ הצעתך הוגשה בהצלחה למפעל!');
+  showToast('✓ הצעתך הוגשה בהצלחה!');
   closeB2bOfferModal();
   e.target.reset();
   renderB2bMyOffers();
@@ -13744,6 +13919,669 @@ window.renderB2bMyOffers = function() {
     </div>
   `).join('');
 };
+
+window.renderB2bMarket = function() {
+  const body = document.getElementById('b2b-market-table-body');
+  if (!body) return;
+
+  const market = JSON.parse(localStorage.getItem('b2bMarket') || '[]');
+  const searchInput = document.getElementById('b2b-market-search');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  let filtered = market;
+  if (query) {
+    filtered = filtered.filter(item => 
+      item.name.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query)
+    );
+  }
+
+  const trendIcons = {
+    stable: '<span style="color:#86868b;"><i class="fas fa-minus"></i> יציב</span>',
+    up: '<span style="color:#ff453a; font-weight:700;"><i class="fas fa-arrow-trend-up"></i> 📈 עלייה</span>',
+    down: '<span style="color:#30d158; font-weight:700;"><i class="fas fa-arrow-trend-down"></i> 📉 ירידה</span>'
+  };
+
+  const badgeStyles = {
+    גבוהה: 'background:rgba(48,209,88,0.1); color:#30d158;',
+    בינונית: 'background:rgba(255,149,0,0.1); color:#ff9500;',
+    נמוכה: 'background:rgba(255,69,58,0.1); color:#ff453a;'
+  };
+
+  body.innerHTML = filtered.map(item => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+      <td style="padding:16px 12px; font-weight:700; color:#fff;">${escHtml(item.name)}</td>
+      <td style="padding:16px 12px; color:#d2d2d7;">${escHtml(item.category)}</td>
+      <td style="padding:16px 12px; color:#ff9500; font-weight:700;">${escHtml(item.price)}</td>
+      <td style="padding:16px 12px;">${trendIcons[item.trend]}</td>
+      <td style="padding:16px 12px;"><span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; font-weight:700; ${badgeStyles[item.supply] || ''}">${escHtml(item.supply)}</span></td>
+      <td style="padding:16px 12px;"><span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; font-weight:700; ${badgeStyles[item.demand] || ''}">${escHtml(item.demand)}</span></td>
+      <td style="padding:16px 12px; text-align:left;">
+        <button onclick="findSuppliersForMaterial('${escHtml(item.filterKey)}')" style="background:rgba(0,113,227,0.1); border:1px solid rgba(0,113,227,0.3); color:#0071e3; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#0071e3'; this.style.color='#fff';" onmouseout="this.style.background='rgba(0,113,227,0.1)'; this.style.color='#0071e3';">חפש ספקים</button>
+      </td>
+    </tr>
+  `).join('');
+};
+
+window.filterB2bMarket = function() {
+  renderB2bMarket();
+};
+
+window.findSuppliersForMaterial = function(filterKey) {
+  switchB2bTab('factories');
+  const searchInput = document.getElementById('b2b-search-input');
+  if (searchInput) {
+    searchInput.value = filterKey;
+    renderB2bFactories();
+  }
+};
+
+window.initRealEstatePage = function() {
+  calculateRealEstateGrowth();
+};
+
+window.calculateRealEstateGrowth = function() {
+  const input = document.getElementById('re-calc-units');
+  if (!input) return;
+
+  const units = parseInt(input.value) || 0;
+  
+  // Formulas for resource estimations
+  const workers = Math.round(units * 0.25);
+  const steel = Math.round(units * 3.5);
+  const wood = Math.round(units * 0.2);
+  const deliveries = Math.round(units * 0.8);
+  const savings = Math.round(units * 0.45);
+
+  const workersEl = document.getElementById('re-calc-workers');
+  const steelEl = document.getElementById('re-calc-steel');
+  const woodEl = document.getElementById('re-calc-wood');
+  const deliveriesEl = document.getElementById('re-calc-deliveries');
+  const savingsEl = document.getElementById('re-calc-savings');
+
+  if (workersEl) workersEl.textContent = `${workers} עובדים`;
+  if (steelEl) steelEl.textContent = `${steel} טון`;
+  if (woodEl) woodEl.textContent = `${wood} קוב`;
+  if (deliveriesEl) deliveriesEl.textContent = `${deliveries} הובלות`;
+  if (savingsEl) savingsEl.textContent = `${savings} ימי עבודה`;
+};
+
+// ==========================================
+// YAD2 SHARING, STORAGE & PRODUCE SYSTEM
+// ==========================================
+let sharingActiveTab = 'equipment'; // 'equipment' | 'storage' | 'garden'
+
+// Initial seed data for Yad2 Sharing
+const initialSharingAds = [
+  {
+    id: 'ad-eq-1',
+    type: 'equipment',
+    title: 'גנרטור מנוע בנזין 3000W מקצועי',
+    region: 'מרכז',
+    location: 'גבעתיים, רחוב כצנלסון',
+    price: 'חינם (השאלה לקהילה)',
+    duration: 'עד יומיים',
+    owner: 'ארנון ג.',
+    phone: '052-4445566',
+    description: 'גנרטור מעולה לאירועי שטח קטנים או גיבוי חשמל ביתי. מסופק מלא בדלק ומצפה לחזור מלא.'
+  },
+  {
+    id: 'ad-eq-2',
+    type: 'equipment',
+    title: 'מערבל בטון מקצועי 140 ליטר',
+    region: 'צפון',
+    location: 'חיפה, רחוב הגליל',
+    price: '30 ₪ ליום',
+    duration: 'עד שבוע',
+    owner: 'יוסי שיפוצים',
+    phone: '050-1112233',
+    description: 'מערבל בטון חשמלי חזק לעבודות קטנות ובינוניות. נקי ותקין לחלוטין.'
+  },
+  {
+    id: 'ad-st-1',
+    type: 'storage',
+    title: 'מחסן מקורה מוגן מים בגבעתיים',
+    region: 'מרכז',
+    location: 'גבעתיים, דרך השלום',
+    price: '250 ₪ לחודש',
+    duration: 'חצי שנה ומעלה',
+    owner: 'שירה לוי',
+    phone: '054-9998877',
+    description: 'מחסן בגודל 25 מ"ר בקומת מרתף יבשה ומאווררת. גישה נוחה עם מעלית.'
+  },
+  {
+    id: 'ad-st-2',
+    type: 'storage',
+    title: 'שטח חצר מגודר במושב לאחסון סירות/נגררים',
+    region: 'מרכז',
+    location: 'מושב צופית',
+    price: '150 ₪ לחודש',
+    duration: 'ללא הגבלה',
+    owner: 'משה חקלאי',
+    phone: '053-2223344',
+    description: 'שטח פתוח של חצי דונם, מגודר ושמור. שער חשמלי עם קוד כניסה ומצלמות אבטחה.'
+  },
+  {
+    id: 'ad-ga-1',
+    type: 'garden',
+    title: 'עגבניות שרי אורגניות מתוקות מהגינה',
+    region: 'דרום',
+    location: 'רחובות, שכונת המדע',
+    price: 15, // Coins price
+    duration: 'מיידי',
+    owner: 'רועי כהן',
+    phone: '054-7776655',
+    description: 'נקטפו הבוקר! עגבניות שרי בטעם מדהים ללא שום ריסוס כימי. כחצי קילוגרם במארז.'
+  },
+  {
+    id: 'ad-ga-2',
+    type: 'garden',
+    title: 'לימונים טריים ועסיסיים מהחצר',
+    region: 'צפון',
+    location: 'חדרה',
+    price: 10, // Coins price
+    duration: 'מיידי',
+    owner: 'סבתא רחל',
+    phone: '052-8889900',
+    description: 'עץ הלימון שלי קרס מרוב פרי. לימונים ענקיים מלאי מיץ, מושלם ללימונדה. שקית של 2 ק"ג.'
+  }
+];
+
+// Load ads from localStorage or seed
+let sharingAds = JSON.parse(localStorage.getItem('sharingAds')) || initialSharingAds;
+
+window.initSharingPage = function() {
+  window.updateCoinsDisplay();
+  renderSharingAds();
+};
+
+window.switchSharingTab = function(tabName) {
+  sharingActiveTab = tabName;
+  const tabs = ['equipment', 'storage', 'garden'];
+  tabs.forEach(t => {
+    const tabBtn = document.getElementById(`sharing-tab-${t}`);
+    if (tabBtn) {
+      if (t === tabName) {
+        tabBtn.style.borderBottomColor = '#ff9500';
+        tabBtn.style.color = '#fff';
+      } else {
+        tabBtn.style.borderBottomColor = 'transparent';
+        tabBtn.style.color = '#86868b';
+      }
+    }
+  });
+  renderSharingAds();
+};
+
+window.renderSharingAds = function() {
+  const container = document.getElementById('sharing-ads-grid');
+  if (!container) return;
+
+  const searchQuery = (document.getElementById('sharing-search-input')?.value || '').toLowerCase();
+  const locationFilter = document.getElementById('sharing-filter-location')?.value || 'all';
+
+  const filtered = sharingAds.filter(ad => {
+    if (ad.type !== sharingActiveTab) return false;
+    if (locationFilter !== 'all' && ad.region !== locationFilter) return false;
+    
+    if (searchQuery) {
+      const matchTitle = ad.title.toLowerCase().includes(searchQuery);
+      const matchDesc = ad.description.toLowerCase().includes(searchQuery);
+      const matchOwner = ad.owner.toLowerCase().includes(searchQuery);
+      const matchLoc = ad.location.toLowerCase().includes(searchQuery);
+      return matchTitle || matchDesc || matchOwner || matchLoc;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align:center; padding:60px 20px; color:#86868b; background:#141416; border:1px solid rgba(255,255,255,0.05); border-radius:16px;">
+        <div style="font-size:2.5rem; margin-bottom:12px;">🔍</div>
+        <h3 style="color:#fff; margin:0 0 6px 0;">לא נמצאו מודעות מתאימות</h3>
+        <p style="margin:0; font-size:0.9rem;">נסה לשנות את מסנני החיפוש או פרסם מודעה חדשה משלך!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(ad => {
+    const isGarden = ad.type === 'garden';
+    const priceDisplay = isGarden 
+      ? `<span style="color:#ffcc00; font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:4px;">${ad.price} <i class="fas fa-coins"></i></span>`
+      : `<span style="color:#fff; font-weight:800; font-size:1.1rem;">${ad.price}</span>`;
+
+    const buttonHtml = isGarden
+      ? `<button onclick="buySharingGardenItem('${ad.id}')" class="btn-primary" style="background:linear-gradient(135deg,#ff9500,#ffcc00); color:#000; border:none; padding:10px 16px; border-radius:10px; font-weight:800; cursor:pointer; font-size:0.85rem; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;">רכוש עבור ${ad.price} Coins 💰</button>`
+      : `<a href="tel:${ad.phone}" class="btn-primary" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; text-decoration:none; padding:10px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; text-align:center; display:block;">📞 צור קשר: ${ad.owner}</a>`;
+
+    return `
+      <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div>
+          <!-- Badge and Price -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="background:rgba(255,149,0,0.1); color:#ff9500; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:980px; border:1px solid rgba(255,149,0,0.2);">
+              ${ad.region}
+            </span>
+            ${priceDisplay}
+          </div>
+          
+          <h3 style="color:#fff; font-size:1.1rem; font-weight:800; margin:0 0 8px 0; line-height:1.4;">${ad.title}</h3>
+          
+          <!-- Metas -->
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:12px;">
+            <span style="font-size:0.8rem; color:#a1a1aa;"><i class="fas fa-map-marker-alt" style="color:#ffcc00; width:16px;"></i> ${ad.location}</span>
+            <span style="font-size:0.8rem; color:#a1a1aa;"><i class="far fa-clock" style="color:#ffcc00; width:16px;"></i> ${isGarden ? 'איסוף מהיר' : `תקופה: ${ad.duration}`}</span>
+            <span style="font-size:0.8rem; color:#a1a1aa;"><i class="far fa-user" style="color:#ffcc00; width:16px;"></i> מפרסם: ${ad.owner}</span>
+          </div>
+
+          <p style="color:#d2d2d7; font-size:0.85rem; line-height:1.5; margin:0 0 20px 0;">${ad.description}</p>
+        </div>
+
+        <div>
+          ${buttonHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.filterSharingAds = function() {
+  renderSharingAds();
+};
+
+window.openSharingPostModal = function() {
+  const modal = document.getElementById('sharing-post-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    toggleSharingFormFields();
+  }
+};
+
+window.closeSharingPostModal = function() {
+  const modal = document.getElementById('sharing-post-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.toggleSharingFormFields = function() {
+  const typeSelect = document.getElementById('sharing-post-type');
+  if (!typeSelect) return;
+  
+  const type = typeSelect.value;
+  const titleLabel = document.getElementById('sharing-post-title-label');
+  const titleInput = document.getElementById('sharing-post-title');
+  const priceLabel = document.getElementById('sharing-post-price-label');
+  const priceInput = document.getElementById('sharing-post-price');
+  const durationLabel = document.getElementById('sharing-post-duration-label');
+  const durationInput = document.getElementById('sharing-post-duration');
+
+  if (type === 'garden') {
+    if (titleLabel) titleLabel.textContent = 'שם הגידול / המוצר החקלאי *';
+    if (titleInput) titleInput.placeholder = 'למשל: תפוזים כתומים ממושב נטעים (שקית 2 ק"ג)';
+    if (priceLabel) priceLabel.textContent = 'מחיר מבוקש במטבעות SOKI Coins *';
+    if (priceInput) {
+      priceInput.type = 'number';
+      priceInput.placeholder = 'למשל: 15';
+      priceInput.value = '15';
+    }
+    if (durationLabel) durationLabel.textContent = 'זמינות לקטיף/איסוף *';
+    if (durationInput) {
+      durationInput.placeholder = 'למשל: מיידי / רק בסופ״ש';
+      durationInput.value = 'איסוף מיידי';
+    }
+  } else if (type === 'storage') {
+    if (titleLabel) titleLabel.textContent = 'כותרת שטח האחסון *';
+    if (titleInput) titleInput.placeholder = 'למשל: מרתף יבש ומאובטח לאחסון תכולה';
+    if (priceLabel) priceLabel.textContent = 'מחיר מבוקש (חודשי) *';
+    if (priceInput) {
+      priceInput.type = 'text';
+      priceInput.placeholder = 'למשל: 200 ₪ לחודש / חינם';
+      priceInput.value = '';
+    }
+    if (durationLabel) durationLabel.textContent = 'תקופת שכירות/איסוף מומלצת *';
+    if (durationInput) {
+      durationInput.placeholder = 'למשל: מינימום 3 חודשים / ללא הגבלה';
+      durationInput.value = '';
+    }
+  } else {
+    // Equipment
+    if (titleLabel) titleLabel.textContent = 'כותרת המודעה (כלי/ציוד) *';
+    if (titleInput) titleInput.placeholder = 'למשל: מברגת אימפקט מקיטה 18V';
+    if (priceLabel) priceLabel.textContent = 'מחיר השאלה (יומי) *';
+    if (priceInput) {
+      priceInput.type = 'text';
+      priceInput.placeholder = 'למשל: חינם / 20 ₪ ליום';
+      priceInput.value = 'חינם (השאלה קהילתית)';
+    }
+    if (durationLabel) durationLabel.textContent = 'תקופת השאלה מקסימלית *';
+    if (durationInput) {
+      durationInput.placeholder = 'למשל: עד 3 ימים';
+      durationInput.value = 'עד 3 ימים';
+    }
+  }
+};
+
+window.submitSharingAd = function(e) {
+  e.preventDefault();
+  
+  const type = document.getElementById('sharing-post-type').value;
+  const title = document.getElementById('sharing-post-title').value;
+  const region = document.getElementById('sharing-post-region').value;
+  const location = document.getElementById('sharing-post-location').value;
+  const priceVal = document.getElementById('sharing-post-price').value;
+  const duration = document.getElementById('sharing-post-duration').value;
+  const owner = document.getElementById('sharing-post-owner').value;
+  const phone = document.getElementById('sharing-post-phone').value;
+  const description = document.getElementById('sharing-post-description').value;
+
+  const newAd = {
+    id: 'ad-' + type.substring(0,2) + '-' + Date.now(),
+    type,
+    title,
+    region,
+    location,
+    price: type === 'garden' ? parseInt(priceVal) || 10 : priceVal,
+    duration,
+    owner,
+    phone,
+    description
+  };
+
+  sharingAds.unshift(newAd);
+  localStorage.setItem('sharingAds', JSON.stringify(sharingAds));
+
+  alert('המודעה פורסמה בהצלחה ללוח השיתופי! 🎉');
+  closeSharingPostModal();
+  switchSharingTab(type);
+
+  // Clear Form
+  e.target.reset();
+};
+
+window.buySharingGardenItem = function(adId) {
+  const ad = sharingAds.find(a => a.id === adId);
+  if (!ad) return;
+
+  const cost = parseInt(ad.price) || 0;
+  const balance = parseInt(localStorage.getItem('userBettingBalance')) || 1000;
+
+  if (balance < cost) {
+    alert(`שגיאה: אין לך מספיק מטבעות Coins בקופה. מחיר הפריט הוא ${cost} מטבעות, ויתרתך כעת היא ${balance}.`);
+    return;
+  }
+
+  if (confirm(`האם ברצונך לרכוש את "${ad.title}" מאת ${ad.owner} עבור ${cost} Coins?\nהיתרה הנוכחית שלך: ${balance} Coins`)) {
+    window.adjustUserCoins(-cost);
+    
+    // Remove the ad since it has been bought
+    sharingAds = sharingAds.filter(a => a.id !== adId);
+    localStorage.setItem('sharingAds', JSON.stringify(sharingAds));
+    
+    alert(`רכישה בוצעה בהצלחה! השתמש במספר הטלפון של המגדל כדי לתאם איסוף:\n📞 ${ad.owner}: ${ad.phone}`);
+    renderSharingAds();
+  }
+};
+
+window.updateCoinsDisplay = function() {
+  const currentBalance = parseInt(localStorage.getItem('userBettingBalance')) || 1000;
+  
+  const sharingCoins = document.getElementById('sharing-header-coins');
+  if (sharingCoins) {
+    sharingCoins.innerHTML = `${currentBalance.toLocaleString()} <i class="fas fa-coins"></i>`;
+  }
+  
+  const balanceDisplay = document.getElementById('betting-balance-display');
+  if (balanceDisplay) {
+    balanceDisplay.innerHTML = `${currentBalance.toLocaleString()} <i class="fas fa-coins" style="font-size:1.1rem;"></i>`;
+  }
+  
+  const dropdownCoins = document.getElementById('dropdown-coins-amount');
+  if (dropdownCoins) {
+    dropdownCoins.innerHTML = `${currentBalance.toLocaleString()} Coins`;
+  }
+  
+  const integrationsCoins = document.getElementById('integrations-balance-display');
+  if (integrationsCoins) {
+    integrationsCoins.textContent = currentBalance.toLocaleString();
+  }
+  
+  const uberCoins = document.getElementById('uber-header-coins');
+  if (uberCoins) {
+    uberCoins.innerHTML = `${currentBalance.toLocaleString()} <i class="fas fa-coins"></i>`;
+  }
+};
+
+window.adjustUserCoins = function(amount) {
+  let balance = parseInt(localStorage.getItem('userBettingBalance')) || 1000;
+  balance += amount;
+  localStorage.setItem('userBettingBalance', balance);
+  if (typeof userBalance !== 'undefined') {
+    userBalance = balance;
+  }
+  window.updateCoinsDisplay();
+};
+
+// ==========================================
+// SOKI UBER - ISRAEL RIDE SIMULATOR
+// ==========================================
+let uberSelectedTier = 'lite';
+let uberBasePrice = 25;
+let uberBaseDuration = 45;
+let uberActiveInterval = null;
+let uberSearchTimeout = null;
+
+const uberDrivers = [
+  { name: 'אבי כהן', avatar: '👨🏻', rating: '4.9', vehicle: 'סקודה סופרב זהב', plate: '99-234-88' },
+  { name: 'אלי פישר', avatar: '👨🏼', rating: '4.85', vehicle: 'טסלה מודל 3 שחורה', plate: '12-987-55' },
+  { name: 'סבטלנה ק.', avatar: '👩🏼', rating: '4.95', vehicle: 'טויוטה פריוס לבנה', plate: '77-654-12' },
+  { name: 'יוסי דהן', avatar: '🧔🏻', rating: '4.78', vehicle: 'קיה נירו כסופה', plate: '55-443-09' }
+];
+
+window.initUberPage = function() {
+  window.updateCoinsDisplay();
+  window.calculateUberPrice();
+};
+
+window.selectUberTier = function(tier, price, duration) {
+  uberSelectedTier = tier;
+  uberBasePrice = price;
+  uberBaseDuration = duration;
+
+  const cards = document.querySelectorAll('.uber-tier-card');
+  cards.forEach(c => {
+    c.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+    c.style.background = '#141416';
+  });
+
+  const activeCard = document.getElementById(`uber-tier-${tier}`);
+  if (activeCard) {
+    activeCard.style.borderColor = '#ffcc00';
+    activeCard.style.background = 'rgba(255, 204, 0, 0.02)';
+  }
+
+  const btn = document.getElementById('uber-order-btn');
+  if (btn) {
+    let title = 'SOKI Lite';
+    if (tier === 'comfort') title = 'SOKI Comfort';
+    if (tier === 'premium') title = 'SOKI Premium Luxury';
+    if (tier === 'delivery') title = 'משלוח אקספרס';
+    btn.innerHTML = `הזמן ${title} ב-${price} Coins 🚀`;
+  }
+};
+
+window.calculateUberPrice = function() {
+  const pickup = document.getElementById('uber-pickup')?.value || '';
+  const dropoff = document.getElementById('uber-dropoff')?.value || '';
+
+  const routeHash = (pickup.length + dropoff.length) || 12;
+  const factor = Math.max(0.5, Math.min(2.5, routeHash / 25));
+
+  const litePrice = Math.round(25 * factor);
+  const comfortPrice = Math.round(50 * factor);
+  const premiumPrice = Math.round(95 * factor);
+  const deliveryPrice = Math.round(35 * factor);
+
+  const liteTime = Math.round(45 * factor);
+  const comfortTime = Math.round(42 * factor);
+  const premiumTime = Math.round(38 * factor);
+  const deliveryTime = Math.round(60 * factor);
+
+  const lPriceEl = document.getElementById('uber-price-lite');
+  const cPriceEl = document.getElementById('uber-price-comfort');
+  const pPriceEl = document.getElementById('uber-price-premium');
+  const dPriceEl = document.getElementById('uber-price-delivery');
+
+  if (lPriceEl) lPriceEl.textContent = litePrice;
+  if (cPriceEl) cPriceEl.textContent = comfortPrice;
+  if (pPriceEl) pPriceEl.textContent = premiumPrice;
+  if (dPriceEl) dPriceEl.textContent = deliveryPrice;
+
+  const lDurEl = document.getElementById('uber-duration-lite');
+  const cDurEl = document.getElementById('uber-duration-comfort');
+  const pDurEl = document.getElementById('uber-duration-premium');
+  const dDurEl = document.getElementById('uber-duration-delivery');
+
+  if (lDurEl) lDurEl.textContent = `⏰ כ-${liteTime} דקות`;
+  if (cDurEl) cDurEl.textContent = `⏰ כ-${comfortTime} דקות`;
+  if (pDurEl) pDurEl.textContent = `⏰ כ-${premiumTime} דקות`;
+  if (dDurEl) dDurEl.textContent = `⏰ כ-${deliveryTime} דקות`;
+
+  if (uberSelectedTier === 'lite') { uberBasePrice = litePrice; uberBaseDuration = liteTime; }
+  if (uberSelectedTier === 'comfort') { uberBasePrice = comfortPrice; uberBaseDuration = comfortTime; }
+  if (uberSelectedTier === 'premium') { uberBasePrice = premiumPrice; uberBaseDuration = premiumTime; }
+  if (uberSelectedTier === 'delivery') { uberBasePrice = deliveryPrice; uberBaseDuration = deliveryTime; }
+
+  selectUberTier(uberSelectedTier, uberBasePrice, uberBaseDuration);
+};
+
+window.requestUberRide = function() {
+  const pickup = document.getElementById('uber-pickup')?.value || '';
+  const dropoff = document.getElementById('uber-dropoff')?.value || '';
+
+  if (!pickup || !dropoff) {
+    alert('אנא הזן נקודת מוצא ויעד נסיעה.');
+    return;
+  }
+
+  const balance = parseInt(localStorage.getItem('userBettingBalance')) || 1000;
+  if (balance < uberBasePrice) {
+    alert(`שגיאה: אין לך מספיק Coins להזמנת נסיעה זו. מחיר הנסיעה הוא ${uberBasePrice} Coins, ויתרתך הנוכחית היא ${balance}.`);
+    return;
+  }
+
+  window.adjustUserCoins(-uberBasePrice);
+
+  const radar = document.getElementById('uber-radar-screen');
+  if (radar) radar.style.display = 'flex';
+
+  const statusText = document.getElementById('uber-status-text');
+  const statusBadge = document.getElementById('uber-status-badge');
+  if (statusText) statusText.textContent = 'מחפש נהג פנוי באזורך...';
+  if (statusBadge) statusBadge.style.background = '#ff9500';
+
+  if (uberActiveInterval) clearInterval(uberActiveInterval);
+  if (uberSearchTimeout) clearTimeout(uberSearchTimeout);
+
+  uberSearchTimeout = setTimeout(() => {
+    if (radar) radar.style.display = 'none';
+
+    const driver = uberDrivers[Math.floor(Math.random() * uberDrivers.length)];
+    
+    const avatarEl = document.getElementById('uber-driver-avatar');
+    const nameEl = document.getElementById('uber-driver-name');
+    const vehicleEl = document.getElementById('uber-driver-vehicle');
+    const plateEl = document.getElementById('uber-driver-plate');
+    const etaEl = document.getElementById('uber-eta');
+    
+    if (avatarEl) avatarEl.textContent = driver.avatar;
+    if (nameEl) nameEl.textContent = driver.name;
+    if (vehicleEl) vehicleEl.textContent = driver.vehicle;
+    if (plateEl) plateEl.textContent = driver.plate;
+    if (etaEl) etaEl.textContent = `יגיע בעוד 2 דק'`;
+
+    const panel = document.getElementById('uber-driver-panel');
+    if (panel) panel.style.display = 'flex';
+
+    if (statusText) statusText.textContent = `נהג נמצא! ${driver.name} בדרך אליך`;
+    if (statusBadge) statusBadge.style.background = '#30d158';
+
+    const activePath = document.getElementById('uber-route-active-path');
+    const carIcon = document.getElementById('uber-simulated-car');
+    if (activePath) activePath.style.display = 'block';
+    if (carIcon) carIcon.style.display = 'block';
+
+    const path = document.getElementById('uber-route-path');
+    if (!path) return;
+
+    const totalPathLength = path.getTotalLength();
+    let progress = 0;
+    const progressText = document.getElementById('uber-trip-progress-text');
+    const timeLeft = document.getElementById('uber-trip-time-left');
+    const progressBar = document.getElementById('uber-trip-progress-bar');
+
+    uberActiveInterval = setInterval(() => {
+      progress += 2;
+      if (progressBar) progressBar.style.width = `${progress}%`;
+
+      const currentPoint = path.getPointAtLength((progress / 100) * totalPathLength);
+      if (carIcon) {
+        carIcon.style.transform = `translate(${currentPoint.x}px, ${currentPoint.y}px)`;
+      }
+
+      if (progress < 40) {
+        if (progressText) progressText.textContent = 'הנהג בדרך לנקודת האיסוף';
+        if (timeLeft) timeLeft.textContent = 'דקה אחת';
+      } else if (progress < 90) {
+        if (progressText) progressText.textContent = 'הנסיעה פעילה - בדרך ליעד';
+        if (timeLeft) timeLeft.textContent = 'נוסע...';
+      } else if (progress >= 100) {
+        clearInterval(uberActiveInterval);
+        if (progressText) progressText.textContent = 'הגעת ליעד!';
+        if (timeLeft) timeLeft.textContent = '0 דקות';
+        if (statusText) statusText.textContent = 'הנסיעה הושלמה בהצלחה';
+        if (statusBadge) statusBadge.style.background = '#30d158';
+
+        alert(`הגעת ליעדך בבטחה! שולם סך של ${uberBasePrice} Coins במערכת האוטומטית. תודה שנסעת SOKI Uber! 🏁🚘`);
+        
+        setTimeout(() => {
+          if (panel) panel.style.display = 'none';
+          if (carIcon) carIcon.style.display = 'none';
+          if (activePath) activePath.style.display = 'none';
+          if (statusText) statusText.textContent = 'מערכת מוכנה - הזן מסלול להזמנה';
+          if (statusBadge) statusBadge.style.background = '#86868b';
+        }, 3000);
+      }
+    }, 200);
+
+  }, 2500);
+};
+
+window.cancelCurrentUberRide = function() {
+  if (uberActiveInterval) clearInterval(uberActiveInterval);
+  if (uberSearchTimeout) clearTimeout(uberSearchTimeout);
+
+  window.adjustUserCoins(uberBasePrice);
+
+  const radar = document.getElementById('uber-radar-screen');
+  const panel = document.getElementById('uber-driver-panel');
+  const activePath = document.getElementById('uber-route-active-path');
+  const carIcon = document.getElementById('uber-simulated-car');
+
+  if (radar) radar.style.display = 'none';
+  if (panel) panel.style.display = 'none';
+  if (activePath) activePath.style.display = 'none';
+  if (carIcon) carIcon.style.display = 'none';
+
+  const statusText = document.getElementById('uber-status-text');
+  const statusBadge = document.getElementById('uber-status-badge');
+  if (statusText) statusText.textContent = 'הנסיעה בוטלה - הCoins הוחזרו לקופה';
+  if (statusBadge) statusBadge.style.background = '#ff3b30';
+
+  alert('הנסיעה בוטלה בהצלחה. סכום המטבעות הוחזר במלואו לחשבונך. 🛑');
+};
+
+
+
 
 
 
