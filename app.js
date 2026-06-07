@@ -809,6 +809,7 @@ function renderNewsLayout(page = 1) {
   currentPage = page;
   if (page === 1) {
     window.isInfiniteScrollUnlocked = false;
+    window.infiniteScrollUnlockCount = 0;
     const unlockContainer = document.getElementById('infinite-scroll-unlock-container');
     if (unlockContainer) unlockContainer.style.display = 'none';
     
@@ -820,7 +821,10 @@ function renderNewsLayout(page = 1) {
         textEl.textContent = isHeb ? 'המשך קריאה בגלילה אינסופית' : 'Continue with Infinite Scroll';
       }
       unlockBtn.onclick = () => {
-        window.isInfiniteScrollUnlocked = true;
+        window.infiniteScrollUnlockCount = (window.infiniteScrollUnlockCount || 0) + 1;
+        if (window.infiniteScrollUnlockCount >= 2) {
+          window.isInfiniteScrollUnlocked = true;
+        }
         const container = document.getElementById('infinite-scroll-unlock-container');
         if (container) container.style.display = 'none';
         
