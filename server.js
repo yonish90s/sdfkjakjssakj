@@ -167,8 +167,16 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
   }
 });
 
-// Serve static frontend files
-app.use(express.static(process.cwd()));
+// Serve static frontend files without caching to prevent browser cache lockups
+app.use(express.static(process.cwd(), {
+  etag: false,
+  maxAge: 0,
+  setHeaders: (res, path) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 
 // Explicit route for home page to fix "Cannot GET /"
 app.get('/', (req, res) => {
