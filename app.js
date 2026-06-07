@@ -815,11 +815,6 @@ function renderNewsLayout(page = 1) {
     
     const unlockBtn = document.getElementById('infinite-scroll-unlock-btn');
     if (unlockBtn) {
-      const isHeb = document.body.classList.contains('rtl-layout');
-      const textEl = document.getElementById('infinite-scroll-unlock-text');
-      if (textEl) {
-        textEl.textContent = isHeb ? 'המשך קריאה בגלילה אינסופית' : 'Continue with Infinite Scroll';
-      }
       unlockBtn.onclick = () => {
         window.infiniteScrollUnlockCount = (window.infiniteScrollUnlockCount || 0) + 1;
         if (window.infiniteScrollUnlockCount >= 2) {
