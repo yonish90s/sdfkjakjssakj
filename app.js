@@ -807,6 +807,54 @@ function getLocationArticles() {
 
 function renderNewsLayout(page = 1) {
   currentPage = page;
+  if (page === 1) {
+    window.isInfiniteScrollUnlocked = false;
+    const unlockContainer = document.getElementById('infinite-scroll-unlock-container');
+    if (unlockContainer) unlockContainer.style.display = 'none';
+    
+    const unlockBtn = document.getElementById('infinite-scroll-unlock-btn');
+    if (unlockBtn) {
+      const isHeb = document.body.classList.contains('rtl-layout');
+      const textEl = document.getElementById('infinite-scroll-unlock-text');
+      if (textEl) {
+        textEl.textContent = isHeb ? 'המשך קריאה בגלילה אינסופית' : 'Continue with Infinite Scroll';
+      }
+      unlockBtn.onclick = () => {
+        window.isInfiniteScrollUnlocked = true;
+        const container = document.getElementById('infinite-scroll-unlock-container');
+        if (container) container.style.display = 'none';
+        
+        // Trigger load of next page
+        const locationArticles = getLocationArticles();
+        let filteredArticles = currentCategory === 'all'
+          ? locationArticles
+          : locationArticles.filter(a => a.category === currentCategory);
+
+        if (searchQuery && searchQuery.trim() !== '') {
+          const queryLower = searchQuery.toLowerCase().trim();
+          filteredArticles = filteredArticles.filter(a => {
+            const titleMatch = (a.title || '').toLowerCase().includes(queryLower);
+            const snippetMatch = (a.snippet || '').toLowerCase().includes(queryLower);
+            const categoryMatch = (a.category || '').toLowerCase().includes(queryLower);
+            const authorMatch = (a.author || '').toLowerCase().includes(queryLower);
+            const contentMatch = (a.content || '').toLowerCase().includes(queryLower);
+            return titleMatch || snippetMatch || categoryMatch || authorMatch || contentMatch;
+          });
+        }
+        let displayFeatured = [];
+        const featuredCarousel = document.getElementById('featured-carousel-container');
+        if (featuredCarousel && featuredCarousel.style.display !== 'none') {
+          displayFeatured = filteredArticles.filter(a => a.approved !== false && a.excludeFromCarousel !== true).slice(0, 12);
+        }
+        const feedArticles = filteredArticles.filter(a => !displayFeatured.includes(a) && a.approved !== false);
+        const totalPages = Math.max(1, Math.ceil(feedArticles.length / ARTICLES_PER_PAGE));
+        
+        if (currentPage < totalPages && !isInfiniteScrollLoading) {
+          loadNextInfiniteScrollPage(totalPages);
+        }
+      };
+    }
+  }
   const topGrid = document.getElementById('top-news-grid');
   const feedList = document.getElementById('news-feed-list');
   const paginationEl = document.getElementById('news-pagination');
@@ -11872,7 +11920,12 @@ window.addEventListener('scroll', () => {
     const totalPages = Math.max(1, Math.ceil(feedArticles.length / ARTICLES_PER_PAGE));
     
     if (currentPage < totalPages && !isInfiniteScrollLoading) {
-      loadNextInfiniteScrollPage(totalPages);
+      if (window.isInfiniteScrollUnlocked) {
+        loadNextInfiniteScrollPage(totalPages);
+      } else {
+        const unlockContainer = document.getElementById('infinite-scroll-unlock-container');
+        if (unlockContainer) unlockContainer.style.display = 'flex';
+      }
     }
   }
 });
