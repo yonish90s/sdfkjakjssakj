@@ -8935,34 +8935,28 @@ body:not(.dark-theme) .dl-meta-chip {
   .mp-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ========== ADMIN EDIT MODE STYLES ========== */
-.admin-edit-toggle-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 999999;
-  background: #09090b;
-  border: 2px solid #e28743;
-  border-radius: 980px;
-  padding: 14px 28px;
-  color: #e28743;
-  font-family: inherit;
-  font-size: 1.05rem;
-  font-weight: 700;
+/* Edit mode toggle — inline nav button */
+.admin-edit-toggle-btn-inline {
   cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  background: transparent;
+  border: 1.5px solid #e28743;
+  color: #e28743;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 6px 16px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  direction: rtl;
+  gap: 6px;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
 }
-.admin-edit-toggle-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 15px 40px rgba(226,135,67,0.25), 0 5px 15px rgba(0,0,0,0.6);
-  background: #121214;
+.admin-edit-toggle-btn-inline:hover {
+  background: #e28743;
+  color: #09090b;
 }
-.admin-edit-toggle-btn.active {
+.admin-edit-toggle-btn-inline.active {
   background: #e28743;
   color: #09090b;
   border-color: #e28743;
@@ -9131,23 +9125,311 @@ body.admin-edit-mode-active img:hover {
 }
 
 body.admin-edit-mode-active [contenteditable="true"] {
-  outline: 1px dashed rgba(226, 135, 67, 0.5) !important;
   cursor: text !important;
+  border-radius: 4px;
+  transition: outline 0.15s, background 0.15s;
+  outline: 1.5px dashed rgba(226, 135, 67, 0.4) !important;
+  outline-offset: 3px;
+}
+body.admin-edit-mode-active [contenteditable="true"]:hover {
+  outline: 1.5px dashed rgba(226, 135, 67, 0.8) !important;
+  background: rgba(226, 135, 67, 0.04) !important;
 }
 body.admin-edit-mode-active [contenteditable="true"]:focus {
   outline: 2px solid #e28743 !important;
-  background: rgba(226, 135, 67, 0.05) !important;
+  outline-offset: 3px;
+  background: rgba(226, 135, 67, 0.07) !important;
+  border-radius: 4px;
 }
 
-body.admin-edit-mode-active [style*="background-image"] {
+/* Edit mode — image click indicators (inline background-image only) */
+body.admin-edit-mode-active img {
   cursor: pointer !important;
-  outline: 2px dashed #e28743 !important;
+  outline: 2px dashed rgba(226, 135, 67, 0.6) !important;
   outline-offset: -3px;
-  transition: all 0.2s ease;
+  transition: outline 0.2s, filter 0.2s;
 }
-body.admin-edit-mode-active [style*="background-image"]:hover {
+body.admin-edit-mode-active img:hover {
   outline: 2px solid #e28743 !important;
   filter: brightness(0.85);
 }
 
 
+
+
+
+
+/* ============================================================
+   DRAGGABLE SECTIONS SYSTEM — Edit Mode
+   ============================================================ */
+
+#home-sections-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-section {
+  position: relative;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.admin-edit-mode-active .home-section {
+  border: 2px dashed transparent;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+body.admin-edit-mode-active .home-section:hover {
+  border-color: rgba(226, 135, 67, 0.5);
+  background: rgba(226, 135, 67, 0.02);
+}
+body.admin-edit-mode-active .home-section.drag-over {
+  border-color: #e28743 !important;
+  border-style: solid !important;
+  box-shadow: 0 0 0 3px rgba(226, 135, 67, 0.2);
+  background: rgba(226, 135, 67, 0.04) !important;
+}
+
+/* Drag handle bar — always in DOM, shown on hover in edit mode */
+.section-drag-handle {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 40px;
+  background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  border: 1px solid rgba(226, 135, 67, 0.35);
+  border-radius: 10px 10px 0 0;
+  align-items: center;
+  padding: 0 10px;
+  gap: 8px;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.section-drag-handle:hover { border-color: rgba(226, 135, 67, 0.7); }
+.section-drag-handle:active { cursor: grabbing; }
+
+body.admin-edit-mode-active .home-section:hover .section-drag-handle {
+  display: flex;
+}
+body.admin-edit-mode-active .home-section:hover > div:not(.section-drag-handle),
+body.admin-edit-mode-active .home-section:hover > section:not(.section-drag-handle) {
+  margin-top: 40px;
+}
+
+.section-grip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.section-grip span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: #e28743;
+  border-radius: 2px;
+}
+
+.section-drag-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #e28743;
+  font-family: inherit;
+  direction: rtl;
+  flex: 1;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.section-drag-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.section-move-btn, .section-hide-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.section-move-btn:hover {
+  background: rgba(226,135,67,0.15);
+  border-color: rgba(226,135,67,0.5);
+  color: #e28743;
+}
+.section-hide-btn:hover {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.4);
+  color: #ef4444;
+}
+
+/* Dragging state */
+.home-section.is-dragging {
+  opacity: 0.3;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+/* Drop indicator line */
+.section-drop-indicator {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.15s;
+  position: relative;
+}
+.section-drop-indicator.visible {
+  height: 6px;
+}
+.section-drop-indicator.visible::after {
+  content: '';
+  position: absolute;
+  inset: 1px 0;
+  background: linear-gradient(90deg, transparent, #e28743 20%, #e28743 80%, transparent);
+  border-radius: 4px;
+}
+
+/* Hidden section */
+.home-section.section-hidden > div:not(.section-drag-handle),
+.home-section.section-hidden > section {
+  opacity: 0.25;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+body.admin-edit-mode-active .home-section.section-hidden {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+.section-hide-btn.is-hidden {
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.4);
+  color: #22c55e;
+}
+
+/* ============================================================
+   TEXT EDIT POPUP — New Edit Mode
+   ============================================================ */
+
+#text-edit-popup {
+  position: absolute;
+  z-index: 99999;
+  width: 320px;
+  background: #18181b;
+  border: 1px solid rgba(226,135,67,0.5);
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(226,135,67,0.1);
+  overflow: hidden;
+  animation: tepSlideIn 0.15s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@keyframes tepSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tep-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #1e1e22, #27272a);
+  border-bottom: 1px solid rgba(226,135,67,0.2);
+}
+.tep-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e28743;
+  letter-spacing: 0.02em;
+}
+.tep-close {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.tep-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+.tep-textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  padding: 12px 14px;
+  background: #18181b;
+  border: none;
+  outline: none;
+  color: #e4e4e7;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.tep-textarea:focus { background: #1c1c20; }
+
+.tep-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #1a1a1e;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.tep-save {
+  flex: 1;
+  padding: 7px 0;
+  background: #e28743;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+.tep-save:hover { background: #d4762d; }
+.tep-save:active { transform: scale(0.97); }
+
+.tep-cancel {
+  padding: 7px 14px;
+  background: rgba(255,255,255,0.06);
+  color: #888;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.tep-cancel:hover { background: rgba(255,255,255,0.1); color: #ccc; }
+
+/* Highlight text elements on hover in edit mode */
+body.admin-edit-mode-active h1:hover,
+body.admin-edit-mode-active h2:hover,
+body.admin-edit-mode-active h3:hover,
+body.admin-edit-mode-active h4:hover,
+body.admin-edit-mode-active h5:hover,
+body.admin-edit-mode-active h6:hover,
+body.admin-edit-mode-active p:hover,
+body.admin-edit-mode-active li:hover {
+  outline: 2px dashed rgba(226,135,67,0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+}

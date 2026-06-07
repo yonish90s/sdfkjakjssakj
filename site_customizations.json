@@ -1,1 +1,30 @@
-{}
+{
+  "__sectionLayout__": {
+    "order": [
+      "top-grid",
+      "category-bar",
+      "carousel",
+      "news-feed"
+    ],
+    "hidden": []
+  },
+  "[data-edit-id=\"edit-1780796568688\"]": {
+    "text": "הבנקים בת\"א רושמים שבעה ימים רצופים של ירידות, הביטוח קרס 3% וגם וול סטריט ירדה מהשיאים. ברקע: מחירי הנפט מזנקים ודוח התעסוקה הקריטי מתקרב ביום שישי !"
+  },
+  "[data-admin-id=\"container-1\"]": {
+    "order": [
+      "#nav-telegram-link",
+      "[data-admin-id=\"container-1-item-1\"]",
+      "[data-admin-id=\"container-1-item-2\"]",
+      "[data-admin-id=\"container-1-item-3\"]",
+      "[data-admin-id=\"container-1-item-4\"]",
+      "[data-admin-id=\"container-1-item-5\"]",
+      "[data-admin-id=\"container-1-item-6\"]",
+      "[data-admin-id=\"container-1-item-7\"]",
+      "#admin-edit-mode-toggle",
+      "[data-admin-id=\"container-1-item-9\"]",
+      "#nav-coins-badge",
+      "#user-nav-section"
+    ]
+  }
+}

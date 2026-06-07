@@ -259,6 +259,13 @@ const servicesItems = [
   });
 })();
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
+// Auto-restore edit mode if was logged in as admin/editor before refresh
+document.addEventListener('DOMContentLoaded', function() {
+  if (localStorage.getItem('isAdmin') === 'true' || localStorage.getItem('isEditor') === 'true') {
+    // Small delay to let the page fully initialize first
+    setTimeout(() => { if (typeof enableLiveEditMode === 'function') enableLiveEditMode(); }, 500);
+  }
+});
 // Cleanup obsolete data
 if (localStorage.getItem('viewerPhotos')) localStorage.removeItem('viewerPhotos');
 if (localStorage.getItem('comicsStore')) localStorage.removeItem('comicsStore');
@@ -1363,16 +1370,18 @@ async function adminLogin() {
 
   if (loginSucceeded) {
     closeAdminLoginModal();
+    // Enable edit mode for ALL admin/editor logins — no extra button needed
+    enableLiveEditMode();
     if (isEditorLogin) {
       localStorage.setItem('isEditor', 'true');
-      showToast('✏️ מחובר כמצב עורך (Live Editor)');
-      enableLiveEditMode();
       showPage('home');
+      showToast('✏️ מחובר כעורך — לחץ על כל טקסט או תמונה לעריכה');
     } else {
       localStorage.setItem('isAdmin', 'true');
       isAdmin = true;
       showPage('admin');
       if (typeof initAdminDashboard === 'function') initAdminDashboard();
+      showToast('✏️ מחובר כמנהל — לחץ על כל טקסט או תמונה באתר לעריכה');
     }
     return;
   }
@@ -1746,6 +1755,8 @@ window.apSaveProduct = function() {
 function adminLogout() {
   isAdmin = false;
   localStorage.removeItem('isAdmin');
+  localStorage.removeItem('isEditor');
+  if (typeof disableLiveEditMode === 'function') disableLiveEditMode();
   closeAdminLoginModal();
   showPage('home');
 }
@@ -9614,70 +9625,204 @@ window.selectDrawerForum = function(groupId) {
 };
 
 // =====================================================================
-// LIVE INLINE EDITOR MODE
+// LIVE EDITOR — New Clean Implementation
 // =====================================================================
 
+window.isEditModeActive = false;
+
 function enableLiveEditMode() {
-  try {
-    window.isEditModeActive = true;
-    document.body.classList.add('admin-edit-mode-active');
-    
-    // Display the float button in active state
-    const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
-    if (editToggleBtn) {
-      editToggleBtn.style.display = 'flex';
-      editToggleBtn.classList.add('active');
-      editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
-    }
-    
-    toggleTextEditable(true);
-    enableDragAndDrop(true);
-    
-    // Also show the red Exit Edit Mode button if they want to exit using it
-    let exitBtn = document.getElementById('live-edit-exit-btn');
-    if (!exitBtn) {
-      exitBtn = document.createElement('button');
-      exitBtn.id = 'live-edit-exit-btn';
-      exitBtn.innerHTML = '❌ Exit Edit Mode';
-      exitBtn.style.cssText = 'position:fixed; bottom:20px; left:20px; z-index:99999; background:#ef4444; color:#fff; border:none; padding:12px 24px; border-radius:980px; font-weight:700; box-shadow:0 4px 12px rgba(0,0,0,0.3); cursor:pointer; font-size:1rem;';
-      exitBtn.onclick = disableLiveEditMode;
-      document.body.appendChild(exitBtn);
-    }
-    exitBtn.style.display = 'block';
-    
-    showToast('✏️ מצב עריכה פעיל. לחץ על תמונה, ערוך מלל או גרור לשינוי מיקומים!');
-  } catch (err) {
-    console.error('Error enabling live edit:', err);
+  window.isEditModeActive = true;
+  localStorage.setItem('isEditModeActive', 'true');
+  document.body.classList.add('admin-edit-mode-active');
+  const btn = document.getElementById('admin-edit-mode-toggle');
+  if (btn) {
+    btn.style.display = 'flex';
+    btn.classList.add('active');
+    const span = btn.querySelector('span');
+    if (span) span.textContent = 'צא ממצב עריכה';
   }
+  enableDragAndDrop(true);
+  showToast('✏️ מצב עריכה פעיל — לחץ על כל טקסט או תמונה לעריכה');
 }
+window.enableLiveEditMode = enableLiveEditMode;
 
 function disableLiveEditMode() {
-  try {
-    window.isEditModeActive = false;
-    document.body.classList.remove('admin-edit-mode-active');
-    
-    const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
-    if (editToggleBtn) {
-      editToggleBtn.classList.remove('active');
-      editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
-    }
-    
-    toggleTextEditable(false);
-    enableDragAndDrop(false);
-    
-    const exitBtn = document.getElementById('live-edit-exit-btn');
-    if (exitBtn) exitBtn.style.display = 'none';
-    
-    localStorage.removeItem('isEditor');
-    showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
-  } catch (err) {
-    console.error('Error disabling live edit:', err);
+  window.isEditModeActive = false;
+  localStorage.removeItem('isEditModeActive');
+  document.body.classList.remove('admin-edit-mode-active');
+  closeTextEditPopup();
+  const btn = document.getElementById('admin-edit-mode-toggle');
+  if (btn) {
+    btn.classList.remove('active');
+    const span = btn.querySelector('span');
+    if (span) span.textContent = 'מצב עריכה';
   }
+  enableDragAndDrop(false);
+  localStorage.removeItem('isEditor');
+  showToast('🔒 מצב עריכה כבוי');
+}
+window.disableLiveEditMode = disableLiveEditMode;
+
+// ---- Floating text edit popup ----
+let _editPopupTarget = null;
+
+function openTextEditPopup(el) {
+  closeTextEditPopup();
+  _editPopupTarget = el;
+
+  const popup = document.createElement('div');
+  popup.id = 'text-edit-popup';
+  popup.setAttribute('data-no-edit', '');
+
+  const isRtl = document.body.classList.contains('rtl-layout');
+  const currentText = el.innerText || el.textContent || '';
+
+  popup.innerHTML = `
+    <div class="tep-header">
+      <span class="tep-label">✏️ עריכת טקסט</span>
+      <button class="tep-close" id="tep-close-btn">✕</button>
+    </div>
+    <textarea class="tep-textarea" id="tep-textarea" dir="${isRtl ? 'rtl' : 'ltr'}"></textarea>
+    <div class="tep-actions">
+      <button class="tep-save" id="tep-save-btn">✅ שמור</button>
+      <button class="tep-cancel" id="tep-cancel-btn">ביטול</button>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+
+  // Position near the element
+  positionTextEditPopup(el, popup);
+
+  const textarea = popup.querySelector('#tep-textarea');
+  textarea.value = currentText;
+  textarea.focus();
+  textarea.select();
+
+  popup.querySelector('#tep-save-btn').addEventListener('click', () => saveTextEdit(textarea.value));
+  popup.querySelector('#tep-cancel-btn').addEventListener('click', closeTextEditPopup);
+  popup.querySelector('#tep-close-btn').addEventListener('click', closeTextEditPopup);
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeTextEditPopup();
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) saveTextEdit(textarea.value);
+  });
 }
 
-function handleLiveEditClick(e) {
-  // Disabled to allow the new inline text and modal image editors to handle everything cleanly
+function positionTextEditPopup(el, popup) {
+  const rect = el.getBoundingClientRect();
+  const scrollY = window.scrollY;
+  const popupW = 320;
+  const popupH = 200;
+
+  let top = rect.bottom + scrollY + 8;
+  let left = rect.left;
+
+  // Keep inside viewport
+  if (left + popupW > window.innerWidth - 16) left = window.innerWidth - popupW - 16;
+  if (left < 8) left = 8;
+  if (top + popupH > window.innerHeight + scrollY) top = rect.top + scrollY - popupH - 8;
+
+  popup.style.top = top + 'px';
+  popup.style.left = left + 'px';
 }
+
+async function saveTextEdit(newText) {
+  if (!_editPopupTarget) return;
+  const el = _editPopupTarget;
+
+  // Apply the new text
+  el.textContent = newText;
+
+  // Save to customizations using DOM path
+  const key = getImageIdentifier(el);
+  activeCustomizations[key] = { text: newText };
+  closeTextEditPopup();
+  await saveCustomizationsToServer();
+}
+
+function closeTextEditPopup() {
+  const popup = document.getElementById('text-edit-popup');
+  if (popup) popup.remove();
+  _editPopupTarget = null;
+}
+
+// ---- Edit mode click listener ----
+// Single listener: click on text → popup, click on image → image editor
+document.addEventListener('click', function(e) {
+  if (!window.isEditModeActive) return;
+
+  const target = e.target;
+  if (!target || typeof target.closest !== 'function') return;
+
+  // Ignore clicks inside our own UI
+  if (
+    target.closest('#text-edit-popup') ||
+    target.closest('#image-editor-modal') ||
+    target.closest('#admin-edit-mode-toggle') ||
+    target.closest('.section-drag-handle') ||
+    target.closest('.section-move-btn') ||
+    target.closest('.section-hide-btn') ||
+    target.closest('#user-profile-badge') ||
+    target.closest('[data-no-edit]')
+  ) return;
+
+  // Check for image click
+  const imgEl = findImageTarget(target);
+  if (imgEl && imgEl.id !== 'user-badge-avatar' && !imgEl.closest('.panel-logo')) {
+    e.preventDefault();
+    e.stopPropagation();
+    openImageEditor(imgEl);
+    return;
+  }
+
+  // Check for text element click — headings, paragraphs, list items, spans, and text-only divs
+  const textEl = target.closest('h1, h2, h3, h4, h5, h6, p, li, span, div');
+  if (textEl && !textEl.closest('[data-no-edit]')) {
+    const isSidebarText = textEl.closest('.sidebar');
+    
+    // Safely skip structural layout divs
+    if (textEl.tagName === 'DIV') {
+      if (target === textEl && textEl.children.length > 0) return;
+      const classStr = textEl.className || '';
+      const styleAttr = textEl.getAttribute('style') || '';
+      if (
+        classStr.includes('wrapper') || 
+        classStr.includes('container') || 
+        classStr.includes('section') || 
+        classStr.includes('grid') || 
+        classStr.includes('flex') ||
+        classStr.includes('page') ||
+        styleAttr.includes('display: flex') ||
+        styleAttr.includes('display: flex')
+      ) return;
+      // Skip empty or purely spacing divs
+      if (textEl.textContent.trim().length === 0) return;
+    }
+
+    // Allow editing inside sidebar, or if not inside sidebar, verify it's not standard chrome
+    if (isSidebarText || (!textEl.closest('button') && !textEl.closest('nav'))) {
+      // Skip very short spans (like icons or small badges)
+      if (textEl.tagName === 'SPAN' && textEl.textContent.trim().length < 2) return;
+      // Skip spans that are children of interactive buttons/links unless in sidebar
+      if (!isSidebarText && textEl.tagName === 'SPAN' && (textEl.parentElement?.tagName === 'BUTTON' || textEl.parentElement?.tagName === 'A')) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      openTextEditPopup(textEl);
+      return;
+    }
+  }
+}, true);
+
+// Close popup on outside click
+document.addEventListener('click', function(e) {
+  if (!window.isEditModeActive) return;
+  const popup = document.getElementById('text-edit-popup');
+  if (popup && !popup.contains(e.target) && e.target !== _editPopupTarget) {
+    closeTextEditPopup();
+  }
+}, false);
+
 
 // =====================================================================
 // LIVE MESSAGE SYSTEM LOGIC (Direct User-Admin Messaging)
@@ -11724,12 +11869,16 @@ window.confirmBet = function() {
   alert(`הימור על סך ${amount} מטבעות בוצע בהצלחה! בהצלחה! 🎲`);
 };
 
-// Hook into showPage to render bets when page is shown
+// Hook into showPage to render bets when page is shown + re-apply edit mode
 const originalShowPageForBets = window.showPage;
 window.showPage = function(pageId) {
   originalShowPageForBets(pageId);
   if (pageId === 'bets' || pageId === 'integrations') {
     renderBets();
+  }
+  // Re-apply contenteditable after page render if edit mode is active
+  if (window.isEditModeActive) {
+    applyEditableToCurrentPage();
   }
 };
 
@@ -11750,21 +11899,26 @@ let activeDraggedEl = null;
 
 // Assign deterministic data-admin-id to sortable containers on load
 function initDeterministicIds() {
-  const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
-  containers.forEach((container, cIdx) => {
-    if (!container.getAttribute('data-admin-id')) {
-      container.setAttribute('data-admin-id', `container-${cIdx}`);
-    }
-    Array.from(container.children).forEach((child, idx) => {
-      if (!child.id && !child.getAttribute('data-admin-id')) {
-        child.setAttribute('data-admin-id', `container-${cIdx}-item-${idx}`);
+  try {
+    const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
+    containers.forEach((container, cIdx) => {
+      if (!container.getAttribute('data-admin-id')) {
+        container.setAttribute('data-admin-id', `container-${cIdx}`);
       }
+      Array.from(container.children).forEach((child, idx) => {
+        if (!child.id && !child.getAttribute('data-admin-id')) {
+          child.setAttribute('data-admin-id', `container-${cIdx}-item-${idx}`);
+        }
+      });
     });
-  });
+  } catch (err) {
+    console.error('Error in initDeterministicIds:', err);
+  }
 }
 
 // Helper to uniquely identify an element by CSS path or ID
 function getImageIdentifier(el) {
+  if (!el) return '';
   if (el.id) return `#${el.id}`;
   if (el.getAttribute('data-admin-id')) return `[data-admin-id="${el.getAttribute('data-admin-id')}"]`;
   const path = [];
@@ -11786,8 +11940,15 @@ function getImageIdentifier(el) {
 
 // Helper to resolve an element from its path
 function getElementFromIdentifier(id) {
-  if (id.startsWith('#')) return document.querySelector(id);
-  if (id.startsWith('[')) return document.querySelector(id);
+  if (!id) return null;
+  if (id.startsWith('__')) return null;
+  try {
+    if (id.startsWith('#')) return document.querySelector(id);
+    if (id.startsWith('[data-edit-id')) return document.querySelector(id);
+    if (id.startsWith('[')) return document.querySelector(id);
+  } catch (e) {
+    return null;
+  }
   const parts = id.split('>');
   let el = document.body;
   for (let part of parts) {
@@ -11818,10 +11979,20 @@ function getElementFromIdentifier(id) {
 
 // Apply loaded customizations to the page
 function applyAllCustomizations() {
-  for (let key in activeCustomizations) {
-    const el = getElementFromIdentifier(key);
-    if (el) {
+  try {
+    for (let key in activeCustomizations) {
       const cust = activeCustomizations[key];
+      
+      const el = getElementFromIdentifier(key);
+      if (!el) continue;
+        
+      // If it is a text customization
+      if (cust.text !== undefined) {
+        if (el.innerHTML !== cust.text) {
+          el.innerHTML = cust.text;
+        }
+        continue;
+      }
       
       // If it is an order customization
       if (cust.order && Array.isArray(cust.order)) {
@@ -11837,12 +12008,6 @@ function applyAllCustomizations() {
           }
         }
       }
-      // If it is a text customization
-      else if (cust.text !== undefined) {
-        if (el.innerHTML !== cust.text) {
-          el.innerHTML = cust.text;
-        }
-      } 
       // If it is an image/background-image customization
       else {
         if (cust.src) {
@@ -11866,6 +12031,8 @@ function applyAllCustomizations() {
         }
       }
     }
+  } catch (err) {
+    console.error('Error applying customizations:', err);
   }
 }
 
@@ -11894,6 +12061,8 @@ async function initCustomizations() {
     if (res.ok) {
       activeCustomizations = await res.json();
       applyAllCustomizations();
+      // Restore section order & visibility
+      if (window.applySectionLayout) window.applySectionLayout();
     }
   } catch (err) {
     console.error('Failed to load customizations:', err);
@@ -11903,64 +12072,243 @@ async function initCustomizations() {
 // Initialize Customizations
 initCustomizations();
 
-// Watch for DOM changes to apply styles dynamically to elements
-const custObserver = new MutationObserver(() => {
-  custObserver.disconnect();
-  applyAllCustomizations();
-  if (window.isEditModeActive) {
-    toggleTextEditable(true);
-    enableDragAndDrop(true);
-  }
-  custObserver.observe(document.body, { childList: true, subtree: true });
-});
-custObserver.observe(document.body, { childList: true, subtree: true });
+// ============================================================
+// SECTION DRAG & DROP SYSTEM
+// ============================================================
 
-// Toggle contenteditable for elements
-function toggleTextEditable(active) {
-  try {
-    const selector = 'h1, h2, h3, h4, h5, h6, p, span, li, button';
-    document.querySelectorAll(selector).forEach(el => {
-      try {
-        if (
-          el.closest('#image-editor-modal') || 
-          el.closest('.sidebar') || 
-          el.closest('#user-profile-badge') || 
-          el.closest('.edit-modal-card') || 
-          el.id === 'user-badge-name' ||
-          el.closest('.panel-logo') ||
-          el.tagName === 'I' ||
-          el.closest('svg')
-        ) {
-          return;
-        }
-        
-        if (active) {
-          el.setAttribute('contenteditable', 'true');
-          if (!el.dataset.originalText) {
-            el.dataset.originalText = el.innerHTML;
-          }
-        } else {
-          el.removeAttribute('contenteditable');
-        }
-      } catch (err) {
-        console.warn('Skipping element in text edit toggle:', el, err);
+let _sectionDragEl = null;   // the .home-section being dragged
+let _sectionDragOver = null; // the .home-section we're hovering over
+let _sectionHiddenIds = new Set(); // hidden section IDs
+
+/**
+ * Inject drag handles into every .home-section
+ * Called when edit mode activates / deactivates
+ */
+function initSectionDragDrop(active) {
+  const container = document.getElementById('home-sections-container');
+  if (!container) return;
+
+  const sections = Array.from(container.querySelectorAll(':scope > .home-section'));
+
+  sections.forEach(section => {
+    // Remove existing handle if any
+    const existingHandle = section.querySelector('.section-drag-handle');
+    if (existingHandle) existingHandle.remove();
+
+    if (!active) {
+      section.removeAttribute('draggable');
+      return;
+    }
+
+    const sectionId = section.getAttribute('data-section-id') || '';
+    const label = section.getAttribute('data-section-label') || sectionId;
+    const isHidden = _sectionHiddenIds.has(sectionId);
+
+    // Build the drag handle
+    const handle = document.createElement('div');
+    handle.className = 'section-drag-handle';
+    handle.setAttribute('data-no-edit', '');
+    handle.draggable = false; // handle itself isn't draggable — section is
+
+    handle.innerHTML = `
+      <div class="section-grip">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="section-drag-label">⠿ ${label}</div>
+      <div class="section-drag-actions">
+        <button class="section-move-btn move-up-btn" title="העבר למעלה">↑</button>
+        <button class="section-move-btn move-down-btn" title="העבר למטה">↓</button>
+        <button class="section-hide-btn ${isHidden ? 'is-hidden' : ''}" title="${isHidden ? 'הצג סקשן' : 'הסתר סקשן'}">
+          ${isHidden ? '👁 הצג' : '🙈 הסתר'}
+        </button>
+      </div>
+    `;
+
+    // Move up button
+    handle.querySelector('.move-up-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const prev = section.previousElementSibling;
+      if (prev && prev.classList.contains('home-section')) {
+        container.insertBefore(section, prev);
+        saveSectionOrder();
       }
     });
-  } catch (globalErr) {
-    console.error('Global error in toggleTextEditable:', globalErr);
+
+    // Move down button
+    handle.querySelector('.move-down-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const next = section.nextElementSibling;
+      if (next && next.classList.contains('home-section')) {
+        container.insertBefore(next, section);
+        saveSectionOrder();
+      }
+    });
+
+    // Hide/show toggle
+    handle.querySelector('.section-hide-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      if (_sectionHiddenIds.has(sectionId)) {
+        _sectionHiddenIds.delete(sectionId);
+        section.classList.remove('section-hidden');
+        btn.classList.remove('is-hidden');
+        btn.innerHTML = '🙈 הסתר';
+        btn.title = 'הסתר סקשן';
+      } else {
+        _sectionHiddenIds.add(sectionId);
+        section.classList.add('section-hidden');
+        btn.classList.add('is-hidden');
+        btn.innerHTML = '👁 הצג';
+        btn.title = 'הצג סקשן';
+      }
+      saveSectionOrder();
+    });
+
+    section.insertBefore(handle, section.firstChild);
+
+    // Make section draggable via its handle (grip area)
+    section.setAttribute('draggable', 'true');
+
+    // Apply hidden state if needed
+    if (isHidden) section.classList.add('section-hidden');
+    else section.classList.remove('section-hidden');
+  });
+
+  // Setup container drag events (only add once)
+  if (active) {
+    container.setAttribute('data-section-dd-active', 'true');
+  } else {
+    container.removeAttribute('data-section-dd-active');
+    // Clear any leftover states
+    sections.forEach(s => {
+      s.classList.remove('is-dragging', 'drag-over', 'section-hidden');
+      s.removeAttribute('draggable');
+    });
+    document.querySelectorAll('.section-drop-indicator').forEach(el => el.remove());
   }
 }
 
-// Enable/Disable Drag and Drop reordering
+// ---- Section drag events ----
+
+document.addEventListener('dragstart', function(e) {
+  if (!window.isEditModeActive) return;
+  const section = e.target.closest('.home-section[draggable="true"]');
+  if (!section) return;
+
+  // Only allow drag if starting from the handle
+  const handle = section.querySelector('.section-drag-handle');
+  if (handle && !handle.contains(e.target) && e.target !== section) return;
+
+  _sectionDragEl = section;
+  setTimeout(() => section.classList.add('is-dragging'), 0);
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', section.getAttribute('data-section-id') || '');
+}, true);
+
+document.addEventListener('dragend', async function(e) {
+  if (!_sectionDragEl) return;
+  _sectionDragEl.classList.remove('is-dragging');
+  _sectionDragEl = null;
+  _sectionDragOver = null;
+
+  // Remove all drop indicators and highlights
+  document.querySelectorAll('.section-drop-indicator').forEach(el => el.remove());
+  document.querySelectorAll('.home-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+  await saveSectionOrder();
+}, true);
+
+document.addEventListener('dragover', function(e) {
+  if (!window.isEditModeActive || !_sectionDragEl) return;
+  const overSection = e.target.closest?.('.home-section');
+  if (!overSection || overSection === _sectionDragEl) return;
+
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+
+  if (_sectionDragOver === overSection) return;
+  _sectionDragOver = overSection;
+
+  // Clear existing highlights
+  document.querySelectorAll('.home-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+  overSection.classList.add('drag-over');
+
+  // Position: insert before or after based on cursor Y
+  const rect = overSection.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  const container = document.getElementById('home-sections-container');
+
+  if (e.clientY < midY) {
+    container.insertBefore(_sectionDragEl, overSection);
+  } else {
+    container.insertBefore(_sectionDragEl, overSection.nextSibling);
+  }
+}, true);
+
+document.addEventListener('drop', function(e) {
+  if (!window.isEditModeActive || !_sectionDragEl) return;
+  e.preventDefault();
+  document.querySelectorAll('.home-section.drag-over').forEach(el => el.classList.remove('drag-over'));
+}, true);
+
+// ---- Save & restore section order ----
+
+async function saveSectionOrder() {
+  const container = document.getElementById('home-sections-container');
+  if (!container) return;
+
+  const sections = Array.from(container.querySelectorAll(':scope > .home-section'));
+  const order = sections.map(s => s.getAttribute('data-section-id'));
+  const hidden = Array.from(_sectionHiddenIds);
+
+  activeCustomizations['__sectionLayout__'] = { order, hidden };
+  await saveCustomizationsToServer();
+}
+
+function applySectionLayout() {
+  const layout = activeCustomizations['__sectionLayout__'];
+  if (!layout) return;
+
+  const container = document.getElementById('home-sections-container');
+  if (!container) return;
+
+  // Restore hidden state
+  _sectionHiddenIds = new Set(layout.hidden || []);
+
+  // Restore order
+  if (layout.order && Array.isArray(layout.order)) {
+    layout.order.forEach(sectionId => {
+      const section = container.querySelector(`.home-section[data-section-id="${sectionId}"]`);
+      if (section) container.appendChild(section);
+    });
+  }
+
+  // Apply hidden states
+  container.querySelectorAll('.home-section').forEach(section => {
+    const id = section.getAttribute('data-section-id');
+    if (_sectionHiddenIds.has(id)) {
+      section.classList.add('section-hidden');
+    }
+  });
+}
+window.applySectionLayout = applySectionLayout;
+
+// ============================================================
+// OLD NAV-BAR DRAG & DROP (kept for nav item reordering)
+// ============================================================
+
+// Enable/Disable Drag and Drop reordering for nav items
 function enableDragAndDrop(active) {
   try {
+    // 1. Section drag handles
+    initSectionDragDrop(active);
+
+    // 2. Nav-bar item reordering
     const containers = document.querySelectorAll('.nav-right-section, .nav-left-section');
     containers.forEach(container => {
       try {
         Array.from(container.children).forEach(child => {
-          if (child.id === 'nav-user-dropdown' || child.id === 'nav-coins-badge') {
-            return;
-          }
+          if (child.id === 'nav-user-dropdown' || child.id === 'nav-coins-badge') return;
           if (active) {
             child.setAttribute('draggable', 'true');
             child.style.cursor = 'grab';
@@ -11969,48 +12317,54 @@ function enableDragAndDrop(active) {
             child.style.cursor = '';
           }
         });
-
         if (active) {
-          container.addEventListener('dragover', handleDragOver);
+          container.addEventListener('dragover', handleNavDragOver);
           container.addEventListener('dragenter', e => e.preventDefault());
         } else {
-          container.removeEventListener('dragover', handleDragOver);
+          container.removeEventListener('dragover', handleNavDragOver);
         }
       } catch (containerErr) {
-        console.error('Error enabling drag and drop on container:', container, containerErr);
+        console.error('Error in nav drag/drop:', container, containerErr);
       }
     });
-  } catch (globalDragErr) {
-    console.error('Global error in enableDragAndDrop:', globalDragErr);
+  } catch (err) {
+    console.error('Global error in enableDragAndDrop:', err);
   }
 }
 
+// Nav drag start/end
 document.body.addEventListener('dragstart', function(e) {
   if (!window.isEditModeActive) return;
-  const target = e.target.closest('[draggable="true"]');
+  const targetEl = e.target.nodeType === Node.ELEMENT_NODE ? e.target : e.target.parentElement;
+  if (!targetEl || typeof targetEl.closest !== 'function') return;
+  // Only nav children (not .home-section — those are handled above)
+  if (targetEl.closest('.home-section')) return;
+  const target = targetEl.closest('[draggable="true"]');
   if (target) {
     activeDraggedEl = target;
     target.classList.add('dragging');
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', '');
+      e.dataTransfer.effectAllowed = 'move';
+    }
   }
 });
 
 document.body.addEventListener('dragend', async function(e) {
   if (!window.isEditModeActive || !activeDraggedEl) return;
+  if (activeDraggedEl.classList.contains('home-section')) return;
   activeDraggedEl.classList.remove('dragging');
-  
   const parent = activeDraggedEl.parentNode;
   if (parent && parent.getAttribute('data-admin-id')) {
     const parentId = getImageIdentifier(parent);
     const childrenIds = Array.from(parent.children).map(child => getImageIdentifier(child));
-    activeCustomizations[parentId] = {
-      order: childrenIds
-    };
+    activeCustomizations[parentId] = { order: childrenIds };
     await saveCustomizationsToServer();
   }
   activeDraggedEl = null;
 });
 
-function handleDragOver(e) {
+function handleNavDragOver(e) {
   e.preventDefault();
   const container = e.currentTarget;
   const afterElement = getDragAfterElement(container, e.clientY, e.clientX, true);
@@ -12025,58 +12379,105 @@ function handleDragOver(e) {
 
 function getDragAfterElement(container, y, x, horizontal = true) {
   const draggableElements = [...container.querySelectorAll(':scope > [draggable="true"]:not(.dragging)')];
-  
-  return draggableElements.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = x - (box.left + box.width / 2);
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
-    } else {
-      return closest;
-    }
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
+  const isRtl = document.body.classList.contains('rtl-layout') || window.getComputedStyle(container).direction === 'rtl';
+
+  if (!isRtl) {
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = x - (box.left + box.width / 2);
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  } else {
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = (box.left + box.width / 2) - x;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
 }
 
-// Listen for clicks on images/background-images when Edit Mode is active, or handle custom links
-document.body.addEventListener('click', function(e) {
-  // Find img or element with inline background-image
-  const target = e.target.closest('img') || e.target.closest('[style*="background-image"]');
-  if (!target) return;
 
-  // Ignore UI elements like icons or inside the editor itself
-  if (target.closest('.edit-modal-card') || target.id === 'user-badge-avatar' || target.closest('.panel-logo') || target.classList.contains('chat-user-avatar')) {
+
+// Helper to robustly find if an element is an image or background image
+// Only climbs up a limited number of levels and only checks INLINE styles (not computed)
+function findImageTarget(el) {
+  let current = el;
+  let levels = 0;
+  const MAX_LEVELS = 4;
+  while (current && current !== document.body && levels < MAX_LEVELS) {
+    if (current.tagName === 'IMG') {
+      return current;
+    }
+    // Only match elements with explicit inline background-image (not CSS-class backgrounds)
+    const styleAttr = current.getAttribute('style') || '';
+    if (styleAttr.includes('background-image') && styleAttr.includes('url(')) {
+      return current;
+    }
+    current = current.parentElement;
+    levels++;
+  }
+  return null;
+}
+
+// Edit mode click handler — intercept image clicks and show text editor popup
+document.body.addEventListener('click', function(e) {
+  if (!window.isEditModeActive) return;
+
+  const target = e.target;
+  if (!target || typeof target.closest !== 'function') return;
+
+  // Always allow edit UI elements through
+  if (
+    target.closest('#text-edit-popup') ||
+    target.closest('#image-editor-modal') ||
+    target.closest('#admin-edit-mode-toggle') ||
+    target.closest('.section-drag-handle') ||
+    target.closest('.section-move-btn') ||
+    target.closest('.section-hide-btn') ||
+    target.closest('[data-no-edit]')
+  ) return;
+
+  // Image click → open image editor
+  const imgEl = findImageTarget(target);
+  if (imgEl && imgEl.id !== 'user-badge-avatar' && !imgEl.closest('.panel-logo') && !imgEl.closest('#text-edit-popup')) {
+    e.preventDefault();
+    e.stopPropagation();
+    openImageEditor(imgEl);
     return;
   }
 
-  if (window.isEditModeActive) {
+  // Block article card navigation in edit mode (accidental click)
+  if (target.closest('.feed-item, .carousel-slide, .rec-card')) {
     e.preventDefault();
     e.stopPropagation();
-    openImageEditor(target);
-  } else {
-    // Navigate if link is configured
-    const link = target.getAttribute('data-custom-link');
-    if (link) {
-      e.preventDefault();
-      window.location.href = link;
-    }
   }
 }, true);
 
-// Listen for blur event on editable texts to save modifications
+// Normal mode — handle custom image links only
+document.body.addEventListener('click', function(e) {
+  if (window.isEditModeActive) return;
+  const target = e.target;
+  if (!target || typeof target.closest !== 'function') return;
+  const imgEl = findImageTarget(target);
+  if (imgEl) {
+    const link = imgEl.getAttribute('data-custom-link');
+    if (link) { e.preventDefault(); window.location.href = link; }
+  }
+}, true);
+
+
+// Listen for blur event on editable texts to save
 document.body.addEventListener('blur', async function(e) {
   if (!window.isEditModeActive) return;
-  const el = e.target;
-  if (el.getAttribute('contenteditable') === 'true') {
-    const currentVal = el.innerHTML;
-    if (currentVal !== el.dataset.originalText) {
-      el.dataset.originalText = currentVal;
-      const id = getImageIdentifier(el);
-      activeCustomizations[id] = {
-        text: currentVal
-      };
-      await saveCustomizationsToServer();
-    }
-  }
+  // Handled by popup save button now
 }, true);
 
 // Open editor modal
@@ -12225,30 +12626,15 @@ document.getElementById('btn-reset-image-edit').addEventListener('click', async 
   }
 });
 
-// Admin Edit Mode Button Click handler
+// Admin Edit Mode Button — toggle handler
 const editToggleBtn = document.getElementById('admin-edit-mode-toggle');
 if (editToggleBtn) {
-  editToggleBtn.addEventListener('click', function() {
-    try {
-      window.isEditModeActive = !window.isEditModeActive;
-      if (window.isEditModeActive) {
-        document.body.classList.add('admin-edit-mode-active');
-        editToggleBtn.classList.add('active');
-        editToggleBtn.querySelector('span').textContent = 'צא ממצב עריכה';
-        toggleTextEditable(true);
-        enableDragAndDrop(true);
-        showToast('✏️ מצב עריכה פעיל. לחץ על תמונה, ערוך מלל או גרור לשינוי מיקומים!');
-      } else {
-        document.body.classList.remove('admin-edit-mode-active');
-        editToggleBtn.classList.remove('active');
-        editToggleBtn.querySelector('span').textContent = 'מצב עריכה';
-        toggleTextEditable(false);
-        enableDragAndDrop(false);
-        showToast('🔒 מצב עריכה כבוי. השינויים נשמרו.');
-      }
-    } catch (err) {
-      console.error('Error toggling admin edit mode:', err);
-      alert('שגיאה בהפעלת מצב עריכה: ' + err.message);
+  editToggleBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (window.isEditModeActive) {
+      disableLiveEditMode();
+    } else {
+      enableLiveEditMode();
     }
   });
 }
