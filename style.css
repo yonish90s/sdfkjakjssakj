@@ -9318,6 +9318,44 @@ body.admin-edit-mode-active .home-section.section-hidden {
   color: #22c55e;
 }
 
+/* Collapsed section styles */
+.home-section.section-collapsed > div:not(.section-drag-handle),
+.home-section.section-collapsed > section {
+  display: none !important;
+}
+body.admin-edit-mode-active .home-section.section-collapsed {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
+  border-style: dashed !important;
+  border-color: rgba(226, 135, 67, 0.4) !important;
+}
+body.admin-edit-mode-active .home-section.section-collapsed .section-drag-handle {
+  display: flex !important;
+  border-radius: 10px !important;
+}
+.section-collapse-btn {
+  background: rgba(226, 135, 67, 0.1);
+  border: 1px solid rgba(226, 135, 67, 0.3);
+  color: #e28743;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.section-collapse-btn:hover {
+  background: rgba(226, 135, 67, 0.25);
+  border-color: rgba(226, 135, 67, 0.5);
+}
+.section-collapse-btn.is-collapsed {
+  background: rgba(226, 135, 67, 0.35);
+  color: #fff;
+  border-color: rgba(226, 135, 67, 0.6);
+}
+
 /* ============================================================
    TEXT EDIT POPUP — New Edit Mode
    ============================================================ */
@@ -9433,3 +9471,90 @@ body.admin-edit-mode-active li:hover {
   border-radius: 4px;
   cursor: pointer;
 }
+
+/* Floating duplicate button styling in admin mode */
+.article-duplicate-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 99;
+  background: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(226, 135, 67, 0.6);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.article-duplicate-btn:hover {
+  background: #e28743;
+  color: #fff;
+  border-color: #e28743;
+  transform: scale(1.05);
+}
+.article-duplicate-btn i {
+  font-size: 0.85rem;
+}
+
+/* Floating delete button styling in admin mode */
+.article-delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 99;
+  background: rgba(239, 68, 68, 0.9);
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.article-delete-btn:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+  transform: scale(1.05);
+}
+.article-delete-btn i {
+  font-size: 0.85rem;
+}
+
+/* Premium toggle switch styling */
+.switch input:checked + .slider {
+  background-color: #e28743 !important;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.switch input:checked + .slider:before {
+  transform: translateX(22px);
+}
+.slider.round {
+  border-radius: 34px;
+}
+
+

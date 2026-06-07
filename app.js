@@ -854,7 +854,7 @@ function renderNewsLayout(page = 1) {
     if (featuredCarousel) {
       if (currentCategory === 'all' && (!searchQuery || searchQuery.trim() === '')) {
         // Show carousel only on the main 'All' page
-        displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 12);
+        displayFeatured = filteredArticles.filter(a => a.approved !== false && a.excludeFromCarousel !== true).slice(0, 12);
       } else {
         // Hide carousel and show a simple list when a specific category is selected or searching
         displayFeatured = [];
@@ -866,16 +866,27 @@ function renderNewsLayout(page = 1) {
           <div class="carousel-track-wrapper">
             <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
             <div class="carousel-track" id="main-carousel-track">
-              ${displayFeatured.map(a => `
-                <div class="carousel-slide featured-card ${myArticlesList.some(x => x.id === a.id) ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})">
-                  <img src="${a.image}" alt="${escHtml(a.title)}">
-                  <div class="featured-overlay">
-                    <span class="featured-tag">${escHtml(a.category)}</span>
-                    ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
-                    <div class="featured-title">${escHtml(a.title)}</div>
+              ${displayFeatured.map(a => {
+                const actionsHtml = window.isEditModeActive ? `
+                  <button class="article-duplicate-btn" onclick="event.stopPropagation(); duplicateArticle(${a.id});" title="שכפל כתבה">
+                    <i class="fas fa-copy"></i> שכפל
+                  </button>
+                  <button class="article-delete-btn" onclick="event.stopPropagation(); deleteArticle(${a.id});" title="הסר כתבה">
+                    <i class="fas fa-trash-alt"></i> הסר
+                  </button>
+                ` : '';
+                return `
+                  <div class="carousel-slide featured-card ${myArticlesList.some(x => x.id === a.id) ? 'saved-highlight' : ''}" onclick="showArticle(${a.id})" style="position: relative;">
+                    ${actionsHtml}
+                    <img src="${a.image}" alt="${escHtml(a.title)}">
+                    <div class="featured-overlay">
+                      <span class="featured-tag">${escHtml(a.category)}</span>
+                      ${a.isPremium ? `<div style="font-size:0.75rem; font-weight:800; color:#f9b233; margin-bottom:-4px; display:flex; align-items:center; gap:4px; text-transform:uppercase;"><i class="fas fa-crown"></i> PREMIUM</div>` : ''}
+                      <div class="featured-title">${escHtml(a.title)}</div>
+                    </div>
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
             <button class="carousel-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
           </div>
@@ -899,8 +910,17 @@ function renderNewsLayout(page = 1) {
 
   const articlesHTML = pageArticles.map(a => {
     const isSaved = myArticlesList.some(x => x.id === a.id);
+    const actionsHtml = window.isEditModeActive ? `
+      <button class="article-duplicate-btn" onclick="event.stopPropagation(); duplicateArticle(${a.id});" title="שכפל כתבה">
+        <i class="fas fa-copy"></i> שכפל
+      </button>
+      <button class="article-delete-btn" onclick="event.stopPropagation(); deleteArticle(${a.id});" title="הסר כתבה">
+        <i class="fas fa-trash-alt"></i> הסר
+      </button>
+    ` : '';
     return `
-      <div class="feed-item" onclick="showArticle(${a.id})">
+      <div class="feed-item" onclick="showArticle(${a.id})" style="position: relative;">
+        ${actionsHtml}
         <div class="feed-image" style="background-image: url('${a.image}')"></div>
         <div class="feed-content">
           <h2 class="feed-title">${escHtml(a.title)}</h2>
@@ -1059,7 +1079,7 @@ function showArticle(id) {
   document.getElementById('article-content').innerHTML = `
     <header class="article-header">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <div class="article-category">${escHtml(a.category)}</div>
+        <div class="article-category" id="inline-category">${escHtml(a.category)}</div>
         <div style="display:flex; gap:10px; align-items:center;">
           <!-- Book Mode Button -->
           <button class="btn-book-reader" onclick="window.openBookReader(${a.id});" style="background:none; border:1px solid #0071e3; color:#0071e3; padding:8px 16px; border-radius:980px; font-size:0.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='rgba(0,113,227,0.05)'" onmouseout="this.style.background='none'">
@@ -1100,7 +1120,7 @@ function showArticle(id) {
         
         if (hasAccess) {
           return `
-            <div class="article-text">${processedContent || a.text || ''}</div>
+            <div class="article-text" id="inline-text">${processedContent || a.text || ''}</div>
             ${(() => {
               const ytId = getYouTubeId(a.youtube);
               if (!ytId) return '';
@@ -9726,11 +9746,146 @@ function positionTextEditPopup(el, popup) {
   popup.style.left = left + 'px';
 }
 
+async function saveEditedArticle(articleObj) {
+  try {
+    if (window.db && window.fbFirestore) {
+      const { doc, updateDoc } = window.fbFirestore;
+      if (articleObj.firestoreId) {
+        await updateDoc(doc(window.db, "articles", articleObj.firestoreId), {
+          title: articleObj.title || '',
+          author: articleObj.author || '',
+          time: articleObj.time || '',
+          content: articleObj.content || '',
+          text: articleObj.text || '',
+          category: articleObj.category || ''
+        });
+      }
+    }
+    // Parallel save to local server disk
+    await fetch('/api/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(articleObj)
+    });
+    showToast('✅ הכתבה עודכנה בהצלחה!');
+  } catch (err) {
+    console.error('Error saving article:', err);
+    showToast('❌ שגיאה בעדכון הכתבה בשרת/ענן', 'error');
+  }
+}
+
+async function duplicateArticle(id) {
+  const orig = newsArticles.find(x => x.id === id);
+  if (!orig) return;
+  
+  const isHeb = document.body.classList.contains('rtl-layout');
+  const copySuffix = isHeb ? ' (עותק)' : ' (Copy)';
+  
+  const clone = {
+    ...orig,
+    id: Date.now(),
+    title: orig.title + copySuffix,
+    time: new Date().toISOString().slice(0, 10) + ' ' + new Date().toTimeString().slice(0, 5),
+    excludeFromCarousel: true
+  };
+  delete clone.firestoreId;
+  
+  showToast('⏳ משכפל כתבה...');
+  
+  try {
+    if (window.db && window.fbFirestore) {
+      const { collection, addDoc } = window.fbFirestore;
+      const docRef = await addDoc(collection(window.db, "articles"), clone);
+      clone.firestoreId = docRef.id;
+    }
+    
+    await fetch('/api/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(clone)
+    });
+    
+    newsArticles.unshift(clone);
+    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+    renderNewsLayout();
+    showToast('✅ הכתבה שוכפלה בהצלחה!');
+  } catch (err) {
+    console.error('Error duplicating article:', err);
+    showToast('❌ שגיאה בשכפול הכתבה', 'error');
+  }
+}
+window.duplicateArticle = duplicateArticle;
+
+async function deleteArticle(id) {
+  const isHeb = document.body.classList.contains('rtl-layout');
+  const confirmMsg = isHeb ? 'האם אתה בטוח שברצונך למחוק את הכתבה הזו?' : 'Are you sure you want to delete this article?';
+  if (!confirm(confirmMsg)) return;
+
+  const orig = newsArticles.find(x => x.id === id);
+  if (!orig) return;
+
+  showToast(isHeb ? '⏳ מוחק כתבה...' : '⏳ Deleting article...');
+
+  try {
+    if (window.db && window.fbFirestore && orig.firestoreId) {
+      const { doc, deleteDoc } = window.fbFirestore;
+      await deleteDoc(doc(window.db, "articles", orig.firestoreId));
+    }
+    
+    // Also delete from local API
+    await fetch(`/api/articles/${orig.id}`, {
+      method: 'DELETE'
+    });
+
+    // Remove from local array
+    newsArticles = newsArticles.filter(x => x.id !== id);
+    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+    
+    // If viewing the deleted article, return to home
+    if (typeof currentArticleId !== 'undefined' && currentArticleId === id) {
+      showPage('home');
+    } else {
+      renderNewsLayout();
+    }
+    
+    showToast(isHeb ? '✅ הכתבה נמחקה בהצלחה!' : '✅ Article deleted successfully!');
+  } catch (err) {
+    console.error('Error deleting article:', err);
+    showToast(isHeb ? '❌ שגיאה במחיקת הכתבה' : '❌ Error deleting article', 'error');
+  }
+}
+window.deleteArticle = deleteArticle;
+
 async function saveTextEdit(newText) {
   if (!_editPopupTarget) return;
   const el = _editPopupTarget;
 
-  // Apply the new text
+  // Check if editing an article detail element
+  const articleContainer = el.closest('#article-content');
+  if (articleContainer && typeof currentArticleId !== 'undefined' && currentArticleId) {
+    const a = newsArticles.find(x => x.id === currentArticleId);
+    if (a) {
+      if (el.id === 'inline-title') {
+        a.title = newText;
+      } else if (el.id === 'inline-author') {
+        a.author = newText;
+      } else if (el.id === 'inline-time') {
+        a.time = newText;
+      } else if (el.id === 'inline-text') {
+        a.content = newText;
+        a.text = newText;
+      } else if (el.id === 'inline-category') {
+        a.category = newText;
+      }
+      
+      await saveEditedArticle(a);
+      showArticle(currentArticleId);
+      closeTextEditPopup();
+      return;
+    }
+  }
+
+  // Apply the new text (default static element behavior)
   el.textContent = newText;
 
   // Save to customizations using DOM path
@@ -9762,13 +9917,15 @@ document.addEventListener('click', function(e) {
     target.closest('.section-drag-handle') ||
     target.closest('.section-move-btn') ||
     target.closest('.section-hide-btn') ||
+    target.closest('.article-duplicate-btn') ||
+    target.closest('.article-delete-btn') ||
     target.closest('#user-profile-badge') ||
     target.closest('[data-no-edit]')
   ) return;
 
   // Check for image click
   const imgEl = findImageTarget(target);
-  if (imgEl && imgEl.id !== 'user-badge-avatar' && !imgEl.closest('.panel-logo')) {
+  if (imgEl && imgEl.id !== 'user-badge-avatar' && !imgEl.closest('.panel-logo') && !imgEl.closest('#text-edit-popup')) {
     e.preventDefault();
     e.stopPropagation();
     openImageEditor(imgEl);
@@ -11688,7 +11845,7 @@ window.addEventListener('scroll', () => {
     let displayFeatured = [];
     const featuredCarousel = document.getElementById('featured-carousel-container');
     if (featuredCarousel && featuredCarousel.style.display !== 'none') {
-      displayFeatured = filteredArticles.filter(a => a.approved !== false).slice(0, 12);
+      displayFeatured = filteredArticles.filter(a => a.approved !== false && a.excludeFromCarousel !== true).slice(0, 12);
     }
     
     const feedArticles = filteredArticles.filter(a => !displayFeatured.includes(a) && a.approved !== false);
@@ -12042,6 +12199,14 @@ function applyAllCustomizations() {
           el.style.width = cust.width;
           el.style.maxWidth = '100%';
         }
+        if (cust.positionY) {
+          if (el.tagName === 'IMG') {
+            el.style.objectFit = 'cover';
+            el.style.objectPosition = `center ${cust.positionY}`;
+          } else {
+            el.style.backgroundPosition = `center ${cust.positionY}`;
+          }
+        }
         if (cust.link) {
           if (el.getAttribute('data-custom-link') !== cust.link) {
             el.setAttribute('data-custom-link', cust.link);
@@ -12099,6 +12264,7 @@ initCustomizations();
 let _sectionDragEl = null;   // the .home-section being dragged
 let _sectionDragOver = null; // the .home-section we're hovering over
 let _sectionHiddenIds = new Set(); // hidden section IDs
+let _sectionCollapsedIds = new Set(); // collapsed section IDs
 
 /**
  * Inject drag handles into every .home-section
@@ -12123,6 +12289,7 @@ function initSectionDragDrop(active) {
     const sectionId = section.getAttribute('data-section-id') || '';
     const label = section.getAttribute('data-section-label') || sectionId;
     const isHidden = _sectionHiddenIds.has(sectionId);
+    const isCollapsed = _sectionCollapsedIds.has(sectionId);
 
     // Build the drag handle
     const handle = document.createElement('div');
@@ -12447,59 +12614,6 @@ function findImageTarget(el) {
   return null;
 }
 
-// Edit mode click handler — intercept image clicks and show text editor popup
-document.body.addEventListener('click', function(e) {
-  if (!window.isEditModeActive) return;
-
-  const target = e.target;
-  if (!target || typeof target.closest !== 'function') return;
-
-  // Always allow edit UI elements through
-  if (
-    target.closest('#text-edit-popup') ||
-    target.closest('#image-editor-modal') ||
-    target.closest('#admin-edit-mode-toggle') ||
-    target.closest('.section-drag-handle') ||
-    target.closest('.section-move-btn') ||
-    target.closest('.section-hide-btn') ||
-    target.closest('[data-no-edit]')
-  ) return;
-
-  // Image click → open image editor
-  const imgEl = findImageTarget(target);
-  if (imgEl && imgEl.id !== 'user-badge-avatar' && !imgEl.closest('.panel-logo') && !imgEl.closest('#text-edit-popup')) {
-    e.preventDefault();
-    e.stopPropagation();
-    openImageEditor(imgEl);
-    return;
-  }
-
-  // Block article card navigation in edit mode (accidental click)
-  if (target.closest('.feed-item, .carousel-slide, .rec-card')) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-}, true);
-
-// Normal mode — handle custom image links only
-document.body.addEventListener('click', function(e) {
-  if (window.isEditModeActive) return;
-  const target = e.target;
-  if (!target || typeof target.closest !== 'function') return;
-  const imgEl = findImageTarget(target);
-  if (imgEl) {
-    const link = imgEl.getAttribute('data-custom-link');
-    if (link) { e.preventDefault(); window.location.href = link; }
-  }
-}, true);
-
-
-// Listen for blur event on editable texts to save
-document.body.addEventListener('blur', async function(e) {
-  if (!window.isEditModeActive) return;
-  // Handled by popup save button now
-}, true);
-
 // Open editor modal
 function openImageEditor(img) {
   currentEditingImg = img;
@@ -12531,22 +12645,62 @@ function openImageEditor(img) {
   widthInput.value = widthVal;
   widthLabel.textContent = `רוחב תמונה: ${widthVal}%`;
 
+  // Get current Y position
+  let yVal = 50;
+  if (img.tagName === 'IMG') {
+    const pos = img.style.objectPosition || window.getComputedStyle(img).objectPosition;
+    const match = pos.match(/center\s+(\d+)%/);
+    if (match) yVal = parseInt(match[1]) || 50;
+  } else {
+    const pos = img.style.backgroundPosition || window.getComputedStyle(img).backgroundPosition;
+    const match = pos.match(/center\s+(\d+)%/);
+    if (match) yVal = parseInt(match[1]) || 50;
+  }
+  
+  const yInput = document.getElementById('image-editor-position-y');
+  const yLabel = document.getElementById('image-editor-position-y-label');
+  if (yInput && yLabel) {
+    yInput.value = yVal;
+    yLabel.textContent = `מיקוד אנכי (גובה): ${yVal}%`;
+  }
+  preview.style.objectFit = 'cover';
+  preview.style.objectPosition = `center ${yVal}%`;
+
   // Get current link
   linkInput.value = img.getAttribute('data-custom-link') || '';
+
+  // Reset Crop Tool Toggle to False on open
+  const cropToggle = document.getElementById('image-editor-crop-toggle');
+  if (cropToggle) cropToggle.checked = false;
+  window.toggleCropTool(false);
 
   modal.classList.add('active');
 }
 
-// Modal control listeners
-document.getElementById('image-editor-width').addEventListener('input', function(e) {
-  const val = e.target.value;
-  document.getElementById('image-editor-width-label').textContent = `רוחב תמונה: ${val}%`;
-  document.getElementById('image-editor-preview').style.width = `${val}%`;
-});
+window.closeImageEditor = function() {
+  document.getElementById('image-editor-modal').classList.remove('active');
+  currentEditingImg = null;
+};
 
-// File upload handler for editor
-document.getElementById('image-editor-file').addEventListener('change', function(e) {
-  const file = e.target.files[0];
+window.updateImageEditorWidth = function(val) {
+  const label = document.getElementById('image-editor-width-label');
+  if (label) label.textContent = `רוחב תמונה: ${val}%`;
+  const preview = document.getElementById('image-editor-preview');
+  if (preview) preview.style.width = `${val}%`;
+};
+
+window.updateImageEditorPositionY = function(val) {
+  const label = document.getElementById('image-editor-position-y-label');
+  if (label) label.textContent = `מיקוד אנכי (גובה): ${val}%`;
+  const preview = document.getElementById('image-editor-preview');
+  if (preview) {
+    preview.style.objectFit = 'cover';
+    preview.style.objectPosition = `center ${val}%`;
+  }
+};
+
+window.handleImageEditorFile = function(input) {
+  const file = input.files[0];
   if (!file) return;
 
   showToast('⏳ מעבד תמונה...');
@@ -12568,38 +12722,114 @@ document.getElementById('image-editor-file').addEventListener('change', function
       ctx.drawImage(img, 0, 0, width, height);
       
       const compressedUrl = canvas.toDataURL('image/jpeg', 0.85);
-      document.getElementById('image-editor-preview').src = compressedUrl;
+      const preview = document.getElementById('image-editor-preview');
+      if (preview) preview.src = compressedUrl;
       showToast('✅ תמונה הועלתה בהצלחה לתצוגה מקדימה');
     };
     img.src = evt.target.result;
   };
   reader.readAsDataURL(file);
-});
+};
 
-// Close modal helper
-function closeImageEditor() {
-  document.getElementById('image-editor-modal').classList.remove('active');
-  currentEditingImg = null;
-}
-
-document.getElementById('btn-close-image-editor').addEventListener('click', closeImageEditor);
-document.getElementById('btn-cancel-image-edit').addEventListener('click', closeImageEditor);
-
-// Apply edits
-document.getElementById('btn-apply-image-edit').addEventListener('click', async function() {
+window.applyImageEdit = async function() {
   if (!currentEditingImg) return;
 
-  const previewSrc = document.getElementById('image-editor-preview').src;
-  const widthVal = document.getElementById('image-editor-width').value;
-  const linkVal = document.getElementById('image-editor-link').value.trim();
+  const preview = document.getElementById('image-editor-preview');
+  const widthValEl = document.getElementById('image-editor-width');
+  const positionYValEl = document.getElementById('image-editor-position-y');
+  const linkValEl = document.getElementById('image-editor-link');
+  if (!preview || !widthValEl || !positionYValEl || !linkValEl) return;
+
+  let finalSrc = preview.src;
+  const widthVal = widthValEl.value;
+  const yVal = positionYValEl.value;
+  const linkVal = linkValEl.value.trim();
+
+  // Perform canvas cropping if Crop Tool is checked
+  if (isCropActive) {
+    const cropBox = document.getElementById('crop-box');
+    if (cropBox && preview.naturalWidth) {
+      const boxL = parseInt(cropBox.style.left) || 0;
+      const boxT = parseInt(cropBox.style.top) || 0;
+      const boxW = parseInt(cropBox.style.width) || 50;
+      const boxH = parseInt(cropBox.style.height) || 50;
+
+      // Helper to compute containment bounds of letterboxed image
+      const getRenderedImageRect = function(img) {
+        const container = img.parentElement;
+        const cw = container.clientWidth;
+        const ch = container.clientHeight;
+        const iw = img.naturalWidth;
+        const ih = img.naturalHeight;
+        if (!iw || !ih) return { left: 0, top: 0, width: cw, height: ch };
+
+        const containerRatio = cw / ch;
+        const imageRatio = iw / ih;
+
+        let w, h, l, t;
+        if (imageRatio > containerRatio) {
+          w = cw;
+          h = cw / imageRatio;
+          l = 0;
+          t = (ch - h) / 2;
+        } else {
+          h = ch;
+          w = ch * imageRatio;
+          t = 0;
+          l = (cw - w) / 2;
+        }
+        return { left: l, top: t, width: w, height: h };
+      };
+
+      const imgRect = getRenderedImageRect(preview);
+      const overlapL = Math.max(boxL, imgRect.left);
+      const overlapT = Math.max(boxT, imgRect.top);
+      const overlapR = Math.min(boxL + boxW, imgRect.left + imgRect.width);
+      const overlapB = Math.min(boxT + boxH, imgRect.top + imgRect.height);
+
+      const overlapW = overlapR - overlapL;
+      const overlapH = overlapB - overlapT;
+
+      if (overlapW > 0 && overlapH > 0) {
+        const sx = ((overlapL - imgRect.left) / imgRect.width) * preview.naturalWidth;
+        const sy = ((overlapT - imgRect.top) / imgRect.height) * preview.naturalHeight;
+        const sw = (overlapW / imgRect.width) * preview.naturalWidth;
+        const sh = (overlapH / imgRect.height) * preview.naturalHeight;
+
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = sw;
+          canvas.height = sh;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(preview, sx, sy, sw, sh, 0, 0, sw, sh);
+          finalSrc = canvas.toDataURL('image/jpeg', 0.85);
+        } catch (e) {
+          console.error('Cropping error:', e);
+        }
+      }
+    }
+  }
+
+  const isFixedSize = currentEditingImg.classList.contains('feed-image') || 
+                      currentEditingImg.closest('.featured-card') || 
+                      currentEditingImg.closest('.recommendations-grid') ||
+                      currentEditingImg.closest('.carousel-slide');
 
   if (currentEditingImg.tagName === 'IMG') {
-    currentEditingImg.src = previewSrc;
+    currentEditingImg.src = finalSrc;
+    currentEditingImg.style.objectFit = 'cover';
+    currentEditingImg.style.objectPosition = `center ${yVal}%`;
   } else {
-    currentEditingImg.style.backgroundImage = `url("${previewSrc}")`;
+    currentEditingImg.style.backgroundImage = `url("${finalSrc}")`;
+    currentEditingImg.style.backgroundPosition = `center ${yVal}%`;
   }
-  currentEditingImg.style.width = `${widthVal}%`;
-  currentEditingImg.style.maxWidth = '100%';
+
+  if (!isFixedSize) {
+    currentEditingImg.style.width = `${widthVal}%`;
+    currentEditingImg.style.maxWidth = '100%';
+  } else {
+    currentEditingImg.style.width = '';
+  }
 
   if (linkVal) {
     currentEditingImg.setAttribute('data-custom-link', linkVal);
@@ -12610,20 +12840,251 @@ document.getElementById('btn-apply-image-edit').addEventListener('click', async 
   // Update active customizations
   const id = getImageIdentifier(currentEditingImg);
   activeCustomizations[id] = {
-    src: previewSrc,
-    width: `${widthVal}%`,
+    src: finalSrc,
+    width: isFixedSize ? null : `${widthVal}%`,
+    positionY: `${yVal}%`,
     link: linkVal || null
   };
 
-  closeImageEditor();
+  window.closeImageEditor();
   showToast('✓ שינויים מקומיים הוחלו');
   
   // Auto save to server
   await saveCustomizationsToServer();
-});
+};
 
-// Reset image edit
-document.getElementById('btn-reset-image-edit').addEventListener('click', async function() {
+// Helper to compute containment bounds of letterboxed image
+function getRenderedImageRect(img) {
+  const container = img.parentElement;
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (!iw || !ih) return { left: 0, top: 0, width: cw, height: ch };
+
+  const containerRatio = cw / ch;
+  const imageRatio = iw / ih;
+
+  let w, h, l, t;
+  if (imageRatio > containerRatio) {
+    w = cw;
+    h = cw / imageRatio;
+    l = 0;
+    t = (ch - h) / 2;
+  } else {
+    h = ch;
+    w = ch * imageRatio;
+    t = 0;
+    l = (cw - w) / 2;
+  }
+  return { left: l, top: t, width: w, height: h };
+}
+
+window.syncCropInputs = function() {
+  const cropBox = document.getElementById('crop-box');
+  const preview = document.getElementById('image-editor-preview');
+  if (!cropBox || !preview || !preview.naturalWidth) return;
+
+  const boxW = parseInt(cropBox.style.width) || 0;
+  const boxH = parseInt(cropBox.style.height) || 0;
+
+  const imgRect = getRenderedImageRect(preview);
+  const naturalW = Math.round((boxW / imgRect.width) * preview.naturalWidth);
+  const naturalH = Math.round((boxH / imgRect.height) * preview.naturalHeight);
+
+  const wInput = document.getElementById('crop-box-input-w');
+  const hInput = document.getElementById('crop-box-input-h');
+  if (wInput && document.activeElement !== wInput) wInput.value = naturalW;
+  if (hInput && document.activeElement !== hInput) hInput.value = naturalH;
+};
+
+window.updateCropBoxDimensionsFromInputs = function() {
+  const wInput = document.getElementById('crop-box-input-w');
+  const hInput = document.getElementById('crop-box-input-h');
+  const cropBox = document.getElementById('crop-box');
+  const preview = document.getElementById('image-editor-preview');
+  if (!wInput || !hInput || !cropBox || !preview || !preview.naturalWidth) return;
+
+  let valW = parseInt(wInput.value) || 10;
+  let valH = parseInt(hInput.value) || 10;
+
+  if (valW > preview.naturalWidth) valW = preview.naturalWidth;
+  if (valH > preview.naturalHeight) valH = preview.naturalHeight;
+  if (valW < 10) valW = 10;
+  if (valH < 10) valH = 10;
+
+  const imgRect = getRenderedImageRect(preview);
+  const boxW = (valW / preview.naturalWidth) * imgRect.width;
+  const boxH = (valH / preview.naturalHeight) * imgRect.height;
+
+  cropBox.style.width = `${Math.round(boxW)}px`;
+  cropBox.style.height = `${Math.round(boxH)}px`;
+  
+  const boxL = parseInt(cropBox.style.left) || 0;
+  const boxT = parseInt(cropBox.style.top) || 0;
+  const container = document.getElementById('crop-container');
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+
+  if (boxL + boxW > cw) cropBox.style.left = `${cw - boxW}px`;
+  if (boxT + boxH > ch) cropBox.style.top = `${ch - boxH}px`;
+};
+
+// Crop box dragging/resizing interaction logic
+let isCropActive = false;
+let cropStart = null;
+
+window.toggleCropTool = function(checked) {
+  isCropActive = checked;
+  const cropBox = document.getElementById('crop-box');
+  const inputsDiv = document.getElementById('crop-dimensions-inputs');
+  if (!cropBox) return;
+
+  if (inputsDiv) inputsDiv.style.display = checked ? 'flex' : 'none';
+
+  if (checked) {
+    cropBox.style.display = 'block';
+    
+    // Position Crop Box centered at 70% width and height
+    const container = document.getElementById('crop-container');
+    const cw = container.clientWidth;
+    const ch = container.clientHeight;
+    
+    const w = Math.round(cw * 0.7);
+    const h = Math.round(ch * 0.7);
+    const l = Math.round((cw - w) / 2);
+    const t = Math.round((ch - h) / 2);
+
+    cropBox.style.left = `${l}px`;
+    cropBox.style.top = `${t}px`;
+    cropBox.style.width = `${w}px`;
+    cropBox.style.height = `${h}px`;
+
+    // Wait for display update, then sync dimensions
+    setTimeout(window.syncCropInputs, 20);
+  } else {
+    cropBox.style.display = 'none';
+  }
+};
+
+document.addEventListener('mousedown', startCropInteraction);
+document.addEventListener('touchstart', startCropInteraction, { passive: false });
+
+document.addEventListener('mousemove', handleCropInteraction);
+document.addEventListener('touchmove', handleCropInteraction, { passive: false });
+
+document.addEventListener('mouseup', stopCropInteraction);
+document.addEventListener('touchend', stopCropInteraction);
+
+function startCropInteraction(e) {
+  if (!isCropActive) return;
+  const target = e.target;
+  const cropBox = document.getElementById('crop-box');
+  if (!cropBox || !cropBox.contains(target)) return;
+
+  e.preventDefault();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  let mode = 'move';
+  if (target.classList.contains('crop-handle')) {
+    if (target.classList.contains('tl')) mode = 'tl';
+    else if (target.classList.contains('tr')) mode = 'tr';
+    else if (target.classList.contains('bl')) mode = 'bl';
+    else if (target.classList.contains('br')) mode = 'br';
+    else if (target.classList.contains('t')) mode = 't';
+    else if (target.classList.contains('b')) mode = 'b';
+    else if (target.classList.contains('l')) mode = 'l';
+    else if (target.classList.contains('r')) mode = 'r';
+  }
+
+  cropStart = {
+    mode: mode,
+    startX: clientX,
+    startY: clientY,
+    startLeft: parseInt(cropBox.style.left) || 0,
+    startTop: parseInt(cropBox.style.top) || 0,
+    startWidth: parseInt(cropBox.style.width) || 100,
+    startHeight: parseInt(cropBox.style.height) || 100
+  };
+}
+
+function handleCropInteraction(e) {
+  if (!isCropActive || !cropStart) return;
+  e.preventDefault();
+
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  const dx = clientX - cropStart.startX;
+  const dy = clientY - cropStart.startY;
+
+  const cropBox = document.getElementById('crop-box');
+  const container = document.getElementById('crop-container');
+  if (!cropBox || !container) return;
+
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+
+  let nextLeft = cropStart.startLeft;
+  let nextTop = cropStart.startTop;
+  let nextWidth = cropStart.startWidth;
+  let nextHeight = cropStart.startHeight;
+
+  const MIN_SIZE = 10;
+
+  if (cropStart.mode === 'move') {
+    nextLeft = cropStart.startLeft + dx;
+    nextTop = cropStart.startTop + dy;
+
+    if (nextLeft < 0) nextLeft = 0;
+    if (nextTop < 0) nextTop = 0;
+    if (nextLeft + nextWidth > cw) nextLeft = cw - nextWidth;
+    if (nextTop + nextHeight > ch) nextTop = ch - nextHeight;
+  } else {
+    if (cropStart.mode.includes('l')) {
+      const targetLeft = cropStart.startLeft + dx;
+      const targetWidth = cropStart.startWidth - dx;
+      if (targetLeft >= 0 && targetWidth >= MIN_SIZE) {
+        nextLeft = targetLeft;
+        nextWidth = targetWidth;
+      }
+    }
+    if (cropStart.mode.includes('r')) {
+      const targetWidth = cropStart.startWidth + dx;
+      if (cropStart.startLeft + targetWidth <= cw && targetWidth >= MIN_SIZE) {
+        nextWidth = targetWidth;
+      }
+    }
+    if (cropStart.mode.includes('t')) {
+      const targetTop = cropStart.startTop + dy;
+      const targetHeight = cropStart.startHeight - dy;
+      if (targetTop >= 0 && targetHeight >= MIN_SIZE) {
+        nextTop = targetTop;
+        nextHeight = targetHeight;
+      }
+    }
+    if (cropStart.mode.includes('b')) {
+      const targetHeight = cropStart.startHeight + dy;
+      if (cropStart.startTop + targetHeight <= ch && targetHeight >= MIN_SIZE) {
+        nextHeight = targetHeight;
+      }
+    }
+  }
+
+  cropBox.style.left = `${nextLeft}px`;
+  cropBox.style.top = `${nextTop}px`;
+  cropBox.style.width = `${nextWidth}px`;
+  cropBox.style.height = `${nextHeight}px`;
+
+  window.syncCropInputs();
+}
+
+function stopCropInteraction() {
+  cropStart = null;
+}
+
+window.resetImageEdit = async function() {
   if (!currentEditingImg) return;
   if (confirm('האם אתה בטוח שברצונך לאפס את התמונה למקור?')) {
     const id = getImageIdentifier(currentEditingImg);
@@ -12636,15 +13097,19 @@ document.getElementById('btn-reset-image-edit').addEventListener('click', async 
     currentEditingImg.removeAttribute('data-custom-link');
     if (currentEditingImg.tagName !== 'IMG') {
       currentEditingImg.style.backgroundImage = '';
+      currentEditingImg.style.backgroundPosition = '';
+    } else {
+      currentEditingImg.style.objectFit = '';
+      currentEditingImg.style.objectPosition = '';
     }
     
-    closeImageEditor();
+    window.closeImageEditor();
     showToast('✓ התמונה אופסה. טוען מחדש...');
     
     await saveCustomizationsToServer();
     window.location.reload();
   }
-});
+};
 
 // Admin Edit Mode Button — toggle handler
 const editToggleBtn = document.getElementById('admin-edit-mode-toggle');

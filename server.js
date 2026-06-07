@@ -301,6 +301,24 @@ app.post('/api/articles', (req, res) => {
   }
 });
 
+// DELETE /api/articles/:id - Deletes an article from the server
+app.delete('/api/articles/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const articlesDir = path.join(process.cwd(), 'articles');
+    const filename = `${id}.json`;
+    const filePath = path.join(articlesDir, filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      return res.json({ success: true, message: 'Article deleted from server' });
+    }
+    res.status(404).json({ error: 'Article not found' });
+  } catch (err) {
+    console.error('Delete article error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/ali-products — AliExpress products with localized pricing
 app.get('/api/ali-products', (req, res) => {
   try {
