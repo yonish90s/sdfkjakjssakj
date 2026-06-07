@@ -4576,31 +4576,46 @@
       </div>
 
       <div class="edit-modal-preview-box" id="crop-container" style="position: relative; height: 250px; background: #09090b; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; user-select: none;">
-        <img id="image-editor-preview" src="" alt="תצוגה מקדימה" style="max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none;" />
-        <!-- Draggable & Resizable Crop Box -->
-        <div id="crop-box" style="position: absolute; border: 2px dashed #e28743; box-shadow: 0 0 0 4000px rgba(0,0,0,0.65); cursor: move; display: none; box-sizing: border-box; z-index: 10;">
-          <!-- L-shaped Corner Handles -->
-          <div class="crop-handle tl" style="position: absolute; width: 16px; height: 16px; border-top: 3px solid #e28743; border-left: 3px solid #e28743; top: -4px; left: -4px; cursor: nwse-resize; box-sizing: border-box;"></div>
-          <div class="crop-handle tr" style="position: absolute; width: 16px; height: 16px; border-top: 3px solid #e28743; border-right: 3px solid #e28743; top: -4px; right: -4px; cursor: nesw-resize; box-sizing: border-box;"></div>
-          <div class="crop-handle bl" style="position: absolute; width: 16px; height: 16px; border-bottom: 3px solid #e28743; border-left: 3px solid #e28743; bottom: -4px; left: -4px; cursor: nesw-resize; box-sizing: border-box;"></div>
-          <div class="crop-handle br" style="position: absolute; width: 16px; height: 16px; border-bottom: 3px solid #e28743; border-right: 3px solid #e28743; bottom: -4px; right: -4px; cursor: nwse-resize; box-sizing: border-box;"></div>
-          <!-- Edge handles -->
-          <div class="crop-handle t" style="position: absolute; width: 12px; height: 6px; background: #e28743; top: -3px; left: calc(50% - 6px); cursor: ns-resize; box-sizing: border-box;"></div>
-          <div class="crop-handle b" style="position: absolute; width: 12px; height: 6px; background: #e28743; bottom: -3px; left: calc(50% - 6px); cursor: ns-resize; box-sizing: border-box;"></div>
-          <div class="crop-handle l" style="position: absolute; width: 6px; height: 12px; background: #e28743; left: -3px; top: calc(50% - 6px); cursor: ew-resize; box-sizing: border-box;"></div>
-          <div class="crop-handle r" style="position: absolute; width: 6px; height: 12px; background: #e28743; right: -3px; top: calc(50% - 6px); cursor: ew-resize; box-sizing: border-box;"></div>
-        </div>
+        <img id="image-editor-preview" src="" alt="תצוגה מקדימה" style="max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; transition: clip-path 0.1s;" />
       </div>
 
-      <!-- Crop Dimension Manual Inputs -->
-      <div id="crop-dimensions-inputs" style="display:none; gap:12px; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); box-sizing: border-box;">
-        <div style="flex:1;">
-          <label style="font-size:0.75rem; font-weight:600; color:#a1a1aa; display:block; margin-bottom:4px;">רוחב (בפיקסלים):</label>
-          <input type="number" id="crop-box-input-w" class="edit-control-input" style="height:34px; padding:0 8px; font-size:0.85rem;" oninput="updateCropBoxDimensionsFromInputs()" />
+      <!-- Slider-Based Crop Controls -->
+      <div id="crop-sliders-container" style="display:none; flex-direction:column; gap:10px; background:rgba(255,255,255,0.02); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); box-sizing: border-box;">
+        <div style="font-size:0.8rem; font-weight:700; color:#e28743; margin-bottom:4px; display:flex; justify-content:space-between;">
+          <span>הגדרות חיתוך (אחוזים)</span>
+          <span id="crop-resolution-display" style="color:#a1a1aa;">0x0 px</span>
         </div>
-        <div style="flex:1;">
-          <label style="font-size:0.75rem; font-weight:600; color:#a1a1aa; display:block; margin-bottom:4px;">גובה (בפיקסלים):</label>
-          <input type="number" id="crop-box-input-h" class="edit-control-input" style="height:34px; padding:0 8px; font-size:0.85rem;" oninput="updateCropBoxDimensionsFromInputs()" />
+        
+        <!-- Top -->
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:0.8rem; color:#a1a1aa; width:70px;">מלעיל (Top):</span>
+          <input type="range" id="crop-slider-t" min="0" max="90" value="0" style="flex:1;" oninput="updateCropSliders()" />
+          <input type="number" id="crop-input-t" min="0" max="90" value="0" style="width:55px; height:28px; background:#18181b; border:1px solid #27272a; color:#fff; text-align:center; border-radius:6px;" oninput="syncCropInputToSlider('t')" />
+          <span style="font-size:0.8rem; color:#71717a;">%</span>
+        </div>
+
+        <!-- Bottom -->
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:0.8rem; color:#a1a1aa; width:70px;">מלרע (Bottom):</span>
+          <input type="range" id="crop-slider-b" min="0" max="90" value="0" style="flex:1;" oninput="updateCropSliders()" />
+          <input type="number" id="crop-input-b" min="0" max="90" value="0" style="width:55px; height:28px; background:#18181b; border:1px solid #27272a; color:#fff; text-align:center; border-radius:6px;" oninput="syncCropInputToSlider('b')" />
+          <span style="font-size:0.8rem; color:#71717a;">%</span>
+        </div>
+
+        <!-- Left -->
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:0.8rem; color:#a1a1aa; width:70px;">שמאל (Left):</span>
+          <input type="range" id="crop-slider-l" min="0" max="90" value="0" style="flex:1;" oninput="updateCropSliders()" />
+          <input type="number" id="crop-input-l" min="0" max="90" value="0" style="width:55px; height:28px; background:#18181b; border:1px solid #27272a; color:#fff; text-align:center; border-radius:6px;" oninput="syncCropInputToSlider('l')" />
+          <span style="font-size:0.8rem; color:#71717a;">%</span>
+        </div>
+
+        <!-- Right -->
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:0.8rem; color:#a1a1aa; width:70px;">ימין (Right):</span>
+          <input type="range" id="crop-slider-r" min="0" max="90" value="0" style="flex:1;" oninput="updateCropSliders()" />
+          <input type="number" id="crop-input-r" min="0" max="90" value="0" style="width:55px; height:28px; background:#18181b; border:1px solid #27272a; color:#fff; text-align:center; border-radius:6px;" oninput="syncCropInputToSlider('r')" />
+          <span style="font-size:0.8rem; color:#71717a;">%</span>
         </div>
       </div>
       
