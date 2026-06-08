@@ -267,7 +267,14 @@ isAdmin = localStorage.getItem('isAdmin') === 'true';
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('isAdmin') === 'true' || localStorage.getItem('isEditor') === 'true') {
     // Small delay to let the page fully initialize first
-    setTimeout(() => { if (typeof enableLiveEditMode === 'function') enableLiveEditMode(); }, 500);
+    setTimeout(() => { 
+      if (typeof enableLiveEditMode === 'function') enableLiveEditMode(); 
+      if (typeof window.updateAdminEditBar === 'function') window.updateAdminEditBar();
+    }, 500);
+  } else {
+    setTimeout(() => {
+      if (typeof window.updateAdminEditBar === 'function') window.updateAdminEditBar();
+    }, 500);
   }
 });
 // Cleanup obsolete data
@@ -4462,6 +4469,10 @@ function updateUserUI() {
 
     const myPurchasesLink = document.getElementById('link-my-purchases');
     if (myPurchasesLink) myPurchasesLink.style.display = 'none';
+  }
+  
+  if (typeof window.updateAdminEditBar === 'function') {
+    window.updateAdminEditBar();
   }
 }
 
@@ -9909,6 +9920,12 @@ window.updateAdminEditBar = function() {
   if (!bar) return;
   const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
   bar.style.display = currentIsAdmin ? 'flex' : 'none';
+  
+  if (currentIsAdmin) {
+    document.body.classList.add('admin-bar-active');
+  } else {
+    document.body.classList.remove('admin-bar-active');
+  }
   
   const toggleBtn = document.getElementById('admin-bar-toggle-edit');
   if (toggleBtn) {
