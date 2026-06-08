@@ -358,6 +358,17 @@ window.addEventListener('click', (e) => {
 
 // ========== NAVIGATION ==========
 function showPage(pageId) {
+  // Access control check for hidden pages
+  const visibilityState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
+  if (visibilityState[pageId] === false && !isAdmin) {
+    console.warn(`Access denied to page: ${pageId} (Admin only)`);
+    // Redirect to home if they are not allowed to view
+    if (pageId !== 'home') {
+      showPage('home');
+      return;
+    }
+  }
+
   // Navigation active state logic
   document.querySelectorAll('.sidebar-link').forEach(link => {
     link.classList.remove('active');
@@ -1465,6 +1476,7 @@ async function adminLogin() {
     } else {
       localStorage.setItem('isAdmin', 'true');
       isAdmin = true;
+      if (typeof applyPageVisibility === 'function') applyPageVisibility();
       showPage('admin');
       if (typeof initAdminDashboard === 'function') initAdminDashboard();
       showToast('✏️ מחובר כמנהל — לחץ על כל טקסט או תמונה באתר לעריכה');
@@ -1842,6 +1854,7 @@ function adminLogout() {
   isAdmin = false;
   localStorage.removeItem('isAdmin');
   localStorage.removeItem('isEditor');
+  if (typeof applyPageVisibility === 'function') applyPageVisibility();
   if (typeof disableLiveEditMode === 'function') disableLiveEditMode();
   closeAdminLoginModal();
   showPage('home');
@@ -2311,7 +2324,120 @@ function switchAdminTab(tabId, btnEl) {
   if (tabId === 'links') {
     if (window.loadAdminLinks) window.loadAdminLinks();
   }
+  if (tabId === 'page-visibility') renderPageVisibilityControls();
 }
+
+window.renderPageVisibilityControls = function() {
+  const container = document.getElementById('page-visibility-controls-grid');
+  if (!container) return;
+
+  const pagesInfo = [
+    { id: 'shop', name: 'חנות (Store)', icon: 'fas fa-shopping-bag' },
+    { id: 'b2b', name: 'חיבור מפעלים (B2B)', icon: 'fas fa-industry' },
+    { id: 'realestate', name: 'נדל"ן ומגמות', icon: 'fas fa-building' },
+    { id: 'sharing', name: 'השאלות ואחסון', icon: 'fas fa-handshake' },
+    { id: 'uber', name: 'נסיעות (אובר)', icon: 'fas fa-car' },
+    { id: 'pdf-store', name: 'גרפים ונתונים', icon: 'fas fa-chart-line' },
+    { id: 'groups', name: 'פורום (Forum)', icon: 'fa-solid fa-comments' },
+    { id: 'bets', name: 'הימורים (Bets)', icon: 'fa-solid fa-dice' }
+  ];
+
+  const visibilityState = activeCustomizations['__pageVisibility__'] || {};
+
+  container.innerHTML = pagesInfo.map(page => {
+    const isVisible = visibilityState[page.id] !== false; // defaults to true
+    return `
+      <div style="background: #1c1c1e; border: 1px solid #2c2c2e; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; background: rgba(0,113,227,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #0071e3; font-size: 1.2rem;">
+            <i class="${page.icon}"></i>
+          </div>
+          <div>
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">${page.name}</h4>
+            <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: ${isVisible ? '#30d158' : '#ff453a'}; font-weight: 600;">
+              ${isVisible ? 'גלוי לציבור הרחב' : 'מוסתר מהציבור (רק למנהל)'}
+            </p>
+          </div>
+        </div>
+        <div>
+          <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 22px;">
+            <input type="checkbox" ${isVisible ? 'checked' : ''} onchange="togglePageVisibility('${page.id}', this.checked)" style="opacity: 0; width: 0; height: 0;">
+            <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3a3a3c; transition: .4s; border-radius: 34px;"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.togglePageVisibility = async function(pageId, isVisible) {
+  if (!activeCustomizations['__pageVisibility__']) {
+    activeCustomizations['__pageVisibility__'] = {};
+  }
+  activeCustomizations['__pageVisibility__'][pageId] = isVisible;
+  await saveCustomizationsToServer();
+  applyPageVisibility();
+  renderPageVisibilityControls();
+  showToast(`העמוד "${pageId}" ${isVisible ? 'גלוי כעת לציבור' : 'מוסתר כעת מהציבור'}`);
+};
+
+window.applyPageVisibility = function() {
+  const visibilityState = (activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
+  const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets'];
+
+  pagesInfo.forEach(pageId => {
+    const isVisible = visibilityState[pageId] !== false; // default true
+    
+    // Find all links referencing this page
+    const sidebarLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
+    const appleNavItems = document.querySelectorAll(`.apple-nav-item[onclick*="showPage('${pageId}')"]`);
+    const mobileLinks = document.querySelectorAll(`.mobile-nav-link[onclick*="showPage('${pageId}')"]`);
+    const secNavItems = document.querySelectorAll(`.sec-nav-item[onclick*="showPage('${pageId}')"]`);
+
+    const allElements = [sidebarLink, ...appleNavItems, ...mobileLinks, ...secNavItems].filter(Boolean);
+
+    if (isAdmin) {
+      // If admin, we always show the links
+      allElements.forEach(el => {
+        el.style.display = '';
+        el.style.opacity = isVisible ? '1' : '0.65';
+        
+        // Add or remove indicator
+        let indicator = el.querySelector('.page-hidden-lock-indicator');
+        if (!isVisible) {
+          if (!indicator) {
+            indicator = document.createElement('i');
+            indicator.className = 'fas fa-lock page-hidden-lock-indicator';
+            indicator.style.color = '#ff9f0a';
+            indicator.style.fontSize = '0.75rem';
+            indicator.style.marginRight = '6px';
+            indicator.style.marginLeft = '6px';
+            indicator.title = 'עמוד זה מוסתר מהציבור';
+            
+            // Append next to the text/span
+            const span = el.querySelector('span');
+            if (span) {
+              span.parentElement.insertBefore(indicator, span.nextSibling);
+            } else {
+              el.appendChild(indicator);
+            }
+          }
+        } else {
+          if (indicator) indicator.remove();
+        }
+      });
+    } else {
+      // If not admin, hide them completely if set to false
+      allElements.forEach(el => {
+        el.style.display = isVisible ? '' : 'none';
+        // Remove any lock indicator
+        const indicator = el.querySelector('.page-hidden-lock-indicator');
+        if (indicator) indicator.remove();
+      });
+    }
+  });
+};
+
 
 async function renderManagerMessages() {
   const container = document.getElementById('manager-msgs-list');
@@ -12321,6 +12447,7 @@ function applyAllCustomizations() {
   } catch (err) {
     console.error('Error applying customizations:', err);
   }
+  if (typeof applyPageVisibility === 'function') applyPageVisibility();
 }
 
 // Save active customizations to server API
