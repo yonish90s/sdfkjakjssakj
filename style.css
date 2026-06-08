@@ -9354,7 +9354,7 @@ body.admin-edit-mode-active .home-section.section-collapsed .section-drag-handle
    ============================================================ */
 
 #text-edit-popup {
-  position: absolute;
+  position: fixed;
   z-index: 99999;
   width: 320px;
   background: #18181b;

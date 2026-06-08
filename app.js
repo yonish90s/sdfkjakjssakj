@@ -9904,6 +9904,30 @@ window.selectDrawerForum = function(groupId) {
 
 window.isEditModeActive = false;
 
+window.updateAdminEditBar = function() {
+  const bar = document.getElementById('admin-live-edit-bar');
+  if (!bar) return;
+  const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  bar.style.display = currentIsAdmin ? 'flex' : 'none';
+  
+  const toggleBtn = document.getElementById('admin-bar-toggle-edit');
+  if (toggleBtn) {
+    const active = (typeof isEditModeActive !== 'undefined' && isEditModeActive === true);
+    toggleBtn.textContent = active ? 'צא ממצב עריכה' : 'מצב עריכה';
+    toggleBtn.style.background = active ? '#ff453a' : 'rgba(255,255,255,0.05)';
+  }
+};
+
+window.toggleEditModeBtn = function() {
+  const active = (typeof isEditModeActive !== 'undefined' && isEditModeActive === true);
+  if (active) {
+    disableLiveEditMode();
+  } else {
+    enableLiveEditMode();
+  }
+  updateAdminEditBar();
+};
+
 function enableLiveEditMode() {
   window.isEditModeActive = true;
   localStorage.setItem('isEditModeActive', 'true');
@@ -9920,6 +9944,7 @@ function enableLiveEditMode() {
     approveBtn.style.display = 'flex';
   }
   enableDragAndDrop(true);
+  updateAdminEditBar();
   showToast('✏️ מצב עריכה פעיל — לחץ על כל טקסט או תמונה לעריכה');
 }
 window.enableLiveEditMode = enableLiveEditMode;
@@ -9941,6 +9966,7 @@ function disableLiveEditMode() {
   }
   enableDragAndDrop(false);
   localStorage.removeItem('isEditor');
+  updateAdminEditBar();
   showToast('🔒 מצב עריכה כבוי');
 }
 window.disableLiveEditMode = disableLiveEditMode;
@@ -9960,9 +9986,9 @@ function openTextEditPopup(el) {
   const currentText = el.innerText || el.textContent || '';
 
   popup.innerHTML = `
-    <div class="tep-header">
-      <span class="tep-label">✏️ עריכת טקסט</span>
-      <button class="tep-close" id="tep-close-btn">✕</button>
+    <div class="tep-header" style="cursor: move; user-select: none;">
+      <span class="tep-label">✏️ עריכת טקסט (גרור להזזה)</span>
+      <button class="tep-close" id="tep-close-btn" style="cursor: pointer;">✕</button>
     </div>
     <textarea class="tep-textarea" id="tep-textarea" dir="${isRtl ? 'rtl' : 'ltr'}"></textarea>
     <div class="tep-actions">
@@ -9975,6 +10001,42 @@ function openTextEditPopup(el) {
 
   // Position near the element
   positionTextEditPopup(el, popup);
+
+  // Dragging logic for the popup
+  const header = popup.querySelector('.tep-header');
+  if (header) {
+    let isDragging = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+
+    header.addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return; // ignore close button click
+      e.preventDefault();
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = popup.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      const onMouseMove = (moveEvent) => {
+        if (!isDragging) return;
+        const dx = moveEvent.clientX - startX;
+        const dy = moveEvent.clientY - startY;
+        popup.style.left = (initialLeft + dx) + 'px';
+        popup.style.top = (initialTop + dy) + 'px';
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+  }
 
   const textarea = popup.querySelector('#tep-textarea');
   textarea.value = currentText;
@@ -9992,17 +10054,16 @@ function openTextEditPopup(el) {
 
 function positionTextEditPopup(el, popup) {
   const rect = el.getBoundingClientRect();
-  const scrollY = window.scrollY;
   const popupW = 320;
   const popupH = 200;
 
-  let top = rect.bottom + scrollY + 8;
+  let top = rect.bottom + 8;
   let left = rect.left;
 
   // Keep inside viewport
   if (left + popupW > window.innerWidth - 16) left = window.innerWidth - popupW - 16;
   if (left < 8) left = 8;
-  if (top + popupH > window.innerHeight + scrollY) top = rect.top + scrollY - popupH - 8;
+  if (top + popupH > window.innerHeight) top = rect.top - popupH - 8;
 
   popup.style.top = top + 'px';
   popup.style.left = left + 'px';
