@@ -1,3 +1,7 @@
+// ========== GLOBAL CONFIGS ==========
+var activeCustomizations = {};
+var isAdmin = localStorage.getItem('isAdmin') === 'true';
+
 // ========== DATA ==========
 
 const defaultNewsArticles = [
@@ -258,7 +262,7 @@ const servicesItems = [
     }
   });
 })();
-let isAdmin = localStorage.getItem('isAdmin') === 'true';
+isAdmin = localStorage.getItem('isAdmin') === 'true';
 // Auto-restore edit mode if was logged in as admin/editor before refresh
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('isAdmin') === 'true' || localStorage.getItem('isEditor') === 'true') {
@@ -12300,7 +12304,7 @@ window.openOrderTrackingModal = function() {
 // ==========================================
 window.isEditModeActive = false;
 let currentEditingImg = null;
-let activeCustomizations = {};
+activeCustomizations = {};
 let activeDraggedEl = null;
 
 // Assign deterministic data-admin-id to sortable containers on load
