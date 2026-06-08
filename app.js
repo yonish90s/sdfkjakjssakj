@@ -2382,60 +2382,69 @@ window.togglePageVisibility = async function(pageId, isVisible) {
 };
 
 window.applyPageVisibility = function() {
-  const visibilityState = (activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
-  const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets'];
+  try {
+    const visibilityState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
+    const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets'];
 
-  pagesInfo.forEach(pageId => {
-    const isVisible = visibilityState[pageId] !== false; // default true
-    
-    // Find all links referencing this page
-    const sidebarLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
-    const appleNavItems = document.querySelectorAll(`.apple-nav-item[onclick*="showPage('${pageId}')"]`);
-    const mobileLinks = document.querySelectorAll(`.mobile-nav-link[onclick*="showPage('${pageId}')"]`);
-    const secNavItems = document.querySelectorAll(`.sec-nav-item[onclick*="showPage('${pageId}')"]`);
-
-    const allElements = [sidebarLink, ...appleNavItems, ...mobileLinks, ...secNavItems].filter(Boolean);
-
-    if (isAdmin) {
-      // If admin, we always show the links
-      allElements.forEach(el => {
-        el.style.display = '';
-        el.style.opacity = isVisible ? '1' : '0.65';
+    pagesInfo.forEach(pageId => {
+      try {
+        const isVisible = visibilityState[pageId] !== false; // default true
         
-        // Add or remove indicator
-        let indicator = el.querySelector('.page-hidden-lock-indicator');
-        if (!isVisible) {
-          if (!indicator) {
-            indicator = document.createElement('i');
-            indicator.className = 'fas fa-lock page-hidden-lock-indicator';
-            indicator.style.color = '#ff9f0a';
-            indicator.style.fontSize = '0.75rem';
-            indicator.style.marginRight = '6px';
-            indicator.style.marginLeft = '6px';
-            indicator.title = 'עמוד זה מוסתר מהציבור';
+        // Find all links referencing this page
+        const sidebarLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
+        const appleNavItems = document.querySelectorAll(`.apple-nav-item[onclick*="showPage('${pageId}')"]`);
+        const mobileLinks = document.querySelectorAll(`.mobile-nav-link[onclick*="showPage('${pageId}')"]`);
+        const secNavItems = document.querySelectorAll(`.sec-nav-item[onclick*="showPage('${pageId}')"]`);
+
+        const allElements = [sidebarLink, ...appleNavItems, ...mobileLinks, ...secNavItems].filter(Boolean);
+        const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+
+        if (currentIsAdmin) {
+          // If admin, we always show the links
+          allElements.forEach(el => {
+            el.style.display = '';
+            el.style.opacity = isVisible ? '1' : '0.65';
             
-            // Append next to the text/span
-            const span = el.querySelector('span');
-            if (span) {
-              span.parentElement.insertBefore(indicator, span.nextSibling);
+            // Add or remove indicator
+            let indicator = el.querySelector('.page-hidden-lock-indicator');
+            if (!isVisible) {
+              if (!indicator) {
+                indicator = document.createElement('i');
+                indicator.className = 'fas fa-lock page-hidden-lock-indicator';
+                indicator.style.color = '#ff9f0a';
+                indicator.style.fontSize = '0.75rem';
+                indicator.style.marginRight = '6px';
+                indicator.style.marginLeft = '6px';
+                indicator.title = 'עמוד זה מוסתר מהציבור';
+                
+                // Append next to the text/span
+                const span = el.querySelector('span');
+                if (span) {
+                  span.parentElement.insertBefore(indicator, span.nextSibling);
+                } else {
+                  el.appendChild(indicator);
+                }
+              }
             } else {
-              el.appendChild(indicator);
+              if (indicator) indicator.remove();
             }
-          }
+          });
         } else {
-          if (indicator) indicator.remove();
+          // If not admin, hide them completely if set to false
+          allElements.forEach(el => {
+            el.style.display = isVisible ? '' : 'none';
+            // Remove any lock indicator
+            const indicator = el.querySelector('.page-hidden-lock-indicator');
+            if (indicator) indicator.remove();
+          });
         }
-      });
-    } else {
-      // If not admin, hide them completely if set to false
-      allElements.forEach(el => {
-        el.style.display = isVisible ? '' : 'none';
-        // Remove any lock indicator
-        const indicator = el.querySelector('.page-hidden-lock-indicator');
-        if (indicator) indicator.remove();
-      });
-    }
-  });
+      } catch (innerErr) {
+        console.error(`Error applying visibility for page ${pageId}:`, innerErr);
+      }
+    });
+  } catch (err) {
+    console.error('Error applying page visibility:', err);
+  }
 };
 
 
