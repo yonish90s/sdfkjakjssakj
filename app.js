@@ -2408,39 +2408,48 @@ window.applyPageVisibility = function() {
           allElements.forEach(el => {
             el.style.display = '';
             el.style.opacity = isVisible ? '1' : '0.65';
-            
-            // Add or remove indicator
-            let indicator = el.querySelector('.page-hidden-lock-indicator');
-            if (!isVisible) {
-              if (!indicator) {
-                indicator = document.createElement('i');
-                indicator.className = 'fas fa-lock page-hidden-lock-indicator';
-                indicator.style.color = '#ff9f0a';
-                indicator.style.fontSize = '0.75rem';
-                indicator.style.marginRight = '6px';
-                indicator.style.marginLeft = '6px';
-                indicator.title = 'עמוד זה מוסתר מהציבור';
-                
-                // Append next to the text/span
-                const span = el.querySelector('span');
-                if (span) {
-                  span.parentElement.insertBefore(indicator, span.nextSibling);
-                } else {
-                  el.appendChild(indicator);
-                }
-              }
-            } else {
-              if (indicator) indicator.remove();
-            }
           });
+
+          // Add interactive eye toggle next to the sidebar link
+          if (sidebarLink) {
+            let eyeToggle = sidebarLink.querySelector('.sidebar-page-eye-toggle');
+            if (!eyeToggle) {
+              eyeToggle = document.createElement('span');
+              eyeToggle.className = 'sidebar-page-eye-toggle';
+              eyeToggle.style.padding = '4px';
+              eyeToggle.style.cursor = 'pointer';
+              eyeToggle.style.zIndex = '10';
+              eyeToggle.style.display = 'inline-flex';
+              eyeToggle.style.alignItems = 'center';
+              eyeToggle.style.justifyContent = 'center';
+              
+              // Position eye icon on the far left/right depending on RTL
+              const isRtl = document.body.classList.contains('rtl-layout') || document.documentElement.dir === 'rtl' || document.body.dir === 'rtl';
+              eyeToggle.style.marginRight = isRtl ? 'auto' : '8px';
+              eyeToggle.style.marginLeft = isRtl ? '8px' : 'auto';
+
+              eyeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const vState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
+                const currentVisible = vState[pageId] !== false;
+                togglePageVisibility(pageId, !currentVisible);
+              });
+              sidebarLink.appendChild(eyeToggle);
+            }
+            eyeToggle.innerHTML = isVisible 
+              ? '<i class="fas fa-eye" style="color: #30d158; font-size: 0.9rem;" title="גלוי לציבור (לחץ להסתרה)"></i>' 
+              : '<i class="fas fa-eye-slash" style="color: #ff453a; font-size: 0.9rem;" title="מוסתר מהציבור (לחץ להצגה)"></i>';
+          }
         } else {
           // If not admin, hide them completely if set to false
           allElements.forEach(el => {
             el.style.display = isVisible ? '' : 'none';
-            // Remove any lock indicator
-            const indicator = el.querySelector('.page-hidden-lock-indicator');
-            if (indicator) indicator.remove();
           });
+          if (sidebarLink) {
+            const eyeToggle = sidebarLink.querySelector('.sidebar-page-eye-toggle');
+            if (eyeToggle) eyeToggle.remove();
+          }
         }
       } catch (innerErr) {
         console.error(`Error applying visibility for page ${pageId}:`, innerErr);
