@@ -5486,6 +5486,17 @@ function getCartCount() {
 function updateCartBadge() {
   const badge = document.getElementById('cart-badge');
   if (!badge) return;
+  
+  // Validate cart items to remove non-existent products
+  const originalLength = shoppingCart.length;
+  shoppingCart = shoppingCart.filter(c => {
+    const list = c.type === 'product' ? shopProducts : (c.type === 'store3d' ? store3dProducts : servicesItems);
+    return list.some(x => x.id === c.id);
+  });
+  if (shoppingCart.length !== originalLength) {
+    saveCart();
+  }
+
   const count = getCartCount();
   badge.textContent = count;
   badge.style.display = count > 0 ? 'flex' : 'none';
