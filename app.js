@@ -2342,6 +2342,13 @@ window.renderPageVisibilityControls = function() {
   const container = document.getElementById('page-visibility-controls-grid');
   if (!container) return;
 
+  const customPages = (activeCustomizations && activeCustomizations['__customPages__']) || [];
+  const customPagesInfo = customPages.map(p => ({
+    id: p.id,
+    name: `${p.name} (עמוד מותאם)`,
+    icon: 'fas fa-file-alt'
+  }));
+
   const pagesInfo = [
     { id: 'shop', name: 'חנות (Store)', icon: 'fas fa-shopping-bag' },
     { id: 'b2b', name: 'חיבור מפעלים (B2B)', icon: 'fas fa-industry' },
@@ -2350,7 +2357,8 @@ window.renderPageVisibilityControls = function() {
     { id: 'uber', name: 'נסיעות (אובר)', icon: 'fas fa-car' },
     { id: 'pdf-store', name: 'גרפים ונתונים', icon: 'fas fa-chart-line' },
     { id: 'groups', name: 'פורום (Forum)', icon: 'fa-solid fa-comments' },
-    { id: 'bets', name: 'הימורים (Bets)', icon: 'fa-solid fa-dice' }
+    { id: 'bets', name: 'הימורים (Bets)', icon: 'fa-solid fa-dice' },
+    ...customPagesInfo
   ];
 
   const visibilityState = activeCustomizations['__pageVisibility__'] || {};
@@ -2395,7 +2403,9 @@ window.togglePageVisibility = async function(pageId, isVisible) {
 window.applyPageVisibility = function() {
   try {
     const visibilityState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
-    const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets'];
+    const customPages = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__customPages__']) || [];
+    const customPageIds = customPages.map(p => p.id);
+    const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets', ...customPageIds];
 
     pagesInfo.forEach(pageId => {
       try {
@@ -9973,6 +9983,8 @@ function enableLiveEditMode() {
   }
   enableDragAndDrop(true);
   updateAdminEditBar();
+  if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
+  if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
   showToast('✏️ מצב עריכה פעיל — לחץ על כל טקסט או תמונה לעריכה');
 }
 window.enableLiveEditMode = enableLiveEditMode;
@@ -9995,6 +10007,8 @@ function disableLiveEditMode() {
   enableDragAndDrop(false);
   localStorage.removeItem('isEditor');
   updateAdminEditBar();
+  if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
+  if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
   showToast('🔒 מצב עריכה כבוי');
 }
 window.disableLiveEditMode = disableLiveEditMode;
@@ -12617,7 +12631,9 @@ async function initCustomizations() {
     const res = await fetch('/api/customizations');
     if (res.ok) {
       activeCustomizations = await res.json();
+      if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
       applyAllCustomizations();
+      if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
       // Restore section order & visibility
       if (window.applySectionLayout) window.applySectionLayout();
     }
@@ -14848,6 +14864,170 @@ window.cancelCurrentUberRide = function() {
   if (statusBadge) statusBadge.style.background = '#ff3b30';
 
   alert('הנסיעה בוטלה בהצלחה. סכום המטבעות הוחזר במלואו לחשבונך. 🛑');
+};
+
+
+// =====================================================================
+// DYNAMIC CUSTOM PAGES SYSTEM
+// =====================================================================
+
+window.renderCustomPages = function() {
+  // 1. Clear previously rendered custom nav/page DOM nodes
+  document.querySelectorAll('.custom-page-nav-item').forEach(el => el.remove());
+  document.querySelectorAll('.custom-page-div').forEach(el => el.remove());
+
+  const customPages = (activeCustomizations && activeCustomizations['__customPages__']) || [];
+  const navContainer = document.getElementById('apple-nav-items-container');
+
+  customPages.forEach(p => {
+    // A. Render Desktop Navbar link
+    if (navContainer) {
+      const btn = document.createElement('button');
+      btn.className = 'apple-nav-item custom-page-nav-item';
+      btn.setAttribute('onclick', `showPage('${p.id}')`);
+      btn.style.cssText = 'color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px; transition: color 0.2s;';
+      
+      const span = document.createElement('span');
+      span.id = `nav-text-${p.id}`;
+      span.textContent = p.name;
+      btn.appendChild(span);
+
+      // If live edit mode is active, display a delete button (x)
+      if (window.isEditModeActive) {
+        const delBtn = document.createElement('span');
+        delBtn.innerHTML = '✕';
+        delBtn.style.cssText = 'color:#ff453a; font-size:0.75rem; margin-right:4px; cursor:pointer; opacity:0.7; font-weight:bold; transition: opacity 0.15s;';
+        delBtn.title = 'מחק עמוד';
+        delBtn.onmouseover = () => { delBtn.style.opacity = '1'; };
+        delBtn.onmouseout = () => { delBtn.style.opacity = '0.7'; };
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.deleteCustomPage(p.id);
+        });
+        btn.appendChild(delBtn);
+      }
+
+      navContainer.appendChild(btn);
+    }
+
+    // B. Create the corresponding page content element
+    let pageDiv = document.getElementById(`page-${p.id}`);
+    if (!pageDiv) {
+      pageDiv = document.createElement('div');
+      pageDiv.id = `page-${p.id}`;
+      pageDiv.className = 'page custom-page-div';
+      pageDiv.style.cssText = 'display:none; max-width:1000px; margin:40px auto; padding:20px; direction:rtl; text-align:right; min-height:60vh;';
+      
+      pageDiv.innerHTML = `
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 40px; border-radius: 24px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+          <h1 data-admin-id="cpage-${p.id}-title" style="font-size: 2.8rem; font-weight: 800; margin-bottom: 20px; background: linear-gradient(135deg, #e28743, #ffb077); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${p.name}</h1>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 30px;">
+          <div data-admin-id="cpage-${p.id}-body" style="font-size: 1.15rem; color: #a1a1aa; line-height: 1.8; min-height: 200px;">
+            זהו עמוד חדש שיצרת. לחץ דאבל קליק על כותרת זו או על טקסט זה כדי להתחיל לערוך אותו במצב עריכה.
+          </div>
+        </div>
+      `;
+      document.body.appendChild(pageDiv);
+    }
+  });
+};
+
+window.openAddCustomPageModal = function() {
+  const existing = document.getElementById('add-page-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'add-page-modal';
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:1000000; display:flex; align-items:center; justify-content:center; direction:rtl;';
+  
+  modal.innerHTML = `
+    <div style="background:#18181b; border:1px solid rgba(255,255,255,0.08); border-radius:24px; width:90%; max-width:400px; padding:32px; box-shadow:0 30px 70px rgba(0,0,0,0.8); color:#f4f4f5; font-family:inherit;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3 style="font-size:1.4rem; font-weight:800; color:#fff; margin:0;">הוספת עמוד חדש</h3>
+        <button onclick="document.getElementById('add-page-modal').remove()" style="background:none; border:none; color:#a1a1aa; font-size:1.5rem; cursor:pointer;">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.85rem; font-weight:600; color:#a1a1aa;">שם העמוד (יופיע בתפריט)</label>
+          <input type="text" id="new-page-name-input" placeholder="לדוגמה: עלינו" style="background:#09090b; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; color:#fff; font-family:inherit; outline:none;">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.85rem; font-weight:600; color:#a1a1aa;">מזהה באנגלית (לכתובת ה-URL)</label>
+          <input type="text" id="new-page-id-input" placeholder="לדוגמה: about" style="background:#09090b; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; color:#fff; font-family:inherit; outline:none;">
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:32px;">
+        <button id="add-page-submit-btn" style="flex:1; padding:12px; border-radius:10px; font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer; border:none; background:#e28743; color:#09090b;">צור עמוד 🚀</button>
+        <button onclick="document.getElementById('add-page-modal').remove()" style="flex:1; padding:12px; border-radius:10px; font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.06); color:#fff;">ביטול</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const nameInput = document.getElementById('new-page-name-input');
+  if (nameInput) nameInput.focus();
+
+  nameInput.addEventListener('input', () => {
+    const val = nameInput.value.trim().toLowerCase();
+    const idInput = document.getElementById('new-page-id-input');
+    if (idInput && !idInput.value) {
+      idInput.value = val.replace(/[^a-z0-9]/g, '');
+    }
+  });
+
+  document.getElementById('add-page-submit-btn').addEventListener('click', () => {
+    const pageName = document.getElementById('new-page-name-input').value.trim();
+    let pageId = document.getElementById('new-page-id-input').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+
+    if (!pageName || !pageId) {
+      showToast('❌ נא למלא את כל השדות', 'error');
+      return;
+    }
+
+    if (['home', 'shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets', 'about', 'whats-new', 'subscription', 'appointments'].includes(pageId)) {
+      showToast('❌ מזהה זה שמור למערכת. בחר מזהה אחר', 'error');
+      return;
+    }
+
+    const customPages = (activeCustomizations && activeCustomizations['__customPages__']) || [];
+    if (customPages.some(p => p.id === pageId)) {
+      showToast('❌ עמוד עם מזהה זה כבר קיים', 'error');
+      return;
+    }
+
+    customPages.push({ id: pageId, name: pageName });
+    activeCustomizations['__customPages__'] = customPages;
+
+    saveCustomizationsToServer().then(() => {
+      window.renderCustomPages();
+      if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+      if (typeof window.applyAllCustomizations === 'function') window.applyAllCustomizations();
+      modal.remove();
+      showPage(pageId);
+      showToast(`🎉 העמוד "${pageName}" נוצר בהצלחה!`);
+    });
+  });
+};
+
+window.deleteCustomPage = function(pageId) {
+  if (confirm('האם אתה בטוח שברצונך למחוק עמוד זה לחלוטין? כל העריכות שלו יימחקו.')) {
+    const customPages = (activeCustomizations && activeCustomizations['__customPages__']) || [];
+    activeCustomizations['__customPages__'] = customPages.filter(p => p.id !== pageId);
+    
+    delete activeCustomizations[`[data-admin-id="cpage-${pageId}-title"]`];
+    delete activeCustomizations[`[data-admin-id="cpage-${pageId}-body"]`];
+    if (activeCustomizations['__pageVisibility__']) {
+      delete activeCustomizations['__pageVisibility__'][pageId];
+    }
+
+    saveCustomizationsToServer().then(() => {
+      window.renderCustomPages();
+      if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+      showPage('home');
+      showToast('🗑️ העמוד נמחק בהצלחה');
+    });
+  }
 };
 
 

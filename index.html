@@ -309,7 +309,7 @@
       <div class="nav-inner-apple" style="display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 24px; max-width: 100%; gap: 16px;">
 
         <!-- LEFT SIDE: Navigation and Logo -->
-        <div class="nav-right-section" style="display: flex; align-items: center; gap: 24px; flex-shrink: 0;">
+        <div class="nav-right-section" id="apple-nav-items-container" style="display: flex; align-items: center; gap: 24px; flex-shrink: 0;">
           <!-- SOKI Articles Logo -->
           <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <i class="fas fa-crown" style="color:#f59e0b; font-size:1.1rem; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));"></i>
@@ -511,6 +511,7 @@
       </div>
       <div style="display: flex; gap: 12px; align-items: center;">
         <button onclick="window.toggleEditModeBtn()" id="admin-bar-toggle-edit" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 14px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: background 0.2s;">מצב עריכה: כבוי</button>
+        <button onclick="window.openAddCustomPageModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 14px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: background 0.2s; display: flex; align-items: center; gap: 6px;"><i class="fas fa-plus" style="color: #e28743;"></i> הוסף עמוד ➕</button>
         <button onclick="saveCustomizationsToServer()" style="background: #e28743; border: none; border-radius: 6px; padding: 6px 16px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 700; font-family: inherit; transition: background 0.2s;">שמור שינויים 💾</button>
       </div>
     </div>
