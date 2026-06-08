@@ -2441,6 +2441,34 @@ window.applyPageVisibility = function() {
               ? '<i class="fas fa-eye" style="color: #30d158; font-size: 0.9rem;" title="גלוי לציבור (לחץ להסתרה)"></i>' 
               : '<i class="fas fa-eye-slash" style="color: #ff453a; font-size: 0.9rem;" title="מוסתר מהציבור (לחץ להצגה)"></i>';
           }
+
+          // Add interactive eye toggle next to the header navbar items (appleNavItems)
+          appleNavItems.forEach(navEl => {
+            let eyeToggle = navEl.querySelector('.navbar-page-eye-toggle');
+            if (!eyeToggle) {
+              eyeToggle = document.createElement('span');
+              eyeToggle.className = 'navbar-page-eye-toggle';
+              eyeToggle.style.padding = '2px';
+              eyeToggle.style.cursor = 'pointer';
+              eyeToggle.style.marginLeft = '6px';
+              eyeToggle.style.marginRight = '6px';
+              eyeToggle.style.display = 'inline-flex';
+              eyeToggle.style.alignItems = 'center';
+              
+              eyeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const vState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
+                const currentVisible = vState[pageId] !== false;
+                togglePageVisibility(pageId, !currentVisible);
+              });
+              navEl.appendChild(eyeToggle);
+            }
+            eyeToggle.innerHTML = isVisible 
+              ? '<i class="fas fa-eye" style="color: #30d158; font-size: 0.75rem;" title="גלוי לציבור (לחץ להסתרה)"></i>' 
+              : '<i class="fas fa-eye-slash" style="color: #ff453a; font-size: 0.75rem;" title="מוסתר מהציבור (לחץ להצגה)"></i>';
+          });
+
         } else {
           // If not admin, hide them completely if set to false
           allElements.forEach(el => {
@@ -2450,6 +2478,10 @@ window.applyPageVisibility = function() {
             const eyeToggle = sidebarLink.querySelector('.sidebar-page-eye-toggle');
             if (eyeToggle) eyeToggle.remove();
           }
+          appleNavItems.forEach(navEl => {
+            const eyeToggle = navEl.querySelector('.navbar-page-eye-toggle');
+            if (eyeToggle) eyeToggle.remove();
+          });
         }
       } catch (innerErr) {
         console.error(`Error applying visibility for page ${pageId}:`, innerErr);
@@ -5726,7 +5758,7 @@ function checkoutCart() {
   const drawer = document.getElementById('cart-drawer');
   if (drawer) drawer.classList.remove('active');
   
-  runRealPayment(summaryLines, total);
+  window.location.href = `/grow-checkout.html?amount=${total}&items=${encodeURIComponent(JSON.stringify(summaryLines))}`;
 }
 
 // =====================================================================

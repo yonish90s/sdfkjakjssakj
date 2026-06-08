@@ -40,5 +40,19 @@
   "div[0]>div[3]>div[0]>div[3]>div[1]>div[0]>div[0]>div[9]>div[0]": {
     "blockWidth": "80px",
     "blockHeight": "50px"
+  },
+  "__pageVisibility__": {
+    "shop": true,
+    "b2b": true
+  },
+  "[data-admin-id=\"container-0\"]": {
+    "order": [
+      "[data-admin-id=\"container-0-item-0\"]",
+      "[data-admin-id=\"container-0-item-1\"]",
+      "[data-admin-id=\"container-0-item-2\"]",
+      "[data-admin-id=\"container-0-item-3\"]",
+      "[data-admin-id=\"container-0-item-4\"]",
+      "[data-admin-id=\"container-0-item-5\"]"
+    ]
   }
 }

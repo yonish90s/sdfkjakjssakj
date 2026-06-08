@@ -56,7 +56,7 @@
   </div>
 
   <script>
-    const SERVER_URL = 'http://localhost:4242';
+    const SERVER_URL = window.location.origin;
 
     async function loadDownloads() {
       const params = new URLSearchParams(window.location.search);

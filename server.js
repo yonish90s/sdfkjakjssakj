@@ -401,8 +401,20 @@ app.post('/api/create-checkout-session', async (req, res) => {
 // Called by success.html to retrieve download links after payment
 app.get('/api/order/:sessionId', async (req, res) => {
   try {
+    const sessionId = req.params.sessionId;
+    if (sessionId.startsWith('grow_mock_')) {
+      // Mock order verification for Grow simulation
+      return res.json({
+        downloads: [
+          'https://drive.google.com/your-figma-course-link',
+          'https://drive.google.com/your-wp-template-link'
+        ],
+        customerEmail: 'grow_test@example.com'
+      });
+    }
+
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(req.params.sessionId, {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items']
     });
 
