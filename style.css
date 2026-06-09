@@ -4182,6 +4182,7 @@ body.dark-theme #ai-chat-input {
 }
 
 .featured-tag {
+  display: none !important;
   background: var(--primary);
   color: white;
   padding: 4px 12px;
