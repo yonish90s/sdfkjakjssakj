@@ -1591,12 +1591,22 @@ window.myStoreDeleteProduct = function(id) {
 // ── AI SHOPPING ASSISTANT ─────────────────────────────
 window.openAIShopAssistant = function() {
   const modal = document.getElementById('ai-shop-modal');
-  if (modal) modal.style.display = 'flex';
-  setTimeout(() => document.getElementById('ai-shop-input')?.focus(), 100);
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.classList.add('active');
+    }, 10);
+    setTimeout(() => document.getElementById('ai-shop-input')?.focus(), 120);
+  }
 };
 window.closeAIShopAssistant = function() {
   const modal = document.getElementById('ai-shop-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('active');
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 300);
+  }
 };
 
 window.aiShopSearch = async function() {
