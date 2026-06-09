@@ -175,6 +175,10 @@
             <i class="fas fa-car"></i>
             <span id="sidebar-link-uber">נסיעות (אובר)</span>
           </a>
+          <a href="#" class="sidebar-link" data-page="deliveries" onclick="showPage('deliveries'); return false;">
+            <i class="fas fa-truck"></i>
+            <span id="sidebar-link-deliveries">משלוחים</span>
+          </a>
           <a href="#" class="sidebar-link" data-page="pdf-store" onclick="showPage('pdf-store'); return false;">
             <i class="fas fa-chart-line"></i>
             <span id="sidebar-link-graphs">גרפים ונתונים</span>
@@ -294,6 +298,7 @@
           <button onclick="showPage('shop'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-shopping-bag"></i> חנות</button>
           <button onclick="showPage('b2b'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-industry"></i> חיבור מפעלים</button>
           <button onclick="showPage('appointments'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-calendar-alt"></i> Book Appointment</button>
+          <button onclick="showPage('deliveries'); toggleMobileMenu()" class="mobile-nav-link"><i class="fas fa-truck"></i> משלוחים</button>
           <div class="mobile-menu-divider"></div>
           <button onclick="showPage('subscription'); toggleMobileMenu()" class="mobile-nav-link premium-link"><i class="fas fa-crown"></i> Go Premium</button>
           <button onclick="toggleTheme()" class="mobile-nav-link"><i class="fas fa-circle-half-stroke"></i> Switch Theme</button>
@@ -3235,6 +3240,234 @@
       </h3>
       <div id="my-graphs-list">
         <!-- TradingView style watchlist will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SOKI DELIVERIES PAGE -->
+  <div id="page-deliveries" class="page" style="display:none; max-width:1200px; margin:0 auto; padding-top:20px; direction:rtl; text-align:right;">
+    <style>
+      .delivery-progress-container {
+        position: relative;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 16px;
+      }
+      .delivery-progress-bar {
+        position: relative;
+        height: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        margin: 30px 0;
+        display: flex;
+        justify-content: space-between;
+      }
+      .delivery-progress-fill {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #ff9500, #34c759);
+        border-radius: 3px;
+        transition: width 0.8s ease-in-out;
+        width: 0%;
+      }
+      .delivery-step {
+        position: relative;
+        top: -12px;
+        width: 30px;
+        height: 30px;
+        background: #1c1c1e;
+        border: 2px solid rgba(255,255,255,0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        z-index: 2;
+        transition: all 0.3s;
+        color: #8e8e93;
+      }
+      .delivery-step.active {
+        border-color: #34c759;
+        color: #34c759;
+        box-shadow: 0 0 10px rgba(52, 199, 89, 0.3);
+        background: #1c1c1e;
+      }
+      .delivery-step-label {
+        position: absolute;
+        top: 36px;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #8e8e93;
+        transform: translateX(35%);
+      }
+      .delivery-step.active .delivery-step-label {
+        color: #fff;
+      }
+      .delivery-truck-icon {
+        position: absolute;
+        top: -22px;
+        width: 36px;
+        height: 24px;
+        font-size: 1.3rem;
+        transition: right 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        right: 0%;
+        margin-right: -18px;
+        z-index: 3;
+      }
+      .delivery-admin-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: transform 0.2s, border-color 0.2s;
+      }
+      .delivery-admin-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(226,135,67,0.4);
+      }
+    </style>
+
+    <!-- Header -->
+    <div style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h1 style="font-size:2rem; font-weight:900; color:#fff; margin:0 0 6px 0; background:linear-gradient(135deg,#e28743,#ffb077); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">מערכת משלוחים SOKI Deliveries</h1>
+        <p style="color:#a1a1aa; margin:0; font-size:1rem;">הזמנת משלוחים, מעקב חבילות ואישור הזמנות על ידי שליחים ומנהלים</p>
+      </div>
+    </div>
+
+    <!-- Main Deliveries Layout -->
+    <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:28px; margin-bottom:40px;">
+      
+      <!-- Right Column: New Order Form -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:24px; display:flex; flex-direction:column; gap:18px;">
+          <h3 style="color:#fff; margin:0; font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+            <span>📦</span> יצירת משלוח חדש
+          </h3>
+          
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Pickup point -->
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label style="font-size:0.8rem; font-weight:600; color:#a1a1aa;">📍 נקודת איסוף (כתובת מלאה)</label>
+              <input type="text" id="delivery-pickup" placeholder="לדוגמה: הרצל 10, תל אביב" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; outline:none; text-align:right;">
+            </div>
+
+            <!-- Destination -->
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label style="font-size:0.8rem; font-weight:600; color:#a1a1aa;">🏁 יעד למסירה (כתובת מלאה)</label>
+              <input type="text" id="delivery-destination" placeholder="לדוגמה: רוטשילד 45, ראשון לציון" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; outline:none; text-align:right;">
+            </div>
+
+            <!-- Code -->
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label style="font-size:0.8rem; font-weight:600; color:#a1a1aa;">🔑 קוד סודי / קוד משלוח (לאימות)</label>
+              <input type="text" id="delivery-code" placeholder="לדוגמה: 9832" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; outline:none; text-align:right;">
+            </div>
+
+            <!-- Package Type -->
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label style="font-size:0.8rem; font-weight:600; color:#a1a1aa;">📦 סוג החבילה</label>
+              <select id="delivery-package-type" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; outline:none; direction:rtl;">
+                <option value="documents">מסמכים או מעטפה ✉️</option>
+                <option value="small">חבילה קטנה (עד 2 ק"ג) 📦</option>
+                <option value="large">חבילה גדולה / כבדה 📦📦</option>
+                <option value="fragile">פריט שביר / יקר ערך 🍷</option>
+              </select>
+            </div>
+
+            <!-- Notes -->
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label style="font-size:0.8rem; font-weight:600; color:#a1a1aa;">📝 הערות נוספות או הנחיות לשליח</label>
+              <textarea id="delivery-notes" placeholder="למשל: קוד לכניסה 1234, להשאיר ליד הדלת" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; outline:none; min-height:80px; resize:vertical; text-align:right;"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="window.submitDeliveryOrder()" style="background:#e28743; border:none; padding:12px; border-radius:12px; font-weight:700; color:#09090b; cursor:pointer; font-size:1rem; margin-top:10px; transition:opacity 0.2s;">
+              🚀 שלח הזמנת משלוח
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Column: Active Tracking and History -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <!-- tracking section -->
+        <div id="delivery-tracking-panel" style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:24px; display:none;">
+          <h3 style="color:#fff; margin:0 0 16px 0; font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+            <span>🚚</span> מעקב משלוח פעיל
+          </h3>
+          
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:12px; display:flex; flex-direction:column; gap:8px; font-size:0.9rem;">
+            <div><strong>מזהה משלוח:</strong> <span id="track-id" style="color:#e28743;">-</span></div>
+            <div><strong>מאיפה:</strong> <span id="track-pickup">-</span></div>
+            <div><strong>לאן:</strong> <span id="track-destination">-</span></div>
+            <div><strong>קוד משלוח:</strong> <span id="track-code" style="color:#ffb077; font-weight:700;">-</span></div>
+            <div><strong>סטטוס נוכחי:</strong> <span id="track-status-text" style="color:#34c759; font-weight:700;">ממתין לשליח</span></div>
+          </div>
+
+          <!-- real-time progress bar slider -->
+          <div class="delivery-progress-container">
+            <div class="delivery-progress-bar">
+              <div class="delivery-progress-fill" id="track-progress-fill"></div>
+              
+              <!-- animated delivery van -->
+              <div class="delivery-truck-icon" id="track-truck">🚚</div>
+
+              <div class="delivery-step" id="step-0">
+                1
+                <span class="delivery-step-label">התקבל</span>
+              </div>
+              <div class="delivery-step" id="step-1">
+                2
+                <span class="delivery-step-label">בדרך לאיסוף</span>
+              </div>
+              <div class="delivery-step" id="step-2">
+                3
+                <span class="delivery-step-label">בדרך ליעד</span>
+              </div>
+              <div class="delivery-step" id="step-3">
+                4
+                <span class="delivery-step-label">נמסר</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order history list for the user -->
+        <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:24px;">
+          <h3 style="color:#fff; margin:0 0 16px 0; font-size:1.15rem; font-weight:800;">
+            📋 המשלוחים שלי
+          </h3>
+          <div id="user-deliveries-list" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="color:#8e8e93; font-size:0.9rem; text-align:center; padding:20px 0;">
+              אין לך משלוחים פעילים כרגע.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Panel: View and Manage All Deliveries -->
+    <div id="delivery-admin-section" style="display:none; background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:24px; margin-bottom:40px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
+        <h3 style="color:#fff; margin:0; font-size:1.25rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <span>🛡️</span> ניהול משלוחים במערכת (מנהל בלבד)
+        </h3>
+        <button onclick="window.clearAllSystemDeliveries()" style="background:rgba(255,59,48,0.1); border:1px solid rgba(255,59,48,0.3); color:#ff3b30; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:0.8rem; font-weight:600; font-family:inherit;">
+          🗑️ נקה את כל המשלוחים
+        </button>
+      </div>
+
+      <div id="admin-deliveries-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+        <!-- Admin delivery management cards will render here dynamically -->
       </div>
     </div>
   </div>

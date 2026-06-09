@@ -2358,6 +2358,7 @@ window.renderPageVisibilityControls = function() {
     { id: 'pdf-store', name: 'גרפים ונתונים', icon: 'fas fa-chart-line' },
     { id: 'groups', name: 'פורום (Forum)', icon: 'fa-solid fa-comments' },
     { id: 'bets', name: 'הימורים (Bets)', icon: 'fa-solid fa-dice' },
+    { id: 'deliveries', name: 'משלוחים (Deliveries)', icon: 'fas fa-truck' },
     ...customPagesInfo
   ];
 
@@ -2405,7 +2406,7 @@ window.applyPageVisibility = function() {
     const visibilityState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
     const customPages = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__customPages__']) || [];
     const customPageIds = customPages.map(p => p.id);
-    const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets', ...customPageIds];
+    const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets', 'deliveries', ...customPageIds];
 
     pagesInfo.forEach(pageId => {
       try {
@@ -4483,6 +4484,10 @@ function updateUserUI() {
   
   if (typeof window.updateAdminEditBar === 'function') {
     window.updateAdminEditBar();
+  }
+  
+  if (typeof window.renderDeliveriesList === 'function') {
+    window.renderDeliveriesList();
   }
 }
 
@@ -15029,6 +15034,344 @@ window.deleteCustomPage = function(pageId) {
     });
   }
 };
+
+
+// =====================================================================
+// SOKI DELIVERIES SYSTEM
+// =====================================================================
+
+let systemDeliveries = [];
+
+// Initialize Deliveries
+window.initDeliveries = function() {
+  // Check if admin to show/hide admin controls
+  const adminSection = document.getElementById('delivery-admin-section');
+  if (adminSection) {
+    adminSection.style.display = (typeof isAdmin !== 'undefined' && isAdmin === true) ? 'block' : 'none';
+  }
+
+  // Setup Firestore listener if available, otherwise fallback to local storage
+  if (window.db && window.fbFirestore) {
+    const { collection, onSnapshot, query, orderBy } = window.fbFirestore;
+    try {
+      const q = query(collection(window.db, "deliveries"), orderBy("timestamp", "desc"));
+      onSnapshot(q, (snapshot) => {
+        systemDeliveries = [];
+        snapshot.forEach((doc) => {
+          systemDeliveries.push({ firestoreId: doc.id, ...doc.data() });
+        });
+        window.renderDeliveriesList();
+      }, (err) => {
+        console.error("Firestore deliveries error:", err);
+        fallbackLocalDeliveries();
+      });
+    } catch (e) {
+      console.error("Failed to setup Firestore deliveries:", e);
+      fallbackLocalDeliveries();
+    }
+  } else {
+    fallbackLocalDeliveries();
+  }
+};
+
+function fallbackLocalDeliveries() {
+  systemDeliveries = JSON.parse(localStorage.getItem('localDeliveries') || '[]');
+  window.renderDeliveriesList();
+}
+
+// Render Deliveries for User and Admin
+window.renderDeliveriesList = function() {
+  const adminSection = document.getElementById('delivery-admin-section');
+  if (adminSection) {
+    adminSection.style.display = (typeof isAdmin !== 'undefined' && isAdmin === true) ? 'block' : 'none';
+  }
+
+  const userListContainer = document.getElementById('user-deliveries-list');
+  const adminListContainer = document.getElementById('admin-deliveries-grid');
+  const currentUserEmail = (currentUser && currentUser.email) || 'guest';
+
+  // 1. Render user deliveries
+  const userDeliveries = systemDeliveries.filter(d => d.userEmail === currentUserEmail);
+  if (userListContainer) {
+    if (userDeliveries.length === 0) {
+      userListContainer.innerHTML = `
+        <div style="color:#8e8e93; font-size:0.9rem; text-align:center; padding:20px 0;">
+          אין לך משלוחים פעילים כרגע.
+        </div>`;
+    } else {
+      userListContainer.innerHTML = userDeliveries.map(d => {
+        const statusClass = d.status === 'delivered' ? 'color:#34c759' : 'color:#ff9500';
+        const statusText = getDeliveryStatusHebrew(d.status);
+        return `
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:12px; display:flex; flex-direction:column; gap:8px; font-size:0.9rem; cursor:pointer;" onclick="window.trackDeliveryItem('${d.firestoreId || d.id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; color:#fff;">📦 משלוח מ-${d.pickup.split(',')[0]}</span>
+              <span style="${statusClass}; font-weight:700;">${statusText}</span>
+            </div>
+            <div style="color:#a1a1aa; font-size:0.8rem;">
+              <strong>אל:</strong> ${d.destination} <br>
+              <strong>קוד:</strong> <span style="color:#ffb077; font-weight:700;">${d.code}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // 2. Render admin list if admin
+  if (adminListContainer) {
+    adminListContainer.innerHTML = systemDeliveries.length === 0 
+      ? '<div style="grid-column: 1/-1; color:#8e8e93; text-align:center; padding:30px;">אין משלוחים במערכת כרגע</div>'
+      : systemDeliveries.map(d => {
+          return `
+            <div class="delivery-admin-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div style="font-size:0.75rem; color:#8e8e93; font-weight:600; margin-bottom:4px;">מאת: ${d.userEmail}</div>
+                  <div style="font-weight:800; color:#fff; font-size:0.95rem;">📦 איסוף: ${d.pickup}</div>
+                  <div style="font-weight:800; color:#ffb077; font-size:0.95rem; margin-top:4px;">🏁 יעד: ${d.destination}</div>
+                </div>
+                <button onclick="window.deleteDeliveryOrder('${d.firestoreId || d.id}')" style="background:none; border:none; color:#ff3b30; font-size:1.1rem; cursor:pointer; padding:2px;" title="מחק משלוח">✕</button>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; font-size:0.85rem; margin-top:8px;">
+                <div>🔑 קוד: <strong style="color:#fff;">${d.code}</strong></div>
+                <div>סוג: <strong>${getPackageTypeHebrew(d.packageType)}</strong></div>
+              </div>
+              ${d.notes ? `<div style="font-size:0.8rem; color:#a1a1aa; background:rgba(255,255,255,0.01); padding:8px; border-radius:6px; border-right:2px solid #e28743;">📝 <strong>הערה:</strong> ${d.notes}</div>` : ''}
+              <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                <span style="font-size:0.8rem; color:#a1a1aa; font-weight:700;">עדכן סטטוס:</span>
+                <select onchange="window.updateDeliveryStatus('${d.firestoreId || d.id}', this.value)" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:6px; padding:4px 8px; color:#fff; font-family:inherit; outline:none; font-size:0.8rem; flex:1; direction:rtl;">
+                  <option value="pending" ${d.status === 'pending' ? 'selected' : ''}>ממתין לאישור ⏳</option>
+                  <option value="approved" ${d.status === 'approved' ? 'selected' : ''}>אושר - בדרך לאיסוף 🛵</option>
+                  <option value="picked_up" ${d.status === 'picked_up' ? 'selected' : ''}>נאסף - בדרך ליעד 🚚</option>
+                  <option value="delivered" ${d.status === 'delivered' ? 'selected' : ''}>נמסר בהצלחה! ✅</option>
+                </select>
+              </div>
+            </div>
+          `;
+        }).join('');
+  }
+};
+
+function getDeliveryStatusHebrew(status) {
+  switch (status) {
+    case 'pending': return 'ממתין לאישור ⏳';
+    case 'approved': return 'בדרך לאיסוף 🛵';
+    case 'picked_up': return 'בדרך ליעד 🚚';
+    case 'delivered': return 'נמסר בהצלחה! ✅';
+    default: return 'ממתין ⏳';
+  }
+}
+
+function getPackageTypeHebrew(type) {
+  switch (type) {
+    case 'documents': return 'מסמכים/מעטפה ✉️';
+    case 'small': return 'חבילה קטנה 📦';
+    case 'large': return 'חבילה גדולה 📦📦';
+    case 'fragile': return 'שביר/יקר ערך 🍷';
+    default: return 'חבילה 📦';
+  }
+}
+
+// Track a specific delivery
+window.trackDeliveryItem = function(id) {
+  const item = systemDeliveries.find(d => (d.firestoreId === id || d.id === id));
+  if (!item) return;
+
+  const panel = document.getElementById('delivery-tracking-panel');
+  if (!panel) return;
+  panel.style.display = 'block';
+
+  document.getElementById('track-id').textContent = id.substring(0, 8) + '...';
+  document.getElementById('track-pickup').textContent = item.pickup;
+  document.getElementById('track-destination').textContent = item.destination;
+  document.getElementById('track-code').textContent = item.code;
+  document.getElementById('track-status-text').textContent = getDeliveryStatusHebrew(item.status);
+
+  // Update progress bar
+  const fill = document.getElementById('track-progress-fill');
+  const truck = document.getElementById('track-truck');
+  
+  let percentage = 0;
+  let activeSteps = 0;
+
+  if (item.status === 'pending') { percentage = 12; activeSteps = 1; }
+  else if (item.status === 'approved') { percentage = 42; activeSteps = 2; }
+  else if (item.status === 'picked_up') { percentage = 72; activeSteps = 3; }
+  else if (item.status === 'delivered') { percentage = 100; activeSteps = 4; }
+
+  if (fill) fill.style.width = percentage + '%';
+  if (truck) truck.style.right = `calc(${percentage}% - 18px)`;
+
+  // Update step styles
+  for (let i = 0; i < 4; i++) {
+    const stepEl = document.getElementById(`step-${i}`);
+    if (stepEl) {
+      if (i < activeSteps) {
+        stepEl.classList.add('active');
+      } else {
+        stepEl.classList.remove('active');
+      }
+    }
+  }
+
+  // Smoothly scroll to tracking panel
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+// Submit dynamic delivery order
+window.submitDeliveryOrder = async function() {
+  const pickup = document.getElementById('delivery-pickup').value.trim();
+  const destination = document.getElementById('delivery-destination').value.trim();
+  const code = document.getElementById('delivery-code').value.trim();
+  const packageType = document.getElementById('delivery-package-type').value;
+  const notes = document.getElementById('delivery-notes').value.trim();
+
+  if (!pickup || !destination || !code) {
+    showToast('❌ נא למלא את כל שדות החובה: איסוף, יעד וקוד', 'error');
+    return;
+  }
+
+  const currentUserEmail = (currentUser && currentUser.email) || 'guest';
+  const newDelivery = {
+    pickup,
+    destination,
+    code,
+    packageType,
+    notes,
+    userEmail: currentUserEmail,
+    status: 'pending',
+    timestamp: Date.now()
+  };
+
+  if (window.db && window.fbFirestore) {
+    const { collection, addDoc } = window.fbFirestore;
+    try {
+      const docRef = await addDoc(collection(window.db, "deliveries"), newDelivery);
+      showToast('🚀 הזמנת המשלוח נשלחה בהצלחה וממתינה לאישור!');
+      window.trackDeliveryItem(docRef.id);
+    } catch (e) {
+      console.error("Failed to add delivery to Firestore:", e);
+      newDelivery.id = 'del_' + Date.now();
+      saveLocalDelivery(newDelivery);
+    }
+  } else {
+    newDelivery.id = 'del_' + Date.now();
+    saveLocalDelivery(newDelivery);
+  }
+
+  // Clear fields
+  document.getElementById('delivery-pickup').value = '';
+  document.getElementById('delivery-destination').value = '';
+  document.getElementById('delivery-code').value = '';
+  document.getElementById('delivery-notes').value = '';
+};
+
+function saveLocalDelivery(del) {
+  const localList = JSON.parse(localStorage.getItem('localDeliveries') || '[]');
+  localList.unshift(del);
+  localStorage.setItem('localDeliveries', JSON.stringify(localList));
+  systemDeliveries = localList;
+  window.renderDeliveriesList();
+  window.trackDeliveryItem(del.id);
+  showToast('🚀 הזמנת המשלוח נשמרה מקומית בהצלחה!');
+}
+
+// Update delivery status (Admin only)
+window.updateDeliveryStatus = async function(id, newStatus) {
+  if (window.db && window.fbFirestore) {
+    const { doc, updateDoc } = window.fbFirestore;
+    try {
+      await updateDoc(doc(window.db, "deliveries", id), { status: newStatus });
+      showToast(`📝 סטטוס המשלוח עודכן בהצלחה!`);
+    } catch (e) {
+      console.error("Failed to update status in Firestore:", e);
+      updateLocalDeliveryStatus(id, newStatus);
+    }
+  } else {
+    updateLocalDeliveryStatus(id, newStatus);
+  }
+};
+
+function updateLocalDeliveryStatus(id, newStatus) {
+  const localList = JSON.parse(localStorage.getItem('localDeliveries') || '[]');
+  const idx = localList.findIndex(d => d.id === id);
+  if (idx !== -1) {
+    localList[idx].status = newStatus;
+    localStorage.setItem('localDeliveries', JSON.stringify(localList));
+    systemDeliveries = localList;
+    window.renderDeliveriesList();
+    window.trackDeliveryItem(id);
+    showToast(`📝 סטטוס המשלוח עודכן בהצלחה!`);
+  }
+}
+
+// Delete delivery order (Admin/User)
+window.deleteDeliveryOrder = async function(id) {
+  if (!confirm('האם אתה בטוח שברצונך למחוק הזמנת משלוח זו?')) return;
+
+  if (window.db && window.fbFirestore) {
+    const { doc, deleteDoc } = window.fbFirestore;
+    try {
+      await deleteDoc(doc(window.db, "deliveries", id));
+      showToast('🗑️ המשלוח נמחק בהצלחה מהמערכת');
+    } catch (e) {
+      console.error("Failed to delete from Firestore:", e);
+      deleteLocalDelivery(id);
+    }
+  } else {
+    deleteLocalDelivery(id);
+  }
+};
+
+function deleteLocalDelivery(id) {
+  let localList = JSON.parse(localStorage.getItem('localDeliveries') || '[]');
+  localList = localList.filter(d => d.id !== id);
+  localStorage.setItem('localDeliveries', JSON.stringify(localList));
+  systemDeliveries = localList;
+  window.renderDeliveriesList();
+  
+  const panel = document.getElementById('delivery-tracking-panel');
+  if (panel) panel.style.display = 'none';
+  showToast('🗑️ המשלוח נמחק בהצלחה');
+}
+
+// Clear all system deliveries (Admin only)
+window.clearAllSystemDeliveries = async function() {
+  if (!confirm('אזהרה: האם אתה בטוח שברצונך למחוק את כל המשלוחים במערכת? פעולה זו סופית.')) return;
+
+  if (window.db && window.fbFirestore) {
+    const { collection, getDocs, doc, deleteDoc } = window.fbFirestore;
+    try {
+      const snap = await getDocs(collection(window.db, "deliveries"));
+      const promises = [];
+      snap.forEach(d => promises.push(deleteDoc(doc(window.db, "deliveries", d.id))));
+      await Promise.all(promises);
+      showToast('🗑️ כל המשלוחים נמחקו בהצלחה מהשרת');
+    } catch (e) {
+      console.error("Failed to clear Firestore deliveries:", e);
+      clearLocalDeliveries();
+    }
+  } else {
+    clearLocalDeliveries();
+  }
+};
+
+function clearLocalDeliveries() {
+  localStorage.removeItem('localDeliveries');
+  systemDeliveries = [];
+  window.renderDeliveriesList();
+  const panel = document.getElementById('delivery-tracking-panel');
+  if (panel) panel.style.display = 'none';
+  showToast('🗑️ כל המשלוחים נמחקו בהצלחה');
+}
+
+// Trigger initialization on load
+setTimeout(() => {
+  if (typeof window.initDeliveries === 'function') {
+    window.initDeliveries();
+  }
+}, 1000);
 
 
 
