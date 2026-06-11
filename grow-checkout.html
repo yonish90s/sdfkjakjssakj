@@ -276,9 +276,10 @@
       btn.style.background = '#86868b';
 
       setTimeout(() => {
-        // Redirect to success page with simulated grow transaction ID
+        // Redirect to success page with simulated grow transaction ID and items
         const mockSessionId = 'grow_mock_' + Date.now();
-        window.location.href = `/success.html?session_id=${mockSessionId}`;
+        const itemsParam = params.get('items') || '';
+        window.location.href = `/success.html?session_id=${mockSessionId}&items=${encodeURIComponent(itemsParam)}`;
       }, 1500);
     }
   </script>

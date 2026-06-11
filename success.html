@@ -1,93 +1,387 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Order Complete — Digital Store</title>
+  <title>התשלום בוצע בהצלחה 🎉 SOKI Store</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css" />
   <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
-    .success-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 56px 48px;
-      max-width: 480px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 80px rgba(124,58,237,0.1);
+    :root {
+      --bg: #0b0f19;
+      --panel: rgba(17, 24, 39, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #34c759;
+      --primary-glow: rgba(52, 199, 89, 0.15);
+      --text: #f5f5f7;
+      --text-muted: #86868b;
     }
-    .success-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
-    .success-card h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
-    .success-card p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.7; margin-bottom: 32px; }
-    .download-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
-    .download-list a {
+    body {
+      background: var(--bg);
+      color: var(--text);
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: rgba(124,58,237,0.08);
-      border: 1px solid rgba(124,58,237,0.2);
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 24px;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    .receipt-container {
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 48px;
+      max-width: 550px;
+      width: 100%;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 80px rgba(52, 199, 89, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .receipt-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .success-icon-badge {
+      width: 80px;
+      height: 80px;
+      background: rgba(52, 199, 89, 0.1);
+      border: 1px solid rgba(52, 199, 89, 0.25);
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 20px auto;
+      box-shadow: 0 0 30px var(--primary-glow);
+    }
+    .receipt-header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.02em;
+    }
+    .receipt-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .order-details-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .receipt-item-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .receipt-item-row:last-child {
+      border-bottom: none;
+    }
+    .receipt-item-img {
+      width: 56px;
+      height: 56px;
       border-radius: 12px;
-      padding: 14px 20px;
-      color: #a78bfa;
+      object-fit: cover;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .receipt-item-info {
+      flex: 1;
+    }
+    .receipt-item-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .receipt-item-qty {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .download-item-btn {
+      background: rgba(167, 139, 250, 0.1);
+      border: 1px solid rgba(167, 139, 250, 0.2);
+      color: #c084fc;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
       text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       transition: all 0.2s;
     }
-    .download-list a:hover { background: rgba(124,58,237,0.14); border-color: rgba(124,58,237,0.35); }
-    .loading { color: var(--text-muted); font-size: 0.9rem; }
-    .error-msg { color: #f87171; font-size: 0.88rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 12px; margin-bottom: 24px; }
+    .download-item-btn:hover {
+      background: rgba(167, 139, 250, 0.2);
+      border-color: rgba(167, 139, 250, 0.45);
+      transform: translateY(-1px);
+    }
+    .pricing-summary {
+      margin-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pricing-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .pricing-row.total {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 12px;
+    }
+    .meta-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 24px;
+      margin-bottom: 32px;
+    }
+    .meta-label {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+    .meta-value {
+      color: #fff;
+      font-weight: 700;
+    }
+    .actions-row {
+      display: flex;
+      gap: 14px;
+    }
+    .btn-receipt-action {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-receipt-action.primary {
+      background: #e28743;
+      color: #09090b;
+      border: none;
+    }
+    .btn-receipt-action.primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .btn-receipt-action.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .btn-receipt-action.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+      .receipt-container {
+        border: none;
+        box-shadow: none;
+        background: #fff;
+        color: #000;
+        max-width: 100%;
+        padding: 0;
+      }
+      .actions-row, .download-item-btn {
+        display: none !important;
+      }
+      .receipt-item-name, .receipt-header h1, .pricing-row.total, .meta-value {
+        color: #000 !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="success-card">
-    <span class="success-icon">🎉</span>
-    <h1>Payment Successful!</h1>
-    <p>Thank you for your purchase. Your download links are ready below.</p>
 
-    <div id="downloads-area">
-      <p class="loading">⏳ Loading download links...</p>
+  <div class="receipt-container">
+    <div class="receipt-header">
+      <div class="success-icon-badge">
+        <i class="fas fa-check"></i>
+      </div>
+      <h1>התשלום התקבל בהצלחה!</h1>
+      <p>תודה על הקנייה שלך. קבלת הרכישה מפורטת למטה.</p>
     </div>
 
-    <a href="/" class="btn-secondary" style="display:inline-block; text-decoration:none;">&larr; Back to shop</a>
+    <!-- Product Details Card -->
+    <div class="order-details-card">
+      <h3 style="margin: 0 0 16px 0; font-size: 1.05rem; font-weight: 800; color: #fff;">פירוט הזמנה</h3>
+      
+      <div id="receipt-items-container">
+        <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+          ⏳ טוען פרטי מוצרים...
+        </div>
+      </div>
+
+      <!-- Pricing summary -->
+      <div class="pricing-summary">
+        <div class="pricing-row">
+          <span>סכום ביניים:</span>
+          <span id="subtotal-amount">₪0</span>
+        </div>
+        <div class="pricing-row">
+          <span>מע"מ (17% כלול):</span>
+          <span id="vat-amount">₪0</span>
+        </div>
+        <div class="pricing-row total">
+          <span>סה"כ שולם:</span>
+          <span id="total-paid">₪0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metadata Grid -->
+    <div class="meta-info-grid">
+      <div>
+        <div class="meta-label">מספר עסקה</div>
+        <div class="meta-value" id="meta-session-id">-</div>
+      </div>
+      <div>
+        <div class="meta-label">תאריך</div>
+        <div class="meta-value" id="meta-date">-</div>
+      </div>
+      <div style="margin-top: 8px;">
+        <div class="meta-label">אמצעי תשלום</div>
+        <div class="meta-value">כרטיס אשראי 💳</div>
+      </div>
+      <div style="margin-top: 8px;">
+        <div class="meta-label">סטטוס</div>
+        <div class="meta-value" style="color: #34c759;"><i class="fas fa-circle-check" style="margin-left: 4px;"></i>מאושר</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-row">
+      <a href="/" class="btn-receipt-action secondary"><i class="fas fa-arrow-right"></i> חזרה לחנות</a>
+      <button onclick="window.print()" class="btn-receipt-action secondary"><i class="fas fa-print"></i> הדפס קבלה</button>
+    </div>
   </div>
 
   <script>
-    const SERVER_URL = window.location.origin;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id') || 'grow_mock_' + Date.now();
+    const itemsRaw = params.get('items');
 
-    async function loadDownloads() {
-      const params = new URLSearchParams(window.location.search);
-      const sessionId = params.get('session_id');
-      const area = document.getElementById('downloads-area');
+    document.getElementById('meta-session-id').textContent = sessionId;
+    document.getElementById('meta-date').textContent = new Date().toLocaleDateString('he-IL', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
 
-      if (!sessionId) {
-        area.innerHTML = '<p class="error-msg">Order ID not found.</p>';
-        return;
-      }
-
-      try {
-        const res = await fetch(`${SERVER_URL}/api/order/${sessionId}`);
-        if (!res.ok) throw new Error('Payment not verified');
-        const { downloads, customerEmail } = await res.json();
-
-        if (!downloads || downloads.length === 0) {
-          area.innerHTML = '<p class="error-msg">No download links found. Please contact support.</p>';
-          return;
+    async function loadReceipt() {
+      const container = document.getElementById('receipt-items-container');
+      
+      let parsedItems = [];
+      if (itemsRaw) {
+        try {
+          parsedItems = JSON.parse(decodeURIComponent(itemsRaw));
+        } catch (e) {
+          console.error("Failed to parse items query", e);
         }
-
-        const emailNote = customerEmail ? `<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:16px;">Confirmation sent to: ${customerEmail}</p>` : '';
-        area.innerHTML = emailNote + `<ul class="download-list">${
-          downloads.map((url, i) => `<li><a href="${url}" target="_blank" download>📥 Download file ${i + 1}</a></li>`).join('')
-        }</ul>`;
-      } catch (err) {
-        area.innerHTML = '<p class="error-msg">Payment verification error. Please save your order ID and contact support.</p>';
       }
+
+      // Fallback downloads fetch if needed
+      let downloadLinks = [];
+      try {
+        const res = await fetch(`/api/order/${sessionId}`);
+        if (res.ok) {
+          const data = await res.json();
+          downloadLinks = data.downloads || [];
+        }
+      } catch (err) {
+        console.error("Error loading order from server:", err);
+      }
+
+      if (parsedItems.length === 0) {
+        // Mock default items if none passed in query
+        parsedItems = [
+          { text: "ערכת עיצוב UX/UI מקצועית × 1 — ₪299", image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=200" }
+        ];
+      }
+
+      let calculatedTotal = 0;
+
+      container.innerHTML = parsedItems.map((item, index) => {
+        // Parse title and price from text e.g. "Product Name × 1 — ₪299" or "₪350"
+        const parts = item.text.split('—');
+        const titleAndQty = parts[0].trim();
+        const priceStr = parts[1] ? parts[1].trim() : '₪0';
+        
+        // Extract numeric price
+        const priceNum = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+        calculatedTotal += priceNum;
+
+        const downloadUrl = downloadLinks[index] || '#';
+        const isDownloadable = downloadLinks.length > 0;
+
+        return `
+          <div class="receipt-item-row">
+            <img src="${item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200'}" class="receipt-item-img" alt="">
+            <div class="receipt-item-info">
+              <div class="receipt-item-name">${titleAndQty}</div>
+              <div style="font-weight: 800; color:#e28743; font-size:0.9rem; margin-top:2px;">${priceStr}</div>
+            </div>
+            ${isDownloadable ? `
+              <a href="${downloadUrl}" class="download-item-btn" target="_blank" download>
+                <i class="fas fa-download"></i> הורדה
+              </a>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      // Update calculations
+      const subtotal = calculatedTotal;
+      const vat = Math.round(subtotal * 0.17); // 17% VAT in ILS
+
+      document.getElementById('subtotal-amount').textContent = `₪${(subtotal - vat).toLocaleString()}`;
+      document.getElementById('vat-amount').textContent = `₪${vat.toLocaleString()}`;
+      document.getElementById('total-paid').textContent = `₪${subtotal.toLocaleString()}`;
     }
 
-    loadDownloads();
+    loadReceipt();
   </script>
 </body>
 </html>
