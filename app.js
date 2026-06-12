@@ -16584,6 +16584,7 @@ window.openFloatingPillPanel = function(type) {
   const panel = document.getElementById('floating-pill-panel');
   const titleEl = document.getElementById('floating-pill-panel-title');
   const bodyEl = document.getElementById('floating-pill-panel-body');
+  const pillNav = document.getElementById('floating-pill-nav');
   if (!panel || !titleEl || !bodyEl) return;
   
   const wasActive = panel.classList.contains('active');
@@ -16606,6 +16607,7 @@ window.openFloatingPillPanel = function(type) {
     titleEl.innerHTML = title;
     
     panel.style.display = 'flex';
+    if (pillNav) pillNav.classList.add('hidden-state');
     setTimeout(() => {
       panel.classList.add('active');
       if (window.renderRecentActivity) window.renderRecentActivity();
@@ -16614,7 +16616,7 @@ window.openFloatingPillPanel = function(type) {
   else if (type === 'chats') {
     title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
     bodyHTML = `
-      <div id="direct-chat-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px; height: 350px;">
+      <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
         <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
       </div>
       <div style="display:flex; gap:8px;">
@@ -16626,6 +16628,7 @@ window.openFloatingPillPanel = function(type) {
     titleEl.innerHTML = title;
     
     panel.style.display = 'flex';
+    if (pillNav) pillNav.classList.add('hidden-state');
     setTimeout(() => {
       panel.classList.add('active');
       if (window.loadDirectMessages) window.loadDirectMessages();
@@ -16634,7 +16637,7 @@ window.openFloatingPillPanel = function(type) {
   else if (type === 'ai') {
     title = '<i class="fas fa-robot"></i> עוזר קניות AI';
     bodyHTML = `
-      <div id="ai-shop-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px; height: 350px;">
+      <div id="ai-shop-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
         <div class="ai-msg-bot" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color: #000;">
           <span>👋 שלום! אני ה-AI של SOKI. תגיד לי מה אתה מחפש לקנות — ואני אמצא לך מוצרים רלוונטיים מהמשתמשים שלנו!</span>
         </div>
@@ -16649,6 +16652,7 @@ window.openFloatingPillPanel = function(type) {
     titleEl.innerHTML = title;
     
     panel.style.display = 'flex';
+    if (pillNav) pillNav.classList.add('hidden-state');
     setTimeout(() => {
       panel.classList.add('active');
     }, 10);
@@ -16657,6 +16661,10 @@ window.openFloatingPillPanel = function(type) {
 
 window.closeFloatingPillPanel = function() {
   const panel = document.getElementById('floating-pill-panel');
+  const pillNav = document.getElementById('floating-pill-nav');
+  if (pillNav) {
+    pillNav.classList.remove('hidden-state');
+  }
   if (panel) {
     panel.classList.remove('active');
     panel.removeAttribute('data-active-type');

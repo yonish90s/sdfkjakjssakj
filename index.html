@@ -5876,7 +5876,6 @@
 </div>
 
 <!-- Floating Pill Navigation Bar Positioning Override Style -->
-<style>
 .floating-pill-nav {
   position: fixed !important;
   bottom: 24px !important;
@@ -5886,13 +5885,26 @@
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
+  transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), visibility 0.3s !important;
+}
+.floating-pill-nav.hidden-state {
+  transform: translateX(-50%) translateY(100px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 .floating-pill-panel {
   position: fixed !important;
-  bottom: 84px !important;
+  bottom: 24px !important;
   left: calc(50% + var(--sidebar-width) / 2) !important;
-  transform: translateX(-50%) translateY(10px) !important;
+  transform: translateX(-50%) translateY(15px) !important;
+  width: 560px !important;
+  height: 280px !important;
   z-index: 139000 !important;
+  transition: opacity 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+.floating-pill-panel.active {
+  transform: translateX(-50%) translateY(0) !important;
 }
 body.sidebar-collapsed .floating-pill-nav {
   left: calc(50% + var(--sidebar-collapsed-width) / 2) !important;
@@ -5918,7 +5930,8 @@ body.rtl-layout.sidebar-collapsed .floating-pill-panel {
   }
   .floating-pill-panel {
     left: 50% !important;
-    width: 90vw !important;
+    width: 95vw !important;
+    height: 320px !important;
   }
 }
 </style>
