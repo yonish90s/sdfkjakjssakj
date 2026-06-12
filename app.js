@@ -11367,92 +11367,6 @@ window.clearHeatmapData = function() {
 window.renderAdminAnalytics = function() {
   const clicks = JSON.parse(localStorage.getItem('soki_interaction_clicks') || '[]');
   const logins = JSON.parse(localStorage.getItem('soki_analytics_logins') || '[]');
-  const orders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
-
-  // ── Timestamp / filter bar ──
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  const refreshEl = document.getElementById('an-refresh-time');
-  if (refreshEl) refreshEl.textContent = timeStr;
-  const dateEl = document.getElementById('an-date-label');
-  if (dateEl) dateEl.textContent = dateStr;
-
-  // ── Sales metrics ──
-  const totalSales = orders.reduce((s, o) => s + (parseFloat(o.total) || 0), 0);
-  const fmt = v => v.toFixed(2);
-  ['an-gross-sales','an-total-sales','an-bd-gross','an-bd-net','an-bd-total'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.textContent = fmt(totalSales);
-  });
-  const avgOrder = orders.length ? (totalSales / orders.length) : 0;
-  const avgEl = document.getElementById('an-avg-order'); if (avgEl) avgEl.textContent = fmt(avgOrder);
-  const ordEl = document.getElementById('an-total-orders'); if (ordEl) ordEl.textContent = orders.length;
-  const fulEl = document.getElementById('an-orders-fulfilled'); if (fulEl) fulEl.textContent = orders.filter(o => o.status === 'fulfilled').length;
-
-  // ── Draw sales chart (24 hours buckets) ──
-  const canvas = document.getElementById('an-sales-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth || 600;
-    canvas.height = 180;
-    const W = canvas.width, H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    // Build hourly buckets for today
-    const buckets = Array(24).fill(0);
-    const today = new Date(); today.setHours(0,0,0,0);
-    orders.forEach(o => {
-      const d = new Date(o.timestamp || o.date || Date.now());
-      if (d >= today) buckets[d.getHours()] += parseFloat(o.total) || 0;
-    });
-    const maxVal = Math.max(...buckets, 10);
-    const padL = 40, padR = 20, padT = 10, padB = 30;
-    const chartW = W - padL - padR;
-    const chartH = H - padT - padB;
-
-    // Grid lines
-    ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 1;
-    [0.25, 0.5, 0.75, 1].forEach(p => {
-      const y = padT + chartH * (1 - p);
-      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      ctx.fillStyle = '#9ca3af'; ctx.font = '10px Inter';
-      ctx.fillText('₪' + Math.round(maxVal * p), 2, y + 3);
-    });
-
-    // Today line (solid blue)
-    ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2; ctx.beginPath();
-    buckets.forEach((v, i) => {
-      const x = padL + (i / 23) * chartW;
-      const y = padT + chartH * (1 - v / maxVal);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Fill gradient under today line
-    const grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
-    grad.addColorStop(0, 'rgba(37,99,235,0.15)');
-    grad.addColorStop(1, 'rgba(37,99,235,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    buckets.forEach((v, i) => {
-      const x = padL + (i / 23) * chartW;
-      const y = padT + chartH * (1 - v / maxVal);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.lineTo(padL + chartW, padT + chartH);
-    ctx.lineTo(padL, padT + chartH);
-    ctx.closePath(); ctx.fill();
-
-    // Yesterday (dashed light blue, all zeros)
-    ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    for (let i = 0; i <= 23; i++) {
-      const x = padL + (i / 23) * chartW;
-      const y = padT + chartH;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.stroke(); ctx.setLineDash([]);
-  }
 
   // Update stats counters
   const totalClicksEl = document.getElementById('analytics-total-clicks');
@@ -11488,17 +11402,17 @@ window.renderAdminAnalytics = function() {
       loginsListEl.innerHTML = logins.map(l => {
         const timeStr = new Date(l.timestamp).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
         return `
-          <div style="background:#fff; border:1px solid #f3f4f6; padding:10px 14px; border-radius:8px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="background:#f4f5f6; border:1px solid #e5e5ea; padding:10px 14px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${l.avatar}" style="width:32px; height:32px; border-radius:50%; border:1px solid #e5e7eb;" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'">
+              <img src="${l.avatar}" style="width:32px; height:32px; border-radius:50%; border:1px solid #e5e5ea;" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'">
               <div>
-                <div style="font-size:0.85rem; font-weight:600; color:#111;">${l.name}</div>
-                <div style="font-size:0.75rem; color:#6b7280;">${l.email}</div>
+                <div style="font-size:0.85rem; font-weight:700; color:#1c1c1e;">${l.name}</div>
+                <div style="font-size:0.75rem; color:#86868b;">${l.email}</div>
               </div>
             </div>
             <div style="text-align:right;">
-              <div style="font-size:0.75rem; color:#374151; font-weight:500;">${l.device === 'Mobile' ? '📱 Mobile' : '💻 Desktop'}</div>
-              <div style="font-size:0.68rem; color:#9ca3af;">${timeStr}</div>
+              <div style="font-size:0.75rem; color:#1d1d1f; font-weight:600;">${l.device === 'Mobile' ? '📱 Mobile' : '💻 Desktop'}</div>
+              <div style="font-size:0.68rem; color:#86868b;">${timeStr}</div>
             </div>
           </div>`;
       }).join('');
@@ -11511,15 +11425,10 @@ window.renderAdminAnalytics = function() {
     if (clicks.length === 0) {
       spotsContainer.innerHTML = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#86868b; font-size:0.8rem; font-weight:500;">אין נתוני הקלקות רשומים</div>';
     } else {
-      // Find min/max coordinates to normalize them relative to sandbox frame size
       spotsContainer.innerHTML = clicks.map(c => {
-        // Normalize click spots so they distribute perfectly inside the mockup box regardless of user screen size
         const relativeX = (c.x / (c.w || window.innerWidth)) * 100;
         const relativeY = (c.y / (c.h || window.innerHeight)) * 100;
-        
-        // Heatmap color based on click density/random thermal variations (glowing radial gradients)
-        const size = Math.floor(Math.random() * 20) + 16; // Random diameter between 16px and 36px for natural organic thermal feel
-        
+        const size = Math.floor(Math.random() * 20) + 16;
         return `
           <div style="
             position:absolute;
@@ -11537,6 +11446,237 @@ window.renderAdminAnalytics = function() {
       }).join('');
     }
   }
+
+  // Initialize/Draw the new colorful Performance Charts
+  window.drawPerformanceDashboard('30days');
+};
+
+// ── NEW COLORFUL PERFORMANCE CHARTS ENGINE ──
+window.drawPerformanceDashboard = function(range) {
+  const rangeData = {
+    today: {
+      organic: '984',
+      social: '2.1K',
+      ai: '84',
+      reddit: '9',
+      labels: ['12 AM', '4 AM', '8 AM', '12 PM', '4 PM', '8 PM'],
+      organicData: [15, 65, 140, 290, 480, 240],
+      aiData: [2, 5, 15, 32, 52, 22],
+      tiktok: 1100, instagram: 900, youtube: 100,
+      totalViews: '2.1K'
+    },
+    yesterday: {
+      organic: '1,240',
+      social: '2.8K',
+      ai: '102',
+      reddit: '12',
+      labels: ['12 AM', '4 AM', '8 AM', '12 PM', '4 PM', '8 PM'],
+      organicData: [20, 85, 190, 340, 510, 380],
+      aiData: [3, 8, 22, 38, 58, 30],
+      tiktok: 1500, instagram: 1150, youtube: 150,
+      totalViews: '2.8K'
+    },
+    '7days': {
+      organic: '6,842',
+      social: '18.4K',
+      ai: '582',
+      reddit: '48',
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      organicData: [720, 980, 840, 1150, 1380, 1020, 752],
+      aiData: [52, 84, 68, 102, 128, 92, 56],
+      tiktok: 9800, instagram: 7900, youtube: 700,
+      totalViews: '18.4K'
+    },
+    '30days': {
+      organic: '26,892',
+      social: '73.9K',
+      ai: '2,364',
+      reddit: '197',
+      labels: ['MAY 6', 'MAY 9', 'MAY 12', 'MAY 15', 'MAY 18', 'MAY 21', 'MAY 24', 'MAY 27', 'MAY 30', 'JUN 2'],
+      organicData: [120, 980, 450, 580, 650, 950, 80, 980, 500, 580, 890, 780, 400, 200, 210, 40],
+      aiData: [10, 85, 35, 48, 55, 80, 8, 85, 42, 50, 78, 65, 30, 15, 18, 5],
+      tiktok: 39851, instagram: 31593, youtube: 2456,
+      totalViews: '73.9K'
+    },
+    custom: {
+      organic: '3,841',
+      social: '10.2K',
+      ai: '320',
+      reddit: '32',
+      labels: ['W1', 'W2', 'W3', 'W4'],
+      organicData: [820, 940, 1020, 1061],
+      aiData: [50, 78, 92, 100],
+      tiktok: 5400, instagram: 4200, youtube: 600,
+      totalViews: '10.2K'
+    }
+  };
+
+  const data = rangeData[range] || rangeData['30days'];
+
+  // Update KPI numeric views
+  const orgKpi = document.getElementById('perf-kpi-organic'); if (orgKpi) orgKpi.textContent = data.organic;
+  const socKpi = document.getElementById('perf-kpi-social'); if (socKpi) socKpi.textContent = data.social;
+  const aiKpi = document.getElementById('perf-kpi-ai'); if (aiKpi) aiKpi.textContent = data.ai;
+  const redKpi = document.getElementById('perf-kpi-reddit'); if (redKpi) redKpi.textContent = data.reddit;
+
+  // Center doughnut text
+  const cntVal = document.getElementById('doughnut-center-value'); if (cntVal) cntVal.textContent = data.totalViews;
+
+  // List views
+  const ttV = document.getElementById('perf-social-val-tiktok'); if (ttV) ttV.textContent = data.tiktok.toLocaleString();
+  const igV = document.getElementById('perf-social-val-instagram'); if (igV) igV.textContent = data.instagram.toLocaleString();
+  const ytV = document.getElementById('perf-social-val-youtube'); if (ytV) ytV.textContent = data.youtube.toLocaleString();
+
+  // 1. Line Chart rendering
+  const lineCanvas = document.getElementById('perf-line-chart');
+  if (lineCanvas) {
+    const lineCtx = lineCanvas.getContext('2d');
+    if (window.perfLineChart && typeof window.perfLineChart.destroy === 'function') {
+      window.perfLineChart.destroy();
+    }
+
+    const gradient = lineCtx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(249, 115, 22, 0.35)'); // Premium orange gradient matching image
+    gradient.addColorStop(1, 'rgba(249, 115, 22, 0.00)');
+
+    window.perfLineChart = new Chart(lineCtx, {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Organic Traffic',
+            data: data.organicData,
+            borderColor: '#f97316',
+            borderWidth: 3.5,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.38,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#f97316',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
+          },
+          {
+            label: 'AI Traffic',
+            data: data.aiData,
+            borderColor: '#e1306c',
+            borderWidth: 2.5,
+            fill: false,
+            tension: 0.38,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#e1306c',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1.5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(28,28,30,0.95)',
+            titleColor: '#ffffff',
+            bodyColor: '#fafafa',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 10
+          }
+        },
+        interaction: {
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#86868b', font: { size: 9, weight: '700' } }
+          },
+          y: {
+            grid: { color: '#f4f5f6' },
+            border: { dash: [4, 4] },
+            ticks: { color: '#86868b', font: { size: 9, weight: '700' } }
+          }
+        }
+      }
+    });
+  }
+
+  // 2. Doughnut Chart rendering
+  const doughnutCanvas = document.getElementById('perf-doughnut-chart');
+  if (doughnutCanvas) {
+    const doughnutCtx = doughnutCanvas.getContext('2d');
+    if (window.perfDoughnutChart && typeof window.perfDoughnutChart.destroy === 'function') {
+      window.perfDoughnutChart.destroy();
+    }
+
+    window.perfDoughnutChart = new Chart(doughnutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['TikTok', 'Instagram', 'YouTube'],
+        datasets: [{
+          data: [data.tiktok, data.instagram, data.youtube],
+          backgroundColor: [
+            '#e1306c', // TikTok
+            '#f97316', // Instagram
+            '#ff0000'  // YouTube
+          ],
+          borderWidth: 4,
+          borderColor: '#ffffff',
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '76%',
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+};
+
+window.setPerformanceRange = function(range, btn) {
+  document.querySelectorAll('.perf-tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.background = 'none';
+    b.style.color = '#86868b';
+  });
+  if (btn) {
+    btn.classList.add('active');
+    btn.style.background = '#1c1c1e';
+    btn.style.color = '#ffffff';
+  }
+  window.drawPerformanceDashboard(range);
+};
+
+window.refreshPerformanceStats = function() {
+  showToast('🔄 מרענן נתוני ביצועים...', 1200);
+  const activeBtn = document.querySelector('.perf-tab-btn.active');
+  const label = activeBtn ? activeBtn.textContent.toLowerCase() : '30days';
+  const range = label.includes('today') ? 'today' :
+                label.includes('yesterday') ? 'yesterday' :
+                label.includes('7') ? '7days' :
+                label.includes('30') ? '30days' : 'custom';
+  
+  const chartWrapper = document.getElementById('perf-line-chart')?.parentElement;
+  if (chartWrapper) chartWrapper.style.opacity = '0.4';
+  
+  setTimeout(() => {
+    if (chartWrapper) chartWrapper.style.opacity = '1';
+    window.drawPerformanceDashboard(range);
+    showToast('✅ הנתונים עודכנו בהצלחה');
+  }, 500);
 };
 
 // ========== TIME MACHINE BACKUP & RESTORE LOGIC ==========
@@ -12293,89 +12433,263 @@ window.switchForumWidgetTab = function(tabName, btn) {
 const bettingEvents = [
   {
     id: 'bet1',
-    title: "ליגת האלופות: ריאל מדריד נגד מנצ'סטר סיטי",
-    category: "ספורט",
+    title: "גמר המונדיאל: ארגנטינה נגד צרפת",
+    category: "מונדיאל 2026",
     time: "הערב, 22:00",
+    image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=400",
     options: [
-      { id: 'opt1', text: "ריאל מדריד", odds: 2.10 },
-      { id: 'opt2', text: "תיקו", odds: 3.40 },
-      { id: 'opt3', text: "מנצ'סטר סיטי", odds: 2.50 }
+      { id: 'opt1', text: "ארגנטינה 🇦🇷", odds: 2.05 },
+      { id: 'opt2', text: "תיקו 🤝", odds: 3.20 },
+      { id: 'opt3', text: "צרפת 🇫🇷", odds: 2.25 }
     ]
   },
   {
     id: 'bet2',
-    title: "מניית טסלה (TSLA) בסוף יום המסחר",
-    category: "שוק ההון",
-    time: "מחר, 23:00",
+    title: "חצי הגמר: ברזיל נגד אנגליה",
+    category: "מונדיאל 2026",
+    time: "מחר, 21:00",
+    image: "https://images.unsplash.com/photo-1518063319789-7217e6706b04?auto=format&fit=crop&q=80&w=400",
     options: [
-      { id: 'opt1', text: "מעל $250", odds: 1.85 },
-      { id: 'opt2', text: "מתחת $250", odds: 1.95 }
+      { id: 'opt1', text: "ברזיל 🇧🇷", odds: 1.80 },
+      { id: 'opt2', text: "תיקו 🤝", odds: 3.40 },
+      { id: 'opt3', text: "אנגליה 🏴󠁧󠁢󠁥󠁮󠁧󠁿", odds: 2.60 }
     ]
   },
   {
     id: 'bet3',
-    title: "מנצחת העונה הקרובה של הישרדות",
-    category: "בידור",
-    time: "בעוד 3 ימים",
+    title: "קרב נעל הזהב: לאונל מסי נגד קיליאן אמבפה (מי יבקיע יותר)",
+    category: "ספיישל שחקנים",
+    time: "הערב, 22:00",
+    image: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?auto=format&fit=crop&q=80&w=400",
     options: [
-      { id: 'opt1', text: "שבט אדום", odds: 1.50 },
-      { id: 'opt2', text: "שבט כחול", odds: 2.40 }
+      { id: 'opt1', text: "לאונל מסי 🐐", odds: 2.10 },
+      { id: 'opt2', text: "תיקו 🤝", odds: 2.90 },
+      { id: 'opt3', text: "קיליאן אמבפה ⚡", odds: 1.85 }
     ]
   },
   {
     id: 'bet4',
-    title: "מכבי תל אביב נגד פנאתינייקוס (כדורסל)",
-    category: "ספורט",
-    time: "יום חמישי, 21:05",
+    title: "שלב הבתים קלאסיק: ספרד נגד גרמניה",
+    category: "מונדיאל 2026",
+    time: "בעוד יומיים, 19:00",
+    image: "https://images.unsplash.com/photo-1579952362864-3eb542956c5c?auto=format&fit=crop&q=80&w=400",
     options: [
-      { id: 'opt1', text: "מכבי ת\"א", odds: 1.90 },
-      { id: 'opt2', text: "פנאתינייקוס", odds: 1.90 }
+      { id: 'opt1', text: "ספרד 🇪🇸", odds: 2.15 },
+      { id: 'opt2', text: "תיקו 🤝", odds: 3.30 },
+      { id: 'opt3', text: "גרמניה 🇩🇪", odds: 2.45 }
     ]
+  }
+];
+
+// Interactive Polls Data
+const bettingPolls = [
+  {
+    id: 'poll1',
+    question: "האם לדעתך לאונל מסי יזכה במונדיאל פעם נוספת בקריירה?",
+    category: "סקר מונדיאל 🐐",
+    defaultVotes: { yes: 58, no: 32, maybe: 10 }
+  },
+  {
+    id: 'poll2',
+    question: "האם נבחרת אנגליה מסוגלת לזכות במונדיאל הקרוב ב-2026?",
+    category: "סקר מונדיאל 🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    defaultVotes: { yes: 25, no: 63, maybe: 12 }
+  },
+  {
+    id: 'poll3',
+    question: "האם טכנולוגיית ה-VAR משפרת את הוגנות המשחקים במונדיאל?",
+    category: "סקר שיפוט וטכנולוגיה 📺",
+    defaultVotes: { yes: 48, no: 38, maybe: 14 }
   }
 ];
 
 let userBalance = parseInt(localStorage.getItem('userBettingBalance')) || 1000;
 let currentBetSelection = null; // { eventId, optionId, eventTitle, optionText, odds }
 
-window.renderBets = function() {
+window.switchBettingTab = function(tabName, btn) {
+  // Update buttons classes
+  document.querySelectorAll('#page-bets .perf-tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.background = 'none';
+    b.style.color = '#a1a1aa';
+  });
+  if (btn) {
+    btn.classList.add('active');
+    btn.style.background = '#facc15';
+    btn.style.color = '#000000';
+  }
+
+  // Show/Hide sections
+  document.querySelectorAll('.betting-tab-content').forEach(s => s.style.display = 'none');
+  const target = document.getElementById(tabName + '-section-wrapper');
+  if (target) target.style.display = 'block';
+
+  // Render content
+  if (tabName === 'bets') renderBetsGrid();
+  if (tabName === 'polls') renderPollsGrid();
+};
+
+function renderBetsGrid() {
   const container = document.getElementById('bets-container');
   if (!container) return;
-  
-  // Update balance display on bets page
+
+  container.innerHTML = bettingEvents.map(event => `
+    <div class="wc-bet-card">
+      <div style="height:150px; background:linear-gradient(to top, rgba(23,21,21,1) 10%, rgba(23,21,21,0)), url('${event.image}'); background-size:cover; background-position:center; position:relative;">
+        <span style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); padding:4px 12px; border-radius:20px; font-size:0.75rem; color:#facc15; font-weight:800; backdrop-filter:blur(4px);">
+          ${event.category}
+        </span>
+      </div>
+      <div style="padding:20px;">
+        <div style="font-size:0.8rem; color:#facc15; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <i class="far fa-clock"></i> ${event.time}
+        </div>
+        <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.4; min-height:50px;">${event.title}</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${event.options.map(opt => `
+            <button class="wc-bet-btn" onclick="openBetModal('${event.id}', '${opt.id}', '${event.title.replace(/'/g, "\\'")}', '${opt.text.replace(/'/g, "\\'")}', ${opt.odds})">
+              <span style="font-weight:700; font-size:0.95rem;">${opt.text}</span>
+              <span style="background:#facc15; color:#000; padding:2px 8px; border-radius:8px; font-weight:900; font-size:0.85rem; transition:transform 0.2s;">
+                ${opt.odds.toFixed(2)}
+              </span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPollsGrid() {
+  const container = document.getElementById('polls-container');
+  if (!container) return;
+
+  container.innerHTML = bettingPolls.map(poll => {
+    const votedOption = localStorage.getItem('voted_poll_' + poll.id);
+    const votes = JSON.parse(localStorage.getItem('votes_data_' + poll.id) || JSON.stringify(poll.defaultVotes));
+    const totalVotes = votes.yes + votes.no + votes.maybe;
+    const yesPct = Math.round((votes.yes / totalVotes) * 100);
+    const noPct = Math.round((votes.no / totalVotes) * 100);
+    const maybePct = 100 - yesPct - noPct;
+
+    if (votedOption) {
+      // Voted view: show progress bars
+      return `
+        <div class="poll-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+            <span style="background:rgba(96, 165, 250, 0.15); border:1px solid rgba(96, 165, 250, 0.3); padding:4px 12px; border-radius:20px; font-size:0.75rem; color:#60a5fa; font-weight:800;">
+              ${poll.category}
+            </span>
+            <span style="font-size:0.8rem; color:#86868b; font-weight:700;">הצבעתך התקבלה ✓</span>
+          </div>
+          <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.45; min-height:60px;">${poll.question}</h3>
+          
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Yes Bar -->
+            <div class="poll-progress-container">
+              <div class="poll-progress-label">
+                <span>כן</span>
+                <span>${yesPct}%</span>
+              </div>
+              <div class="poll-progress-bg">
+                <div class="poll-progress-fill" style="width:${yesPct}%; background:#10b981;"></div>
+              </div>
+            </div>
+
+            <!-- No Bar -->
+            <div class="poll-progress-container">
+              <div class="poll-progress-label">
+                <span>לא</span>
+                <span>${noPct}%</span>
+              </div>
+              <div class="poll-progress-bg">
+                <div class="poll-progress-fill" style="width:${noPct}%; background:#ef4444;"></div>
+              </div>
+            </div>
+
+            <!-- Maybe Bar -->
+            <div class="poll-progress-container">
+              <div class="poll-progress-label">
+                <span>לא יודע</span>
+                <span>${maybePct}%</span>
+              </div>
+              <div class="poll-progress-bg">
+                <div class="poll-progress-fill" style="width:${maybePct}%; background:#9ca3af;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      // Vote view: show options
+      return `
+        <div class="poll-card">
+          <span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px; font-size:0.75rem; color:#a1a1aa; font-weight:800; width:max-content; margin-bottom:12px;">
+            ${poll.category}
+          </span>
+          <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.45; min-height:60px;">${poll.question}</h3>
+          
+          <div style="display:flex; flex-direction:column;">
+            <button class="poll-option-btn voted-yes" onclick="voteInPoll('${poll.id}', 'yes')">
+              <span>כן 👍</span>
+              <span>🗳️</span>
+            </button>
+            <button class="poll-option-btn voted-no" onclick="voteInPoll('${poll.id}', 'no')">
+              <span>לא 👎</span>
+              <span>🗳️</span>
+            </button>
+            <button class="poll-option-btn voted-maybe" onclick="voteInPoll('${poll.id}', 'maybe')">
+              <span>לא יודע 🤷</span>
+              <span>🗳️</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }).join('');
+}
+
+window.voteInPoll = function(pollId, option) {
+  const poll = bettingPolls.find(p => p.id === pollId);
+  if (!poll) return;
+
+  // Save voted state
+  localStorage.setItem('voted_poll_' + pollId, option);
+
+  // Update vote stats
+  const votes = JSON.parse(localStorage.getItem('votes_data_' + pollId) || JSON.stringify(poll.defaultVotes));
+  votes[option]++;
+  localStorage.setItem('votes_data_' + pollId, JSON.stringify(votes));
+
+  showToast('🗳️ הצבעתך נקלטה בהצלחה!');
+  renderPollsGrid();
+};
+
+window.renderBets = function() {
   const balanceDisplay = document.getElementById('betting-balance-display');
   if (balanceDisplay) {
-    balanceDisplay.innerHTML = `${userBalance.toLocaleString()} <i class="fas fa-coins" style="font-size:1.1rem;"></i>`;
+    balanceDisplay.innerHTML = `${userBalance.toLocaleString()} <i class="fas fa-coins" style="font-size:1.3rem;"></i>`;
   }
   
-  // Update balance display in dropdown
   const dropdownCoins = document.getElementById('dropdown-coins-amount');
   if (dropdownCoins) {
     dropdownCoins.innerHTML = `${userBalance.toLocaleString()} Coins`;
   }
   
-  // Update balance display in integrations page
   const integrationsCoins = document.getElementById('integrations-balance-display');
   if (integrationsCoins) {
     integrationsCoins.textContent = userBalance.toLocaleString();
   }
+
+  // Trigger grid rendering on active tab
+  const activeTabBtn = document.querySelector('#page-bets .perf-tab-btn.active');
+  const isPolls = activeTabBtn && activeTabBtn.textContent.includes('סקרים');
   
-  container.innerHTML = bettingEvents.map(event => `
-    <div style="background:#111; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-        <span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:980px; font-size:0.75rem; color:#a1a1aa; font-weight:600;">${event.category}</span>
-        <span style="font-size:0.8rem; color:#facc15; font-weight:600;"><i class="far fa-clock"></i> ${event.time}</span>
-      </div>
-      <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.4;">${event.title}</h3>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        ${event.options.map(opt => `
-          <button onclick="openBetModal('${event.id}', '${opt.id}', '${event.title.replace(/'/g, "\\'")}', '${opt.text.replace(/'/g, "\\'")}', ${opt.odds})" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 16px; color:#fff; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-            <span style="font-weight:600; font-size:0.95rem;">${opt.text}</span>
-            <span style="background:#facc15; color:#000; padding:2px 8px; border-radius:6px; font-weight:800; font-size:0.9rem;">${opt.odds.toFixed(2)}</span>
-          </button>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+  if (isPolls) {
+    renderPollsGrid();
+  } else {
+    renderBetsGrid();
+  }
 };
 
 window.openBetModal = function(eventId, optionId, eventTitle, optionText, odds) {
@@ -15389,3 +15703,29 @@ setTimeout(() => {
 
 
 
+
+/* ─── SOKI Logo Bounce (Wolt-style) ─── */
+(function initSokiLogoBounce() {
+  function setup() {
+    const logo = document.querySelector('.soki-logo');
+    const text = document.querySelector('.soki-logo-bounce');
+    if (!logo || !text) return;
+
+    function playBounce() {
+      logo.classList.remove('play');
+      text.classList.remove('play');
+      void text.offsetWidth; // restart animation
+      logo.classList.add('play');
+      text.classList.add('play');
+    }
+
+    setTimeout(playBounce, 400);          // on page load
+    logo.addEventListener('mouseenter', playBounce);
+    setInterval(playBounce, 7000);        // playful periodic bounce
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();

@@ -9580,4 +9580,170 @@ body.admin-bar-active {
   padding-bottom: 56px !important;
 }
 
+/* ── PERFORMANCE DASHBOARD STYLES ── */
+.perf-tab-btn {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.perf-tab-btn:hover:not(.active) {
+  background: #f4f5f6 !important;
+  color: #1d1d1f !important;
+}
+.perf-kpi-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.perf-kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06) !important;
+}
+@media (max-width: 900px) {
+  .perf-charts-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
 
+/* ── WORLD CUP BETS & INTERACTIVE POLLS ── */
+.wc-bet-card {
+  background: #171515 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.wc-bet-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(250, 204, 21, 0.4) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5) !important;
+}
+.wc-bet-btn {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.wc-bet-btn:hover {
+  background: rgba(250, 204, 21, 0.1) !important;
+  border-color: rgba(250, 204, 21, 0.3) !important;
+}
+
+.poll-card {
+  background: #171515 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s;
+}
+.poll-card:hover {
+  border-color: rgba(96, 165, 250, 0.4) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4) !important;
+}
+.poll-option-btn {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px;
+  padding: 12px 18px;
+  color: #fafafa;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  font-family: inherit;
+  width: 100%;
+  text-align: right;
+  margin-bottom: 10px;
+}
+.poll-option-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+.poll-option-btn.voted-yes:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+.poll-option-btn.voted-no:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+.poll-option-btn.voted-maybe:hover {
+  background: rgba(156, 163, 175, 0.1) !important;
+  border-color: rgba(156, 163, 175, 0.3) !important;
+}
+
+.poll-progress-container {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.poll-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a1a1aa;
+}
+.poll-progress-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.poll-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+
+
+
+/* ─── SOKI Logo Bounce (Wolt-style) ─── */
+.soki-letter {
+  display: inline-block;
+  transform-origin: bottom center;
+}
+
+@keyframes soki-letter-jump {
+  0%   { transform: translateY(0) scaleY(1) scaleX(1); }
+  18%  { transform: translateY(2px) scaleY(0.82) scaleX(1.12); } /* squash */
+  40%  { transform: translateY(-9px) scaleY(1.12) scaleX(0.92); } /* stretch up */
+  62%  { transform: translateY(0) scaleY(0.92) scaleX(1.06); }   /* land */
+  78%  { transform: translateY(-3px) scaleY(1.04) scaleX(0.98); } /* small rebound */
+  100% { transform: translateY(0) scaleY(1) scaleX(1); }
+}
+
+.soki-logo-bounce.play .soki-letter {
+  animation: soki-letter-jump 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.soki-logo-bounce.play .soki-letter:nth-child(1) { animation-delay: 0s; }
+.soki-logo-bounce.play .soki-letter:nth-child(2) { animation-delay: 0.07s; }
+.soki-logo-bounce.play .soki-letter:nth-child(3) { animation-delay: 0.14s; }
+.soki-logo-bounce.play .soki-letter:nth-child(4) { animation-delay: 0.21s; }
+
+/* crown bounces too, slightly before the letters */
+@keyframes soki-crown-jump {
+  0%   { transform: translateY(0) rotate(0deg); }
+  30%  { transform: translateY(-7px) rotate(-12deg); }
+  60%  { transform: translateY(0) rotate(4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+.soki-logo.play .fa-crown {
+  animation: soki-crown-jump 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
