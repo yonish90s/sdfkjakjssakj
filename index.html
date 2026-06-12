@@ -5863,6 +5863,34 @@
       <button class="edit-modal-btn edit-modal-btn-secondary" onclick="closeImageEditor()">ביטול</button>
     </div>
   </div>
+<!-- Floating Pill Navigation Bar Positioning Override Style -->
+<style>
+.floating-pill-nav {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: calc(50% + var(--sidebar-width) / 2) !important;
+  transform: translateX(-50%) !important;
+  z-index: 140000 !important;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+body.sidebar-collapsed .floating-pill-nav {
+  left: calc(50% + var(--sidebar-collapsed-width) / 2) !important;
+}
+body.rtl-layout .floating-pill-nav {
+  left: calc(50% - var(--sidebar-width) / 2) !important;
+}
+body.rtl-layout.sidebar-collapsed .floating-pill-nav {
+  left: calc(50% - var(--sidebar-collapsed-width) / 2) !important;
+}
+@media (max-width: 1024px) {
+  .floating-pill-nav {
+    left: 50% !important;
+  }
+}
+</style>
+
 <!-- Floating Pill Navigation Bar -->
 <div id="floating-pill-nav" class="floating-pill-nav">
   <!-- Recent Activity (History) -->
