@@ -5864,6 +5864,17 @@
     </div>
   </div>
 </div>
+<!-- Floating Pill Panel (Same size for all 3 features) -->
+<div id="floating-pill-panel" class="floating-pill-panel" style="display:none;">
+  <div class="panel-header">
+    <div id="floating-pill-panel-title" class="panel-title">היסטוריה</div>
+    <button onclick="closeFloatingPillPanel()" class="panel-close-btn">&times;</button>
+  </div>
+  <div id="floating-pill-panel-body" class="panel-body">
+    <!-- Dynamic contents injected here -->
+  </div>
+</div>
+
 <!-- Floating Pill Navigation Bar Positioning Override Style -->
 <style>
 .floating-pill-nav {
@@ -5876,18 +5887,38 @@
   visibility: visible !important;
   opacity: 1 !important;
 }
+.floating-pill-panel {
+  position: fixed !important;
+  bottom: 84px !important;
+  left: calc(50% + var(--sidebar-width) / 2) !important;
+  transform: translateX(-50%) translateY(10px) !important;
+  z-index: 139000 !important;
+}
 body.sidebar-collapsed .floating-pill-nav {
+  left: calc(50% + var(--sidebar-collapsed-width) / 2) !important;
+}
+body.sidebar-collapsed .floating-pill-panel {
   left: calc(50% + var(--sidebar-collapsed-width) / 2) !important;
 }
 body.rtl-layout .floating-pill-nav {
   left: calc(50% - var(--sidebar-width) / 2) !important;
 }
+body.rtl-layout .floating-pill-panel {
+  left: calc(50% - var(--sidebar-width) / 2) !important;
+}
 body.rtl-layout.sidebar-collapsed .floating-pill-nav {
+  left: calc(50% - var(--sidebar-collapsed-width) / 2) !important;
+}
+body.rtl-layout.sidebar-collapsed .floating-pill-panel {
   left: calc(50% - var(--sidebar-collapsed-width) / 2) !important;
 }
 @media (max-width: 1024px) {
   .floating-pill-nav {
     left: 50% !important;
+  }
+  .floating-pill-panel {
+    left: 50% !important;
+    width: 90vw !important;
   }
 }
 </style>
@@ -5895,19 +5926,19 @@ body.rtl-layout.sidebar-collapsed .floating-pill-nav {
 <!-- Floating Pill Navigation Bar -->
 <div id="floating-pill-nav" class="floating-pill-nav">
   <!-- Recent Activity (History) -->
-  <button class="pill-nav-item" onclick="toggleRecentActivityCard()" title="היסטוריית פעילות / Recent Activity">
+  <button class="pill-nav-item" onclick="openFloatingPillPanel('history')" title="היסטוריית פעילות / Recent Activity">
     <div class="pill-nav-icon"><i class="fas fa-history"></i></div>
     <div class="pill-nav-label">היסטוריה</div>
   </button>
   
   <!-- Conversations (Chat) -->
-  <button class="pill-nav-item" onclick="toggleMessagesDrawer()" title="שיחות וצ'אטים / Conversations">
+  <button class="pill-nav-item" onclick="openFloatingPillPanel('chats')" title="שיחות וצ'אטים / Conversations">
     <div class="pill-nav-icon"><i class="fas fa-comments"></i></div>
     <div class="pill-nav-label">שיחות</div>
   </button>
   
   <!-- AI Assistant (AI) -->
-  <button class="pill-nav-item pill-nav-ai" onclick="openAIShopAssistant()" title="עוזר קניות AI / AI Assistant">
+  <button class="pill-nav-item pill-nav-ai" onclick="openFloatingPillPanel('ai')" title="עוזר קניות AI / AI Assistant">
     <div class="pill-nav-icon-ai">AI</div>
     <div class="pill-nav-label">עוזר AI</div>
   </button>

@@ -16578,3 +16578,91 @@ window.fxGradientFor = function(name) {
   for (let i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
   return palettes[h % palettes.length];
 };
+
+/* ─── Floating Pill Panel Trigger Logic ─── */
+window.openFloatingPillPanel = function(type) {
+  const panel = document.getElementById('floating-pill-panel');
+  const titleEl = document.getElementById('floating-pill-panel-title');
+  const bodyEl = document.getElementById('floating-pill-panel-body');
+  if (!panel || !titleEl || !bodyEl) return;
+  
+  const wasActive = panel.classList.contains('active');
+  const currentType = panel.getAttribute('data-active-type');
+  
+  // If clicking the same already open tab, close it
+  if (wasActive && currentType === type) {
+    window.closeFloatingPillPanel();
+    return;
+  }
+  
+  panel.setAttribute('data-active-type', type);
+  let title = '';
+  let bodyHTML = '';
+  
+  if (type === 'history') {
+    title = '<i class="fas fa-history"></i> היסטוריית פעילות';
+    bodyHTML = `<div id="recent-activity-list" style="display:flex; flex-direction:column; gap:12px;"></div>`;
+    bodyEl.innerHTML = bodyHTML;
+    titleEl.innerHTML = title;
+    
+    panel.style.display = 'flex';
+    setTimeout(() => {
+      panel.classList.add('active');
+      if (window.renderRecentActivity) window.renderRecentActivity();
+    }, 10);
+  } 
+  else if (type === 'chats') {
+    title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
+    bodyHTML = `
+      <div id="direct-chat-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px; height: 350px;">
+        <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
+        <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+      </div>
+    `;
+    bodyEl.innerHTML = bodyHTML;
+    titleEl.innerHTML = title;
+    
+    panel.style.display = 'flex';
+    setTimeout(() => {
+      panel.classList.add('active');
+      if (window.loadDirectMessages) window.loadDirectMessages();
+    }, 10);
+  } 
+  else if (type === 'ai') {
+    title = '<i class="fas fa-robot"></i> עוזר קניות AI';
+    bodyHTML = `
+      <div id="ai-shop-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px; height: 350px;">
+        <div class="ai-msg-bot" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color: #000;">
+          <span>👋 שלום! אני ה-AI של SOKI. תגיד לי מה אתה מחפש לקנות — ואני אמצא לך מוצרים רלוונטיים מהמשתמשים שלנו!</span>
+        </div>
+        <div id="ai-shop-results" style="display:none; flex-direction:column; gap:8px; margin-top:8px;"></div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="ai-shop-input" class="admin-input" placeholder="לדוגמה: אייפון משומש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') aiShopSearch()">
+        <button onclick="aiShopSearch()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+      </div>
+    `;
+    bodyEl.innerHTML = bodyHTML;
+    titleEl.innerHTML = title;
+    
+    panel.style.display = 'flex';
+    setTimeout(() => {
+      panel.classList.add('active');
+    }, 10);
+  }
+};
+
+window.closeFloatingPillPanel = function() {
+  const panel = document.getElementById('floating-pill-panel');
+  if (panel) {
+    panel.classList.remove('active');
+    panel.removeAttribute('data-active-type');
+    setTimeout(() => {
+      panel.style.display = 'none';
+    }, 300);
+  }
+};
+
