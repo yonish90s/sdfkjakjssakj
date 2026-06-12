@@ -10597,4 +10597,10 @@ body.rtl-layout.sidebar-collapsed .floating-pill-nav {
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
 }
 
+/* Hide the old three buttons inside the left sidebar */
+#sidebar-inline-buttons, #purchases-divider {
+  display: none !important;
+}
+
+
 
