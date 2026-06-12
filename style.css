@@ -10463,7 +10463,8 @@ body::before { z-index: -3; }
 .floating-pill-nav {
   position: fixed;
   bottom: 24px;
-  left: 50%;
+  /* Adjust horizontal center to account for the left/right sidebar */
+  left: calc(50% + var(--sidebar-width) / 2);
   transform: translateX(-50%);
   z-index: 140000;
   display: flex;
@@ -10481,10 +10482,25 @@ body::before { z-index: -3; }
   transition: height 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), 
               padding 0.35s cubic-bezier(0.165, 0.84, 0.44, 1),
               background 0.3s,
+              left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   overflow: hidden;
   direction: ltr;
 }
+
+/* Sidebar collapsed state positioning offsets */
+body.sidebar-collapsed .floating-pill-nav {
+  left: calc(50% + var(--sidebar-collapsed-width) / 2);
+}
+
+/* RTL (right side sidebar) layout offsets */
+body.rtl-layout .floating-pill-nav {
+  left: calc(50% - var(--sidebar-width) / 2);
+}
+body.rtl-layout.sidebar-collapsed .floating-pill-nav {
+  left: calc(50% - var(--sidebar-collapsed-width) / 2);
+}
+
 
 /* Expanded state on hover */
 .floating-pill-nav:hover {
