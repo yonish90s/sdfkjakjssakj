@@ -240,6 +240,12 @@
             </div>
           </a>
 
+          <!-- My Profile -->
+          <a href="#" class="sidebar-link" onclick="openMyProfile(); return false;" id="link-my-profile">
+            <i class="fas fa-user-circle"></i>
+            <span>הפרופיל שלי</span>
+          </a>
+
           <!-- Divider under Purchases -->
           <div class="sidebar-divider" id="purchases-divider" style="margin: 12px 16px;"></div>
 
@@ -585,8 +591,8 @@
       <div style="display:flex; align-items:center; gap:8px;">
         <button onclick="openTermsModal()" class="chat-terms-btn" id="chat-terms-btn">Terms</button>
         <button onclick="toggleSupportChatMode()" class="chat-terms-btn" id="chat-mode-btn" style="background:#0071e3 !important; box-shadow: 0 4px 12px rgba(0,113,227,0.2) !important;">Messages</button>
-        <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Collapse Chat">
-          <i class="fas fa-chevron-down"></i>
+        <button class="modal-close" onclick="closeContactModal()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Close">
+          <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
@@ -606,9 +612,7 @@
         </div>
         <div style="display:flex; gap:8px;">
           <input type="text" id="ai-chat-input" class="admin-input" placeholder="Type a message..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendChatMessage()">
-          <button class="btn-primary" onclick="sendChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+          <button onclick="sendChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
         </div>
       </div>
 
@@ -620,9 +624,7 @@
         </div>
         <div style="display:flex; gap:8px;">
           <input type="text" id="direct-chat-input" class="admin-input" placeholder="Type a message to admin..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendDirectChatMessage()">
-          <button class="btn-primary" onclick="sendDirectChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+          <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
         </div>
       </div>
     </div>
@@ -3070,6 +3072,13 @@
 
       <!-- Grid -->
       <div class="shop-grid" id="shop-grid"></div>
+
+      <!-- Load more (chevron) -->
+      <div id="shop-load-more" style="display:none; justify-content:center; align-items:center; width:100%; padding:16px 0; margin-top:10px;">
+        <button onclick="showMoreShopProducts()" style="background:none; border:none; color:rgba(255,255,255,0.45); cursor:pointer; font-size:1.8rem; display:flex; align-items:center; justify-content:center; width:50px; height:50px; transition:all 0.2s;" onmouseover="this.style.color='#fff'; this.style.transform='scale(1.15) translateY(2px)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'; this.style.transform='scale(1) translateY(0)'" title="עוד מוצרים">
+          <i class="fas fa-chevron-down bouncing-arrow"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -5036,6 +5045,34 @@
     </div>
   </div>
 
+  <!-- MY PROFILE DRAWER -->
+  <div id="my-profile-drawer" class="bottom-drawer" style="height:78vh; background:#0d0f12;">
+    <div class="bottom-drawer-header">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <img id="profile-avatar" src="" alt="" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(245,158,11,0.5); display:none;">
+        <div id="profile-avatar-fallback" style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#f59e0b,#f97316); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.2rem; color:#fff;"></div>
+        <div>
+          <h2 id="profile-name" style="font-size:1.25rem; font-weight:800; margin:0; color:#f5f5f7;">הפרופיל שלי</h2>
+          <div id="profile-member-since" style="font-size:0.78rem; color:#86868b;"></div>
+        </div>
+      </div>
+      <button onclick="closeMyProfile()" style="background:none; border:none; font-size:2rem; cursor:pointer; color:#86868b; line-height:1; padding:0;">&times;</button>
+    </div>
+
+    <div style="overflow-y:auto; padding:20px 24px; direction:rtl;">
+      <!-- Stats -->
+      <div id="profile-stats-grid" class="profile-stats-grid"></div>
+
+      <!-- Recently viewed -->
+      <h3 style="font-size:1rem; font-weight:800; color:#f5f5f7; margin:24px 0 12px;">👁 צפיתי לאחרונה</h3>
+      <div id="profile-recent-views" class="bottom-drawer-grid" style="padding:0;"></div>
+
+      <!-- Saved articles shortcut -->
+      <h3 style="font-size:1rem; font-weight:800; color:#f5f5f7; margin:24px 0 12px;">🔖 שמורים אחרונים</h3>
+      <div id="profile-saved-list" class="bottom-drawer-grid" style="padding:0;"></div>
+    </div>
+  </div>
+
   <!-- MESSAGES DRAWER (CHATS) -->
   <div id="messages-drawer" class="bottom-drawer" style="background:#0d0f12; border-top:1px solid rgba(255,255,255,0.08);">
     <div class="bottom-drawer-header">
@@ -5335,15 +5372,19 @@
   </div>
 
   <!-- Floating Recent Activity Card (Direct child of body to guarantee viewport-fixed positioning) -->
-  <div class="recent-activity-floating-card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-      <span style="font-size: 0.75rem; font-weight: 700; color: #818384; letter-spacing: 0.5px; text-transform: uppercase;">פעילות אחרונה / RECENT ACTIVITY</span>
+  <div class="recent-activity-floating-card" style="padding:0 !important;">
+    <div class="chat-header" style="padding: 12px 16px; border-top-left-radius: 16px; border-top-right-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <span style="font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px;">
+        <i class="fas fa-clock-rotate-left" style="color:#0079d3;"></i> Recent Activity
+      </span>
       <div style="display: flex; align-items: center; gap: 12px;">
         <a href="javascript:void(0)" onclick="clearRecentActivity()" style="font-size: 0.75rem; font-weight: 700; color: #0079d3; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#1493f0'" onmouseout="this.style.color='#0079d3'">Clear</a>
-        <a href="javascript:void(0)" onclick="toggleRecentActivityCard()" style="font-size: 0.95rem; font-weight: 700; color: #818384; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#818384'">✕</a>
+        <button class="modal-close" onclick="toggleRecentActivityCard()" style="position:static; padding:5px; font-size:15px; background:none; border:none; color:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(2px)'" onmouseout="this.style.transform='translateY(0)'" title="Close">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
     </div>
-    <div id="recent-activity-list" style="display: flex; flex-direction: column; gap: 12px;">
+    <div id="recent-activity-list" style="display: flex; flex-direction: column; gap: 12px; padding: 8px 16px 16px;">
       <!-- Populated dynamically by JS -->
     </div>
   </div>
@@ -5538,9 +5579,7 @@
     <!-- Input -->
     <div style="display:flex; gap:8px;">
       <input type="text" id="ai-shop-input" class="admin-input" placeholder="לדוגמה: אייפון משומש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') aiShopSearch()">
-      <button class="btn-primary" onclick="aiShopSearch()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px;">
-        <i class="fas fa-paper-plane"></i>
-      </button>
+      <button onclick="aiShopSearch()" style="padding:0 20px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
     </div>
   </div>
 </div>

@@ -1157,6 +1157,8 @@ function showArticle(id) {
   const a = newsArticles.find(x => x.id === id);
   if (!a) return;
 
+  trackArticleView(a.id);
+
   let processedContent = a.content || '';
   if (processedContent) {
     // Strip the source box paragraph completely
@@ -1609,6 +1611,48 @@ window.closeAIShopAssistant = function() {
   }
 };
 
+// ─── AI Assistant: site-aware chat ───
+let aiChatHistory = []; // Gemini-format history for the current session
+
+function buildSiteKnowledge() {
+  const parts = [];
+
+  // Articles — the freshest 40, with category, date and a short snippet
+  if (typeof newsArticles !== 'undefined' && newsArticles.length) {
+    const arts = [...newsArticles]
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+      .slice(0, 40)
+      .map(a => {
+        const snippet = (a.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180);
+        return `- [${a.id}] "${a.title}" | קטגוריה: ${a.category || 'כללי'} | תאריך: ${a.date || '?'}${snippet ? ' | תקציר: ' + snippet : ''}`;
+      });
+    parts.push(`### כתבות באתר (${newsArticles.length} סה"כ, ${arts.length} האחרונות):\n${arts.join('\n')}`);
+  }
+
+  // Marketplace products
+  try {
+    const mp = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
+    if (mp.length) {
+      parts.push(`### מוצרים למכירה במרקטפלייס:\n` + mp.slice(0, 30).map(p =>
+        `- "${p.title}" | מחיר: ₪${p.price} | קטגוריה: ${p.cat || 'כללי'}${p.desc ? ' | ' + p.desc.slice(0, 100) : ''}`
+      ).join('\n'));
+    }
+  } catch (e) {}
+
+  // Site structure
+  parts.push(`### מבנה האתר ועמודים:
+- כתבות/מאמרים: עמוד הבית, חדשות מתעדכנות לפי קטגוריות (שוק ההון, נדל"ן, כלכלה ועוד)
+- גרפים ונתונים: עמוד "גרפים ונתונים" עם קבצים להורדה
+- פורום: דיונים וקבוצות
+- חנות / My Store: מוצרים דיגיטליים ומרקטפלייס יד-שנייה
+- משלוחים: מחלקת SOKI Deliveries עם מעקב שליח חי
+- הימורים, חיבור מפעלים, נסיעות (אובר), נדל"ן ומגמות
+- שמירת כתבות וגרפים אישית + פרופיל אישי עם סטטיסטיקות
+- יצירת קשר: support@project11.com`);
+
+  return parts.join('\n\n');
+}
+
 window.aiShopSearch = async function() {
   const input = document.getElementById('ai-shop-input');
   const query = input?.value.trim();
@@ -1619,7 +1663,7 @@ window.aiShopSearch = async function() {
 
   // Add user message
   const userMsg = document.createElement('div');
-  userMsg.style.cssText = 'background:#0071e3; color:white; padding:10px 14px; border-radius:14px; align-self:flex-end; max-width:85%; font-size:0.9rem; text-align:left;';
+  userMsg.style.cssText = 'background:#0071e3; color:white; padding:10px 14px; border-radius:14px; align-self:flex-end; max-width:85%; font-size:0.9rem; text-align:right; direction:rtl;';
   userMsg.innerHTML = `<span>${query}</span>`;
   msgs.appendChild(userMsg);
   msgs.scrollTop = msgs.scrollHeight;
@@ -1627,12 +1671,12 @@ window.aiShopSearch = async function() {
 
   // Add typing indicator
   const typing = document.createElement('div');
-  typing.style.cssText = 'background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color:#000;';
-  typing.innerHTML = '<span style="color:#86868b; font-style:italic;">Typing...</span>';
+  typing.style.cssText = 'background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; color:#000;';
+  typing.innerHTML = '<span style="color:#86868b; font-style:italic;">חושב...</span>';
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
 
-  // Search marketplace products
+  // Local product matching (shown as cards alongside the AI answer)
   const mp = JSON.parse(localStorage.getItem('marketplaceProducts') || '[]');
   const q = query.toLowerCase();
   const matched = mp.filter(p =>
@@ -1641,18 +1685,49 @@ window.aiShopSearch = async function() {
     (p.cat || '').toLowerCase().includes(q)
   );
 
-  // AI response via API if available, otherwise smart local search
-  await new Promise(r => setTimeout(r, 900));
+  const botMsg = document.createElement('div');
+  botMsg.style.cssText = 'background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; color:#000; text-align:right; direction:rtl; line-height:1.5;';
+
+  // Ask the AI with full site knowledge
+  let aiText = null;
+  try {
+    const systemPrompt = `אתה העוזר החכם של אתר SOKI — אתר חדשות, כלכלה ומסחר ישראלי.
+ענה תמיד בעברית, בקצרה ובידידותיות.
+ענה אך ורק על סמך המידע על האתר שמופיע למטה. אם שואלים על כתבה — צטט את הכותרת והקטגוריה שלה. אם אין לך מידע — אמור זאת בכנות ואל תמציא.
+כששואלים "מה חדש" או על נושא מסוים — מצא את הכתבות הרלוונטיות מהרשימה והצג אותן.
+
+${buildSiteKnowledge()}`;
+
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: query, history: aiChatHistory, systemPrompt })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.text) {
+        aiText = data.text;
+        aiChatHistory.push({ role: 'user', parts: [{ text: query }] });
+        aiChatHistory.push({ role: 'model', parts: [{ text: aiText }] });
+        if (aiChatHistory.length > 20) aiChatHistory = aiChatHistory.slice(-20);
+      }
+    }
+  } catch (e) {
+    console.warn('AI chat failed, falling back to local search:', e);
+  }
+
   typing.remove();
 
-  const botMsg = document.createElement('div');
-  botMsg.style.cssText = 'background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color:#000;';
+  if (aiText) {
+    botMsg.innerHTML = `<span>${aiText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</span>`;
+  } else if (matched.length > 0) {
+    botMsg.innerHTML = `<span>מצאתי <strong>${matched.length}</strong> מוצר${matched.length > 1 ? 'ים' : ''} שתואמ${matched.length > 1 ? 'ים' : ''} ל"${query}" 👇</span>`;
+  } else {
+    botMsg.innerHTML = `<span>לא הצלחתי להתחבר לשרת ה-AI כרגע ולא מצאתי מוצרים תואמים. נסה שוב מאוחר יותר 🙏</span>`;
+  }
+  msgs.appendChild(botMsg);
 
   if (matched.length > 0) {
-    botMsg.innerHTML = `<span>מצאתי <strong>${matched.length}</strong> מוצר${matched.length > 1 ? 'ים' : ''} שתואמ${matched.length > 1 ? 'ים' : ''} ל"${query}" 👇</span>`;
-    msgs.appendChild(botMsg);
-
-    // Show results
     results.style.display = 'flex';
     results.innerHTML = matched.map(p => `
       <div style="background:#fff; border:1px solid #e5e5ea; border-radius:12px; overflow:hidden; padding:8px; display:flex; gap:10px; cursor:pointer;" onclick="closeAIShopAssistant(); openMarketplaceModal();">
@@ -1663,8 +1738,6 @@ window.aiShopSearch = async function() {
         </div>
       </div>`).join('');
   } else {
-    botMsg.innerHTML = `<span>לא מצאתי מוצרים בשם "${query}" כרגע. נסה לחפש בצורה אחרת, או <strong onclick="openMarketplaceModal(); closeAIShopAssistant();" style="color:#f97316; cursor:pointer;">פרסם מוצר</strong> בעצמך!</span>`;
-    msgs.appendChild(botMsg);
     results.style.display = 'none';
   }
   msgs.scrollTop = msgs.scrollHeight;
@@ -5136,6 +5209,7 @@ let activeShopCat = 'all';
 
 window.filterShopCat = function(cat, btn) {
   activeShopCat = cat;
+  window._shopVisibleCount = undefined; // reset paging when switching category
   document.querySelectorAll('.shop-cat-chip').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderShopGrid();
@@ -5314,37 +5388,48 @@ function renderShopGrid() {
   const cat = activeShopCat || 'all';
 
   // Physical products (cat: 'home')
-  let physicalHtml = '';
+  let physicalCards = [];
   if (cat === 'all' || cat === 'home') {
-    physicalHtml = shopProducts.map(p => buildShopCard(p, false)).join('');
+    physicalCards = shopProducts.map(p => buildShopCard(p, false));
   }
 
   // Pro Apps (cat: 'apps')
-  let appsHtml = '';
+  let appsCards = [];
   if (cat === 'all' || cat === 'apps') {
-    appsHtml = store3dProducts.map(p => buildShopCard({
+    appsCards = store3dProducts.map(p => buildShopCard({
       id: p.id, title: p.title, brand: 'Antigravity Pro',
       price: `$${p.price}.00`, originalPrice: `$${Math.round(p.price * 1.3)}.00`, discount: 23,
       img: p.image, cat: 'apps',
       colors: ['Black', 'Silver', 'Blue'], colorSwatches: ['#1c1c1e', '#c0c0c0', '#3a7bd5'], imagesByColor: {}
-    }, false)).join('');
+    }, false));
   }
 
   // Download products (3d / video / code)
-  let dlHtml = '';
   const filteredDl = cat === 'all'
     ? downloadProducts
     : downloadProducts.filter(p => p.cat === cat);
-  dlHtml = filteredDl.map(p => buildDownloadCard(p)).join('');
+  const dlCards = filteredDl.map(p => buildDownloadCard(p));
 
-  grid.innerHTML = physicalHtml + appsHtml + dlHtml;
+  // Batched rendering: show a page of products, the chevron below reveals more
+  const allCards = physicalCards.concat(appsCards, dlCards);
 
-  // Show/hide empty state
-  const total = physicalHtml.length + appsHtml.length + dlHtml.length;
-  if (!total) {
+  const visible = window._shopVisibleCount || SHOP_PAGE_SIZE;
+  grid.innerHTML = allCards.slice(0, visible).join('');
+
+  const loadMore = document.getElementById('shop-load-more');
+  if (loadMore) loadMore.style.display = allCards.length > visible ? 'flex' : 'none';
+
+  if (!allCards.length) {
     grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:#86868b;">No products in this category yet.</div>`;
+    if (loadMore) loadMore.style.display = 'none';
   }
 }
+
+const SHOP_PAGE_SIZE = 12;
+window.showMoreShopProducts = function() {
+  window._shopVisibleCount = (window._shopVisibleCount || SHOP_PAGE_SIZE) + SHOP_PAGE_SIZE;
+  renderShopGrid();
+};
 
 window.openProductDetailsModal = function(productId) {
   let product = shopProducts.find(p => p.id === productId) || store3dProducts.find(p => p.id === productId);
@@ -13542,6 +13627,28 @@ window.applyImageEdit = async function() {
     link: linkVal || null
   };
 
+  // If the edited image belongs to an article, persist into the article data
+  // itself — otherwise the edit is lost whenever the feed re-renders.
+  let editedArticleId = null;
+  const articleCard = currentEditingImg.closest('[onclick*="showArticle("]');
+  if (articleCard) {
+    const m = (articleCard.getAttribute('onclick') || '').match(/showArticle\((\d+)\)/);
+    if (m) editedArticleId = parseInt(m[1]);
+  } else if (currentEditingImg.closest('#article-content') && typeof currentArticleId !== 'undefined' && currentArticleId) {
+    editedArticleId = currentArticleId;
+  }
+  if (editedArticleId != null && typeof newsArticles !== 'undefined') {
+    const art = newsArticles.find(a => a.id === editedArticleId);
+    if (art) {
+      art.image = finalSrc;
+      try { localStorage.setItem('newsArticles', JSON.stringify(newsArticles)); } catch (e) {}
+      if (art.firestoreId && window.db && window.fbFirestore) {
+        const { doc, updateDoc } = window.fbFirestore;
+        updateDoc(doc(window.db, "articles", art.firestoreId), { image: finalSrc }).catch(err => console.warn('Firestore image update failed:', err));
+      }
+    }
+  }
+
   window.closeImageEditor();
   showToast('✓ שינויים מקומיים הוחלו');
   
@@ -15720,9 +15827,360 @@ setTimeout(() => {
     }
 
     setTimeout(playBounce, 400);          // on page load
-    logo.addEventListener('mouseenter', playBounce);
-    setInterval(playBounce, 7000);        // playful periodic bounce
+    logo.addEventListener('click', playBounce); // and once per click on the logo
   }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
+/* ─── My Profile: view tracking + drawer ─── */
+function trackArticleView(id) {
+  try {
+    let hist = JSON.parse(localStorage.getItem('soki_view_history') || '[]');
+    hist = hist.filter(h => h.id !== id);
+    hist.unshift({ id, ts: Date.now() });
+    if (hist.length > 50) hist = hist.slice(0, 50);
+    localStorage.setItem('soki_view_history', JSON.stringify(hist));
+  } catch (e) {}
+}
+
+window.openMyProfile = function() {
+  const drawer = document.getElementById('my-profile-drawer');
+  if (!drawer) return;
+  // close other drawers
+  ['cart-drawer','forums-drawer','messages-drawer','saved-items-drawer'].forEach(d => {
+    const el = document.getElementById(d);
+    if (el) el.classList.remove('active');
+  });
+  renderMyProfile();
+  drawer.classList.add('active');
+};
+
+window.closeMyProfile = function() {
+  const drawer = document.getElementById('my-profile-drawer');
+  if (drawer) drawer.classList.remove('active');
+};
+
+function renderMyProfile() {
+  const hist = JSON.parse(localStorage.getItem('soki_view_history') || '[]');
+  const user = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null;
+
+  // header
+  const nameEl = document.getElementById('profile-name');
+  const avatarImg = document.getElementById('profile-avatar');
+  const avatarFb = document.getElementById('profile-avatar-fallback');
+  const displayName = user ? (user.name || user.email || 'משתמש') : 'אורח';
+  nameEl.textContent = displayName;
+  if (user && user.avatar) {
+    avatarImg.src = user.avatar;
+    avatarImg.style.display = 'block';
+    avatarFb.style.display = 'none';
+  } else {
+    avatarImg.style.display = 'none';
+    avatarFb.style.display = 'flex';
+    avatarFb.textContent = displayName.charAt(0).toUpperCase();
+  }
+  const logins = JSON.parse(localStorage.getItem('soki_analytics_logins') || '[]');
+  const sinceEl = document.getElementById('profile-member-since');
+  if (logins.length > 0 && logins[0].ts) {
+    sinceEl.textContent = 'פעיל מאז ' + new Date(logins[0].ts).toLocaleDateString('he-IL');
+  } else {
+    sinceEl.textContent = '';
+  }
+
+  // stats
+  const saved = (typeof myArticlesList !== 'undefined') ? myArticlesList.length : 0;
+  const graphs = (typeof myGraphsList !== 'undefined') ? myGraphsList.length : 0;
+  const clicks = JSON.parse(localStorage.getItem('soki_interaction_clicks') || '[]');
+  const weekAgo = Date.now() - 7 * 86400000;
+  const viewsThisWeek = hist.filter(h => h.ts > weekAgo).length;
+
+  document.getElementById('profile-stats-grid').innerHTML = `
+    <div class="profile-stat-card" onclick="closeMyProfile()">
+      <div class="profile-stat-value">${hist.length}</div>
+      <div class="profile-stat-label">כתבות שצפיתי</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="profile-stat-value">${viewsThisWeek}</div>
+      <div class="profile-stat-label">צפיות השבוע</div>
+    </div>
+    <div class="profile-stat-card" onclick="closeMyProfile(); toggleSavedDrawer('articles')">
+      <div class="profile-stat-value">${saved}</div>
+      <div class="profile-stat-label">כתבות שמורות</div>
+    </div>
+    <div class="profile-stat-card" onclick="closeMyProfile(); toggleSavedDrawer('graphs')">
+      <div class="profile-stat-value">${graphs}</div>
+      <div class="profile-stat-label">גרפים שמורים</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="profile-stat-value">${clicks.length}</div>
+      <div class="profile-stat-label">אינטראקציות</div>
+    </div>`;
+
+  // recently viewed
+  const rvEl = document.getElementById('profile-recent-views');
+  const viewedArts = hist.map(h => newsArticles.find(a => a.id === h.id)).filter(Boolean).slice(0, 8);
+  if (viewedArts.length === 0) {
+    rvEl.innerHTML = '<div style="grid-column:1/-1; color:#86868b; font-size:0.88rem; padding:12px 0;">עדיין לא צפית בכתבות — התחל לגלוש 🙂</div>';
+  } else {
+    rvEl.innerHTML = viewedArts.map(a => profileArticleCard(a)).join('');
+  }
+
+  // saved list
+  const svEl = document.getElementById('profile-saved-list');
+  const savedArts = (typeof myArticlesList !== 'undefined' ? myArticlesList : [])
+    .map(s => newsArticles.find(a => a.id === s.id)).filter(Boolean).slice(0, 8);
+  if (savedArts.length === 0) {
+    svEl.innerHTML = '<div style="grid-column:1/-1; color:#86868b; font-size:0.88rem; padding:12px 0;">אין כתבות שמורות עדיין</div>';
+  } else {
+    svEl.innerHTML = savedArts.map(a => profileArticleCard(a)).join('');
+  }
+}
+
+function profileArticleCard(a) {
+  const img = a.image
+    ? `<img src="${a.image}" alt="" loading="lazy">`
+    : `<i class="fas fa-newspaper" style="font-size:1.6rem; color:#555;"></i>`;
+  return `
+    <div class="bottom-drawer-item" onclick="closeMyProfile(); showArticle(${a.id});" style="cursor:pointer;">
+      <div class="bottom-drawer-item-img">${img}</div>
+      <div class="bottom-drawer-item-title">${a.title}</div>
+    </div>`;
+}
+
+/* ─── Cloud Sync: persist user data to Firestore ───
+   Mirrors personal localStorage data to a per-user document in Firestore
+   (collection "userData", doc id = user email). Data follows the user
+   across devices and browsers. Guests stay local-only. */
+(function cloudSync() {
+  const SYNC_KEYS = [
+    'myArticlesList',          // saved articles
+    'myGraphsList',            // saved graphs
+    'marketplaceProducts',     // marketplace listings
+    'soki_view_history',       // recently viewed
+    'soki_interaction_clicks', // interactions
+    'soki_analytics_logins'    // login history
+  ];
+  let lastPushed = '';
+  let pullDone = false;
+
+  function fbReady() {
+    return window.db && window.fbFirestore && window.fbSetDoc && window.fbGetDoc;
+  }
+  function userEmail() {
+    return (window._fbUser && window._fbUser.email) ? window._fbUser.email : null;
+  }
+  function snapshot() {
+    const data = {};
+    SYNC_KEYS.forEach(k => {
+      const v = localStorage.getItem(k);
+      if (v !== null) data[k] = v;
+    });
+    return data;
+  }
+
+  // Union-merge two JSON arrays by item id (falls back to cloud value)
+  function mergeValue(localRaw, cloudRaw) {
+    try {
+      const local = JSON.parse(localRaw || '[]');
+      const cloud = JSON.parse(cloudRaw || '[]');
+      if (Array.isArray(local) && Array.isArray(cloud)) {
+        const seen = new Set();
+        const merged = [];
+        [...cloud, ...local].forEach(item => {
+          const key = (item && typeof item === 'object' && 'id' in item) ? String(item.id) : JSON.stringify(item);
+          if (!seen.has(key)) { seen.add(key); merged.push(item); }
+        });
+        return JSON.stringify(merged);
+      }
+    } catch (e) {}
+    return cloudRaw !== undefined ? cloudRaw : localRaw;
+  }
+
+  async function pullFromCloud() {
+    const email = userEmail();
+    if (!email || !fbReady() || pullDone) return;
+    pullDone = true;
+    try {
+      const { doc } = window.fbFirestore;
+      const snap = await window.fbGetDoc(doc(window.db, 'userData', email));
+      if (snap.exists()) {
+        const cloud = snap.data();
+        SYNC_KEYS.forEach(k => {
+          if (cloud[k] !== undefined) {
+            localStorage.setItem(k, mergeValue(localStorage.getItem(k), cloud[k]));
+          }
+        });
+        // refresh in-memory lists that were loaded before the pull
+        try {
+          if (typeof myArticlesList !== 'undefined') myArticlesList = JSON.parse(localStorage.getItem('myArticlesList') || '[]');
+          if (typeof myGraphsList !== 'undefined') myGraphsList = JSON.parse(localStorage.getItem('myGraphsList') || '[]');
+          if (typeof renderSidebarArticles === 'function') renderSidebarArticles();
+        } catch (e) {}
+        if (typeof showToast === 'function') showToast('☁️ הנתונים שלך סונכרנו מהענן');
+      }
+      await pushToCloud(true);
+    } catch (e) {
+      console.warn('Cloud pull failed:', e);
+    }
+  }
+
+  async function pushToCloud(force) {
+    const email = userEmail();
+    if (!email || !fbReady()) return;
+    const data = snapshot();
+    const serialized = JSON.stringify(data);
+    if (!force && serialized === lastPushed) return;
+    try {
+      const { doc } = window.fbFirestore;
+      data._updatedAt = Date.now();
+      await window.fbSetDoc(doc(window.db, 'userData', email), data, { merge: true });
+      lastPushed = serialized;
+    } catch (e) {
+      console.warn('Cloud push failed:', e);
+    }
+  }
+
+  // Initial pull once auth + firestore are ready
+  const readyPoll = setInterval(() => {
+    if (fbReady() && window._fbUser !== undefined) {
+      clearInterval(readyPoll);
+      pullFromCloud();
+    }
+  }, 500);
+  setTimeout(() => clearInterval(readyPoll), 30000);
+
+  // Push changes every 5s (only when something changed) and on exit
+  setInterval(() => pushToCloud(false), 5000);
+  window.addEventListener('beforeunload', () => pushToCloud(false));
+})();
+
+/* ─── Draggable floating chat windows ───
+   Makes the AI assistant and the Recent Activity card draggable by their
+   headers (the support chat window already has its own drag logic). */
+(function initDraggableFloatingWindows() {
+  function makeDraggable(item, handle) {
+    if (!item || !handle || handle.dataset.dragBound) return;
+    handle.dataset.dragBound = '1';
+    handle.classList.add('drag-grab-handle');
+
+    let active = false, startX = 0, startY = 0, offX = 0, offY = 0;
+
+    function pointerDown(e) {
+      if (e.target.closest('button, a, input')) return; // don't hijack header buttons
+      const p = e.touches ? e.touches[0] : e;
+      startX = p.clientX - offX;
+      startY = p.clientY - offY;
+      active = true;
+      item.classList.add('user-dragged');
+      if (!e.touches) e.preventDefault();
+    }
+    function pointerMove(e) {
+      if (!active) return;
+      const p = e.touches ? e.touches[0] : e;
+      offX = p.clientX - startX;
+      offY = p.clientY - startY;
+      item.style.setProperty('--drag-x', offX + 'px');
+      item.style.setProperty('--drag-y', offY + 'px');
+      // also set inline transform for windows without !important CSS rules
+      item.style.transform = `translate3d(${offX}px, ${offY}px, 0)`;
+      if (!e.touches) e.preventDefault();
+    }
+    function pointerUp() { active = false; }
+
+    handle.addEventListener('mousedown', pointerDown);
+    handle.addEventListener('touchstart', pointerDown, { passive: true });
+    document.addEventListener('mousemove', pointerMove);
+    document.addEventListener('touchmove', pointerMove, { passive: false });
+    document.addEventListener('mouseup', pointerUp);
+    document.addEventListener('touchend', pointerUp);
+  }
+
+  function setup() {
+    // AI assistant window — drag by its header
+    const aiModal = document.getElementById('ai-shop-modal');
+    if (aiModal) makeDraggable(aiModal, aiModal.querySelector('.chat-drag-handle'));
+
+    // Recent Activity card — drag by its title row
+    const raCard = document.querySelector('.recent-activity-floating-card:not(#ai-shop-modal)');
+    if (raCard) makeDraggable(raCard, raCard.firstElementChild);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
+/* ─── Resizable floating chat windows ───
+   Adds a corner grip (bottom-left) to the support chat, AI assistant and
+   Recent Activity windows so users can enlarge/shrink them. */
+(function initResizableFloatingWindows() {
+  function makeResizable(item, opts) {
+    if (!item || item.querySelector(':scope > .win-resize-handle')) return;
+    const grip = document.createElement('div');
+    grip.className = 'win-resize-handle';
+    grip.title = 'שנה גודל';
+    grip.innerHTML = '<i class="fas fa-up-right-and-down-left-from-center" style="transform:rotate(90deg);"></i>';
+    item.appendChild(grip);
+
+    let startX = 0, startY = 0, startW = 0, startH = 0, active = false;
+
+    function down(e) {
+      const p = e.touches ? e.touches[0] : e;
+      const r = item.getBoundingClientRect();
+      startX = p.clientX; startY = p.clientY;
+      startW = r.width;   startH = r.height;
+      active = true;
+      item.classList.add('user-resized');
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    function move(e) {
+      if (!active) return;
+      const p = e.touches ? e.touches[0] : e;
+      // window is anchored to the right side, grip is on the bottom-left:
+      // dragging left = wider, dragging down = taller
+      const w = Math.min(Math.max(startW + (startX - p.clientX), 280), window.innerWidth - 40);
+      const h = Math.min(Math.max(startH + (p.clientY - startY), 300), window.innerHeight - 60);
+      item.style.setProperty('--win-w', w + 'px');
+      item.style.setProperty('--win-h', h + 'px');
+      if (opts && opts.onResize) opts.onResize(w, h);
+      if (!e.touches) e.preventDefault();
+    }
+    function up() { active = false; }
+
+    grip.addEventListener('mousedown', down);
+    grip.addEventListener('touchstart', down, { passive: false });
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('mouseup', up);
+    document.addEventListener('touchend', up);
+  }
+
+  function setup() {
+    // AI assistant — flex layout, inner messages area stretches on its own
+    makeResizable(document.getElementById('ai-shop-modal'));
+
+    // Support chat — its message panes have fixed heights, so stretch them with the window
+    const chatWin = document.getElementById('chat-draggable-window');
+    if (chatWin) makeResizable(chatWin, {
+      onResize: (w, h) => {
+        ['ai-chat-messages', 'direct-chat-messages'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.height = Math.max(h - 240, 120) + 'px';
+        });
+      }
+    });
+
+    // Recent Activity card
+    makeResizable(document.querySelector('.recent-activity-floating-card:not(#ai-shop-modal)'));
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setup);
   } else {
