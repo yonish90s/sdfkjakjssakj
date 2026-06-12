@@ -838,6 +838,44 @@ function getLocationArticles() {
   return newsArticles.filter(a => !isHebrewArticle(a));
 }
 
+const LIVE_FEEDS = [
+  { src: 'https://videos.pexels.com/video-files/853889/853889-hd_1920_1080_25fps.mp4',   label: 'מרכז העיר — שידור חי' },
+  { src: 'https://videos.pexels.com/video-files/2611250/2611250-hd_1920_1080_30fps.mp4', label: 'קו הרקיע בלילה' },
+  { src: 'https://videos.pexels.com/video-files/1739010/1739010-hd_1920_1080_30fps.mp4', label: 'תנועה בכבישים' },
+  { src: 'https://videos.pexels.com/video-files/3130284/3130284-hd_1920_1080_30fps.mp4', label: 'נוף אווירי' },
+  { src: 'https://videos.pexels.com/video-files/1572321/1572321-hd_1920_1080_24fps.mp4', label: 'שעת עומס' },
+  { src: 'https://videos.pexels.com/video-files/3571264/3571264-hd_1920_1080_30fps.mp4', label: 'חוף הים' },
+  { src: 'https://videos.pexels.com/video-files/2099568/2099568-hd_1920_1080_30fps.mp4', label: 'אורות העיר' },
+  { src: 'https://videos.pexels.com/video-files/1093662/1093662-hd_1920_1080_30fps.mp4', label: 'טבע בתנועה' }
+];
+
+window.openLiveVideoLightbox = function(src, label) {
+  const lb = document.getElementById('live-video-lightbox');
+  const v = document.getElementById('lightbox-live-video');
+  const t = document.getElementById('lightbox-live-title');
+  if (lb && v && t) {
+    v.src = src;
+    t.textContent = label;
+    lb.classList.add('open');
+    v.play().catch(e => console.log('Error playing video in lightbox:', e));
+  }
+};
+
+window.closeLiveVideoLightbox = function() {
+  const lb = document.getElementById('live-video-lightbox');
+  const v = document.getElementById('lightbox-live-video');
+  if (lb && v) {
+    v.pause();
+    v.src = '';
+    lb.classList.remove('open');
+  }
+};
+
+// Global escape key listener
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') window.closeLiveVideoLightbox();
+});
+
 function renderNewsLayout(page = 1) {
   currentPage = page;
   if (page === 1) {
@@ -991,7 +1029,7 @@ function renderNewsLayout(page = 1) {
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
 
-  const articlesHTML = pageArticles.map(a => {
+  function renderSingleFeedItem(a) {
     const isSaved = myArticlesList.some(x => x.id === a.id);
     const actionsHtml = window.isEditModeActive ? `
       <button class="article-crop-btn" onclick="event.stopPropagation(); openCropForArticle(this);" title="חתוך תמונה" style="position: absolute; top: 12px; left: 120px; z-index: 99; background: rgba(226, 135, 67, 0.9); border: 1px solid rgba(226, 135, 67, 0.6); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
@@ -1026,7 +1064,41 @@ function renderNewsLayout(page = 1) {
         </div>
       </div>
     `;
-  }).join('');
+  }
+
+  let articlesHTML = '';
+  const shouldInjectLiveVideos = page === 1 && currentCategory === 'all' && (!searchQuery || searchQuery.trim() === '');
+
+  if (shouldInjectLiveVideos) {
+    const part1 = pageArticles.slice(0, 3);
+    const part2 = pageArticles.slice(3);
+    
+    const part1HTML = part1.map(a => renderSingleFeedItem(a)).join('');
+    const part2HTML = part2.map(a => renderSingleFeedItem(a)).join('');
+    
+    const liveVideosHTML = `
+      <div class="live-cameras-section">
+        <div class="live-cameras-header">
+          <div class="live-cameras-title">
+            <span class="pulse-badge"><span class="pulse-dot"></span> SOKI LIVE</span>
+            שידורים חיים מכל הארץ
+          </div>
+        </div>
+        <div class="live-cameras-slider" id="live-cameras-slider">
+          ${LIVE_FEEDS.map((feed, idx) => `
+            <div class="live-camera-card" onclick="event.stopPropagation(); window.openLiveVideoLightbox('${feed.src}', '${feed.label}')">
+              <video muted loop playsinline preload="metadata" data-src="${feed.src}"></video>
+              <div class="card-live-badge"><span class="card-live-dot"></span> LIVE</div>
+              <div class="card-label">${feed.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    articlesHTML = part1HTML + liveVideosHTML + part2HTML;
+  } else {
+    articlesHTML = pageArticles.map(a => renderSingleFeedItem(a)).join('');
+  }
 
   if (pageArticles.length === 0) {
     if (page === 1) {
@@ -1044,6 +1116,48 @@ function renderNewsLayout(page = 1) {
     } else {
       feedList.insertAdjacentHTML('beforeend', articlesHTML);
     }
+  }
+
+  // Set up intersection observer for live videos if they exist in DOM
+  if (shouldInjectLiveVideos) {
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.live-camera-card');
+      if (cards.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const video = entry.target.querySelector('video');
+            if (!video) return;
+            if (entry.isIntersecting) {
+              if (!video.src) {
+                video.src = video.getAttribute('data-src');
+              }
+              video.play().catch(err => console.log('Autoplay blocked:', err));
+            } else {
+              video.pause();
+            }
+          });
+        }, { threshold: 0.15 });
+        
+        cards.forEach(card => observer.observe(card));
+        
+        // Also handle first touch/interaction to ensure autoplay runs if browser blocked it initially
+        const runAutoplayRetry = () => {
+          document.querySelectorAll('.live-camera-card video').forEach(v => {
+            const r = v.getBoundingClientRect();
+            if (r.bottom > 0 && r.top < window.innerHeight) {
+              if (!v.src) v.src = v.getAttribute('data-src');
+              v.play().catch(() => {});
+            }
+          });
+          ['click', 'touchstart', 'scroll', 'keydown'].forEach(evt => 
+            window.removeEventListener(evt, runAutoplayRetry)
+          );
+        };
+        ['click', 'touchstart', 'scroll', 'keydown'].forEach(evt => 
+          window.addEventListener(evt, runAutoplayRetry, { passive: true })
+        );
+      }
+    }, 50);
   }
 
   // Render pagination buttons
@@ -9781,16 +9895,17 @@ async function renderDrawerChatUsersList() {
     
     const isSelected = activeDrawerChatUserId === u.id;
     
+    const grad = window.fxGradientFor(u.name);
     html += `
-      <div onclick="selectDrawerChatUser('${u.id}')" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:20px; cursor:pointer; transition:transform 0.2s, background 0.2s, border-color 0.2s; background:${isSelected ? 'rgba(255,149,0,0.1)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${isSelected ? 'rgba(255,149,0,0.3)' : 'rgba(255,255,255,0.08)'}; border-radius:16px; text-align:center;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='${isSelected ? 'rgba(255,149,0,0.1)' : 'rgba(255,255,255,0.03)'}'">
-        <div style="position:relative;">
-          <img src="${u.avatar}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.1);">
-          <span style="position:absolute; bottom:2px; right:2px; width:14px; height:14px; background:#34c759; border:2px solid #141416; border-radius:50%;"></span>
-          ${unreadCount > 0 ? `<span style="position:absolute; top:-6px; left:-6px; background:#ff3b30; color:#fff; font-size:0.8rem; font-weight:800; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(255,59,48,0.4);">${unreadCount}</span>` : ''}
+      <div class="chat-user-card ${isSelected ? 'selected' : ''}" onclick="selectDrawerChatUser('${u.id}')" style="--card-g1:${grad[0]}; --card-g2:${grad[1]};">
+        <div class="chat-avatar-ring">
+          <img src="${u.avatar}" alt="">
+          <span class="chat-online-dot"></span>
+          ${unreadCount > 0 ? `<span class="chat-unread-pill">${unreadCount}</span>` : ''}
         </div>
         <div style="width:100%;">
-          <div style="font-weight:800; color:#fff; font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
-          <div style="font-size:0.8rem; color:#86868b; margin-top:6px;">${unreadCount > 0 ? `<span style="color:#ff3b30; font-weight:700;">${unreadCount} הודעות חדשות</span>` : 'הקש כדי לשוחח'}</div>
+          <div class="chat-user-name">${u.name}</div>
+          <div class="chat-user-sub">${unreadCount > 0 ? `<span style="color:#ff6b61; font-weight:700;">${unreadCount} הודעות חדשות 🔥</span>` : '💬 הקש כדי לשוחח'}</div>
         </div>
       </div>
     `;
@@ -9898,9 +10013,11 @@ function renderDrawerMessagesStream(messages) {
   let html = '';
   messages.forEach(m => {
     const isMe = m.senderEmail === currentUser?.email;
+    const bubbleBg = isMe ? '#0071e3' : '#f1f1f1';
+    const textColor = isMe ? '#fff' : '#000';
     html += `
       <div style="align-self:${isMe ? 'flex-end' : 'flex-start'}; max-width:70%; display:flex; flex-direction:column; gap:4px;">
-        <div style="background:${isMe ? '#ff9500' : '#1c1c1e'}; color:#fff; padding:10px 14px; border-radius:${isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}; font-size:0.9rem; line-height:1.4; word-break:break-word;">
+        <div style="background:${bubbleBg}; color:${textColor}; padding:10px 14px; border-radius:${isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}; font-size:0.9rem; line-height:1.4; word-break:break-word;">
           ${m.text}
         </div>
         <div style="font-size:0.7rem; color:#86868b; text-align:${isMe ? 'right' : 'left'}; padding:0 4px;">
@@ -10710,16 +10827,16 @@ async function loadDirectMessages() {
   container.innerHTML = msgs.map(m => {
     const isMe = !m.isAdmin;
     const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-    const bubbleBg = isMe ? 'var(--primary)' : 'rgba(255,255,255,0.08)';
-    const textColor = isMe ? '#ffffff' : '#ffffff';
+    const bubbleBg = isMe ? '#0071e3' : '#f1f1f1';
+    const textColor = isMe ? '#ffffff' : '#000000';
     const align = isMe ? 'flex-end' : 'flex-start';
     const direction = 'ltr';
 
     return `
       <div style="background:${bubbleBg}; color:${textColor}; padding:10px 14px; border-radius:14px; align-self:${align}; max-width:85%; font-size:0.95rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-        <span style="font-weight: 500; font-size: 0.78rem; opacity: 0.7;">${m.isAdmin ? 'Admin' : m.senderName}</span>
+        <span style="font-weight: 500; font-size: 0.78rem; opacity: 0.7; color: ${isMe ? '#ffffff' : '#555555'}">${m.isAdmin ? 'Admin' : m.senderName}</span>
         <span style="white-space: pre-wrap; word-break: break-word;">${m.text}</span>
-        <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end;">${timeStr}</span>
+        <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end; color: ${isMe ? '#ffffff' : '#777777'}">${timeStr}</span>
       </div>
     `;
   }).join('');
@@ -16218,3 +16335,246 @@ function profileArticleCard(a) {
     setup();
   }
 })();
+
+/* ─── Pro Effects: scroll-reveal animations ───
+   Feed items and cards fade up as they scroll into view. */
+(function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        en.target.classList.add('revealed');
+        observer.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  function scan() {
+    document.querySelectorAll('.feed-item:not(.reveal-on-scroll), .shop-card:not(.reveal-on-scroll)').forEach(el => {
+      const r = el.getBoundingClientRect();
+      el.classList.add('reveal-on-scroll');
+      // items already on screen reveal instantly (no pop on load)
+      if (r.top < window.innerHeight) {
+        el.classList.add('revealed');
+      } else {
+        observer.observe(el);
+      }
+    });
+  }
+
+  // re-scan when feeds re-render
+  const mo = new MutationObserver(() => {
+    clearTimeout(window._revealScanT);
+    window._revealScanT = setTimeout(scan, 150);
+  });
+
+  function start() {
+    scan();
+    mo.observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
+
+/* ─── Live video background ───
+   Looping muted city timelapse behind the whole site; the drifting
+   image (body::before) remains as fallback until the video can play. */
+(function initVideoBackground() {
+  function setup() {
+    if (document.getElementById('bg-live-video')) return;
+    const v = document.createElement('video');
+    v.id = 'bg-live-video';
+    v.autoplay = true;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.preload = 'auto';
+    v.src = 'https://videos.pexels.com/video-files/2611250/2611250-hd_1920_1080_30fps.mp4'; // night city skyline
+    v.addEventListener('canplay', () => {
+      v.classList.add('loaded');
+      v.play().catch(() => {});
+    });
+    v.addEventListener('error', () => v.remove()); // fall back to the image silently
+    document.body.prepend(v);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
+/* ─── Micro-interactions: flying icons & bursts on save / buy ─── */
+(function initActionEffects() {
+  // remember where the user last clicked (origin for effects)
+  document.addEventListener('pointerdown', e => {
+    window._fxOrigin = { x: e.clientX, y: e.clientY };
+  }, true);
+
+  function origin() {
+    return window._fxOrigin || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  }
+
+  // small colored dots exploding from the click point
+  window.fxBurst = function(colors) {
+    const { x, y } = origin();
+    (colors || ['#f59e0b', '#f97316', '#fbbf24', '#fff']).forEach((c, i) => {
+      for (let j = 0; j < 3; j++) {
+        const d = document.createElement('div');
+        d.className = 'fx-burst';
+        d.style.background = c;
+        d.style.left = x + 'px';
+        d.style.top = y + 'px';
+        document.body.appendChild(d);
+        const ang = Math.random() * Math.PI * 2;
+        const dist = 30 + Math.random() * 50;
+        const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist;
+        d.animate([
+          { transform: 'translate(0,0) scale(1)', opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}px) scale(0.2)`, opacity: 0 }
+        ], { duration: 550 + Math.random() * 250, easing: 'cubic-bezier(0.22,1,0.36,1)' })
+          .onfinish = () => d.remove();
+      }
+    });
+  };
+
+  // an emoji/icon flying from the click point to a target element
+  window.fxFlyTo = function(targetSelector, icon) {
+    const target = document.querySelector(targetSelector);
+    const { x, y } = origin();
+    const fly = document.createElement('div');
+    fly.className = 'fx-fly';
+    fly.textContent = icon;
+    fly.style.left = (x - 11) + 'px';
+    fly.style.top = (y - 11) + 'px';
+    document.body.appendChild(fly);
+
+    let tx = window.innerWidth - 80, ty = 30; // default: top corner
+    if (target) {
+      const r = target.getBoundingClientRect();
+      tx = r.left + r.width / 2 - x;
+      ty = r.top + r.height / 2 - y;
+    } else {
+      tx = tx - x; ty = ty - y;
+    }
+    requestAnimationFrame(() => {
+      fly.style.transform = `translate(${tx}px, ${ty}px) scale(0.25)`;
+      fly.style.opacity = '0';
+    });
+    setTimeout(() => {
+      fly.remove();
+      if (target) {
+        target.classList.remove('fx-pop');
+        void target.offsetWidth;
+        target.classList.add('fx-pop');
+      }
+    }, 780);
+  };
+
+  // — hook: add to cart —
+  const _origAddToCart = window.addToCart;
+  if (typeof _origAddToCart === 'function') {
+    window.addToCart = function(id, type, qty) {
+      _origAddToCart(id, type, qty);
+      fxFlyTo('.cart-nav-btn .fa-shopping-bag, #cart-badge, [onclick*="toggleCartDrawer"]', '🛍️');
+      fxBurst(['#0071e3', '#6ee7ff', '#fff']);
+      const badge = document.getElementById('cart-badge');
+      if (badge) {
+        badge.classList.remove('fx-bounce');
+        void badge.offsetWidth;
+        badge.classList.add('fx-bounce');
+      }
+    };
+  }
+
+  // — hook: save article (bookmark) —
+  const _origToggleMyArticle = window.toggleMyArticle;
+  if (typeof _origToggleMyArticle === 'function') {
+    window.toggleMyArticle = function(id, btn) {
+      const wasSaved = (typeof myArticlesList !== 'undefined') && myArticlesList.some(x => x.id === id);
+      _origToggleMyArticle(id, btn);
+      if (!wasSaved) { // only celebrate when SAVING, not removing
+        fxFlyTo('[title="Saved Articles"], #link-my-articles', '🔖');
+        fxBurst(['#f59e0b', '#fbbf24', '#fff']);
+        if (btn && btn.classList) {
+          btn.classList.remove('fx-pop');
+          void btn.offsetWidth;
+          btn.classList.add('fx-pop');
+        }
+      }
+    };
+  }
+})();
+
+/* Missing function fix: renderSidebarArticles is called in several places
+   but was never defined — saving an article threw a silent ReferenceError
+   and stopped everything after it. Refresh the saved-items drawer if open. */
+window.renderSidebarArticles = window.renderSidebarArticles || function() {
+  const drawer = document.getElementById('saved-items-drawer');
+  if (drawer && drawer.classList.contains('active') && typeof renderSavedDrawer === 'function') {
+    renderSavedDrawer();
+  }
+};
+
+/* ─── 20% off welcome banner ───
+   Slides in from the bottom corner a moment after load, disappears by
+   itself after 5 seconds. Shown once per session so it never nags. */
+(function initPromoBanner() {
+  function show() {
+    if (sessionStorage.getItem('promo20_shown')) return;
+    sessionStorage.setItem('promo20_shown', '1');
+
+    const b = document.createElement('div');
+    b.id = 'promo-20-banner';
+    b.innerHTML = `
+      <button class="promo-close" onclick="this.parentElement.classList.remove('show')" title="סגור">&times;</button>
+      <div class="promo-icon">20%</div>
+      <div>
+        <div class="promo-title">🎉 20% הנחה למצטרפים חדשים!</div>
+        <div class="promo-sub">הירשמו עכשיו וקבלו הנחה על הרכישה הראשונה</div>
+      </div>
+      <div class="promo-timer"></div>`;
+    b.addEventListener('click', e => {
+      if (e.target.closest('.promo-close')) return;
+      b.classList.remove('show');
+      const loginBtn = document.querySelector('[onclick*="login"], #login-btn');
+      if (loginBtn) loginBtn.click(); else window.location.href = '/login.html';
+    });
+    document.body.appendChild(b);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add('show')));
+    setTimeout(() => {
+      b.classList.remove('show');
+      setTimeout(() => b.remove(), 700);
+    }, 5000 + 800); // 5s visible after the entry animation
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(show, 2500));
+  } else {
+    setTimeout(show, 2500);
+  }
+})();
+
+/* ─── Colorful identity gradients for chat cards ─── */
+window.fxGradientFor = function(name) {
+  const palettes = [
+    ['#FF6B6B', '#FFB347'], // sunset
+    ['#6E8EFB', '#A777E3'], // violet sky
+    ['#43CEA2', '#185A9D'], // ocean green
+    ['#F953C6', '#B91D73'], // pink punch
+    ['#F7971E', '#FFD200'], // gold
+    ['#00C9FF', '#92FE9D'], // aqua mint
+    ['#FC5C7D', '#6A82FB'], // candy
+    ['#11998E', '#38EF7D']  // emerald
+  ];
+  let h = 0;
+  for (let i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return palettes[h % palettes.length];
+};

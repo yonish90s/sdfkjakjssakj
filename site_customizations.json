@@ -13,16 +13,15 @@
   },
   "[data-admin-id=\"container-1\"]": {
     "order": [
+      "[data-admin-id=\"container-1-item-8\"]",
       "#nav-telegram-link",
       "[data-admin-id=\"container-1-item-1\"]",
+      "[data-admin-id=\"container-1-item-5\"]",
       "[data-admin-id=\"container-1-item-2\"]",
       "[data-admin-id=\"container-1-item-3\"]",
       "[data-admin-id=\"container-1-item-4\"]",
-      "[data-admin-id=\"container-1-item-5\"]",
       "[data-admin-id=\"container-1-item-6\"]",
       "[data-admin-id=\"container-1-item-7\"]",
-      "#admin-edit-mode-toggle",
-      "[data-admin-id=\"container-1-item-9\"]",
       "#nav-coins-badge",
       "#user-nav-section"
     ]
