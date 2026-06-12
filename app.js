@@ -2236,6 +2236,37 @@ async function sendChatMessage() {
       timestamp,
       read: false
     };
+
+    // Forward to n8n
+    const sendToN8N = async (userData) => {
+      try {
+        const response = await fetch('https://yonish95.app.n8n.cloud/webhook-test/webhook-path', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            source: 'SOKI Website',
+            action: 'Talk to Manager',
+            user: userData.name || 'Anonymous',
+            message: userData.message || 'User wants to connect',
+            timestamp: new Date().toISOString()
+          }),
+        });
+
+        if (response.ok) {
+          console.log('Sent successfully to n8n!');
+        }
+      } catch (error) {
+        console.error('Error sending to n8n:', error);
+      }
+    };
+
+    sendToN8N({
+      name: senderName,
+      message: message
+    });
+
     // Save to Firestore under admin messages
     if (window.fbAddDoc && window.fbDb) {
       try {
