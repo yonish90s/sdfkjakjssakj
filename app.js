@@ -9840,6 +9840,7 @@ window.updateMessagesBadge = async function() {
   if (!currentUser || !currentUser.email) return;
 
   let totalUnreadMessages = 0;
+  const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
 
   // ── 1. Fetch ALL chat rooms where the current user is a participant ──
   if (window.fbGetDocs && window.fbDb && window.fbColl && window.fbQuery && window.fbWhere) {
@@ -9849,14 +9850,22 @@ window.updateMessagesBadge = async function() {
       const snap = await window.fbGetDocs(q);
       snap.forEach(doc => {
         const data = doc.data();
+        
+        // Skip old inactive chats (older than 10 days) to prevent "13 unread" inflation
+        if (data.updatedAt) {
+          const updatedAtTime = new Date(data.updatedAt).getTime();
+          if (updatedAtTime < tenDaysAgo) return;
+        }
+
         const msgs = data.messages || [];
-        // Count messages NOT sent by me that are explicitly unread (read === false)
-        const unread = msgs.filter(m => m.senderEmail !== currentUser.email && m.read === false).length;
+        // Count messages NOT sent by me that are unread
+        const unread = msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
         totalUnreadMessages += unread;
         // Keep local cache up to date
         localStorage.setItem(`real_chat_messages_${doc.id}`, JSON.stringify(msgs));
       });
     } catch(e) {
+      console.error("updateMessagesBadge Firestore error:", e);
       // Firestore query failed (e.g. missing index) — fall back to local cache scan
       try {
         const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
@@ -9864,7 +9873,7 @@ window.updateMessagesBadge = async function() {
           if (otherEmail === currentUser.email) return;
           const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
           const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-          totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && m.read === false).length;
+          totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
         });
       } catch(e2) {}
     }
@@ -9876,7 +9885,7 @@ window.updateMessagesBadge = async function() {
         if (otherEmail === currentUser.email) return;
         const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
         const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && m.read === false).length;
+        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
       });
     } catch(e) {}
   }
@@ -9897,8 +9906,8 @@ window.updateMessagesBadge = async function() {
     const myId = currentUser.email;
     const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
     supportUnread = isUserAdmin
-      ? sup.filter(m => !m.isAdmin && m.read === false).length
-      : sup.filter(m => m.userId === myId && m.isAdmin && m.read === false).length;
+      ? sup.filter(m => !m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length
+      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length;
   } catch(e) {}
 
   const grandTotal = totalUnreadMessages + supportUnread;
