@@ -9837,43 +9837,73 @@ window.clearAllNotifications = function() {
 };
 
 window.updateMessagesBadge = async function() {
-  const isHeb = (currentLocation && currentLocation.id === 'Israel');
-  
   if (!currentUser || !currentUser.email) return;
 
-  const users = await fetchRealChatUsers();
-  let unreadChats = 0;
   let totalUnreadMessages = 0;
 
-  // Fetch live chat room updates from Firestore in parallel for all users
-  if (window.fbGetDoc && window.fbDb) {
-    const fetchPromises = users.map(async (user) => {
-      if (user.id === currentUser.email) return;
-      const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+  // ── 1. Fetch ALL chat rooms where the current user is a participant ──
+  if (window.fbGetDocs && window.fbDb && window.fbColl && window.fbQuery && window.fbWhere) {
+    try {
+      const chatsRef = window.fbColl(window.fbDb, 'chats');
+      const q = window.fbQuery(chatsRef, window.fbWhere('participants', 'array-contains', currentUser.email));
+      const snap = await window.fbGetDocs(q);
+      snap.forEach(doc => {
+        const data = doc.data();
+        const msgs = data.messages || [];
+        // Count messages NOT sent by me that are unread
+        const unread = msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+        totalUnreadMessages += unread;
+        // Keep local cache up to date
+        localStorage.setItem(`real_chat_messages_${doc.id}`, JSON.stringify(msgs));
+      });
+    } catch(e) {
+      // Firestore query failed (e.g. missing index) — fall back to local cache scan
       try {
-        const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
-        const docSnap = await window.fbGetDoc(chatDocRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const dbMessages = data.messages || [];
-          localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
-        }
-      } catch(e) {}
-    });
-    await Promise.all(fetchPromises);
+        const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+        Object.keys(users).forEach(otherEmail => {
+          if (otherEmail === currentUser.email) return;
+          const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+          const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+          totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+        });
+      } catch(e2) {}
+    }
+  } else {
+    // No Firestore — read from local cache
+    try {
+      const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+      Object.keys(users).forEach(otherEmail => {
+        if (otherEmail === currentUser.email) return;
+        const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+        const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+      });
+    } catch(e) {}
   }
 
-  users.forEach(user => {
-    if (user.id === currentUser.email) return;
-    const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
-    const messages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-    const unreadCount = messages.filter(m => m.senderEmail === user.id && !m.read).length;
-    totalUnreadMessages += unreadCount;
-    if (unreadCount > 0) {
-      unreadChats++;
+  // ── 2. Count unread support messages ──
+  let supportUnread = 0;
+  try {
+    let sup = [];
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+        snap.forEach(doc => sup.push(doc.data()));
+        if (sup.length > 0) localStorage.setItem('supportDirectMessages', JSON.stringify(sup));
+      } catch(e) {}
     }
-  });
+    if (sup.length === 0) sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
 
+    const myId = currentUser.email;
+    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    supportUnread = isUserAdmin
+      ? sup.filter(m => !m.isAdmin && !m.read).length
+      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read).length;
+  } catch(e) {}
+
+  const grandTotal = totalUnreadMessages + supportUnread;
+
+  // ── 3. Update sidebar dot ──
   let unreadAlerts = 0;
   try {
     const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
@@ -9881,48 +9911,12 @@ window.updateMessagesBadge = async function() {
   } catch(e) {}
 
   const alertDot = document.getElementById('alerts-unread-dot');
-  if (alertDot) {
-    alertDot.style.display = unreadAlerts > 0 ? 'inline-block' : 'none';
-  }
+  if (alertDot) alertDot.style.display = unreadAlerts > 0 ? 'inline-block' : 'none';
 
   const sidebarDot = document.getElementById('messages-unread-badge');
-  if (sidebarDot) {
-    sidebarDot.style.display = (unreadChats > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
-  }
+  if (sidebarDot) sidebarDot.style.display = (grandTotal > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
 
-  // also count unread support replies (manager <-> user) so both chat
-  // icons reflect the SAME total, like the user asked
-  let supportUnread = 0;
-  try {
-    const myId = (currentUser && currentUser.email) ? currentUser.email : (typeof getSupportUserId === 'function' ? getSupportUserId() : null);
-    
-    // Fetch live messages directly from Firestore database
-    let sup = [];
-    if (window.fbGetDocs && window.fbDb) {
-      try {
-        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-        snap.forEach(doc => sup.push(doc.data()));
-        if (sup.length > 0) {
-          localStorage.setItem('supportDirectMessages', JSON.stringify(sup));
-        }
-      } catch(e) {
-        console.error("Firestore badge fetch error: ", e);
-      }
-    }
-    
-    if (sup.length === 0) {
-      sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-    }
-
-    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
-    supportUnread = isUserAdmin
-      ? sup.filter(m => !m.isAdmin && !m.read).length
-      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read).length;
-  } catch (e) {}
-
-  const grandTotal = totalUnreadMessages + supportUnread;
-
-  // update BOTH chat-icon badges with the same number
+  // ── 4. Update the floating pill nav badge (the red circle on the Chats icon) ──
   ['messages-nav-badge', 'floating-support-badge'].forEach(id => {
     const b = document.getElementById(id);
     if (b) {
