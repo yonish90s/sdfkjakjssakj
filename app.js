@@ -9110,6 +9110,50 @@ async function fetchRealChatUsers() {
   if (currentUser && currentUser.email) {
     delete usersMap[currentUser.email];
   }
+
+  // 4. Add support contacts
+  let allSupportMsgs = [];
+  try {
+    allSupportMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  } catch(e) {}
+  
+  const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  
+  if (isUserAdmin) {
+    // Admin sees cards for all users who have sent support messages
+    const supportUserIds = new Set();
+    allSupportMsgs.forEach(m => {
+      if (m.userId) supportUserIds.add(m.userId);
+    });
+    
+    supportUserIds.forEach(userId => {
+      if (userId === 'soki_system') return;
+      const userMsgs = allSupportMsgs.filter(m => m.userId === userId);
+      const senderName = userMsgs[0]?.senderName || userId;
+      usersMap[userId + '_support'] = {
+        id: userId + '_support',
+        name: `${senderName} — תמיכה`,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}&background=10b981&color=fff&size=80&rounded=true&bold=true`,
+        status: 'online',
+        lastActive: new Date().toISOString(),
+        isSupport: true
+      };
+    });
+  } else {
+    // Regular user sees SOKI Support card if they have sent support messages
+    const currentUserId = currentUser?.email || getSupportUserId();
+    const hasSupportChat = allSupportMsgs.some(m => m.userId === currentUserId);
+    if (hasSupportChat) {
+      usersMap['soki_support'] = {
+        id: 'soki_support',
+        name: 'SOKI — תמיכה',
+        avatar: 'https://ui-avatars.com/api/?name=SOKI&background=0071e3&color=fff&size=80&rounded=true&bold=true',
+        status: 'online',
+        lastActive: new Date().toISOString(),
+        isSupport: true
+      };
+    }
+  }
   
   return Object.values(usersMap);
 }
@@ -9895,9 +9939,24 @@ async function renderDrawerChatUsersList() {
     if (query && !u.name.toLowerCase().includes(query)) continue;
     
     // Check unread count
-    const roomId = [currentUser?.email, u.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
-    const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-    const unreadCount = localMsgs.filter(m => m.senderEmail === u.id && !m.read).length;
+    let unreadCount = 0;
+    if (u.isSupport) {
+      const targetUserId = (u.id === 'soki_support') ? (currentUser?.email || getSupportUserId()) : u.id.replace('_support', '');
+      let allMsgs = [];
+      try {
+        allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      } catch(e) {}
+      const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+      if (isUserAdmin) {
+        unreadCount = allMsgs.filter(m => m.userId === targetUserId && !m.isAdmin && !m.read).length;
+      } else {
+        unreadCount = allMsgs.filter(m => m.userId === targetUserId && m.isAdmin && !m.read).length;
+      }
+    } else {
+      const roomId = [currentUser?.email, u.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+      const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+      unreadCount = localMsgs.filter(m => m.senderEmail === u.id && !m.read).length;
+    }
     totalUnread += unreadCount;
     
     const isSelected = activeDrawerChatUserId === u.id;
@@ -9947,6 +10006,67 @@ window.selectDrawerChatUser = async function(userId) {
     sidebar.style.display = 'none';
     activePane.style.display = 'flex';
     backBtn.style.display = 'flex';
+  }
+
+  const isSupport = (userId === 'soki_support' || userId.endsWith('_support'));
+
+  if (isSupport) {
+    const targetUserId = (userId === 'soki_support') ? (currentUser?.email || getSupportUserId()) : userId.replace('_support', '');
+    let senderName = (userId === 'soki_support') ? 'SOKI — תמיכה' : 'פניית תמיכה';
+
+    let allMsgs = [];
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+        snap.forEach(doc => allMsgs.push(doc.data()));
+      } catch(e) {}
+    }
+    if (allMsgs.length === 0) {
+      allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    }
+
+    const userMsgs = allMsgs.filter(m => m.userId === targetUserId);
+    if (userMsgs.length > 0 && userId !== 'soki_support') {
+      senderName = `${userMsgs[0].senderName || 'משתמש אנונימי'} — תמיכה`;
+    }
+
+    document.getElementById('drawer-chat-active-avatar').src = (userId === 'soki_support')
+      ? 'https://ui-avatars.com/api/?name=SOKI&background=0071e3&color=fff&size=80&rounded=true&bold=true'
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}&background=10b981&color=fff&size=80&rounded=true&bold=true`;
+    document.getElementById('drawer-chat-active-name').textContent = senderName;
+
+    // Mark as read
+    let changed = false;
+    let localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    localMsgs.forEach(m => {
+      if (m.userId === targetUserId) {
+        if (isUserAdmin && !m.isAdmin && !m.read) {
+          m.read = true;
+          changed = true;
+        } else if (!isUserAdmin && m.isAdmin && !m.read) {
+          m.read = true;
+          changed = true;
+        }
+      }
+    });
+    if (changed) {
+      localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+      checkUnreadSupportMessages();
+    }
+
+    const formattedMsgs = userMsgs.map(m => ({
+      id: m.timestamp + Math.random(),
+      senderEmail: m.isAdmin ? 'soki_support' : m.userId,
+      senderName: m.isAdmin ? 'Admin Support' : m.senderName,
+      text: m.text,
+      timestamp: m.timestamp,
+      read: m.read
+    }));
+
+    renderDrawerMessagesStream(formattedMsgs);
+    renderDrawerChatUsersList();
+    return;
   }
   
   // Load user details
@@ -10075,6 +10195,36 @@ window.sendDrawerMessage = async function() {
   if (!text || !activeDrawerChatUserId || !currentUser) return;
   
   input.value = '';
+  
+  const isSupport = (activeDrawerChatUserId === 'soki_support' || activeDrawerChatUserId.endsWith('_support'));
+  
+  if (isSupport) {
+    const targetUserId = (activeDrawerChatUserId === 'soki_support') ? (currentUser.email || getSupportUserId()) : activeDrawerChatUserId.replace('_support', '');
+    const timestamp = new Date().toISOString();
+    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    
+    const replyObj = {
+      userId: targetUserId,
+      senderName: isUserAdmin ? 'Admin Support' : currentUser.name || currentUser.email.split('@')[0],
+      text: text,
+      timestamp: timestamp,
+      isAdmin: isUserAdmin,
+      read: true
+    };
+    
+    if (window.fbAddDoc && window.fbDb) {
+      try {
+        await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), replyObj);
+      } catch(e) {}
+    }
+    
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    localMsgs.push(replyObj);
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+    
+    selectDrawerChatUser(activeDrawerChatUserId);
+    return;
+  }
   
   const roomId = [currentUser.email, activeDrawerChatUserId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
   const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
