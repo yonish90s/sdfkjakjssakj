@@ -1071,11 +1071,28 @@ function renderNewsLayout(page = 1) {
 
   if (shouldInjectLiveVideos) {
     const part1 = pageArticles.slice(0, 3);
-    const part2 = pageArticles.slice(3);
-    
+    const part2a = pageArticles.slice(3, 6);
+    const part2b = pageArticles.slice(6);
+
     const part1HTML = part1.map(a => renderSingleFeedItem(a)).join('');
-    const part2HTML = part2.map(a => renderSingleFeedItem(a)).join('');
-    
+    const part2aHTML = part2a.map(a => renderSingleFeedItem(a)).join('');
+    const part2bHTML = part2b.map(a => renderSingleFeedItem(a)).join('');
+
+    // "New users" strip — populated async by renderNewUsersStrip()
+    const newUsersHTML = `
+      <div class="live-cameras-section new-users-section" id="new-users-section">
+        <div class="live-cameras-header">
+          <div class="live-cameras-title">
+            <span class="pulse-badge" style="background:rgba(110,142,251,0.15); border-color:rgba(110,142,251,0.5); color:#9db4ff;"><span class="pulse-dot" style="background:#6E8EFB;"></span> חדשים</span>
+            משתמשים חדשים שהצטרפו 👋
+          </div>
+        </div>
+        <div class="new-users-slider" id="new-users-slider">
+          <div style="color:#86868b; font-size:0.85rem; padding:20px;">טוען משתמשים...</div>
+        </div>
+      </div>
+    `;
+
     const liveVideosHTML = `
       <div class="live-cameras-section">
         <div class="live-cameras-header">
@@ -1095,7 +1112,8 @@ function renderNewsLayout(page = 1) {
         </div>
       </div>
     `;
-    articlesHTML = part1HTML + liveVideosHTML + part2HTML;
+    articlesHTML = part1HTML + liveVideosHTML + part2aHTML + newUsersHTML + part2bHTML;
+    setTimeout(() => { if (typeof renderNewUsersStrip === 'function') renderNewUsersStrip(); }, 60);
   } else {
     articlesHTML = pageArticles.map(a => renderSingleFeedItem(a)).join('');
   }
@@ -9111,12 +9129,27 @@ async function fetchRealChatUsers() {
     delete usersMap[currentUser.email];
   }
 
-  // 4. Add support contacts
+  // 4. Add support contacts.
+  // Read from BOTH Firestore and localStorage and merge, so messages sent
+  // from another device/browser still surface here (otherwise the admin
+  // would never see a user who wrote in from a different machine).
   let allSupportMsgs = [];
   try {
     allSupportMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
   } catch(e) {}
-  
+
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      const seen = new Set(allSupportMsgs.map(m => `${m.userId}|${m.timestamp}|${(m.text||'').slice(0,20)}`));
+      snap.forEach(doc => {
+        const d = doc.data();
+        const key = `${d.userId}|${d.timestamp}|${(d.text||'').slice(0,20)}`;
+        if (!seen.has(key)) { seen.add(key); allSupportMsgs.push(d); }
+      });
+    } catch(e) { console.warn('[support] Firestore merge failed:', e); }
+  }
+
   const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
   
   if (isUserAdmin) {
@@ -9427,6 +9460,7 @@ window.renderMessagesStream = function(messages) {
   const container = document.getElementById('messages-stream');
   if (!container) return;
 
+  container.classList.add('fx-chat-stream');
   container.innerHTML = '';
   if (!messages || messages.length === 0) {
     return;
@@ -9434,14 +9468,9 @@ window.renderMessagesStream = function(messages) {
 
   messages.forEach(msg => {
     const isMe = msg.senderEmail === currentUser.email;
-    const div = document.createElement('div');
-    div.className = `chat-bubble ${isMe ? 'chat-bubble-sent' : 'chat-bubble-received'}`;
-    
-    div.innerHTML = `
-      <div>${msg.text}</div>
-      <div class="chat-bubble-time">${msg.time}</div>
-    `;
-    container.appendChild(div);
+    container.insertAdjacentHTML('beforeend', window.fxRenderChatBubble({
+      text: msg.text, isMe, timestamp: msg.timestamp || msg.time, read: msg.read
+    }));
   });
 
   setTimeout(() => {
@@ -9815,7 +9844,27 @@ window.updateMessagesBadge = async function() {
   const users = await fetchRealChatUsers();
   let unreadChats = 0;
   let totalUnreadMessages = 0;
+
+  // Fetch live chat room updates from Firestore in parallel for all users
+  if (window.fbGetDoc && window.fbDb) {
+    const fetchPromises = users.map(async (user) => {
+      if (user.id === currentUser.email) return;
+      const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+      try {
+        const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
+        const docSnap = await window.fbGetDoc(chatDocRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const dbMessages = data.messages || [];
+          localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
+        }
+      } catch(e) {}
+    });
+    await Promise.all(fetchPromises);
+  }
+
   users.forEach(user => {
+    if (user.id === currentUser.email) return;
     const roomId = [currentUser.email, user.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
     const messages = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
     const unreadCount = messages.filter(m => m.senderEmail === user.id && !m.read).length;
@@ -9841,11 +9890,46 @@ window.updateMessagesBadge = async function() {
     sidebarDot.style.display = (unreadChats > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
   }
 
-  const navBadge = document.getElementById('messages-nav-badge');
-  if (navBadge) {
-    navBadge.textContent = totalUnreadMessages;
-    navBadge.style.display = totalUnreadMessages > 0 ? 'flex' : 'none';
-  }
+  // also count unread support replies (manager <-> user) so both chat
+  // icons reflect the SAME total, like the user asked
+  let supportUnread = 0;
+  try {
+    const myId = (currentUser && currentUser.email) ? currentUser.email : (typeof getSupportUserId === 'function' ? getSupportUserId() : null);
+    
+    // Fetch live messages directly from Firestore database
+    let sup = [];
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+        snap.forEach(doc => sup.push(doc.data()));
+        if (sup.length > 0) {
+          localStorage.setItem('supportDirectMessages', JSON.stringify(sup));
+        }
+      } catch(e) {
+        console.error("Firestore badge fetch error: ", e);
+      }
+    }
+    
+    if (sup.length === 0) {
+      sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    }
+
+    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    supportUnread = isUserAdmin
+      ? sup.filter(m => !m.isAdmin && !m.read).length
+      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read).length;
+  } catch (e) {}
+
+  const grandTotal = totalUnreadMessages + supportUnread;
+
+  // update BOTH chat-icon badges with the same number
+  ['messages-nav-badge', 'floating-support-badge'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) {
+      b.textContent = grandTotal;
+      b.style.display = grandTotal > 0 ? 'flex' : 'none';
+    }
+  });
 };
 
 window.checkInboxUnreadMessages = function() {
@@ -9878,6 +9962,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (activePage && activePage.id === 'page-messages') {
     window.initMessagesSystem();
   }
+  
+  // Periodically refresh the unread messages badge to keep the navigation bar alert updated in real-time
+  setTimeout(async () => {
+    if (window.updateMessagesBadge) await window.updateMessagesBadge();
+  }, 500);
+  
+  setInterval(async () => {
+    if (window.updateMessagesBadge) {
+      await window.updateMessagesBadge();
+    }
+  }, 4000);
 });
 
 // =====================================================================
@@ -10256,23 +10351,13 @@ function renderDrawerMessagesStream(messages) {
   const container = document.getElementById('drawer-messages-stream');
   if (!container) return;
   
+  container.classList.add('fx-chat-stream');
   let html = '';
   messages.forEach(m => {
     const isMe = m.senderEmail === currentUser?.email;
-    const bubbleBg = isMe ? '#0071e3' : '#f1f1f1';
-    const textColor = isMe ? '#fff' : '#000';
-    html += `
-      <div style="align-self:${isMe ? 'flex-end' : 'flex-start'}; max-width:70%; display:flex; flex-direction:column; gap:4px;">
-        <div style="background:${bubbleBg}; color:${textColor}; padding:10px 14px; border-radius:${isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}; font-size:0.9rem; line-height:1.4; word-break:break-word;">
-          ${m.text}
-        </div>
-        <div style="font-size:0.7rem; color:#86868b; text-align:${isMe ? 'right' : 'left'}; padding:0 4px;">
-          ${m.timestamp ? new Date(m.timestamp).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : ''}
-        </div>
-      </div>
-    `;
+    html += window.fxRenderChatBubble({ text: m.text, isMe, timestamp: m.timestamp, read: m.read });
   });
-  
+
   container.innerHTML = html || `<div style="text-align:center; padding:40px; color:#86868b; font-size:0.85rem;">Say hi to start the conversation! 👋</div>`;
   container.scrollTop = container.scrollHeight;
 }
@@ -10989,42 +11074,27 @@ async function checkUnreadSupportMessages() {
   const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
   let badgeCount = 0;
 
+  // Merge support messages from Firestore + localStorage (never prefer one
+  // source, or messages living in only one get missed → wrong/zero badge)
+  const _mkId = m => `${m.userId}|${m.timestamp}|${(m.text||'').slice(0,24)}`;
+  let allMsgs = [];
+  try { allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]'); } catch(e) {}
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      const seen = new Set(allMsgs.map(_mkId));
+      snap.forEach(doc => { const d = doc.data(); if (!seen.has(_mkId(d))) { seen.add(_mkId(d)); allMsgs.push(d); } });
+      localStorage.setItem('supportDirectMessages', JSON.stringify(allMsgs));
+    } catch(e) {}
+  }
+
   if (isUserAdmin) {
     // Admin counts all unread messages from users
-    let allMsgs = [];
-    if (window.fbGetDocs && window.fbDb) {
-      try {
-        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-        snap.forEach(doc => allMsgs.push(doc.data()));
-      } catch(e) {}
-    }
-    if (allMsgs.length === 0) {
-      allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-    }
     badgeCount = allMsgs.filter(m => !m.isAdmin && !m.read).length;
   } else {
     // Regular user counts unread replies from admin
     const userId = getSupportUserId();
-    let msgs = [];
-
-    // Try fetching from Firestore
-    if (window.fbGetDocs && window.fbDb) {
-      try {
-        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-        snap.forEach(doc => {
-          const data = doc.data();
-          if (data.userId === userId) {
-            msgs.push(data);
-          }
-        });
-      } catch(e) {}
-    }
-
-    // Fallback to localstorage
-    if (msgs.length === 0) {
-      const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-      msgs = localMsgs.filter(m => m.userId === userId);
-    }
+    const msgs = allMsgs.filter(m => m.userId === userId);
 
     // If user is currently looking at direct chat, mark unread admin messages as read
     if (window._supportChatMode === 'direct') {
@@ -11052,16 +11122,15 @@ async function checkUnreadSupportMessages() {
 }
 
 function updateSupportBadge(count) {
-  const badge = document.getElementById('support-badge');
-  if (badge) {
-    badge.textContent = count;
-    badge.style.display = count > 0 ? 'flex' : 'none';
-  }
-  const floatingBadge = document.getElementById('floating-support-badge');
-  if (floatingBadge) {
-    floatingBadge.textContent = count;
-    floatingBadge.style.display = count > 0 ? 'flex' : 'none';
-  }
+  // mirror the support unread count onto ALL chat-icon badges so the red
+  // number shows up the same on every chat entry point
+  ['support-badge', 'floating-support-badge', 'messages-nav-badge'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) {
+      b.textContent = count;
+      b.style.display = count > 0 ? 'flex' : 'none';
+    }
+  });
 }
 
 async function sendDirectChatMessage() {
@@ -16939,9 +17008,17 @@ window.openFloatingPillPanel = function(type) {
       title = '<i class="fas fa-comments"></i> שיחות תמיכה עם משתמשים (Admin)';
       bodyHTML = `
         <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1;">
-          <!-- Left Side: Threads List -->
-          <div id="floating-admin-threads-list" style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
-            <div style="text-align:center; padding:20px; color:#86868b;">טוען שיחות... 💬</div>
+          <!-- Left Side: Threads List Container -->
+          <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
+            <!-- Archive / Active Tabs -->
+            <div style="display:flex; background:rgba(255,255,255,0.04); padding:3px; border-radius:8px; gap:4px; margin-bottom:4px; direction:rtl;">
+              <button onclick="window.setAdminChatTab('active')" id="btn-admin-tab-active" style="flex:1; padding:6px; background:#e28743; border:none; border-radius:6px; color:#fff; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">פעיל</button>
+              <button onclick="window.setAdminChatTab('archive')" id="btn-admin-tab-archive" style="flex:1; padding:6px; background:transparent; border:none; border-radius:6px; color:#a1a1aa; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">ארכיון</button>
+            </div>
+            <!-- Threads List -->
+            <div id="floating-admin-threads-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0;">
+              <div style="text-align:center; padding:20px; color:#86868b;">טוען שיחות... 💬</div>
+            </div>
           </div>
           <!-- Right Side: Message Area -->
           <div id="floating-admin-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
@@ -17037,6 +17114,68 @@ window.closeFloatingPillPanel = function() {
 };
 
 // ── Floating Admin Support Chats Functions ──
+// Initialize default admin chat tab state
+window._activeAdminChatTab = 'active';
+
+window.setAdminChatTab = function(tab) {
+  window._activeAdminChatTab = tab;
+  
+  const activeBtn = document.getElementById('btn-admin-tab-active');
+  const archiveBtn = document.getElementById('btn-admin-tab-archive');
+  if (activeBtn && archiveBtn) {
+    if (tab === 'active') {
+      activeBtn.style.background = '#e28743';
+      activeBtn.style.color = '#fff';
+      archiveBtn.style.background = 'transparent';
+      archiveBtn.style.color = '#a1a1aa';
+    } else {
+      archiveBtn.style.background = '#e28743';
+      archiveBtn.style.color = '#fff';
+      activeBtn.style.background = 'transparent';
+      activeBtn.style.color = '#a1a1aa';
+    }
+  }
+  
+  window.loadFloatingAdminChats();
+};
+
+window.archiveSupportThread = function(userId, event) {
+  if (event) event.stopPropagation();
+  let archived = [];
+  try {
+    archived = JSON.parse(localStorage.getItem('archived_support_threads') || '[]');
+  } catch(e) {}
+  if (!archived.includes(userId)) {
+    archived.push(userId);
+    localStorage.setItem('archived_support_threads', JSON.stringify(archived));
+  }
+  
+  // Clear messages area if the active chat was archived
+  if (window._activeFloatingAdminChatThreadId === userId) {
+    window._activeFloatingAdminChatThreadId = null;
+    const chatArea = document.getElementById('floating-admin-chat-area');
+    if (chatArea) {
+      chatArea.innerHTML = `
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
+          בחר שיחה מהרשימה כדי להתחיל לענות 💬
+        </div>
+      `;
+    }
+  }
+  window.loadFloatingAdminChats();
+};
+
+window.restoreSupportThread = function(userId, event) {
+  if (event) event.stopPropagation();
+  let archived = [];
+  try {
+    archived = JSON.parse(localStorage.getItem('archived_support_threads') || '[]');
+  } catch(e) {}
+  archived = archived.filter(id => id !== userId);
+  localStorage.setItem('archived_support_threads', JSON.stringify(archived));
+  window.loadFloatingAdminChats();
+};
+
 window.loadFloatingAdminChats = async function() {
   const listEl = document.getElementById('floating-admin-threads-list');
   if (!listEl) return;
@@ -17051,6 +17190,12 @@ window.loadFloatingAdminChats = async function() {
   if (allMsgs.length === 0) {
     allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
   }
+
+  // Load archived thread IDs
+  let archivedThreads = [];
+  try {
+    archivedThreads = JSON.parse(localStorage.getItem('archived_support_threads') || '[]');
+  } catch(e) {}
 
   const threadsMap = {};
   allMsgs.forEach(m => {
@@ -17073,23 +17218,43 @@ window.loadFloatingAdminChats = async function() {
     };
   });
 
-  threads.sort((a, b) => new Date(b.lastMsg.timestamp) - new Date(a.lastMsg.timestamp));
+  // Filter based on active tab state
+  const isTabArchive = window._activeAdminChatTab === 'archive';
+  const filteredThreads = threads.filter(t => {
+    const isArchived = archivedThreads.includes(t.userId);
+    return isTabArchive ? isArchived : !isArchived;
+  });
 
-  if (threads.length === 0) {
-    listEl.innerHTML = '<div style="padding:16px; color:#86868b; text-align:center; font-size:0.8rem;">אין פניות בצ\'אט עדיין</div>';
+  filteredThreads.sort((a, b) => new Date(b.lastMsg.timestamp) - new Date(a.lastMsg.timestamp));
+
+  if (filteredThreads.length === 0) {
+    listEl.innerHTML = `<div style="padding:16px; color:#86868b; text-align:center; font-size:0.8rem;">אין פניות ${isTabArchive ? 'בארכיון' : 'פעילות'} עדיין</div>`;
     return;
   }
 
-  listEl.innerHTML = threads.map(t => {
+  listEl.innerHTML = filteredThreads.map(t => {
     const isSelected = window._activeFloatingAdminChatThreadId === t.userId;
     const bg = isSelected ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)';
     const border = isSelected ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)';
-    const badge = t.unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; float: left; margin-left:auto;">${t.unreadCount}</span>` : '';
+    const badge = t.unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; margin-left:6px;">${t.unreadCount}</span>` : '';
+    const redDot = t.unreadCount > 0 ? `<span style="background:#ff3b30; width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px;" title="הודעות חדשות"></span>` : '';
+    
+    // Close (Archive) or Restore (Undo) button
+    const actionBtn = isTabArchive
+      ? `<button onclick="window.restoreSupportThread('${t.userId}', event)" style="background:none; border:none; color:#86868b; cursor:pointer; padding:4px; font-size:0.8rem; transition:color 0.2s;" onmouseover="this.style.color='#34c759'" onmouseout="this.style.color='#86868b'" title="שחזר שיחה (החזר לפעיל)"><i class="fas fa-undo"></i></button>`
+      : `<button onclick="window.archiveSupportThread('${t.userId}', event)" style="background:none; border:none; color:#86868b; cursor:pointer; padding:4px 8px; font-size:0.85rem; transition:color 0.2s;" onmouseover="this.style.color='#ff453a'" onmouseout="this.style.color='#86868b'" title="סגור שיחה (העבר לארכיון)">✕</button>`;
+
     return `
       <div onclick="selectFloatingAdminChatThread('${t.userId}', '${t.senderName.replace(/'/g, "\\'")}')" style="background:${bg}; border:${border}; border-radius:12px; padding:10px; cursor:pointer; display:flex; flex-direction:column; gap:4px; text-align:right; direction:rtl; transition: background 0.2s;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <span style="font-weight:700; color:#fff; font-size:0.88rem;">${t.senderName}</span>
-          ${badge}
+          <div style="display:flex; align-items:center; min-width:0; flex:1;">
+            <span style="font-weight:700; color:#fff; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.senderName}</span>
+            ${redDot}
+          </div>
+          <div style="display:flex; align-items:center; gap:4px;">
+            ${badge}
+            ${actionBtn}
+          </div>
         </div>
         <span style="font-size:0.75rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; text-align:right;">${t.lastMsg.text}</span>
       </div>
@@ -17236,18 +17401,21 @@ window.sendFloatingAdminChatReply = async function(userId) {
     } catch (e) {}
   }
 
-  function popNotif(lastMsg) {
+  function popNotif(lastMsg, opts) {
+    opts = opts || {};
     const old = document.getElementById('mgr-notif');
     if (old) old.remove();
 
     const n = document.createElement('div');
     n.id = 'mgr-notif';
     const preview = (lastMsg && lastMsg.text ? lastMsg.text : 'הודעה חדשה').slice(0, 90);
+    const title = opts.title || '📩 הודעה חדשה מהמנהל';
+    const icon = opts.icon || '👨‍💼';
     n.innerHTML = `
       <button class="mgr-close" title="סגור">&times;</button>
-      <div class="mgr-avatar">👨‍💼</div>
+      <div class="mgr-avatar">${icon}</div>
       <div style="min-width:0;">
-        <div class="mgr-title">📩 הודעה חדשה מהמנהל</div>
+        <div class="mgr-title">${title}</div>
         <div class="mgr-text">${preview}</div>
       </div>`;
     n.querySelector('.mgr-close').addEventListener('click', e => {
@@ -17266,45 +17434,54 @@ window.sendFloatingAdminChatReply = async function(userId) {
     softChime();
   }
 
-  async function poll() {
-    // never notify the admin about their own dashboard
-    if (typeof isAdmin !== 'undefined' && isAdmin === true) return;
-    const userId = (typeof getSupportUserId === 'function') ? getSupportUserId() : null;
-    if (!userId) return;
+  const idOf = m => `${m.userId}|${m.timestamp}|${(m.text || '').slice(0, 24)}`;
 
-    let msgs = [];
+  async function poll() {
+    const amAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+
+    // pull all support messages — MERGE Firestore + local (never prefer one,
+    // or a message that lives in only one source gets silently missed)
+    let all = [];
+    try { all = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]'); } catch (e) {}
     if (window.fbGetDocs && window.fbDb) {
       try {
         const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-        snap.forEach(doc => { const d = doc.data(); if (d.userId === userId) msgs.push(d); });
+        const seen = new Set(all.map(idOf));
+        snap.forEach(doc => { const d = doc.data(); if (!seen.has(idOf(d))) { seen.add(idOf(d)); all.push(d); } });
+        // Persist back to local storage so other badge update functions get the live count
+        localStorage.setItem('supportDirectMessages', JSON.stringify(all));
       } catch (e) {}
     }
-    if (msgs.length === 0) {
-      const local = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-      msgs = local.filter(m => m.userId === userId);
-    }
-
-    const adminUnread = msgs.filter(m => m.isAdmin && !m.read);
 
     // refresh the badge through the existing system
     if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
+    if (window.updateMessagesBadge) window.updateMessagesBadge();
 
-    // id-based detection: notify once per never-seen admin message.
-    // On the very first poll we just record what's already there (no
-    // retroactive popups), so the comparison can't be fooled by timing
-    // or by Firestore-vs-localStorage differences.
-    const idOf = m => `${m.timestamp}|${(m.text || '').slice(0, 24)}`;
-    const chatOpen = window._supportChatMode === 'direct';
+    let target; // the unread messages we might notify about
+    let notifOpts;
+    if (amAdmin) {
+      // manager gets notified about new messages FROM users
+      target = all.filter(m => !m.isAdmin && !m.read);
+      notifOpts = { title: '📩 הודעה חדשה ממשתמש', icon: '🙋' };
+    } else {
+      // user gets notified about new replies FROM the manager
+      const myId = (typeof getSupportUserId === 'function') ? getSupportUserId() : null;
+      if (!myId) return;
+      target = all.filter(m => m.userId === myId && m.isAdmin && !m.read);
+      notifOpts = { title: '📩 הודעה חדשה מהמנהל', icon: '👨‍💼' };
+    }
 
+    // id-based detection: first poll records baseline (no retroactive popups)
     if (seenAdminIds === null) {
-      seenAdminIds = new Set(adminUnread.map(idOf));
+      seenAdminIds = new Set(target.map(idOf));
       return;
     }
-    const fresh = adminUnread.filter(m => !seenAdminIds.has(idOf(m)));
+    const chatOpen = window._supportChatMode === 'direct';
+    const fresh = target.filter(m => !seenAdminIds.has(idOf(m)));
     fresh.forEach(m => seenAdminIds.add(idOf(m)));
     if (fresh.length > 0 && !chatOpen) {
       const newest = fresh.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-      popNotif(newest);
+      popNotif(newest, notifOpts);
     }
   }
 
@@ -17318,3 +17495,92 @@ window.sendFloatingAdminChatReply = async function(userId) {
     setTimeout(start, 2000);
   }
 })();
+
+/* ─── "New users" feed strip ───
+   Shows the last 10 registered users with avatar + name, each with a
+   button to message them. Mirrors the live-cameras strip layout. */
+async function renderNewUsersStrip() {
+  const slider = document.getElementById('new-users-slider');
+  if (!slider) return;
+
+  let users = [];
+  try {
+    users = await fetchRealChatUsers();
+  } catch (e) { users = []; }
+
+  // drop support placeholder contacts and the logged-in user
+  users = (users || []).filter(u =>
+    u && u.id &&
+    !String(u.id).endsWith('_support') &&
+    u.id !== 'soki_support' &&
+    !(currentUser && u.id === currentUser.email)
+  );
+
+  // newest first, last 10
+  users.sort((a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0));
+  const recent = users.slice(0, 10);
+
+  if (recent.length === 0) {
+    slider.innerHTML = `<div style="color:#86868b; font-size:0.85rem; padding:20px;">אין עדיין משתמשים חדשים</div>`;
+    return;
+  }
+
+  slider.innerHTML = recent.map(u => {
+    const grad = window.fxGradientFor(u.name || u.id);
+    const safeId = String(u.id).replace(/'/g, "\\'");
+    const initials = (u.name || u.id || '?').trim().slice(0, 2).toUpperCase();
+    const avatar = u.avatar
+      ? `<img src="${u.avatar}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+      : '';
+    return `
+      <div class="new-user-card" style="--card-g1:${grad[0]}; --card-g2:${grad[1]};" onclick="window.messageNewUser('${safeId}')">
+        <div class="new-user-avatar">
+          ${avatar}
+          <span class="nu-fallback" style="display:${u.avatar ? 'none' : 'flex'};">${initials}</span>
+          <span class="nu-online"></span>
+        </div>
+        <div class="new-user-name">${u.name || u.id}</div>
+        <button class="new-user-msg-btn" onclick="event.stopPropagation(); window.messageNewUser('${safeId}')">
+          <i class="fas fa-paper-plane"></i> שלח הודעה
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+window.renderNewUsersStrip = renderNewUsersStrip;
+
+// Open the messages drawer and start a chat with the chosen user
+window.messageNewUser = function(userId) {
+  if (typeof toggleMessagesDrawer === 'function') {
+    const drawer = document.getElementById('messages-drawer');
+    if (!drawer || !drawer.classList.contains('active')) toggleMessagesDrawer();
+  }
+  setTimeout(() => {
+    if (typeof selectDrawerChatUser === 'function') selectDrawerChatUser(userId);
+  }, 250);
+};
+
+/* ─── Unified chat bubble renderer (WhatsApp style + read ticks) ───
+   Used by every chat window so sent/received colours and the double-tick
+   read receipts look identical across the whole site. */
+window.fxRenderChatBubble = function(opts) {
+  // opts: { text, isMe, timestamp, read }  (read = recipient has seen it)
+  const time = opts.timestamp
+    ? new Date(opts.timestamp).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+    : '';
+  const tickSvg = `<span class="fx-ticks ${opts.read ? 'read' : 'sent'}">
+      <svg viewBox="0 0 16 11" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.5 L4.5 9 L11 1.5"/></svg>
+      <svg class="tick2" viewBox="0 0 16 11" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.5 L4.5 9 L11 1.5"/></svg>
+    </span>`;
+  const safe = (opts.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `
+    <div class="fx-chat-row ${opts.isMe ? 'me' : 'them'}">
+      <div class="fx-bubble">
+        ${safe}
+        <div class="fx-bubble-meta">
+          <span>${time}</span>
+          ${opts.isMe ? tickSvg : ''}
+        </div>
+      </div>
+    </div>`;
+};
