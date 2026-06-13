@@ -10700,56 +10700,69 @@ function getSupportUserName() {
 }
 
 async function checkUnreadSupportMessages() {
-  const userId = getSupportUserId();
-  let msgs = [];
+  const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  let badgeCount = 0;
 
-  // Try fetching from Firestore
-  if (window.fbGetDocs && window.fbDb) {
-    try {
-      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (data.userId === userId) {
-          msgs.push(data);
+  if (isUserAdmin) {
+    // Admin counts all unread messages from users
+    let allMsgs = [];
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+        snap.forEach(doc => allMsgs.push(doc.data()));
+      } catch(e) {}
+    }
+    if (allMsgs.length === 0) {
+      allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    }
+    badgeCount = allMsgs.filter(m => !m.isAdmin && !m.read).length;
+  } else {
+    // Regular user counts unread replies from admin
+    const userId = getSupportUserId();
+    let msgs = [];
+
+    // Try fetching from Firestore
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+        snap.forEach(doc => {
+          const data = doc.data();
+          if (data.userId === userId) {
+            msgs.push(data);
+          }
+        });
+      } catch(e) {}
+    }
+
+    // Fallback to localstorage
+    if (msgs.length === 0) {
+      const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      msgs = localMsgs.filter(m => m.userId === userId);
+    }
+
+    // If user is currently looking at direct chat, mark unread admin messages as read
+    if (window._supportChatMode === 'direct') {
+      let changed = false;
+      
+      // Local update
+      const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      localMsgs.forEach(m => {
+        if (m.userId === userId && m.isAdmin && !m.read) {
+          m.read = true;
+          changed = true;
         }
       });
-    } catch(e) {}
-  }
-
-  // Fallback to localstorage
-  if (msgs.length === 0) {
-    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-    msgs = localMsgs.filter(m => m.userId === userId);
-  }
-
-  // If user is currently looking at direct chat, mark unread admin messages as read
-  if (window._supportChatMode === 'direct') {
-    let changed = false;
-    
-    // Local update
-    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-    localMsgs.forEach(m => {
-      if (m.userId === userId && m.isAdmin && !m.read) {
-        m.read = true;
-        changed = true;
-      }
-    });
-    
-    if (changed) {
-      localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
       
-      // Update Firestore docs read flag (Optional, local storage handles it smoothly)
-      if (window.fbAddDoc && window.fbDb) {
-        try {
-          // Send a dummy read receipt trigger if desired, or let the local sync handle client state
-        } catch(e){}
+      if (changed) {
+        localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
       }
+      badgeCount = 0;
+    } else {
+      badgeCount = msgs.filter(m => m.isAdmin && !m.read).length;
     }
-    updateSupportBadge(0);
-  } else {
-    const unreadCount = msgs.filter(m => m.isAdmin && !m.read).length;
-    updateSupportBadge(unreadCount);
   }
+
+  updateSupportBadge(badgeCount);
 }
 
 function updateSupportBadge(count) {
@@ -10757,6 +10770,11 @@ function updateSupportBadge(count) {
   if (badge) {
     badge.textContent = count;
     badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+  const floatingBadge = document.getElementById('floating-support-badge');
+  if (floatingBadge) {
+    floatingBadge.textContent = count;
+    floatingBadge.style.display = count > 0 ? 'flex' : 'none';
   }
 }
 
@@ -16629,25 +16647,62 @@ window.openFloatingPillPanel = function(type) {
     }, 10);
   } 
   else if (type === 'chats') {
-    title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
-    bodyHTML = `
-      <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
-        <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
-      </div>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
-        <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
-      </div>
-    `;
-    bodyEl.innerHTML = bodyHTML;
-    titleEl.innerHTML = title;
+    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
     
-    panel.style.display = 'flex';
-    if (pillNav) pillNav.classList.add('hidden-state');
-    setTimeout(() => {
-      panel.classList.add('active');
-      if (window.loadDirectMessages) window.loadDirectMessages();
-    }, 10);
+    if (isUserAdmin) {
+      title = '<i class="fas fa-comments"></i> שיחות תמיכה עם משתמשים (Admin)';
+      bodyHTML = `
+        <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1;">
+          <!-- Left Side: Threads List -->
+          <div id="floating-admin-threads-list" style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+            <div style="text-align:center; padding:20px; color:#86868b;">טוען שיחות... 💬</div>
+          </div>
+          <!-- Right Side: Message Area -->
+          <div id="floating-admin-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
+              בחר שיחה מהרשימה כדי להתחיל לענות 💬
+            </div>
+          </div>
+        </div>
+      `;
+      bodyEl.innerHTML = bodyHTML;
+      titleEl.innerHTML = title;
+      
+      panel.style.display = 'flex';
+      if (pillNav) pillNav.classList.add('hidden-state');
+      setTimeout(() => {
+        panel.classList.add('active');
+        if (window.loadFloatingAdminChats) window.loadFloatingAdminChats();
+        
+        if (window._floatingAdminChatsInterval) clearInterval(window._floatingAdminChatsInterval);
+        window._floatingAdminChatsInterval = setInterval(async () => {
+          if (window.loadFloatingAdminChats) await window.loadFloatingAdminChats();
+          if (window._activeFloatingAdminChatThreadId && window.syncFloatingAdminActiveChat) {
+            await window.syncFloatingAdminActiveChat(window._activeFloatingAdminChatThreadId);
+          }
+        }, 4000);
+      }, 10);
+    } else {
+      title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
+      bodyHTML = `
+        <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+          <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
+          <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+        </div>
+      `;
+      bodyEl.innerHTML = bodyHTML;
+      titleEl.innerHTML = title;
+      
+      panel.style.display = 'flex';
+      if (pillNav) pillNav.classList.add('hidden-state');
+      setTimeout(() => {
+        panel.classList.add('active');
+        if (window.loadDirectMessages) window.loadDirectMessages();
+      }, 10);
+    }
   } 
   else if (type === 'ai') {
     title = '<i class="fas fa-robot"></i> עוזר קניות AI';
@@ -16677,6 +16732,12 @@ window.openFloatingPillPanel = function(type) {
 window.closeFloatingPillPanel = function() {
   const panel = document.getElementById('floating-pill-panel');
   const pillNav = document.getElementById('floating-pill-nav');
+  
+  if (window._floatingAdminChatsInterval) {
+    clearInterval(window._floatingAdminChatsInterval);
+    window._floatingAdminChatsInterval = null;
+  }
+  
   if (pillNav) {
     pillNav.classList.remove('hidden-state');
   }
@@ -16687,5 +16748,176 @@ window.closeFloatingPillPanel = function() {
       panel.style.display = 'none';
     }, 300);
   }
+};
+
+// ── Floating Admin Support Chats Functions ──
+window.loadFloatingAdminChats = async function() {
+  const listEl = document.getElementById('floating-admin-threads-list');
+  if (!listEl) return;
+
+  let allMsgs = [];
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      snap.forEach(doc => allMsgs.push(doc.data()));
+    } catch(e) {}
+  }
+  if (allMsgs.length === 0) {
+    allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  }
+
+  const threadsMap = {};
+  allMsgs.forEach(m => {
+    if (!m.userId) return;
+    if (!threadsMap[m.userId]) threadsMap[m.userId] = [];
+    threadsMap[m.userId].push(m);
+  });
+
+  const threads = Object.keys(threadsMap).map(userId => {
+    const msgs = threadsMap[userId];
+    msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const lastMsg = msgs[msgs.length - 1];
+    const unreadCount = msgs.filter(m => !m.isAdmin && !m.read).length;
+    return {
+      userId,
+      messages: msgs,
+      lastMsg,
+      unreadCount,
+      senderName: msgs[0].senderName || 'משתמש אנונימי'
+    };
+  });
+
+  threads.sort((a, b) => new Date(b.lastMsg.timestamp) - new Date(a.lastMsg.timestamp));
+
+  if (threads.length === 0) {
+    listEl.innerHTML = '<div style="padding:16px; color:#86868b; text-align:center; font-size:0.8rem;">אין פניות בצ\'אט עדיין</div>';
+    return;
+  }
+
+  listEl.innerHTML = threads.map(t => {
+    const isSelected = window._activeFloatingAdminChatThreadId === t.userId;
+    const bg = isSelected ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)';
+    const border = isSelected ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)';
+    const badge = t.unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; float: left; margin-left:auto;">${t.unreadCount}</span>` : '';
+    return `
+      <div onclick="selectFloatingAdminChatThread('${t.userId}', '${t.senderName.replace(/'/g, "\\'")}')" style="background:${bg}; border:${border}; border-radius:12px; padding:10px; cursor:pointer; display:flex; flex-direction:column; gap:4px; text-align:right; direction:rtl; transition: background 0.2s;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <span style="font-weight:700; color:#fff; font-size:0.88rem;">${t.senderName}</span>
+          ${badge}
+        </div>
+        <span style="font-size:0.75rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; text-align:right;">${t.lastMsg.text}</span>
+      </div>
+    `;
+  }).join('');
+};
+
+window.selectFloatingAdminChatThread = async function(userId, senderName) {
+  window._activeFloatingAdminChatThreadId = userId;
+  
+  // Mark user messages as read in this thread
+  let localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  let changed = false;
+  localMsgs.forEach(m => {
+    if (m.userId === userId && !m.isAdmin && !m.read) {
+      m.read = true;
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+    checkUnreadSupportMessages();
+  }
+
+  loadFloatingAdminChats();
+
+  const areaEl = document.getElementById('floating-admin-chat-area');
+  if (!areaEl) return;
+
+  areaEl.innerHTML = `
+    <div id="floating-admin-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:12px; background:rgba(0,0,0,0.15); border-radius:12px; border: 1px solid rgba(255,255,255,0.05);">
+      <div style="text-align:center; color:#86868b; font-size:0.85rem;">טוען הודעות... 💬</div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="floating-admin-reply-input" class="admin-input" placeholder="כתוב מענה למשתמש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendFloatingAdminChatReply('${userId}')">
+      <button onclick="sendFloatingAdminChatReply('${userId}')" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#0071e3; color:#fff; border:none; font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">שלח</button>
+    </div>
+  `;
+
+  await syncFloatingAdminActiveChat(userId);
+};
+
+window.syncFloatingAdminActiveChat = async function(userId) {
+  const logEl = document.getElementById('floating-admin-chat-messages');
+  if (!logEl || window._activeFloatingAdminChatThreadId !== userId) return;
+
+  let allMsgs = [];
+  if (window.fbGetDocs && window.fbDb) {
+    try {
+      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+      snap.forEach(doc => allMsgs.push(doc.data()));
+    } catch(e) {}
+  }
+  if (allMsgs.length === 0) {
+    allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  }
+
+  const threadMsgs = allMsgs.filter(m => m.userId === userId);
+  threadMsgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  if (threadMsgs.length === 0) {
+    logEl.innerHTML = '<div style="text-align:center; padding:20px; color:#86868b;">אין הודעות בשיחה זו</div>';
+    return;
+  }
+
+  logEl.innerHTML = threadMsgs.map(m => {
+    const isMe = m.isAdmin;
+    const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const bubbleBg = isMe ? '#0071e3' : 'rgba(255, 255, 255, 0.08)';
+    const textColor = '#ffffff';
+    const align = isMe ? 'flex-end' : 'flex-start';
+    const senderName = isMe ? 'Admin Support' : m.senderName;
+    return `
+      <div style="background:${bubbleBg}; color:${textColor}; padding:8px 12px; border-radius:12px; align-self:${align}; max-width:85%; font-size:0.88rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); text-align:right; direction:rtl;">
+        <span style="font-weight: 500; font-size: 0.75rem; opacity: 0.7; color: ${isMe ? '#ffffff' : '#b0b0b5'}">${senderName}</span>
+        <span style="white-space: pre-wrap; word-break: break-word; text-align: right;">${m.text}</span>
+        <span style="font-size:0.65rem; opacity:0.5; align-self:flex-end; color: ${isMe ? '#ffffff' : '#b0b0b5'}">${timeStr}</span>
+      </div>
+    `;
+  }).join('');
+
+  logEl.scrollTop = logEl.scrollHeight;
+};
+
+window.sendFloatingAdminChatReply = async function(userId) {
+  const input = document.getElementById('floating-admin-reply-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const timestamp = new Date().toISOString();
+  const replyObj = {
+    userId: userId,
+    senderName: 'Admin Support',
+    text: text,
+    timestamp: timestamp,
+    isAdmin: true,
+    read: true
+  };
+
+  if (window.fbAddDoc && window.fbDb) {
+    try {
+      await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), replyObj);
+    } catch(e) {
+      console.warn('[DirectChatAdminFloating] Firestore reply save failed:', e);
+    }
+  }
+
+  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  localMsgs.push(replyObj);
+  localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+
+  input.value = '';
+  await syncFloatingAdminActiveChat(userId);
+  await loadFloatingAdminChats();
 };
 
