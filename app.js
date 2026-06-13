@@ -9888,10 +9888,12 @@ let drawerChatRefreshInterval = null;
 
 window.toggleMessagesDrawer = function() {
   const drawer = document.getElementById('messages-drawer');
+  const pillNav = document.getElementById('floating-pill-nav');
   if (!drawer) return;
   
   if (drawer.classList.contains('active')) {
     drawer.classList.remove('active');
+    if (pillNav) pillNav.classList.remove('hidden-state');
     if (drawerChatRefreshInterval) {
       clearInterval(drawerChatRefreshInterval);
       drawerChatRefreshInterval = null;
@@ -9905,6 +9907,9 @@ window.toggleMessagesDrawer = function() {
     const forums = document.getElementById('forums-drawer');
     if (forums) forums.classList.remove('active');
     
+    // Hide the floating bottom pill menu to not interfere with the conversations view
+    if (pillNav) pillNav.classList.add('hidden-state');
+
     // Set default view state when drawer opens (placeholder on left if no chat selected)
     const placeholder = document.getElementById('drawer-chat-placeholder-view');
     const wrapper = document.getElementById('drawer-chat-active-wrapper');
@@ -17207,7 +17212,7 @@ window.sendFloatingAdminChatReply = async function(userId) {
    Polls supportDirectMessages and pops a notification card + soft chime
    whenever a NEW reply from the manager (admin) arrives for this user. */
 (function initManagerReplyNotifications() {
-  let lastAdminUnread = null; // null = first run, don't notify retroactively
+  let seenAdminIds = null; // null = first run, record-only (no retroactive popups)
 
   function softChime() {
     try {
@@ -17280,18 +17285,27 @@ window.sendFloatingAdminChatReply = async function(userId) {
     }
 
     const adminUnread = msgs.filter(m => m.isAdmin && !m.read);
-    const count = adminUnread.length;
 
     // refresh the badge through the existing system
     if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
 
-    // notify only when the count grew and chat isn't already open on direct mode
+    // id-based detection: notify once per never-seen admin message.
+    // On the very first poll we just record what's already there (no
+    // retroactive popups), so the comparison can't be fooled by timing
+    // or by Firestore-vs-localStorage differences.
+    const idOf = m => `${m.timestamp}|${(m.text || '').slice(0, 24)}`;
     const chatOpen = window._supportChatMode === 'direct';
-    if (lastAdminUnread !== null && count > lastAdminUnread && !chatOpen) {
-      const newest = adminUnread.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+    if (seenAdminIds === null) {
+      seenAdminIds = new Set(adminUnread.map(idOf));
+      return;
+    }
+    const fresh = adminUnread.filter(m => !seenAdminIds.has(idOf(m)));
+    fresh.forEach(m => seenAdminIds.add(idOf(m)));
+    if (fresh.length > 0 && !chatOpen) {
+      const newest = fresh.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
       popNotif(newest);
     }
-    lastAdminUnread = count;
   }
 
   function start() {
