@@ -10459,12 +10459,19 @@ window.updateAdminEditBar = function() {
   const bar = document.getElementById('admin-live-edit-bar');
   if (!bar) return;
   const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
-  bar.style.display = currentIsAdmin ? 'flex' : 'none';
+  const isCollapsed = localStorage.getItem('admin_bar_collapsed') === 'true';
   
-  if (currentIsAdmin) {
+  if (currentIsAdmin && !isCollapsed) {
+    bar.style.display = 'flex';
     document.body.classList.add('admin-bar-active');
   } else {
+    bar.style.display = 'none';
     document.body.classList.remove('admin-bar-active');
+  }
+  
+  const restoreBtn = document.getElementById('restore-admin-bar-btn');
+  if (restoreBtn) {
+    restoreBtn.style.display = (currentIsAdmin && isCollapsed) ? 'flex' : 'none';
   }
   
   const toggleBtn = document.getElementById('admin-bar-toggle-edit');
@@ -10473,6 +10480,16 @@ window.updateAdminEditBar = function() {
     toggleBtn.textContent = active ? 'צא ממצב עריכה' : 'מצב עריכה';
     toggleBtn.style.background = active ? '#ff453a' : 'rgba(255,255,255,0.05)';
   }
+};
+
+window.collapseAdminBar = function() {
+  localStorage.setItem('admin_bar_collapsed', 'true');
+  window.updateAdminEditBar();
+};
+
+window.restoreAdminBar = function() {
+  localStorage.removeItem('admin_bar_collapsed');
+  window.updateAdminEditBar();
 };
 
 window.toggleEditModeBtn = function() {
