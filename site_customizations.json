@@ -42,7 +42,12 @@
   },
   "__pageVisibility__": {
     "shop": true,
-    "b2b": true
+    "b2b": false,
+    "realestate": false,
+    "uber": false,
+    "sharing": false,
+    "deliveries": false,
+    "bets": false
   },
   "[data-admin-id=\"container-0\"]": {
     "order": [

@@ -9850,8 +9850,8 @@ window.updateMessagesBadge = async function() {
       snap.forEach(doc => {
         const data = doc.data();
         const msgs = data.messages || [];
-        // Count messages NOT sent by me that are unread
-        const unread = msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+        // Count messages NOT sent by me that are explicitly unread (read === false)
+        const unread = msgs.filter(m => m.senderEmail !== currentUser.email && m.read === false).length;
         totalUnreadMessages += unread;
         // Keep local cache up to date
         localStorage.setItem(`real_chat_messages_${doc.id}`, JSON.stringify(msgs));
@@ -9864,7 +9864,7 @@ window.updateMessagesBadge = async function() {
           if (otherEmail === currentUser.email) return;
           const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
           const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-          totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+          totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && m.read === false).length;
         });
       } catch(e2) {}
     }
@@ -9876,7 +9876,7 @@ window.updateMessagesBadge = async function() {
         if (otherEmail === currentUser.email) return;
         const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
         const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && m.read === false).length;
       });
     } catch(e) {}
   }
@@ -9897,8 +9897,8 @@ window.updateMessagesBadge = async function() {
     const myId = currentUser.email;
     const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
     supportUnread = isUserAdmin
-      ? sup.filter(m => !m.isAdmin && !m.read).length
-      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read).length;
+      ? sup.filter(m => !m.isAdmin && m.read === false).length
+      : sup.filter(m => m.userId === myId && m.isAdmin && m.read === false).length;
   } catch(e) {}
 
   const grandTotal = totalUnreadMessages + supportUnread;
