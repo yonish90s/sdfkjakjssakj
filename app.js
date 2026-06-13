@@ -9990,16 +9990,20 @@ window.updateMessagesBadge = async function() {
   // manager — still show the שיחות badge for unread manager replies.
   if (!currentUser || !currentUser.email) {
     let guestSupportUnread = 0;
+    let guestPending = 0;
     try {
       const sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
       const myId = (typeof getSupportUserId === 'function') ? getSupportUserId() : null;
       const lastClearTime = parseInt(localStorage.getItem('lastSupportBadgeClearTime') || '0');
       guestSupportUnread = sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime)).length;
+      guestPending = sup.filter(m => m.userId === myId && !m.isAdmin && !m.read).length;
     } catch(e) {}
     ['messages-nav-badge', 'floating-support-badge', 'support-badge'].forEach(id => {
       const b = document.getElementById(id);
       if (b) { b.textContent = guestSupportUnread; b.style.display = guestSupportUnread > 0 ? 'flex' : 'none'; }
     });
+    const gdot = document.getElementById('floating-support-dot');
+    if (gdot) gdot.style.display = (guestSupportUnread === 0 && guestPending > 0) ? 'block' : 'none';
     return;
   }
 
@@ -10036,6 +10040,18 @@ window.updateMessagesBadge = async function() {
 
   const grandTotal = totalUnreadMessages + supportUnread;
 
+  // "Pending" = a message I SENT that the other side hasn't read yet.
+  // Shown as a small red dot so the user gets feedback that their message
+  // is out and waiting (like a single tick in WhatsApp).
+  let pending = 0;
+  try {
+    const sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    pending = isUserAdmin
+      ? sup.filter(m => m.isAdmin && !m.read).length            // admin's replies not yet read by the user
+      : sup.filter(m => m.userId === currentUser.email && !m.isAdmin && !m.read).length; // my messages not yet read by admin
+  } catch(e) {}
+
   let unreadAlerts = 0;
   try {
     const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
@@ -10058,6 +10074,11 @@ window.updateMessagesBadge = async function() {
       b.style.display = grandTotal > 0 ? 'flex' : 'none';
     }
   });
+
+  // red dot for pending (sent-but-unread) messages — only when there is no
+  // number badge already showing, so we never show both at once
+  const dot = document.getElementById('floating-support-dot');
+  if (dot) dot.style.display = (grandTotal === 0 && pending > 0) ? 'block' : 'none';
 };
 
 window.checkInboxUnreadMessages = function() {
