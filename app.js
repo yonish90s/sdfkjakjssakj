@@ -10555,16 +10555,21 @@ window.sendDrawerMessage = async function() {
       read: false
     };
     
+    let savedToCloud = false;
     if (window.fbAddDoc && window.fbDb) {
       try {
         await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), replyObj);
+        savedToCloud = true;
       } catch(e) {}
     }
-    
-    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-    localMsgs.push(replyObj);
-    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
-    
+
+    // avoid the duplicate: onSnapshot adds the cloud copy once
+    if (!savedToCloud) {
+      const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      localMsgs.push(replyObj);
+      localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+    }
+
     selectDrawerChatUser(activeDrawerChatUserId);
     return;
   }
@@ -11288,18 +11293,24 @@ async function sendDirectChatMessage() {
   };
 
   // 1. Try to save to Firestore
+  let savedToCloud = false;
   if (window.fbAddDoc && window.fbDb) {
     try {
       await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), msgObj);
+      savedToCloud = true;
     } catch(e) {
       console.warn('[DirectChat] Firestore save failed, local fallback:', e);
     }
   }
 
-  // 2. Save to localstorage array
-  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-  localMsgs.push(msgObj);
-  localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  // 2. Only push to localStorage when the cloud write FAILED. When it
+  // succeeds, the onSnapshot listener adds the message exactly once —
+  // pushing here as well created a duplicate (the message sent twice).
+  if (!savedToCloud) {
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    localMsgs.push(msgObj);
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  }
 
   input.value = '';
   loadDirectMessages();
@@ -11575,18 +11586,23 @@ async function sendAdminDirectReply(userId) {
   };
 
   // 1. Save to Firestore
+  let savedToCloud = false;
   if (window.fbAddDoc && window.fbDb) {
     try {
       await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), replyObj);
+      savedToCloud = true;
     } catch(e) {
       console.warn('[DirectChatAdmin] Firestore reply save failed:', e);
     }
   }
 
-  // 2. Save to localstorage fallback array
-  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-  localMsgs.push(replyObj);
-  localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  // 2. Only fall back to localStorage if the cloud write failed (onSnapshot
+  //    adds the cloud copy once — pushing here too duplicated the message)
+  if (!savedToCloud) {
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    localMsgs.push(replyObj);
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  }
 
   input.value = '';
   renderAdminDirectChats();
@@ -17510,17 +17526,21 @@ window.sendFloatingAdminChatReply = async function(userId) {
     read: false
   };
 
+  let savedToCloud = false;
   if (window.fbAddDoc && window.fbDb) {
     try {
       await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), replyObj);
+      savedToCloud = true;
     } catch(e) {
       console.warn('[DirectChatAdminFloating] Firestore reply save failed:', e);
     }
   }
 
-  const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-  localMsgs.push(replyObj);
-  localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  if (!savedToCloud) {
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    localMsgs.push(replyObj);
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  }
 
   input.value = '';
   await syncFloatingAdminActiveChat(userId);
@@ -17586,7 +17606,7 @@ window.sendFloatingAdminChatReply = async function(userId) {
     document.body.appendChild(n);
     requestAnimationFrame(() => requestAnimationFrame(() => n.classList.add('show')));
     setTimeout(() => { n.classList.remove('show'); setTimeout(() => n.remove(), 600); }, 7000);
-    softChime();
+    // sound intentionally disabled (user requested no chime)
   }
 
   const idOf = m => `${m.userId}|${m.timestamp}|${(m.text || '').slice(0, 24)}`;
