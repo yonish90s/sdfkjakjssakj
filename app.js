@@ -17206,15 +17206,20 @@ window.openFloatingPillPanel = function(type) {
       `;
       bodyEl.innerHTML = bodyHTML;
       titleEl.innerHTML = title;
-      
+
+      // mark the support thread as being actively read, so opening it here
+      // clears the unread badge (same as the full support window)
+      window._supportChatMode = 'direct';
+
       panel.style.display = 'flex';
       if (pillNav) pillNav.classList.add('hidden-state');
       setTimeout(() => {
         panel.classList.add('active');
         if (window.loadDirectMessages) window.loadDirectMessages();
+        if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
       }, 10);
     }
-  } 
+  }
   else if (type === 'ai') {
     title = '<i class="fas fa-robot"></i> עוזר קניות AI';
     bodyHTML = `
@@ -17243,7 +17248,10 @@ window.openFloatingPillPanel = function(type) {
 window.closeFloatingPillPanel = function() {
   const panel = document.getElementById('floating-pill-panel');
   const pillNav = document.getElementById('floating-pill-nav');
-  
+
+  // leave "actively reading" mode so future replies count toward the badge again
+  if (window._supportChatMode === 'direct') window._supportChatMode = 'assistant';
+
   // Removed interval clearing
   if (pillNav) {
     pillNav.classList.remove('hidden-state');
