@@ -10296,27 +10296,39 @@ window.selectDrawerChatUser = async function(userId) {
   window.updateMessagesBadge();
   renderDrawerChatUsersList();
   
-  // Load from Firestore
-  if (window.fbGetDoc && window.fbDb && window.fbDoc) {
+  // ── Load from Firestore and mark ALL incoming messages as read ──
+  if (window.fbGetDoc && window.fbDb && window.fbDoc && window.fbSetDoc) {
     try {
       const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
       const docSnap = await window.fbGetDoc(chatDocRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
         let dbMsgs = data.messages || [];
+        
+        // Mark every message sent by the OTHER person as read
+        let anyChanged = false;
         dbMsgs.forEach(m => {
-          if (m.senderEmail === userId) m.read = true;
+          if (m.senderEmail === userId && !m.read) {
+            m.read = true;
+            anyChanged = true;
+          }
         });
+        
         localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMsgs));
         renderDrawerMessagesStream(dbMsgs);
         
-        await window.fbSetDoc(chatDocRef, {
-          participants: [currentUser.email, userId],
-          messages: dbMsgs,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
+        // Only write back to Firestore if something actually changed
+        if (anyChanged) {
+          await window.fbSetDoc(chatDocRef, {
+            participants: [currentUser.email, userId],
+            messages: dbMsgs,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
         
+        // Update badge AFTER writing read state to cloud
         window.updateMessagesBadge();
+        renderDrawerChatUsersList();
       }
     } catch(e) {}
   }
@@ -10367,19 +10379,28 @@ async function syncDrawerActiveChatSilent(userId) {
       let dbMessages = data.messages || [];
       const currentLocal = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
       
-      if (dbMessages.length !== currentLocal.length) {
-        dbMessages.forEach(m => {
-          if (m.senderEmail === userId) m.read = true;
-        });
+      // Mark all incoming messages as read (user has the chat open)
+      let anyChanged = false;
+      dbMessages.forEach(m => {
+        if (m.senderEmail === userId && !m.read) {
+          m.read = true;
+          anyChanged = true;
+        }
+      });
+
+      const newMessagesArrived = dbMessages.length !== currentLocal.length;
+
+      if (newMessagesArrived || anyChanged) {
         localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
-        renderDrawerMessagesStream(dbMessages);
+        if (newMessagesArrived) renderDrawerMessagesStream(dbMessages);
         
-        await window.fbSetDoc(chatDocRef, {
-          participants: [currentUser.email, userId],
-          messages: dbMessages,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        
+        if (anyChanged) {
+          await window.fbSetDoc(chatDocRef, {
+            participants: [currentUser.email, userId],
+            messages: dbMessages,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
         window.updateMessagesBadge();
       }
     }
