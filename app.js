@@ -9905,6 +9905,17 @@ window.toggleMessagesDrawer = function() {
     const forums = document.getElementById('forums-drawer');
     if (forums) forums.classList.remove('active');
     
+    // Set default view state when drawer opens (placeholder on left if no chat selected)
+    const placeholder = document.getElementById('drawer-chat-placeholder-view');
+    const wrapper = document.getElementById('drawer-chat-active-wrapper');
+    if (!activeDrawerChatUserId) {
+      if (placeholder) placeholder.style.display = 'flex';
+      if (wrapper) wrapper.style.display = 'none';
+    } else {
+      if (placeholder) placeholder.style.display = 'none';
+      if (wrapper) wrapper.style.display = 'flex';
+    }
+
     drawer.classList.add('active');
     renderDrawerChatUsersList();
     
@@ -10124,11 +10135,16 @@ window.showDrawerUsersList = function() {
   const sidebar = document.getElementById('drawer-chat-users-sidebar');
   const activePane = document.getElementById('drawer-chat-active-pane');
   const backBtn = document.getElementById('drawer-chat-back-btn');
+  const placeholder = document.getElementById('drawer-chat-placeholder-view');
+  const wrapper = document.getElementById('drawer-chat-active-wrapper');
+  
+  if (placeholder) placeholder.style.display = 'flex';
+  if (wrapper) wrapper.style.display = 'none';
   
   if (sidebar && activePane && backBtn) {
-    sidebar.style.display = 'flex';
-    activePane.style.display = 'none';
-    backBtn.style.display = 'none';
+    sidebar.classList.remove('mobile-hide');
+    activePane.classList.remove('mobile-show');
+    backBtn.classList.remove('mobile-show');
   }
   renderDrawerChatUsersList();
 };
@@ -17071,3 +17087,105 @@ window.sendFloatingAdminChatReply = async function(userId) {
   await loadFloatingAdminChats();
 };
 
+
+/* ─── Live notifications for manager replies ───
+   Polls supportDirectMessages and pops a notification card + soft chime
+   whenever a NEW reply from the manager (admin) arrives for this user. */
+(function initManagerReplyNotifications() {
+  let lastAdminUnread = null; // null = first run, don't notify retroactively
+
+  function softChime() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const notes = [880, 1175];
+      notes.forEach((f, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = f;
+        o.connect(g); g.connect(ctx.destination);
+        const t = ctx.currentTime + i * 0.12;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+        o.start(t); o.stop(t + 0.3);
+      });
+      setTimeout(() => ctx.close().catch(() => {}), 800);
+    } catch (e) {}
+  }
+
+  function popNotif(lastMsg) {
+    const old = document.getElementById('mgr-notif');
+    if (old) old.remove();
+
+    const n = document.createElement('div');
+    n.id = 'mgr-notif';
+    const preview = (lastMsg && lastMsg.text ? lastMsg.text : 'הודעה חדשה').slice(0, 90);
+    n.innerHTML = `
+      <button class="mgr-close" title="סגור">&times;</button>
+      <div class="mgr-avatar">👨‍💼</div>
+      <div style="min-width:0;">
+        <div class="mgr-title">📩 הודעה חדשה מהמנהל</div>
+        <div class="mgr-text">${preview}</div>
+      </div>`;
+    n.querySelector('.mgr-close').addEventListener('click', e => {
+      e.stopPropagation();
+      n.classList.remove('show');
+      setTimeout(() => n.remove(), 600);
+    });
+    n.addEventListener('click', () => {
+      n.classList.remove('show');
+      setTimeout(() => n.remove(), 600);
+      if (typeof openCustomerServiceModal === 'function') openCustomerServiceModal();
+    });
+    document.body.appendChild(n);
+    requestAnimationFrame(() => requestAnimationFrame(() => n.classList.add('show')));
+    setTimeout(() => { n.classList.remove('show'); setTimeout(() => n.remove(), 600); }, 7000);
+    softChime();
+  }
+
+  async function poll() {
+    // never notify the admin about their own dashboard
+    if (typeof isAdmin !== 'undefined' && isAdmin === true) return;
+    const userId = (typeof getSupportUserId === 'function') ? getSupportUserId() : null;
+    if (!userId) return;
+
+    let msgs = [];
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
+        snap.forEach(doc => { const d = doc.data(); if (d.userId === userId) msgs.push(d); });
+      } catch (e) {}
+    }
+    if (msgs.length === 0) {
+      const local = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      msgs = local.filter(m => m.userId === userId);
+    }
+
+    const adminUnread = msgs.filter(m => m.isAdmin && !m.read);
+    const count = adminUnread.length;
+
+    // refresh the badge through the existing system
+    if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
+
+    // notify only when the count grew and chat isn't already open on direct mode
+    const chatOpen = window._supportChatMode === 'direct';
+    if (lastAdminUnread !== null && count > lastAdminUnread && !chatOpen) {
+      const newest = adminUnread.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+      popNotif(newest);
+    }
+    lastAdminUnread = count;
+  }
+
+  function start() {
+    poll();
+    setInterval(poll, 12000);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(start, 2000));
+  } else {
+    setTimeout(start, 2000);
+  }
+})();
