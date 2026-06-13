@@ -10048,19 +10048,14 @@ window.updateMessagesBadge = async function() {
   const sidebarDot = document.getElementById('messages-unread-badge');
   if (sidebarDot) sidebarDot.style.display = (grandTotal > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
 
-  ['messages-nav-badge'].forEach(id => {
+  // The "שיחות" pill is now the single entry point for ALL conversations,
+  // so show the full unread total (peer chats + support) on it — otherwise
+  // unread peer messages would have no visible red counter anywhere.
+  ['messages-nav-badge', 'floating-support-badge', 'support-badge'].forEach(id => {
     const b = document.getElementById(id);
     if (b) {
       b.textContent = grandTotal;
       b.style.display = grandTotal > 0 ? 'flex' : 'none';
-    }
-  });
-  
-  ['floating-support-badge', 'support-badge'].forEach(id => {
-    const b = document.getElementById(id);
-    if (b) {
-      b.textContent = supportUnread;
-      b.style.display = supportUnread > 0 ? 'flex' : 'none';
     }
   });
 };
@@ -17554,27 +17549,8 @@ window.sendFloatingAdminChatReply = async function(userId) {
 (function initManagerReplyNotifications() {
   let seenAdminIds = null; // null = first run, record-only (no retroactive popups)
 
-  function softChime() {
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
-      const notes = [880, 1175];
-      notes.forEach((f, i) => {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = 'sine';
-        o.frequency.value = f;
-        o.connect(g); g.connect(ctx.destination);
-        const t = ctx.currentTime + i * 0.12;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-        o.start(t); o.stop(t + 0.3);
-      });
-      setTimeout(() => ctx.close().catch(() => {}), 800);
-    } catch (e) {}
-  }
+  // Sound permanently disabled — the site plays no sounds at all.
+  function softChime() { /* no-op */ }
 
   function popNotif(lastMsg, opts) {
     opts = opts || {};
