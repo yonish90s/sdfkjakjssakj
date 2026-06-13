@@ -9943,8 +9943,15 @@ async function renderDrawerChatUsersList() {
   const searchInput = document.getElementById('drawer-chat-search');
   const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
   
-  let html = '';
+  // Get pinned IDs from localstorage
+  let pinnedIds = [];
+  try {
+    pinnedIds = JSON.parse(localStorage.getItem('pinned_conversations') || '[]');
+  } catch(e) {}
+
   let totalUnread = 0;
+  const processedUsers = [];
+
   for (const u of users) {
     if (currentUser && u.id === currentUser.email) continue;
     if (query && !u.name.toLowerCase().includes(query)) continue;
@@ -9971,35 +9978,122 @@ async function renderDrawerChatUsersList() {
     totalUnread += unreadCount;
     
     const isSelected = activeDrawerChatUserId === u.id;
-    
-    const grad = window.fxGradientFor(u.name);
+    const isPinned = pinnedIds.includes(u.id);
+
+    processedUsers.push({
+      ...u,
+      unreadCount,
+      isSelected,
+      isPinned
+    });
+  }
+
+  const pinnedUsers = processedUsers.filter(u => u.isPinned);
+  const unpinnedUsers = processedUsers.filter(u => !u.isPinned);
+
+  let html = '';
+
+  // 1. Render Pinned Chats Section (Grid of half-size cubes)
+  if (pinnedUsers.length > 0) {
     html += `
-      <div class="chat-user-card ${isSelected ? 'selected' : ''}" onclick="selectDrawerChatUser('${u.id}')" style="--card-g1:${grad[0]}; --card-g2:${grad[1]};">
-        <div class="chat-avatar-ring">
-          <img src="${u.avatar}" alt="">
-          <span class="chat-online-dot"></span>
-          ${unreadCount > 0 ? `<span class="chat-unread-pill">${unreadCount}</span>` : ''}
+      <div style="width:100%; direction:rtl; text-align:right;">
+        <div style="font-size:0.75rem; font-weight:700; color:#ff9500; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <i class="fas fa-thumbtack" style="font-size:0.8rem;"></i> שיחות נעוצות
         </div>
-        <div style="width:100%;">
-          <div class="chat-user-name">${u.name}</div>
-          <div class="chat-user-sub">${unreadCount > 0 ? `<span style="color:#ff6b61; font-weight:700;">${unreadCount} הודעות חדשות 🔥</span>` : '💬 הקש כדי לשוחח'}</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06);">
+    `;
+    
+    pinnedUsers.forEach(u => {
+      const badge = u.unreadCount > 0 ? `<span class="chat-unread-pill" style="position:absolute; bottom:6px; left:6px; min-width:14px; height:14px; font-size:8px; display:flex; align-items:center; justify-content:center; background:#ff3b30; color:#fff; border-radius:50%; font-weight:bold; border:1px solid #000;">${u.unreadCount}</span>` : '';
+      const borderStyle = u.isSelected ? 'border: 1.5px solid #ff9500; background:rgba(255,149,0,0.15);' : 'border: 1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);';
+      html += `
+        <div onclick="selectDrawerChatUser('${u.id}')" style="position:relative; width:80px; height:80px; border-radius:12px; ${borderStyle} display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;" class="pinned-chat-widget">
+          <img src="${u.avatar}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; margin-bottom:4px;">
+          <span style="font-size:0.7rem; color:#fff; font-weight:700; text-align:center; max-width:68px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.name.split(' ')[0]}</span>
+          <!-- Unpin toggle -->
+          <button onclick="togglePinChat('${u.id}', event)" style="position:absolute; top:4px; right:4px; background:none; border:none; color:#ff9500; font-size:0.7rem; cursor:pointer; padding:0;">
+            <i class="fas fa-thumbtack"></i>
+          </button>
+          ${badge}
+        </div>
+      `;
+    });
+
+    html += `
         </div>
       </div>
     `;
   }
-  
+
+  // 2. Render Unpinned Chats Section (Compact horizontal rows)
+  if (unpinnedUsers.length > 0) {
+    html += `
+      <div style="width:100%; direction:rtl; text-align:right;">
+        <div style="font-size:0.75rem; font-weight:700; color:#86868b; text-transform:uppercase; margin-bottom:10px;">
+          כל השיחות
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+    `;
+
+    unpinnedUsers.forEach(u => {
+      const isSelected = u.isSelected;
+      const border = isSelected ? 'border: 1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06);' : 'border: 1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02);';
+      const badge = u.unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; min-width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; margin-right:auto;">${u.unreadCount}</span>` : '';
+      html += `
+        <div class="chat-user-row" onclick="selectDrawerChatUser('${u.id}')" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:10px; ${border} cursor:pointer; transition:all 0.15s; direction:rtl; text-align:right;">
+          <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+            <div style="position:relative; flex-shrink:0;">
+              <img src="${u.avatar}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+              <span class="chat-online-dot" style="bottom:0; right:0; border:1px solid #141416; width:8px; height:8px;"></span>
+            </div>
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:0.8rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
+            </div>
+            ${badge}
+          </div>
+          <button onclick="togglePinChat('${u.id}', event)" style="background:none; border:none; color:#86868b; cursor:pointer; padding:4px; opacity:0.3; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">
+            <i class="fas fa-thumbtack" style="transform: rotate(45deg); font-size:0.75rem;"></i>
+          </button>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  if (pinnedUsers.length === 0 && unpinnedUsers.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:30px; color:#86868b; font-size:0.85rem;">No active conversations found</div>`;
+  } else {
+    container.innerHTML = html;
+  }
+
   const navBadge = document.getElementById('messages-nav-badge');
   if (navBadge) {
     navBadge.textContent = totalUnread;
     navBadge.style.display = totalUnread > 0 ? 'flex' : 'none';
   }
-  
-  if (!html) {
-    container.innerHTML = `<div style="text-align:center; padding:30px; color:#86868b; font-size:0.85rem;">No active conversations found</div>`;
-  } else {
-    container.innerHTML = html;
-  }
 }
+
+// Global pin toggle function
+window.togglePinChat = function(userId, event) {
+  if (event) event.stopPropagation(); // prevent clicking card triggering chat selection
+  let pinned = [];
+  try {
+    pinned = JSON.parse(localStorage.getItem('pinned_conversations') || '[]');
+  } catch(e) {}
+
+  if (pinned.includes(userId)) {
+    pinned = pinned.filter(id => id !== userId);
+  } else {
+    pinned.push(userId);
+  }
+  localStorage.setItem('pinned_conversations', JSON.stringify(pinned));
+  renderDrawerChatUsersList();
+};
+
 
 window.filterDrawerChatUsers = function() {
   renderDrawerChatUsersList();
@@ -10008,15 +10102,19 @@ window.filterDrawerChatUsers = function() {
 window.selectDrawerChatUser = async function(userId) {
   activeDrawerChatUserId = userId;
   
-  // Show active pane, hide sidebar list on mobile layout inside drawer
   const sidebar = document.getElementById('drawer-chat-users-sidebar');
   const activePane = document.getElementById('drawer-chat-active-pane');
   const backBtn = document.getElementById('drawer-chat-back-btn');
+  const placeholder = document.getElementById('drawer-chat-placeholder-view');
+  const wrapper = document.getElementById('drawer-chat-active-wrapper');
+  
+  if (placeholder) placeholder.style.display = 'none';
+  if (wrapper) wrapper.style.display = 'flex';
   
   if (sidebar && activePane && backBtn) {
-    sidebar.style.display = 'none';
-    activePane.style.display = 'flex';
-    backBtn.style.display = 'flex';
+    sidebar.classList.add('mobile-hide');
+    activePane.classList.add('mobile-show');
+    backBtn.classList.add('mobile-show');
   }
 
   const isSupport = (userId === 'soki_support' || userId.endsWith('_support'));
