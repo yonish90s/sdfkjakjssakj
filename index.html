@@ -4866,7 +4866,7 @@
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-  import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, setDoc, getDoc, where } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, setDoc, getDoc, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
   
   // Expose to global window for app.js
   window.fbDb = db;
@@ -4881,6 +4881,7 @@
   window.fbQuery = query;
   window.fbOrderBy = orderBy;
   window.fbWhere = where;
+  window.fbOnSnapshot = onSnapshot;
 
   let mMode='login',mEmail='',mPw='',mName='',mTimer=null;
   const overlay=document.getElementById('auth-modal-overlay');

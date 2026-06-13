@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────
+// SOKI — Firestore Security Rules
+//
+// WHY THIS FILE EXISTS:
+// Messages (support chat + peer-to-peer conversations) are stored in
+// Firestore so they sync across devices. If the rules are too strict,
+// a message a user sends never reaches the server — it only lives in
+// that browser's local SDK cache, so the manager (a different session)
+// never sees it. These rules let the messaging features work while
+// still requiring writers to be signed in where it matters.
+//
+// HOW TO APPLY:
+//   1. Open https://console.firebase.google.com
+//   2. Pick the project "my-gallery-app-ca7ef"
+//   3. Build → Firestore Database → Rules tab
+//   4. Paste the contents of this file and click "Publish"
+// ─────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Support chat: user <-> manager.
+    // Guests (no Firebase auth) also need to open a ticket, so creating
+    // a message is open; reading the whole collection is what lets the
+    // manager see every conversation.
+    match /supportDirectMessages/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if request.auth != null;
+    }
+
+    // Peer-to-peer conversations (the "Conversations" drawer).
+    // The doc id is a room key built from both participant emails.
+    match /chats/{roomId} {
+      allow read, write: if true;
+    }
+
+    // Public registry of users (names + avatars) shown in chat lists
+    // and in the "new users" strip.
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Per-user cloud backup of personal data (saved articles, history…).
+    match /userData/{userId} {
+      allow read, write: if true;
+    }
+
+    // Articles managed from the admin panel and read by everyone.
+    match /articles/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Delivery tracking.
+    match /deliveries/{docId} {
+      allow read, write: if true;
+    }
+
+    // Catch-all for any other collection the app uses. Tighten later if
+    // you add sensitive data — see the note at the bottom.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// NOTE ON SECURITY:
+// These rules are intentionally permissive so every messaging and
+// sync feature works immediately. They are fine for a demo / early
+// launch. Before a serious production launch you should lock writes
+// behind Firebase Authentication, e.g.:
+//
+//   allow create: if request.auth != null
+//                 && request.resource.data.userId == request.auth.token.email;
+//
+// and gate the manager's "read everything" behind an admin custom
+// claim instead of "allow read: if true".
+// ─────────────────────────────────────────────────────────────

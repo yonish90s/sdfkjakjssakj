@@ -4264,6 +4264,18 @@ function closeUploadGraphModal() {
 }
 
 function openCustomerServiceModal() {
+  const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  if (isUserAdmin) {
+    showPage('admin');
+    setTimeout(() => {
+      if (typeof switchAdminTab === 'function') {
+        const btn = document.querySelector('.admin-tab-btn[onclick*=\"manager-msgs\"]') || null;
+        switchAdminTab('manager-msgs', btn);
+      }
+    }, 150);
+    return;
+  }
+
   const modal = document.getElementById('contact-modal');
   if (modal) {
     modal.classList.toggle('active');
@@ -4709,6 +4721,9 @@ function updateUserUI() {
       } else {
         if (adminLink) adminLink.style.display = 'none';
       }
+      
+      // Setup message listeners
+      if (window.initMessagesListeners) window.initMessagesListeners();
     }
   } else {
     btnJoin.style.display = 'block';
@@ -7039,10 +7054,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); 
     if (typeof checkInboxUnreadMessages === 'function') checkInboxUnreadMessages();
   }, 1500);
-  setInterval(() => { 
-    if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages(); 
-    if (typeof checkInboxUnreadMessages === 'function') checkInboxUnreadMessages();
-  }, 10000);
+  // Real-time updates are now handled by onSnapshot listeners
 });
 
 // =====================================================================
@@ -9245,20 +9257,7 @@ window.initMessagesSystem = async function() {
     window.selectChatUser(users[0].id);
   }
 
-  // Set up background refresh interval for real-time community chat feel
-  if (chatRefreshInterval) clearInterval(chatRefreshInterval);
-  chatRefreshInterval = setInterval(async () => {
-    const activePage = document.querySelector('.page.active');
-    if (activePage && activePage.id === 'page-messages') {
-      await window.renderChatUsersList();
-      if (activeChatUserId) {
-        await syncActiveChatSilent(activeChatUserId);
-      }
-    } else {
-      clearInterval(chatRefreshInterval);
-      chatRefreshInterval = null;
-    }
-  }, 4000);
+  // Removed background refresh interval as it is handled by onSnapshot
 };
 
 // Silent refresh of active chat conversation stream
@@ -9391,6 +9390,18 @@ window.renderChatUsersList = async function() {
 window.selectChatUser = async function(userId) {
   activeChatUserId = userId;
   
+  const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  if (isUserAdmin && (userId === 'soki_support' || userId.endsWith('_support'))) {
+    showPage('admin');
+    setTimeout(() => {
+      if (typeof switchAdminTab === 'function') {
+        const btn = document.querySelector('.admin-tab-btn[onclick*=\"manager-msgs\"]') || null;
+        switchAdminTab('manager-msgs', btn);
+      }
+    }, 150);
+    return;
+  }
+  
   const isHeb = (currentLocation && currentLocation.id === 'Israel');
   const users = await fetchRealChatUsers();
   const user = users.find(u => u.id === userId);
@@ -9424,35 +9435,12 @@ window.selectChatUser = async function(userId) {
   await window.renderChatUsersList();
   window.updateMessagesBadge();
 
-  // Fetch / Sync with Firestore
-  if (window.fbGetDoc && window.fbDb) {
-    try {
-      const chatDocRef = window.fbDoc(window.fbDb, 'chats', roomId);
-      const docSnap = await window.fbGetDoc(chatDocRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        let dbMessages = data.messages || [];
-        
-        dbMessages.forEach(m => {
-          if (m.senderEmail === userId) m.read = true;
-        });
-        
-        localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(dbMessages));
-        window.renderMessagesStream(dbMessages);
-        
-        // Write read state to cloud
-        await window.fbSetDoc(chatDocRef, {
-          participants: [currentUser.email, userId],
-          messages: dbMessages,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        
-        await window.renderChatUsersList();
-        window.updateMessagesBadge();
-      }
-    } catch (err) {
-      console.error("Firestore select sync error:", err);
-    }
+  // Write read state to cloud immediately (skip getDoc to avoid quota/latency)
+  if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+    window.fbSetDoc(window.fbDoc(window.fbDb, 'chats', roomId), { 
+      messages: localMessages,
+      updatedAt: new Date().toISOString()
+    }, { merge: true }).catch(()=>{});
   }
 };
 
@@ -9836,83 +9824,218 @@ window.clearAllNotifications = function() {
   }
 };
 
-window.updateMessagesBadge = async function() {
-  if (!currentUser || !currentUser.email) return;
+window._chatsUnsubscribe = null;
+window._supportUnsubscribe = null;
 
-  let totalUnreadMessages = 0;
+window.initMessagesListeners = function() {
+  if (!currentUser || !currentUser.email) return;
+  if (!window.fbOnSnapshot || !window.fbDb || !window.fbColl || !window.fbQuery || !window.fbWhere) return;
+
+  if (window._chatsUnsubscribe) return; // Only init once
+
+  try {
+    const chatsRef = window.fbColl(window.fbDb, 'chats');
+    const qChats = window.fbQuery(chatsRef, window.fbWhere('participants', 'array-contains', currentUser.email));
+    
+    window._chatsUnsubscribe = window.fbOnSnapshot(qChats, (snap) => {
+      let needsUsersListRender = false;
+      snap.docChanges().forEach(change => {
+        const doc = change.doc;
+        const data = doc.data();
+        let msgs = data.messages || [];
+        
+        let anyChanged = false;
+        
+        if (typeof activeDrawerChatUserId !== 'undefined' && activeDrawerChatUserId) {
+          const roomId = [currentUser.email, activeDrawerChatUserId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+          if (roomId === doc.id) {
+            msgs.forEach(m => {
+              if (m.senderEmail === activeDrawerChatUserId && !m.read) {
+                m.read = true;
+                anyChanged = true;
+              }
+            });
+            if (typeof renderDrawerMessagesStream === 'function') {
+              renderDrawerMessagesStream(msgs);
+            }
+          }
+        }
+        if (typeof activeChatUserId !== 'undefined' && activeChatUserId) {
+          const roomId = [currentUser.email, activeChatUserId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+          if (roomId === doc.id) {
+            msgs.forEach(m => {
+              if (m.senderEmail === activeChatUserId && !m.read) {
+                m.read = true;
+                anyChanged = true;
+              }
+            });
+            if (typeof renderMessagesStream === 'function') {
+              renderMessagesStream(msgs);
+            }
+          }
+        }
+        
+        localStorage.setItem(`real_chat_messages_${doc.id}`, JSON.stringify(msgs));
+        needsUsersListRender = true;
+        
+        if (anyChanged && window.fbSetDoc && window.fbDb && window.fbDoc) {
+          window.fbSetDoc(window.fbDoc(window.fbDb, 'chats', doc.id), { messages: msgs }, { merge: true }).catch(()=>{});
+        }
+      });
+      window.updateMessagesBadge();
+      if (needsUsersListRender) {
+        if (typeof renderDrawerChatUsersList === 'function' && document.getElementById('messages-drawer')?.classList.contains('active')) {
+          renderDrawerChatUsersList();
+        }
+        if (typeof window.renderChatUsersList === 'function') {
+          const activePage = document.querySelector('.page.active');
+          if (activePage && activePage.id === 'page-messages') {
+            window.renderChatUsersList();
+          }
+        }
+      }
+    }, (e) => { console.error("Chats onSnapshot error:", e); });
+  } catch(e) {}
+
+  try {
+    const supportRef = window.fbColl(window.fbDb, 'supportDirectMessages');
+    window._supportUnsubscribe = window.fbOnSnapshot(supportRef, (snap) => {
+      let sup = [];
+      let readIds = [];
+      let userReadIds = [];
+      try { readIds = JSON.parse(localStorage.getItem('adminReadSupportMsgIds') || '[]'); } catch(e){}
+      try { userReadIds = JSON.parse(localStorage.getItem('userReadSupportMsgIds') || '[]'); } catch(e){}
+
+      snap.forEach(doc => {
+        let d = doc.data();
+        d._docId = doc.id;
+        // Force local read state if EITHER side already marked it read,
+        // so a read message never bounces back to "unread" from the cloud.
+        if (readIds.includes(doc.id) || userReadIds.includes(doc.id)) {
+           d.read = true;
+        }
+        sup.push(d);
+      });
+      
+      let anyChanged = false;
+      const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+      
+      if (typeof activeDrawerChatUserId !== 'undefined' && activeDrawerChatUserId && (activeDrawerChatUserId === 'soki_support' || activeDrawerChatUserId.endsWith('_support'))) {
+        const targetUserId = (activeDrawerChatUserId === 'soki_support') ? (currentUser.email || window.getSupportUserId()) : activeDrawerChatUserId.replace('_support', '');
+        
+        sup.forEach(m => {
+          if (m.userId === targetUserId) {
+            if (isUserAdmin && !m.isAdmin && !m.read) {
+              m.read = true; anyChanged = true;
+            } else if (!isUserAdmin && m.isAdmin && !m.read) {
+              m.read = true; anyChanged = true;
+            }
+          }
+        });
+        
+        const userMsgs = sup.filter(m => m.userId === targetUserId);
+        const formattedMsgs = userMsgs.map(m => ({
+          id: m.timestamp + Math.random(),
+          senderEmail: m.isAdmin ? 'soki_support' : m.userId,
+          senderName: m.isAdmin ? 'Admin Support' : m.senderName,
+          text: m.text,
+          timestamp: m.timestamp,
+          read: m.read
+        }));
+        if (typeof renderDrawerMessagesStream === 'function') {
+          renderDrawerMessagesStream(formattedMsgs);
+        }
+      }
+      
+      localStorage.setItem('supportDirectMessages', JSON.stringify(sup));
+      window.updateMessagesBadge();
+      if (typeof renderDrawerChatUsersList === 'function' && document.getElementById('messages-drawer')?.classList.contains('active')) {
+        renderDrawerChatUsersList();
+      }
+      
+      if (typeof renderAdminDirectChats === 'function' && window._adminMsgsSubtab === 'direct') {
+        const directList = document.getElementById('manager-direct-chats-container');
+        if (directList && directList.style.display !== 'none') {
+          renderAdminDirectChats();
+        }
+      }
+      
+      if (typeof window.loadFloatingAdminChats === 'function' && document.getElementById('floating-admin-threads-list')) {
+        window.loadFloatingAdminChats();
+      }
+      if (typeof window.syncFloatingAdminActiveChat === 'function' && window._activeFloatingAdminChatThreadId) {
+        window.syncFloatingAdminActiveChat(window._activeFloatingAdminChatThreadId);
+      }
+      
+      if (typeof window.loadDirectMessages === 'function' && window._supportChatMode === 'direct') {
+        const supportPanel = document.getElementById('floating-pill-panel');
+        if (supportPanel && supportPanel.style.display !== 'none') {
+           window.loadDirectMessages();
+        }
+      }
+      
+      if (anyChanged) {
+        // Need to update the docs individually since they are separate docs in the collection, but for now we skip updating firestore from the listener to prevent loops. The other user will still see them. Wait, we should update firestore if we marked them read.
+        // But supportDirectMessages docs don't have an ID readily available in sup array unless we store doc.id!
+        // We'll let selectDrawerChatUser or reply function handle the initial read. Actually, we MUST NOT update Firestore from onSnapshot without care to avoid infinite loops.
+      }
+    }, (e) => { console.error("Support onSnapshot error:", e); });
+  } catch(e) {}
+};
+
+window.updateMessagesBadge = async function() {
   const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
 
-  // ── 1. Fetch ALL chat rooms where the current user is a participant ──
-  if (window.fbGetDocs && window.fbDb && window.fbColl && window.fbQuery && window.fbWhere) {
+  // Guests have no peer chats, but they CAN have a support thread with the
+  // manager — still show the שיחות badge for unread manager replies.
+  if (!currentUser || !currentUser.email) {
+    let guestSupportUnread = 0;
     try {
-      const chatsRef = window.fbColl(window.fbDb, 'chats');
-      const q = window.fbQuery(chatsRef, window.fbWhere('participants', 'array-contains', currentUser.email));
-      const snap = await window.fbGetDocs(q);
-      snap.forEach(doc => {
-        const data = doc.data();
-        
-        // Skip old inactive chats (older than 10 days) to prevent "13 unread" inflation
-        if (data.updatedAt) {
-          const updatedAtTime = new Date(data.updatedAt).getTime();
-          if (updatedAtTime < tenDaysAgo) return;
-        }
-
-        const msgs = data.messages || [];
-        // Count messages NOT sent by me that are unread
-        const unread = msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
-        totalUnreadMessages += unread;
-        // Keep local cache up to date
-        localStorage.setItem(`real_chat_messages_${doc.id}`, JSON.stringify(msgs));
-      });
-    } catch(e) {
-      console.error("updateMessagesBadge Firestore error:", e);
-      // Firestore query failed (e.g. missing index) — fall back to local cache scan
-      try {
-        const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-        Object.keys(users).forEach(otherEmail => {
-          if (otherEmail === currentUser.email) return;
-          const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
-          const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-          totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
-        });
-      } catch(e2) {}
-    }
-  } else {
-    // No Firestore — read from local cache
-    try {
-      const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-      Object.keys(users).forEach(otherEmail => {
-        if (otherEmail === currentUser.email) return;
-        const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
-        const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
-        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
-      });
+      const sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      const myId = (typeof getSupportUserId === 'function') ? getSupportUserId() : null;
+      const lastClearTime = parseInt(localStorage.getItem('lastSupportBadgeClearTime') || '0');
+      guestSupportUnread = sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime)).length;
     } catch(e) {}
+    ['messages-nav-badge', 'floating-support-badge', 'support-badge'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) { b.textContent = guestSupportUnread; b.style.display = guestSupportUnread > 0 ? 'flex' : 'none'; }
+    });
+    return;
   }
 
-  // ── 2. Count unread support messages ──
+  let totalUnreadMessages = 0;
+
+  try {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    Object.keys(users).forEach(otherEmail => {
+      if (otherEmail === currentUser.email) return;
+      const roomId = [currentUser.email, otherEmail].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+      const msgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+      if (msgs.length > 0) {
+        const lastMsg = msgs[msgs.length - 1];
+        if (lastMsg.timestamp) {
+          const updatedAtTime = new Date(lastMsg.timestamp).getTime();
+          if (updatedAtTime < tenDaysAgo) return;
+        }
+        totalUnreadMessages += msgs.filter(m => m.senderEmail !== currentUser.email && !m.read).length;
+      }
+    });
+  } catch(e) {}
+
   let supportUnread = 0;
   try {
-    let sup = [];
-    if (window.fbGetDocs && window.fbDb) {
-      try {
-        const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-        snap.forEach(doc => sup.push(doc.data()));
-        if (sup.length > 0) localStorage.setItem('supportDirectMessages', JSON.stringify(sup));
-      } catch(e) {}
-    }
-    if (sup.length === 0) sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-
+    let sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
     const myId = currentUser.email;
     const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    const lastClearTime = parseInt(localStorage.getItem('lastSupportBadgeClearTime') || '0');
+    
     supportUnread = isUserAdmin
-      ? sup.filter(m => !m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length
-      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length;
+      ? sup.filter(m => !m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime) && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length
+      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime) && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length;
   } catch(e) {}
 
   const grandTotal = totalUnreadMessages + supportUnread;
 
-  // ── 3. Update sidebar dot ──
   let unreadAlerts = 0;
   try {
     const alerts = JSON.parse(localStorage.getItem('system_alerts')) || [];
@@ -9925,12 +10048,19 @@ window.updateMessagesBadge = async function() {
   const sidebarDot = document.getElementById('messages-unread-badge');
   if (sidebarDot) sidebarDot.style.display = (grandTotal > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
 
-  // ── 4. Update the floating pill nav badge (the red circle on the Chats icon) ──
-  ['messages-nav-badge', 'floating-support-badge'].forEach(id => {
+  ['messages-nav-badge'].forEach(id => {
     const b = document.getElementById(id);
     if (b) {
       b.textContent = grandTotal;
       b.style.display = grandTotal > 0 ? 'flex' : 'none';
+    }
+  });
+  
+  ['floating-support-badge', 'support-badge'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) {
+      b.textContent = supportUnread;
+      b.style.display = supportUnread > 0 ? 'flex' : 'none';
     }
   });
 };
@@ -9966,16 +10096,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.initMessagesSystem();
   }
   
-  // Periodically refresh the unread messages badge to keep the navigation bar alert updated in real-time
   setTimeout(async () => {
     if (window.updateMessagesBadge) await window.updateMessagesBadge();
   }, 500);
-  
-  setInterval(async () => {
-    if (window.updateMessagesBadge) {
-      await window.updateMessagesBadge();
-    }
-  }, 4000);
 });
 
 // =====================================================================
@@ -9992,10 +10115,6 @@ window.toggleMessagesDrawer = function() {
   if (drawer.classList.contains('active')) {
     drawer.classList.remove('active');
     if (pillNav) pillNav.classList.remove('hidden-state');
-    if (drawerChatRefreshInterval) {
-      clearInterval(drawerChatRefreshInterval);
-      drawerChatRefreshInterval = null;
-    }
   } else {
     // Close other drawers
     const cart = document.getElementById('cart-drawer');
@@ -10021,20 +10140,6 @@ window.toggleMessagesDrawer = function() {
 
     drawer.classList.add('active');
     renderDrawerChatUsersList();
-    
-    // Start background refresh
-    if (drawerChatRefreshInterval) clearInterval(drawerChatRefreshInterval);
-    drawerChatRefreshInterval = setInterval(async () => {
-      if (drawer.classList.contains('active')) {
-        await renderDrawerChatUsersList();
-        if (activeDrawerChatUserId) {
-          await syncDrawerActiveChatSilent(activeDrawerChatUserId);
-        }
-      } else {
-        clearInterval(drawerChatRefreshInterval);
-        drawerChatRefreshInterval = null;
-      }
-    }, 4000);
   }
 };
 
@@ -10256,9 +10361,11 @@ window.selectDrawerChatUser = async function(userId) {
         if (isUserAdmin && !m.isAdmin && !m.read) {
           m.read = true;
           changed = true;
+          if (m._docId && window.fbSetDoc && window.fbDb && window.fbDoc) window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
         } else if (!isUserAdmin && m.isAdmin && !m.read) {
           m.read = true;
           changed = true;
+          if (m._docId && window.fbSetDoc && window.fbDb && window.fbDoc) window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
         }
       }
     });
@@ -10294,10 +10401,18 @@ window.selectDrawerChatUser = async function(userId) {
   const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
   
   // Mark as read
+  let anyChanged = false;
   localMsgs.forEach(m => {
-    if (m.senderEmail === userId) m.read = true;
+    if (m.senderEmail === userId && !m.read) {
+      m.read = true;
+      anyChanged = true;
+    }
   });
   localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMsgs));
+  
+  if (anyChanged && window.fbSetDoc && window.fbDb && window.fbDoc) {
+    window.fbSetDoc(window.fbDoc(window.fbDb, 'chats', roomId), { messages: localMsgs }, { merge: true }).catch(()=>{});
+  }
   
   renderDrawerMessagesStream(localMsgs);
   
@@ -11047,10 +11162,6 @@ function toggleSupportChatMode() {
     
     loadDirectMessages();
     
-    // Auto pull updates every 5 seconds while in messages view
-    if (window._supportPullInterval) clearInterval(window._supportPullInterval);
-    window._supportPullInterval = setInterval(loadDirectMessages, 5000);
-    
     // Clear badge immediately on open
     setTimeout(checkUnreadSupportMessages, 100);
   } else {
@@ -11066,10 +11177,7 @@ function toggleSupportChatMode() {
       headerTitle.textContent = isHeb ? '✨ עוזר וירטואלי חכם' : '✨ Smart Virtual Assistant';
     }
     
-    if (window._supportPullInterval) {
-      clearInterval(window._supportPullInterval);
-      window._supportPullInterval = null;
-    }
+    // Removed interval clearing
     
     checkUnreadSupportMessages();
   }
@@ -11103,18 +11211,13 @@ async function checkUnreadSupportMessages() {
   const _mkId = m => `${m.userId}|${m.timestamp}|${(m.text||'').slice(0,24)}`;
   let allMsgs = [];
   try { allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]'); } catch(e) {}
-  if (window.fbGetDocs && window.fbDb) {
-    try {
-      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-      const seen = new Set(allMsgs.map(_mkId));
-      snap.forEach(doc => { const d = doc.data(); if (!seen.has(_mkId(d))) { seen.add(_mkId(d)); allMsgs.push(d); } });
-      localStorage.setItem('supportDirectMessages', JSON.stringify(allMsgs));
-    } catch(e) {}
-  }
+  // Removed fbGetDocs sync as it is handled by onSnapshot
+
+  const lastClearTime = parseInt(localStorage.getItem('lastSupportBadgeClearTime') || '0');
 
   if (isUserAdmin) {
     // Admin counts all unread messages from users
-    badgeCount = allMsgs.filter(m => !m.isAdmin && !m.read).length;
+    badgeCount = allMsgs.filter(m => !m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime)).length;
   } else {
     // Regular user counts unread replies from admin
     const userId = getSupportUserId();
@@ -11123,22 +11226,33 @@ async function checkUnreadSupportMessages() {
     // If user is currently looking at direct chat, mark unread admin messages as read
     if (window._supportChatMode === 'direct') {
       let changed = false;
-      
+      // remember which docs WE read, so the onSnapshot listener keeps them
+      // read instead of bouncing them back to "unread" from the cloud
+      let userReadIds = [];
+      try { userReadIds = JSON.parse(localStorage.getItem('userReadSupportMsgIds') || '[]'); } catch(e){}
+
       // Local update
       const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
       localMsgs.forEach(m => {
         if (m.userId === userId && m.isAdmin && !m.read) {
           m.read = true;
           changed = true;
+          if (m._docId) {
+            if (!userReadIds.includes(m._docId)) userReadIds.push(m._docId);
+            if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+              window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
+            }
+          }
         }
       });
-      
+
       if (changed) {
         localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+        localStorage.setItem('userReadSupportMsgIds', JSON.stringify(userReadIds));
       }
       badgeCount = 0;
     } else {
-      badgeCount = msgs.filter(m => m.isAdmin && !m.read).length;
+      badgeCount = msgs.filter(m => m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime)).length;
     }
   }
 
@@ -11146,15 +11260,8 @@ async function checkUnreadSupportMessages() {
 }
 
 function updateSupportBadge(count) {
-  // mirror the support unread count onto ALL chat-icon badges so the red
-  // number shows up the same on every chat entry point
-  ['support-badge', 'floating-support-badge', 'messages-nav-badge'].forEach(id => {
-    const b = document.getElementById(id);
-    if (b) {
-      b.textContent = count;
-      b.style.display = count > 0 ? 'flex' : 'none';
-    }
-  });
+  // Now handled by window.updateMessagesBadge() which is called anywhere count is changed.
+  window.updateMessagesBadge();
 }
 
 async function sendDirectChatMessage() {
@@ -11209,19 +11316,7 @@ async function loadDirectMessages() {
   const userId = getSupportUserId();
   let msgs = [];
 
-  // Try fetching from Firestore
-  if (window.fbGetDocs && window.fbDb) {
-    try {
-      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (data.userId === userId) {
-          msgs.push(data);
-        }
-      });
-      msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    } catch(e) {}
-  }
+  // Try fetching from localStorage (updated by onSnapshot)
 
   // Fallback to localStorage if Firestore yielded no matches or failed
   if (msgs.length === 0) {
@@ -11288,10 +11383,6 @@ function switchAdminMsgsSubtab(tab) {
     if (directList) directList.style.display = 'flex';
     
     renderAdminDirectChats();
-    
-    // Auto refresh every 5 seconds while in admin direct chat subtab
-    if (window._adminDirectChatsInterval) clearInterval(window._adminDirectChatsInterval);
-    window._adminDirectChatsInterval = setInterval(renderAdminDirectChats, 5000);
   }
 }
 
@@ -11301,34 +11392,49 @@ window.switchAdminTab = function(tabId, btn) {
   if (origSwitchAdminTab) origSwitchAdminTab(tabId, btn);
   if (tabId === 'manager-msgs') {
     switchAdminMsgsSubtab(window._adminMsgsSubtab || 'contact');
-  } else {
-    if (window._adminDirectChatsInterval) {
-      clearInterval(window._adminDirectChatsInterval);
-      window._adminDirectChatsInterval = null;
-    }
   }
   if (tabId === 'backup') {
     if (window.renderBackupTimeline) window.renderBackupTimeline();
   }
 };
 
+window.markAllAdminSupportMessagesAsRead = function() {
+  localStorage.setItem('lastSupportBadgeClearTime', Date.now().toString());
+
+  let localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  let changed = false;
+  let readIds = JSON.parse(localStorage.getItem('adminReadSupportMsgIds') || '[]');
+  
+  localMsgs.forEach(m => {
+    if (!m.isAdmin && !m.read) {
+      m.read = true;
+      changed = true;
+      if (m._docId && !readIds.includes(m._docId)) {
+        readIds.push(m._docId);
+        if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+          window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
+        }
+      }
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem('adminReadSupportMsgIds', JSON.stringify(readIds));
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+  }
+  
+  if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
+  return changed;
+};
+
 async function renderAdminDirectChats() {
   const listContainer = document.getElementById('admin-chat-threads-list');
   if (!listContainer) return;
 
-  let allMsgs = [];
+  if (window.markAllAdminSupportMessagesAsRead()) {}
 
-  // 1. Fetch all direct chat messages
-  if (window.fbGetDocs && window.fbDb) {
-    try {
-      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-      snap.forEach(doc => allMsgs.push(doc.data()));
-    } catch(e) {}
-  }
-
-  if (allMsgs.length === 0) {
-    allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-  }
+  // Read from localStorage which is updated by onSnapshot
+  let allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
 
   // 2. Group messages by userId
   const threadsMap = {};
@@ -11385,6 +11491,32 @@ async function renderAdminDirectChats() {
 
 function selectAdminChatThread(userId) {
   window._activeAdminChatThreadId = userId;
+  
+  // Mark user messages as read
+  let localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+  let changed = false;
+  localMsgs.forEach(m => {
+    if (m.userId === userId && !m.isAdmin && !m.read) {
+      m.read = true;
+      changed = true;
+      
+      let readIds = JSON.parse(localStorage.getItem('adminReadSupportMsgIds') || '[]');
+      if (m._docId && !readIds.includes(m._docId)) {
+        readIds.push(m._docId);
+        localStorage.setItem('adminReadSupportMsgIds', JSON.stringify(readIds));
+      }
+
+      if (m._docId && window.fbSetDoc && window.fbDb && window.fbDoc) {
+        window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
+      }
+    }
+  });
+  
+  if (changed) {
+    localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+    window.updateMessagesBadge();
+  }
+  
   renderAdminDirectChats();
 }
 
@@ -17060,14 +17192,6 @@ window.openFloatingPillPanel = function(type) {
       setTimeout(() => {
         panel.classList.add('active');
         if (window.loadFloatingAdminChats) window.loadFloatingAdminChats();
-        
-        if (window._floatingAdminChatsInterval) clearInterval(window._floatingAdminChatsInterval);
-        window._floatingAdminChatsInterval = setInterval(async () => {
-          if (window.loadFloatingAdminChats) await window.loadFloatingAdminChats();
-          if (window._activeFloatingAdminChatThreadId && window.syncFloatingAdminActiveChat) {
-            await window.syncFloatingAdminActiveChat(window._activeFloatingAdminChatThreadId);
-          }
-        }, 4000);
       }, 10);
     } else {
       title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
@@ -17120,11 +17244,7 @@ window.closeFloatingPillPanel = function() {
   const panel = document.getElementById('floating-pill-panel');
   const pillNav = document.getElementById('floating-pill-nav');
   
-  if (window._floatingAdminChatsInterval) {
-    clearInterval(window._floatingAdminChatsInterval);
-    window._floatingAdminChatsInterval = null;
-  }
-  
+  // Removed interval clearing
   if (pillNav) {
     pillNav.classList.remove('hidden-state');
   }
@@ -17204,16 +17324,9 @@ window.loadFloatingAdminChats = async function() {
   const listEl = document.getElementById('floating-admin-threads-list');
   if (!listEl) return;
 
-  let allMsgs = [];
-  if (window.fbGetDocs && window.fbDb) {
-    try {
-      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-      snap.forEach(doc => allMsgs.push(doc.data()));
-    } catch(e) {}
-  }
-  if (allMsgs.length === 0) {
-    allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-  }
+  if (window.markAllAdminSupportMessagesAsRead && window.markAllAdminSupportMessagesAsRead()) {}
+
+  let allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
 
   // Load archived thread IDs
   let archivedThreads = [];
@@ -17305,6 +17418,16 @@ window.selectFloatingAdminChatThread = async function(userId, senderName) {
     if (m.userId === userId && !m.isAdmin && !m.read) {
       m.read = true;
       changed = true;
+      
+      let readIds = JSON.parse(localStorage.getItem('adminReadSupportMsgIds') || '[]');
+      if (m._docId && !readIds.includes(m._docId)) {
+        readIds.push(m._docId);
+        localStorage.setItem('adminReadSupportMsgIds', JSON.stringify(readIds));
+      }
+
+      if (m._docId && window.fbSetDoc && window.fbDb && window.fbDoc) {
+        window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
+      }
     }
   });
   if (changed) {
@@ -17334,16 +17457,7 @@ window.syncFloatingAdminActiveChat = async function(userId) {
   const logEl = document.getElementById('floating-admin-chat-messages');
   if (!logEl || window._activeFloatingAdminChatThreadId !== userId) return;
 
-  let allMsgs = [];
-  if (window.fbGetDocs && window.fbDb) {
-    try {
-      const snap = await window.fbGetDocs(window.fbColl(window.fbDb, 'supportDirectMessages'));
-      snap.forEach(doc => allMsgs.push(doc.data()));
-    } catch(e) {}
-  }
-  if (allMsgs.length === 0) {
-    allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
-  }
+  let allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
 
   const threadMsgs = allMsgs.filter(m => m.userId === userId);
   threadMsgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
