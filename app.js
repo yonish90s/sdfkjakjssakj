@@ -17236,8 +17236,17 @@ window.loadFloatingAdminChats = async function() {
     const isSelected = window._activeFloatingAdminChatThreadId === t.userId;
     const bg = isSelected ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)';
     const border = isSelected ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)';
-    const badge = t.unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; margin-left:6px;">${t.unreadCount}</span>` : '';
-    const redDot = t.unreadCount > 0 ? `<span style="background:#ff3b30; width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px;" title="הודעות חדשות"></span>` : '';
+    
+    const hasUnread = t.unreadCount > 0;
+    const badge = hasUnread ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; margin-left:6px;">${t.unreadCount}</span>` : '';
+    const redDot = hasUnread ? `<span style="background:#ff3b30; width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px;" title="הודעות חדשות"></span>` : '';
+    
+    // Subtitle logic: in English "New message received at HH:MM" if unread, otherwise normal message text
+    let subtitleText = t.lastMsg.text;
+    if (hasUnread) {
+      const msgTime = t.lastMsg.timestamp ? new Date(t.lastMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+      subtitleText = `New message received at ${msgTime}`;
+    }
     
     // Close (Archive) or Restore (Undo) button
     const actionBtn = isTabArchive
@@ -17256,7 +17265,7 @@ window.loadFloatingAdminChats = async function() {
             ${actionBtn}
           </div>
         </div>
-        <span style="font-size:0.75rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; text-align:right;">${t.lastMsg.text}</span>
+        <span style="font-size:0.75rem; color:#86868b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; text-align:right;">${subtitleText}</span>
       </div>
     `;
   }).join('');
