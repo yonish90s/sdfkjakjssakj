@@ -2837,7 +2837,7 @@ function replyContactInDirectChat(email, name) {
       text: `[פנייה מצור קשר / Contact Request]`,
       timestamp: new Date().toISOString(),
       isAdmin: false,
-      read: true
+      read: false
     });
     localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
   }
@@ -10428,7 +10428,7 @@ window.sendDrawerMessage = async function() {
       text: text,
       timestamp: timestamp,
       isAdmin: isUserAdmin,
-      read: true
+      read: false
     };
     
     if (window.fbAddDoc && window.fbDb) {
@@ -11168,7 +11168,7 @@ async function sendDirectChatMessage() {
     text: text,
     timestamp: timestamp,
     isAdmin: false,
-    read: true // user reads their own message
+    read: false // user reads their own message
   };
 
   // 1. Try to save to Firestore
@@ -11430,7 +11430,7 @@ async function sendAdminDirectReply(userId) {
     text: text,
     timestamp: timestamp,
     isAdmin: true,
-    read: true
+    read: false
   };
 
   // 1. Save to Firestore
@@ -17376,7 +17376,7 @@ window.sendFloatingAdminChatReply = async function(userId) {
     text: text,
     timestamp: timestamp,
     isAdmin: true,
-    read: true
+    read: false
   };
 
   if (window.fbAddDoc && window.fbDb) {
