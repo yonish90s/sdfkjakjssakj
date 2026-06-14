@@ -36,7 +36,12 @@ const SERVER_URL = (hostname === 'localhost' || hostname === '127.0.0.1' || host
   : currentOrigin.replace(/:\d+$/, ':4242');
 
 let storedArticles = localStorage.getItem('newsArticles');
-if (!storedArticles || JSON.parse(storedArticles).length === 0) {
+let parsedArticles = null;
+try {
+  if (storedArticles) parsedArticles = JSON.parse(storedArticles);
+} catch (e) {}
+
+if (!parsedArticles || parsedArticles.length === 0) {
   localStorage.setItem('newsArticles', JSON.stringify(defaultNewsArticles));
   storedArticles = localStorage.getItem('newsArticles');
 }
