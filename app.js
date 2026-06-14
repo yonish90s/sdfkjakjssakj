@@ -17899,3 +17899,43 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => { if (windo
     if (tabId === 'ui-visibility' && window.renderUIVisibilityControls) window.renderUIVisibilityControls();
   };
 })();
+
+/* ─── Admin: trigger the AliExpress import agent ─── */
+window.runAliAgent = async function(mode) {
+  const out = document.getElementById('ali-agent-result');
+  if (out) { out.style.color = '#a1a1aa'; out.textContent = '⏳ הסוכן רץ...'; }
+  // admin creds — same ones used for the admin panel login
+  const user = localStorage.getItem('adminUser') || '1';
+  const pass = localStorage.getItem('adminPass') || '1';
+  try {
+    const res = await fetch('/api/run-ali-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, pass, mode, count: mode === 'init' ? 12 : 2 })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      if (out) { out.style.color = '#22c55e'; out.textContent = `✅ בוצע! נוספו ${data.added} מוצרים. סה"כ בחנות: ${data.total}`; }
+      if (typeof window.fxSavedToast === 'function') window.fxSavedToast(`✅ יובאו ${data.added} מוצרים (+20%)`);
+      // refresh the shop view if open
+      if (typeof loadAliExpressProducts === 'function') { try { await loadAliExpressProducts(); } catch(e){} }
+      if (typeof renderShopGrid === 'function') renderShopGrid();
+    } else {
+      if (out) { out.style.color = '#ef4444'; out.textContent = `❌ ${data.error || 'שגיאה'}`; }
+    }
+  } catch (err) {
+    if (out) { out.style.color = '#ef4444'; out.textContent = '❌ שגיאת רשת: ' + err.message; }
+  }
+};
+
+// render hook so the AliExpress tab opens cleanly
+(function hookAliTab() {
+  const orig = window.switchAdminTab;
+  window.switchAdminTab = function(tabId, btn) {
+    if (typeof orig === 'function') orig(tabId, btn);
+    if (tabId === 'ali-agent') {
+      const out = document.getElementById('ali-agent-result');
+      if (out) out.textContent = '';
+    }
+  };
+})();

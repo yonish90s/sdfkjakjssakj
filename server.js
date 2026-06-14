@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cron = require('node-cron');
 const { collectStockNews } = require('./agent/hebrew_stock_agent');
+const { runAliExpressImport, initAliExpressShop } = require('./agent/aliexpress_agent');
 const app = express();
 const PORT = process.env.PORT || 4242;
 
@@ -566,6 +567,31 @@ cron.schedule('0 5 * * *', () => {
   collectStockNews().catch(err => console.error('[Cron] שגיאה:', err.message));
 }, { timezone: 'Asia/Jerusalem' });
 console.log('📅 Stock news cron scheduled: daily at 05:00 Asia/Jerusalem');
+
+// ── AliExpress agent: import 2 new high-sales products (+20%) daily at 06:00 ──
+cron.schedule('0 6 * * *', () => {
+  try { runAliExpressImport({ count: 2 }); }
+  catch (err) { console.error('[Cron] AliExpress agent error:', err.message); }
+}, { timezone: 'Asia/Jerusalem' });
+console.log('📅 AliExpress agent cron scheduled: daily at 06:00 Asia/Jerusalem');
+
+// Admin-triggered AliExpress import (manual "Run now")
+app.post('/api/run-ali-agent', (req, res) => {
+  const { user, pass, mode, count } = req.body || {};
+  const ADMIN_USER = process.env.ADMIN_USER || '1';
+  const ADMIN_PASS = process.env.ADMIN_PASS || '1';
+  if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized' });
+  }
+  try {
+    const result = (mode === 'init')
+      ? initAliExpressShop({ count: count || 12 })
+      : runAliExpressImport({ count: count || 2 });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 module.exports = app;
 // Force Redeploy Mon May 11 19:45:00 IDT 2026

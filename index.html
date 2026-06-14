@@ -2117,6 +2117,8 @@
 
         <button class="admin-nav-btn" data-admin-tab="ui-visibility" onclick="switchAdminTab('ui-visibility', this)" style="color: #a1a1aa;"><i class="fas fa-window-restore"></i> הסתרת חלונות</button>
 
+        <button class="admin-nav-btn" data-admin-tab="ali-agent" onclick="switchAdminTab('ali-agent', this)" style="color: #a1a1aa;"><i class="fas fa-robot"></i> סוכן AliExpress</button>
+
         <button class="admin-nav-btn" data-admin-tab="manager-msgs" onclick="switchAdminTab('manager-msgs', this)" style="color: #a1a1aa;"><i class="fas fa-comment-dots"></i> הודעות למנהל <span id="manager-msgs-badge" style="display:none; background:#ef4444; color:#fff; border-radius:50%; padding:1px 6px; font-size:0.7rem; margin-right:4px;"></span></button>
         <button class="admin-nav-btn" onclick="adminLogout()" style="margin-top: 16px; background:#ef4444; color:#fff; border: none;"><i class="fas fa-sign-out-alt"></i> יציאה</button>
       </div>
@@ -3066,6 +3068,23 @@
         <div id="ui-visibility-controls-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 12px;">
           <!-- Loaded dynamically by app.js -->
         </div>
+      </div>
+
+      <!-- ALIEXPRESS AGENT -->
+      <div id="admin-section-ali-agent" class="admin-section" style="display: none; direction: rtl; text-align: right;">
+        <div style="margin-bottom:24px;">
+          <h2 style="margin: 0 0 8px 0; font-size: 1.5rem; color: #fafafa; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-robot" style="color:#a855f7;"></i> סוכן AliExpress
+          </h2>
+          <p style="color: #a1a1aa; font-size: 0.95rem; margin:0; max-width:640px;">
+            הסוכן מייבא לחנות מוצרים עם <b>מכירות גבוהות</b> מ-AliExpress, עם <b>אותה תמונה</b> ובמחיר <b>גבוה ב-20%</b> מהמחיר המקורי. רץ אוטומטית כל יום ב-06:00, ואפשר להריץ ידנית כאן.
+          </p>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <button onclick="runAliAgent('daily')" style="background:#a855f7; color:#fff; border:none; padding:12px 22px; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer;">➕ ייבא 2 מוצרים חדשים</button>
+          <button onclick="runAliAgent('init')" style="background:transparent; color:#a855f7; border:1.5px solid #a855f7; padding:12px 22px; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer;">🔄 אתחל חנות (12 רבי-מכר)</button>
+        </div>
+        <div id="ali-agent-result" style="margin-top:18px; font-size:0.95rem; color:#22c55e; min-height:24px;"></div>
       </div>
 
     </div>
