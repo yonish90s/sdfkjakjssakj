@@ -13795,41 +13795,18 @@ function applyAllCustomizations() {
 async function saveCustomizationsToServer() {
   showToast('⏳ שומר שינויים לשרת...');
   try {
-    const { doc, setDoc } = window.fbFirestore || {};
-    const db = window.db;
-    
-    if (doc && setDoc && db) {
-      await setDoc(doc(db, 'siteSettings', 'customizations'), activeCustomizations);
-      showToast('✅ השינויים נשמרו בהצלחה בשרת!');
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-    } else if (window.fbSetDoc && window.fbGetDoc && window.db) {
-      const docRef = window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations');
-      if (docRef) {
-         await window.fbSetDoc(docRef, activeCustomizations);
-         showToast('✅ השינויים נשמרו בהצלחה בשרת!');
-         if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-      } else {
-         throw new Error('Firestore references missing');
-      }
-    } else {
-      throw new Error('Firebase Firestore functions not available');
-    }
+    const res = await fetch('/api/customizations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(activeCustomizations)
+    });
+    if (!res.ok) throw new Error('שגיאה בשמירה לשרת');
+    showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+    if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
   } catch (err) {
-    console.error('Firebase save error:', err);
-    try {
-      const res = await fetch('/api/customizations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(activeCustomizations)
-      });
-      if (!res.ok) throw new Error('שגיאה בשמירה לשרת המקומי');
-      showToast('✅ השינויים נשמרו בהצלחה (לוקאלי)!');
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-    } catch (fallbackErr) {
-      console.error(fallbackErr);
-      showToast('❌ שגיאה בשמירה לשרת');
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('❌ שמירה נכשלה', true);
-    }
+    console.error(err);
+    showToast('❌ שגיאה בשמירה לשרת');
+    if (typeof window.fxSavedToast === 'function') window.fxSavedToast('❌ שמירה נכשלה', true);
   }
 }
 
@@ -13858,51 +13835,22 @@ window.fxSavedToast = function(msg, isError) {
 };
 
 // Fetch customizations from server API on init
-async function initCustomizations(retryCount = 0) {
-  // Wait up to 2 seconds for Firebase module to load
-  if (!window.fbGetDoc && retryCount < 20) {
-    setTimeout(() => initCustomizations(retryCount + 1), 100);
-    return;
-  }
-
+async function initCustomizations() {
   initDeterministicIds();
-  let dataLoaded = false;
   try {
-    const { doc, getDoc } = window.fbFirestore || {};
-    const db = window.db;
-
-    if (getDoc && doc && db) {
-      const snap = await getDoc(doc(db, 'siteSettings', 'customizations'));
-      if (snap.exists()) {
-        activeCustomizations = snap.data();
-        dataLoaded = true;
-      }
-    } else if (window.fbGetDoc && window.db) {
-      const snap = await window.fbGetDoc(window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations'));
-      if (snap.exists()) {
-        activeCustomizations = snap.data();
-        dataLoaded = true;
-      }
+    const res = await fetch('/api/customizations');
+    if (res.ok) {
+      activeCustomizations = await res.json();
+      if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
+      applyAllCustomizations();
+      if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+      if (typeof window.applyUIVisibility === 'function') window.applyUIVisibility();
+      // Restore section order & visibility
+      if (window.applySectionLayout) window.applySectionLayout();
     }
-    if (!dataLoaded) throw new Error('No Firebase data');
   } catch (err) {
-    console.warn('Falling back to local API for customizations:', err);
-    try {
-      const res = await fetch('/api/customizations');
-      if (res.ok) {
-        activeCustomizations = await res.json();
-      }
-    } catch (fallbackErr) {
-      console.error('Failed to load customizations:', fallbackErr);
-    }
+    console.error('Failed to load customizations:', err);
   }
-  
-  if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
-  applyAllCustomizations();
-  if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
-  if (typeof window.applyUIVisibility === 'function') window.applyUIVisibility();
-  // Restore section order & visibility
-  if (window.applySectionLayout) window.applySectionLayout();
 }
 
 // Initialize Customizations
@@ -17892,19 +17840,7 @@ const UI_HIDEABLE = [
   { key: 'my_store',     name: 'קישור "My Store" (סיידבר)',         sel: '#link-my-store' },
   { key: 'video_wall',   name: 'קישור "וידאו חי" (סיידבר)',         sel: '#link-video-wall' },
   { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' },
-  { key: 'user_dropdown',name: 'תפריט המשתמש הנפתח (פרופיל/הגדרות/יציאה)', sel: '#nav-user-dropdown' },
-  // ── Footer ──
-  { key: 'footer_all',     name: 'פוטר — כל הפוטר',                  sel: '.soki-footer-premium' },
-  { key: 'footer_brand',   name: 'פוטר — לוגו SOKI ומותג',          sel: '.soki-footer-brand-col' },
-  { key: 'footer_socials', name: 'פוטר — אייקוני רשתות חברתיות',     sel: '.soki-footer-socials' },
-  { key: 'footer_apps',    name: 'פוטר — כפתורי App Store / Google Play', sel: '.soki-footer-apps' },
-  { key: 'footer_contact', name: 'פוטר — עמודת "צור קשר"',           sel: '#footer-col-contact' },
-  { key: 'footer_info',    name: 'פוטר — עמודת "מידע"',              sel: '#footer-col-information' },
-  { key: 'footer_admin',   name: 'פוטר — עמודת "מנהל"',              sel: '#footer-col-admin' },
-  { key: 'footer_legal',   name: 'פוטר — עמודת "מידע משפטי"',        sel: '#footer-col-legal' },
-  { key: 'footer_paypal',  name: 'פוטר — "תרום דרך PayPal"',         sel: '#footer-paypal-donate' },
-  { key: 'footer_monthly', name: 'פוטר — "מנוי חודשי"',             sel: '#footer-monthly-subscription' },
-  { key: 'footer_download',name: 'פוטר — "הורד אפליקציה"',          sel: '#footer-download-app' }
+  { key: 'user_dropdown',name: 'תפריט המשתמש הנפתח (פרופיל/הגדרות/יציאה)', sel: '#nav-user-dropdown' }
 ];
 
 window.applyUIVisibility = function() {
