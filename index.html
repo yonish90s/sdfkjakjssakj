@@ -204,7 +204,8 @@
 
           <!-- Personalized Sections -->
 
-          <a href="#" class="sidebar-link" id="link-my-graphs" onclick="toggleSavedDrawer('graphs'); return false;">
+          <!-- Removed permanently per request: הגרפים שלי / הכתבות שלי / הרכישות שלי -->
+          <a href="#" class="sidebar-link" id="link-my-graphs" onclick="toggleSavedDrawer('graphs'); return false;" style="display:none !important;">
             <i class="fas fa-chart-pie"></i>
             <span id="sidebar-link-my-graphs">הגרפים שלי</span>
             <div class="sidebar-link-actions">
@@ -212,7 +213,7 @@
             </div>
           </a>
 
-          <a href="#" class="sidebar-link" id="link-my-articles" onclick="toggleSavedDrawer('articles'); return false;">
+          <a href="#" class="sidebar-link" id="link-my-articles" onclick="toggleSavedDrawer('articles'); return false;" style="display:none !important;">
             <i class="fas fa-newspaper"></i>
             <span id="sidebar-link-my-articles">הכתבות שלי</span>
             <div class="sidebar-link-actions">
@@ -220,7 +221,7 @@
             </div>
           </a>
 
-          <a href="#" class="sidebar-link" id="link-my-purchases" onclick="toggleMyPurchasesDropdown(event)">
+          <a href="#" class="sidebar-link" id="link-my-purchases" onclick="toggleMyPurchasesDropdown(event)" style="display:none !important;">
             <i class="fas fa-shopping-cart"></i>
             <span id="sidebar-link-my-purchases">הרכישות שלי</span>
             <div class="sidebar-link-actions">

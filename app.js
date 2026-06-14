@@ -13802,11 +13802,37 @@ async function saveCustomizationsToServer() {
     });
     if (!res.ok) throw new Error('שגיאה בשמירה לשרת');
     showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+    if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
   } catch (err) {
     console.error(err);
     showToast('❌ שגיאה בשמירה לשרת');
+    if (typeof window.fxSavedToast === 'function') window.fxSavedToast('❌ שמירה נכשלה', true);
   }
 }
+
+/* visible confirmation toast (the global showToast is silent) */
+window.fxSavedToast = function(msg, isError) {
+  let t = document.getElementById('fx-saved-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'fx-saved-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.cssText = `position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
+    background:${isError ? '#7f1d1d' : '#15803d'}; color:#fff; padding:12px 26px; border-radius:999px;
+    font-size:0.95rem; font-weight:700; z-index:1000000; box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    opacity:0; transition:transform 0.4s cubic-bezier(0.34,1.4,0.64,1), opacity 0.3s ease; direction:rtl;`;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    t.style.opacity = '1';
+  }));
+  clearTimeout(window._fxSavedToastT);
+  window._fxSavedToastT = setTimeout(() => {
+    t.style.transform = 'translateX(-50%) translateY(80px)';
+    t.style.opacity = '0';
+  }, 2600);
+};
 
 // Fetch customizations from server API on init
 async function initCustomizations() {
@@ -17813,7 +17839,8 @@ const UI_HIDEABLE = [
   { key: 'download_btn', name: 'כפתור הורדה (נאב עליון)',            sel: 'button[title="Download SOKI Desktop Hub"]' },
   { key: 'my_store',     name: 'קישור "My Store" (סיידבר)',         sel: '#link-my-store' },
   { key: 'video_wall',   name: 'קישור "וידאו חי" (סיידבר)',         sel: '#link-video-wall' },
-  { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' }
+  { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' },
+  { key: 'user_dropdown',name: 'תפריט המשתמש הנפתח (פרופיל/הגדרות/יציאה)', sel: '#nav-user-dropdown' }
 ];
 
 window.applyUIVisibility = function() {
