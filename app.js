@@ -13795,41 +13795,18 @@ function applyAllCustomizations() {
 async function saveCustomizationsToServer() {
   showToast('⏳ שומר שינויים לשרת...');
   try {
-    const { doc, setDoc } = window.fbFirestore || {};
-    const db = window.db;
-    
-    if (doc && setDoc && db) {
-      await setDoc(doc(db, 'siteSettings', 'customizations'), activeCustomizations);
-      showToast('✅ השינויים נשמרו בהצלחה בשרת!');
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-    } else if (window.fbSetDoc && window.fbGetDoc && window.db) {
-      const docRef = window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations');
-      if (docRef) {
-         await window.fbSetDoc(docRef, activeCustomizations);
-         showToast('✅ השינויים נשמרו בהצלחה בשרת!');
-         if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-      } else {
-         throw new Error('Firestore references missing');
-      }
-    } else {
-      throw new Error('Firebase Firestore functions not available');
-    }
+    const res = await fetch('/api/customizations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(activeCustomizations)
+    });
+    if (!res.ok) throw new Error('שגיאה בשמירה לשרת');
+    showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+    if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
   } catch (err) {
-    console.error('Firebase save error:', err);
-    try {
-      const res = await fetch('/api/customizations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(activeCustomizations)
-      });
-      if (!res.ok) throw new Error('שגיאה בשמירה לשרת המקומי');
-      showToast('✅ השינויים נשמרו בהצלחה (לוקאלי)!');
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-    } catch (fallbackErr) {
-      console.error(fallbackErr);
-      showToast('❌ שגיאה בשמירה לשרת');
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('❌ שמירה נכשלה', true);
-    }
+    console.error(err);
+    showToast('❌ שגיאה בשמירה לשרת');
+    if (typeof window.fxSavedToast === 'function') window.fxSavedToast('❌ שמירה נכשלה', true);
   }
 }
 
@@ -13858,51 +13835,22 @@ window.fxSavedToast = function(msg, isError) {
 };
 
 // Fetch customizations from server API on init
-async function initCustomizations(retryCount = 0) {
-  // Wait up to 2 seconds for Firebase module to load
-  if (!window.fbGetDoc && retryCount < 20) {
-    setTimeout(() => initCustomizations(retryCount + 1), 100);
-    return;
-  }
-
+async function initCustomizations() {
   initDeterministicIds();
-  let dataLoaded = false;
   try {
-    const { doc, getDoc } = window.fbFirestore || {};
-    const db = window.db;
-
-    if (getDoc && doc && db) {
-      const snap = await getDoc(doc(db, 'siteSettings', 'customizations'));
-      if (snap.exists()) {
-        activeCustomizations = snap.data();
-        dataLoaded = true;
-      }
-    } else if (window.fbGetDoc && window.db) {
-      const snap = await window.fbGetDoc(window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations'));
-      if (snap.exists()) {
-        activeCustomizations = snap.data();
-        dataLoaded = true;
-      }
+    const res = await fetch('/api/customizations');
+    if (res.ok) {
+      activeCustomizations = await res.json();
+      if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
+      applyAllCustomizations();
+      if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+      if (typeof window.applyUIVisibility === 'function') window.applyUIVisibility();
+      // Restore section order & visibility
+      if (window.applySectionLayout) window.applySectionLayout();
     }
-    if (!dataLoaded) throw new Error('No Firebase data');
   } catch (err) {
-    console.warn('Falling back to local API for customizations:', err);
-    try {
-      const res = await fetch('/api/customizations');
-      if (res.ok) {
-        activeCustomizations = await res.json();
-      }
-    } catch (fallbackErr) {
-      console.error('Failed to load customizations:', fallbackErr);
-    }
+    console.error('Failed to load customizations:', err);
   }
-  
-  if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
-  applyAllCustomizations();
-  if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
-  if (typeof window.applyUIVisibility === 'function') window.applyUIVisibility();
-  // Restore section order & visibility
-  if (window.applySectionLayout) window.applySectionLayout();
 }
 
 // Initialize Customizations
@@ -17949,45 +17897,5 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => { if (windo
   window.switchAdminTab = function(tabId, btn) {
     if (typeof orig === 'function') orig(tabId, btn);
     if (tabId === 'ui-visibility' && window.renderUIVisibilityControls) window.renderUIVisibilityControls();
-  };
-})();
-
-/* ─── Admin: trigger the AliExpress import agent ─── */
-window.runAliAgent = async function(mode) {
-  const out = document.getElementById('ali-agent-result');
-  if (out) { out.style.color = '#a1a1aa'; out.textContent = '⏳ הסוכן רץ...'; }
-  // admin creds — same ones used for the admin panel login
-  const user = localStorage.getItem('adminUser') || '1';
-  const pass = localStorage.getItem('adminPass') || '1';
-  try {
-    const res = await fetch('/api/run-ali-agent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user, pass, mode, count: mode === 'init' ? 12 : 2 })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      if (out) { out.style.color = '#22c55e'; out.textContent = `✅ בוצע! נוספו ${data.added} מוצרים. סה"כ בחנות: ${data.total}`; }
-      if (typeof window.fxSavedToast === 'function') window.fxSavedToast(`✅ יובאו ${data.added} מוצרים (+20%)`);
-      // refresh the shop view if open
-      if (typeof loadAliExpressProducts === 'function') { try { await loadAliExpressProducts(); } catch(e){} }
-      if (typeof renderShopGrid === 'function') renderShopGrid();
-    } else {
-      if (out) { out.style.color = '#ef4444'; out.textContent = `❌ ${data.error || 'שגיאה'}`; }
-    }
-  } catch (err) {
-    if (out) { out.style.color = '#ef4444'; out.textContent = '❌ שגיאת רשת: ' + err.message; }
-  }
-};
-
-// render hook so the AliExpress tab opens cleanly
-(function hookAliTab() {
-  const orig = window.switchAdminTab;
-  window.switchAdminTab = function(tabId, btn) {
-    if (typeof orig === 'function') orig(tabId, btn);
-    if (tabId === 'ali-agent') {
-      const out = document.getElementById('ali-agent-result');
-      if (out) out.textContent = '';
-    }
   };
 })();
