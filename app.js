@@ -13858,7 +13858,13 @@ window.fxSavedToast = function(msg, isError) {
 };
 
 // Fetch customizations from server API on init
-async function initCustomizations() {
+async function initCustomizations(retryCount = 0) {
+  // Wait up to 2 seconds for Firebase module to load
+  if (!window.fbGetDoc && retryCount < 20) {
+    setTimeout(() => initCustomizations(retryCount + 1), 100);
+    return;
+  }
+
   initDeterministicIds();
   let dataLoaded = false;
   try {
@@ -13872,7 +13878,7 @@ async function initCustomizations() {
         dataLoaded = true;
       }
     } else if (window.fbGetDoc && window.db) {
-      const snap = await window.fbGetDoc(window.fbFirestore.doc(window.db, 'siteSettings', 'customizations'));
+      const snap = await window.fbGetDoc(window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations'));
       if (snap.exists()) {
         activeCustomizations = snap.data();
         dataLoaded = true;
