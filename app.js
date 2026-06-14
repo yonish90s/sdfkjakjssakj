@@ -9998,12 +9998,18 @@ window.updateMessagesBadge = async function() {
       guestSupportUnread = sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime)).length;
       guestPending = sup.filter(m => m.userId === myId && !m.isAdmin && !m.read).length;
     } catch(e) {}
-    ['messages-nav-badge', 'floating-support-badge', 'support-badge'].forEach(id => {
+    ['messages-nav-badge'].forEach(id => {
       const b = document.getElementById(id);
       if (b) { b.textContent = guestSupportUnread; b.style.display = guestSupportUnread > 0 ? 'flex' : 'none'; }
     });
+
+    const b1 = document.getElementById('floating-support-badge');
+    if (b1) b1.style.display = 'none'; // hide number badge for guests too
+    const b2 = document.getElementById('support-badge');
+    if (b2) b2.style.display = 'none';
+
     const gdot = document.getElementById('floating-support-dot');
-    if (gdot) gdot.style.display = (guestSupportUnread === 0 && guestPending > 0) ? 'block' : 'none';
+    if (gdot) gdot.style.display = (guestSupportUnread > 0 || guestPending > 0) ? 'block' : 'none';
     return;
   }
 
@@ -10031,25 +10037,22 @@ window.updateMessagesBadge = async function() {
     let sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
     const myId = currentUser.email;
     const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
-    const lastClearTime = parseInt(localStorage.getItem('lastSupportBadgeClearTime') || '0');
     
     supportUnread = isUserAdmin
-      ? sup.filter(m => !m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime) && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length
-      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > lastClearTime) && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length;
+      ? sup.filter(m => !m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length
+      : sup.filter(m => m.userId === myId && m.isAdmin && !m.read && (!m.timestamp || new Date(m.timestamp).getTime() > tenDaysAgo)).length;
   } catch(e) {}
 
   const grandTotal = totalUnreadMessages + supportUnread;
 
   // "Pending" = a message I SENT that the other side hasn't read yet.
-  // Shown as a small red dot so the user gets feedback that their message
-  // is out and waiting (like a single tick in WhatsApp).
   let pending = 0;
   try {
     const sup = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
     const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
     pending = isUserAdmin
-      ? sup.filter(m => m.isAdmin && !m.read).length            // admin's replies not yet read by the user
-      : sup.filter(m => m.userId === currentUser.email && !m.isAdmin && !m.read).length; // my messages not yet read by admin
+      ? sup.filter(m => m.isAdmin && !m.read).length            
+      : sup.filter(m => m.userId === currentUser.email && !m.isAdmin && !m.read).length; 
   } catch(e) {}
 
   let unreadAlerts = 0;
@@ -10064,21 +10067,16 @@ window.updateMessagesBadge = async function() {
   const sidebarDot = document.getElementById('messages-unread-badge');
   if (sidebarDot) sidebarDot.style.display = (grandTotal > 0 || unreadAlerts > 0) ? 'inline-block' : 'none';
 
-  // The "שיחות" pill is now the single entry point for ALL conversations,
-  // so show the full unread total (peer chats + support) on it — otherwise
-  // unread peer messages would have no visible red counter anywhere.
-  ['messages-nav-badge', 'floating-support-badge', 'support-badge'].forEach(id => {
-    const b = document.getElementById(id);
-    if (b) {
-      b.textContent = grandTotal;
-      b.style.display = grandTotal > 0 ? 'flex' : 'none';
-    }
-  });
+  const b0 = document.getElementById('messages-nav-badge');
+  if (b0) b0.style.display = 'none'; // hide number badge completely
 
-  // red dot for pending (sent-but-unread) messages — only when there is no
-  // number badge already showing, so we never show both at once
+  const b1 = document.getElementById('floating-support-badge');
+  if (b1) b1.style.display = 'none'; // hide the number badge completely
+  const b2 = document.getElementById('support-badge');
+  if (b2) b2.style.display = 'none';
+
   const dot = document.getElementById('floating-support-dot');
-  if (dot) dot.style.display = (grandTotal === 0 && pending > 0) ? 'block' : 'none';
+  if (dot) dot.style.display = (grandTotal > 0 || pending > 0) ? 'block' : 'none';
 };
 
 window.checkInboxUnreadMessages = function() {
@@ -11426,8 +11424,6 @@ window.switchAdminTab = function(tabId, btn) {
 };
 
 window.markAllAdminSupportMessagesAsRead = function() {
-  localStorage.setItem('lastSupportBadgeClearTime', Date.now().toString());
-
   let localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
   let changed = false;
   let readIds = JSON.parse(localStorage.getItem('adminReadSupportMsgIds') || '[]');
@@ -11457,8 +11453,6 @@ window.markAllAdminSupportMessagesAsRead = function() {
 async function renderAdminDirectChats() {
   const listContainer = document.getElementById('admin-chat-threads-list');
   if (!listContainer) return;
-
-  if (window.markAllAdminSupportMessagesAsRead()) {}
 
   // Read from localStorage which is updated by onSnapshot
   let allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
@@ -17363,8 +17357,6 @@ window.restoreSupportThread = function(userId, event) {
 window.loadFloatingAdminChats = async function() {
   const listEl = document.getElementById('floating-admin-threads-list');
   if (!listEl) return;
-
-  if (window.markAllAdminSupportMessagesAsRead && window.markAllAdminSupportMessagesAsRead()) {}
 
   let allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
 
