@@ -13818,6 +13818,7 @@ async function initCustomizations() {
       if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
       applyAllCustomizations();
       if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+      if (typeof window.applyUIVisibility === 'function') window.applyUIVisibility();
       // Restore section order & visibility
       if (window.applySectionLayout) window.applySectionLayout();
     }
@@ -17800,3 +17801,74 @@ window.fxRenderChatBubble = function(opts) {
       </div>
     </div>`;
 };
+
+/* ─── UI windows visibility (admin can hide any of these from the public) ─── */
+const UI_HIDEABLE = [
+  { key: 'pill_nav',     name: 'סרגל צף תחתון (היסטוריה/שיחות/AI)', sel: '#floating-pill-nav' },
+  { key: 'sidebar_ad',   name: 'מודעה ממומנת בסיידבר',              sel: '.sidebar-ad-box' },
+  { key: 'ads_btn',      name: 'כפתור Ads (נאב עליון)',             sel: '.ads-btn' },
+  { key: 'sell_btn',     name: 'כפתור "פרסם מוצר" (נאב עליון)',     sel: 'button[onclick="openMarketplaceModal()"]' },
+  { key: 'premium_btn',  name: 'כפתור Premium (נאב עליון)',          sel: '.subscription-btn' },
+  { key: 'telegram_btn', name: 'כפתור טלגרם (נאב עליון)',            sel: '#nav-telegram-link' },
+  { key: 'download_btn', name: 'כפתור הורדה (נאב עליון)',            sel: 'button[title="Download SOKI Desktop Hub"]' },
+  { key: 'my_store',     name: 'קישור "My Store" (סיידבר)',         sel: '#link-my-store' },
+  { key: 'video_wall',   name: 'קישור "וידאו חי" (סיידבר)',         sel: '#link-video-wall' },
+  { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' }
+];
+
+window.applyUIVisibility = function() {
+  try {
+    const state = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
+    const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    UI_HIDEABLE.forEach(item => {
+      const hidden = state[item.key] === true; // default visible
+      document.querySelectorAll(item.sel).forEach(el => {
+        if (hidden && !currentIsAdmin) {
+          el.style.setProperty('display', 'none', 'important');
+        } else {
+          // admin still sees it (dimmed if hidden) so they can toggle back
+          el.style.removeProperty('display');
+          el.style.opacity = (hidden && currentIsAdmin) ? '0.4' : '';
+        }
+      });
+    });
+  } catch (e) { console.warn('applyUIVisibility failed:', e); }
+};
+
+window.toggleUIVisibility = async function(key, makeVisible) {
+  if (!activeCustomizations['__uiVisibility__']) activeCustomizations['__uiVisibility__'] = {};
+  activeCustomizations['__uiVisibility__'][key] = !makeVisible; // store "hidden" flag
+  await saveCustomizationsToServer();
+  applyUIVisibility();
+  renderUIVisibilityControls();
+  const item = UI_HIDEABLE.find(i => i.key === key);
+  showToast(`${item ? item.name : key} ${makeVisible ? 'גלוי כעת' : 'מוסתר כעת'}`);
+};
+
+window.renderUIVisibilityControls = function() {
+  const grid = document.getElementById('ui-visibility-controls-grid');
+  if (!grid) return;
+  const state = (activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
+  grid.innerHTML = UI_HIDEABLE.map(item => {
+    const visible = state[item.key] !== true; // default visible
+    return `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px;">
+        <span style="font-size:0.92rem; color:#e5e5e7; font-weight:600;">${item.name}</span>
+        <label style="position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; cursor:pointer;">
+          <input type="checkbox" ${visible ? 'checked' : ''} onchange="toggleUIVisibility('${item.key}', this.checked)" style="opacity:0; width:0; height:0;">
+          <span style="position:absolute; inset:0; background:${visible ? '#22c55e' : '#3f3f46'}; border-radius:26px; transition:0.2s;"></span>
+          <span style="position:absolute; top:3px; ${visible ? 'right:3px' : 'left:3px'}; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.2s;"></span>
+        </label>
+      </div>`;
+  }).join('');
+};
+
+// apply on load + when the admin opens the tab
+document.addEventListener('DOMContentLoaded', () => setTimeout(() => { if (window.applyUIVisibility) window.applyUIVisibility(); }, 800));
+(function hookUITab() {
+  const orig = window.switchAdminTab;
+  window.switchAdminTab = function(tabId, btn) {
+    if (typeof orig === 'function') orig(tabId, btn);
+    if (tabId === 'ui-visibility' && window.renderUIVisibilityControls) window.renderUIVisibilityControls();
+  };
+})();
