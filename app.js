@@ -2723,6 +2723,9 @@ window.togglePageVisibility = async function(pageId, isVisible) {
 
 window.applyPageVisibility = function() {
   try {
+    const visibilityState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
+    const customPages = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__customPages__']) || [];
+    const customPageIds = customPages.map(p => p.id);
   const uiElementsSelectors = {
     'ui_nav_search': ['.apple-search-container'],
     'ui_nav_premium': ['.nav-btn-premium', '#btn-go-premium'],
