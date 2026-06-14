@@ -11356,7 +11356,7 @@ async function loadDirectMessages() {
     return;
   }
 
-  container.innerHTML = msgs.map(m => {
+  let html = msgs.map(m => {
     const isMe = !m.isAdmin;
     const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
     const bubbleBg = isMe ? '#0071e3' : '#f1f1f1';
@@ -11372,6 +11372,21 @@ async function loadDirectMessages() {
       </div>
     `;
   }).join('');
+
+  const lastMsg = msgs[msgs.length - 1];
+  if (!lastMsg.isAdmin) {
+    const autoReplyText = "המנהל יחזור אליכם עד 12 שעות אל תשכחו לכתוב גיל ומאיפה ואני אחזור אליכם עד 12 שעות מעכשיו";
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    html += `
+      <div style="background:#f1f1f1; color:#000000; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 8px; border: 1px dashed rgba(0,0,0,0.15);">
+        <span style="font-weight: 500; font-size: 0.78rem; opacity: 0.7; color: #555555"><i class="fas fa-robot"></i> הודעה אוטומטית</span>
+        <span style="white-space: pre-wrap; word-break: break-word; font-weight: 600;">${autoReplyText}</span>
+        <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end; color: #777777">${timeStr}</span>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 
   container.scrollTop = container.scrollHeight;
   checkUnreadSupportMessages();
