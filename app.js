@@ -1112,7 +1112,63 @@ function renderNewsLayout(page = 1) {
         </div>
       </div>
     `;
-    articlesHTML = part1HTML + liveVideosHTML + part2aHTML + newUsersHTML + part2bHTML;
+
+    const randomShopItems = (typeof shopProducts !== 'undefined' && shopProducts) ? shopProducts.slice(0, 4) : [];
+    const shopStripHTML = `
+      <div class="live-cameras-section" style="margin-top:16px;">
+        <div class="live-cameras-header" style="margin-bottom: 12px;">
+          <div class="live-cameras-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div>
+              <span class="pulse-badge" style="background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.5); color:#f59e0b; padding-left:10px;"><i class="fas fa-shopping-bag" style="margin-left:6px;"></i> חנות מבצעים</span>
+              מוצרים נבחרים ששווה לבדוק
+            </div>
+            <button onclick="navigateTab('shop')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap;">לכל החנות</button>
+          </div>
+        </div>
+        <div class="live-cameras-slider">
+          ${randomShopItems.map(p => {
+             const mainImg = Array.isArray(p.image) ? p.image[0] : (p.img || p.image);
+             return `
+            <div class="live-camera-card" style="width: 180px; height: auto; aspect-ratio: auto; min-height: 200px; background: #111; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);" onclick="event.stopPropagation(); navigateTab('shop'); setTimeout(()=>window.openProductDetailsModal('${p.id}'), 300)">
+              <div style="width: 100%; height: 120px; border-radius: 8px; overflow: hidden; background: #fff; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+                <img src="${mainImg}" style="max-width:100%; max-height:100%; object-fit:contain;">
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.85rem; text-align: right; width: 100%; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.title}</div>
+              <div style="color: #f59e0b; font-weight: 800; font-size: 1rem; width: 100%; text-align: right;">${p.price}</div>
+            </div>
+          `}).join('')}
+        </div>
+      </div>
+    `;
+
+    const communityStripHTML = `
+      <div class="live-cameras-section" style="margin-top:16px;">
+        <div class="live-cameras-header" style="margin-bottom: 12px;">
+          <div class="live-cameras-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div>
+              <span class="pulse-badge" style="background:rgba(139,92,246,0.15); border-color:rgba(139,92,246,0.5); color:#8b5cf6; padding-left:10px;"><i class="fas fa-users" style="margin-left:6px;"></i> הקהילה שלנו</span>
+              הצטרף לדיונים החמים עכשיו
+            </div>
+            <button onclick="navigateTab('groups')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap;">כנס לפורום</button>
+          </div>
+        </div>
+        <div class="live-cameras-slider">
+          ${[
+            { title: "המלצות מחשבים ניידים לסטודנטים 2026", cat: "מחשבים" },
+            { title: "דיון: מתי מניות ה-AI יתחילו לרדת?", cat: "שוק ההון" },
+            { title: "האם כדאי לשדרג לאייפון 17 החדש?", cat: "סמארטפונים" },
+            { title: "ביטקוין שוב עולה - לאן נגיע השנה?", cat: "קריפטו" }
+          ].map(d => `
+            <div class="live-camera-card" style="width: 240px; height: 130px; background: linear-gradient(135deg, #1e1246 0%, #0d071f 100%); padding: 16px; display: flex; flex-direction: column; justify-content: center; border: 1px solid rgba(139,92,246,0.3); border-radius: 16px;" onclick="event.stopPropagation(); navigateTab('groups');">
+              <div style="color: #c4b5fd; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px;"><i class="fas fa-hashtag" style="margin-left:4px; opacity:0.7;"></i>${d.cat}</div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.95rem; line-height: 1.4;">${d.title}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    articlesHTML = part1HTML + liveVideosHTML + shopStripHTML + part2aHTML + communityStripHTML + newUsersHTML + part2bHTML;
     setTimeout(() => { if (typeof renderNewUsersStrip === 'function') renderNewUsersStrip(); }, 60);
   } else {
     articlesHTML = pageArticles.map(a => renderSingleFeedItem(a)).join('');
@@ -5146,7 +5202,7 @@ async function loadAliExpressProducts() {
   }
 }
 
-const shopProducts = [
+var shopProducts = [
   {
     id: 'meadow-pillow',
     title: 'Meadow High Pile Cushion',
@@ -7610,8 +7666,8 @@ window.renderNextPostBatch = function() {
 
     // Reddit-style post image
     const imageHtml = data.image ? `
-      <div style="margin-top:10px; margin-bottom:12px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); max-height: 400px; display: flex; align-items: center; justify-content: center; background: #0c0c0d;">
-        <img src="${data.image}" style="max-width:100%; max-height:400px; object-fit:contain; cursor:zoom-in;" onclick="event.stopPropagation(); if(window.openLightboxImage) window.openLightboxImage('${data.image}');">
+      <div style="margin-top:10px; margin-bottom:12px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); width: 100%; aspect-ratio: 16 / 9; background: #0c0c0d; position: relative;">
+        <img src="${data.image}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="event.stopPropagation(); if(window.openLightboxImage) window.openLightboxImage('${data.image}');">
       </div>` : '';
 
     html += `
@@ -7993,7 +8049,7 @@ window.openPost = async function(postId) {
         <!-- Full content -->
         <div style="color:#e7e9ea;font-size:1rem;line-height:1.7;white-space:pre-wrap;margin-bottom:14px;direction:rtl;text-align:right;">${postData.content||''}</div>
         <!-- Post Image -->
-        ${postData.image ? `<div style="margin-top:12px; margin-bottom:16px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); text-align:center; background: #0c0c0d; display: flex; align-items: center; justify-content: center; max-height: 500px;"><img src="${postData.image}" style="max-width:100%; max-height:500px; object-fit:contain; cursor:zoom-in;" onclick="if(window.openLightboxImage) window.openLightboxImage('${postData.image}');"></div>` : ''}
+        ${postData.image ? `<div style="margin-top:12px; margin-bottom:16px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); width: 100%; aspect-ratio: 16 / 9; background: #0c0c0d; position: relative;"><img src="${postData.image}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="if(window.openLightboxImage) window.openLightboxImage('${postData.image}');"></div>` : ''}
         <!-- Full date + views -->
         <div style="color:#71767b;font-size:0.88rem;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);">
           ${fmtFullDate(postData.timestamp)} · <strong style="color:#e7e9ea;">${fmtN(postViews)}</strong> Views
