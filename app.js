@@ -2649,7 +2649,37 @@ window.renderPageVisibilityControls = function() {
     { id: 'groups', name: 'פורום (Forum)', icon: 'fa-solid fa-comments' },
     { id: 'bets', name: 'הימורים (Bets)', icon: 'fa-solid fa-dice' },
     { id: 'deliveries', name: 'משלוחים (Deliveries)', icon: 'fas fa-truck' },
-    ...customPagesInfo
+    ...customPagesInfo,
+    { id: 'ui_nav_search', name: 'שורת חיפוש (תפריט עליון)', icon: 'fas fa-search' },
+    { id: 'ui_nav_premium', name: 'כפתור פרימיום (תפריט עליון)', icon: 'fas fa-crown' },
+    { id: 'ui_nav_ads', name: 'כפתור מודעות/Ads (תפריט עליון)', icon: 'fas fa-ad' },
+    { id: 'ui_nav_messages', name: 'הודעות (תפריט עליון)', icon: 'fas fa-comment-dots' },
+    { id: 'ui_nav_bookmarks', name: 'שמירות (תפריט עליון)', icon: 'fas fa-bookmark' },
+    { id: 'ui_pill_history', name: 'היסטוריה (סרגל צף תחתון)', icon: 'fas fa-history' },
+    { id: 'ui_pill_chat', name: 'צ\'אט מהיר (סרגל צף תחתון)', icon: 'fas fa-comments' },
+    { id: 'ui_pill_ai', name: 'סייען AI (סרגל צף תחתון)', icon: 'fas fa-robot' },
+    { id: 'ui_drop_mygraphs', name: 'הגרפים שלי (תפריט משתמש)', icon: 'fas fa-chart-pie' },
+    { id: 'ui_drop_myarticles', name: 'הכתבות שלי (תפריט משתמש)', icon: 'fas fa-newspaper' },
+    { id: 'ui_drop_mystore', name: 'החנות שלי (תפריט משתמש)', icon: 'fas fa-store' },
+    { id: 'ui_footer_terms', name: 'תנאי שימוש (פוטר)', icon: 'fas fa-balance-scale' },
+    { id: 'ui_footer_privacy', name: 'מדיניות פרטיות (פוטר)', icon: 'fas fa-user-shield' },
+    { id: 'ui_footer_accessibility', name: 'הצהרת נגישות (פוטר)', icon: 'fas fa-wheelchair' },
+    { id: 'ui_footer_upload_articles', name: 'העלה מאמרים (פוטר)', icon: 'fas fa-upload' },
+    { id: 'ui_footer_about', name: 'אודותינו (פוטר)', icon: 'fas fa-info-circle' },
+    { id: 'ui_footer_whatsnew', name: 'מה חדש (פוטר)', icon: 'fas fa-bullhorn' },
+    { id: 'ui_footer_download_app', name: 'הורד אפליקציה (פוטר)', icon: 'fas fa-mobile-alt' },
+    { id: 'ui_footer_subscribe', name: 'מנוי חודשי (פוטר)', icon: 'fas fa-star' },
+    { id: 'ui_footer_support', name: 'תמיכה במייל (פוטר)', icon: 'fas fa-envelope' },
+    { id: 'ui_footer_phone', name: 'התקשר אלינו (פוטר)', icon: 'fas fa-phone' },
+    { id: 'ui_footer_donate', name: 'תרום דרך PayPal (פוטר)', icon: 'fab fa-paypal' },
+    { id: 'ui_footer_appstore', name: 'כפתור App Store (פוטר)', icon: 'fab fa-apple' },
+    { id: 'ui_footer_playstore', name: 'כפתור Google Play (פוטר)', icon: 'fab fa-google-play' },
+    { id: 'ui_social_x', name: 'X / טוויטר (פוטר)', icon: 'fab fa-x-twitter' },
+    { id: 'ui_social_linkedin', name: 'LinkedIn (פוטר)', icon: 'fab fa-linkedin-in' },
+    { id: 'ui_social_facebook', name: 'Facebook (פוטר)', icon: 'fab fa-facebook-f' },
+    { id: 'ui_social_instagram', name: 'Instagram (פוטר)', icon: 'fab fa-instagram' },
+    { id: 'ui_social_youtube', name: 'YouTube (פוטר)', icon: 'fab fa-youtube' },
+    { id: 'ui_social_mastodon', name: 'Mastodon (פוטר)', icon: 'fab fa-mastodon' }
   ];
 
   const visibilityState = activeCustomizations['__pageVisibility__'] || {};
@@ -2693,23 +2723,76 @@ window.togglePageVisibility = async function(pageId, isVisible) {
 
 window.applyPageVisibility = function() {
   try {
-    const visibilityState = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__pageVisibility__']) || {};
-    const customPages = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__customPages__']) || [];
-    const customPageIds = customPages.map(p => p.id);
-    const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets', 'deliveries', ...customPageIds];
+  const uiElementsSelectors = {
+    'ui_nav_search': ['.apple-search-container'],
+    'ui_nav_premium': ['.nav-btn-premium', '#btn-go-premium'],
+    'ui_nav_ads': ['.nav-btn-ads', '#btn-ads'],
+    'ui_nav_messages': ['#nav-btn-messages'],
+    'ui_nav_bookmarks': ['#nav-btn-bookmarks'],
+    'ui_pill_history': ['#btn-recent-activity'],
+    'ui_pill_chat': ['#btn-quick-chat'],
+    'ui_pill_ai': ['#btn-ai-assistant'],
+    'ui_drop_mygraphs': ['#link-my-graphs', '.dropdown-item-reddit[onclick*="my-graphs"]'],
+    'ui_drop_myarticles': ['#link-my-articles', '.dropdown-item-reddit[onclick*="my-articles"]'],
+    'ui_drop_mystore': ['#link-video-wall', '.dropdown-item-reddit[onclick*="openOrderTrackingModal"]'],
+    'ui_footer_terms': ['#footer-terms', '#legal-tab-terms'],
+    'ui_footer_privacy': ['#footer-privacy'],
+    'ui_footer_accessibility': ['#footer-accessibility'],
+    'ui_footer_upload_articles': ['#footer-upload-articles'],
+    'ui_footer_about': ['#footer-about-us'],
+    'ui_footer_whatsnew': ['#footer-whats-new'],
+    'ui_footer_download_app': ['#footer-download-app'],
+    'ui_footer_subscribe': ['#footer-monthly-subscription'],
+    'ui_footer_support': ['#footer-email-support'],
+    'ui_footer_phone': ['#footer-call-us'],
+    'ui_footer_donate': ['#footer-paypal-donate'],
+    'ui_footer_appstore': ['#link-app-appstore'],
+    'ui_footer_playstore': ['#link-app-playstore'],
+    'ui_social_x': ['#link-social-x', '#footer-link-x'],
+    'ui_social_linkedin': ['#link-social-linkedin'],
+    'ui_social_facebook': ['#link-social-facebook', '#footer-link-fb'],
+    'ui_social_instagram': ['#link-social-instagram', '#footer-link-ig'],
+    'ui_social_youtube': ['#link-social-youtube', '#footer-link-yt'],
+    'ui_social_mastodon': ['#link-social-mastodon']
+  };
 
-    pagesInfo.forEach(pageId => {
-      try {
-        const isVisible = visibilityState[pageId] !== false; // default true
-        
-        // Find all links referencing this page
-        const sidebarLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
-        const appleNavItems = document.querySelectorAll(`.apple-nav-item[onclick*="showPage('${pageId}')"]`);
-        const mobileLinks = document.querySelectorAll(`.mobile-nav-link[onclick*="showPage('${pageId}')"]`);
-        const secNavItems = document.querySelectorAll(`.sec-nav-item[onclick*="showPage('${pageId}')"]`);
+  const uiIds = Object.keys(uiElementsSelectors);
+  const pagesInfo = ['shop', 'b2b', 'realestate', 'sharing', 'uber', 'pdf-store', 'groups', 'bets', 'deliveries', ...customPageIds, ...uiIds];
+
+  pagesInfo.forEach(pageId => {
+    try {
+      const isVisible = visibilityState[pageId] !== false; // default true
+      let currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+      
+      if (pageId.startsWith('ui_')) {
+        const selectors = uiElementsSelectors[pageId] || [];
+        selectors.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => {
+            if (currentIsAdmin) {
+              el.style.display = '';
+              el.style.opacity = isVisible ? '1' : '0.3';
+              if (!isVisible) el.style.outline = '1px dashed red';
+              else el.style.outline = '';
+            } else {
+              if (el.classList.contains('dropdown-item-reddit') || el.id === 'btn-ai-assistant' || el.id === 'btn-quick-chat' || el.id === 'btn-recent-activity' || el.classList.contains('nav-btn-premium') || el.classList.contains('nav-btn-ads')) {
+                el.style.display = isVisible ? 'flex' : 'none';
+              } else {
+                el.style.display = isVisible ? '' : 'none';
+              }
+            }
+          });
+        });
+        return;
+      }
+      
+      // Find all links referencing this page
+      const sidebarLink = document.querySelector(`.sidebar-link[data-page="${pageId}"]`);
+      const appleNavItems = document.querySelectorAll(`.apple-nav-item[onclick*="showPage('${pageId}')"]`);
+      const mobileLinks = document.querySelectorAll(`.mobile-nav-link[onclick*="showPage('${pageId}')"]`);
+      const secNavItems = document.querySelectorAll(`.sec-nav-item[onclick*="showPage('${pageId}')"]`);
 
         const allElements = [sidebarLink, ...appleNavItems, ...mobileLinks, ...secNavItems].filter(Boolean);
-        const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+        currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
 
         if (currentIsAdmin) {
           // If admin, we always show the links
@@ -13795,16 +13878,37 @@ function applyAllCustomizations() {
 async function saveCustomizationsToServer() {
   showToast('⏳ שומר שינויים לשרת...');
   try {
-    const res = await fetch('/api/customizations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(activeCustomizations)
-    });
-    if (!res.ok) throw new Error('שגיאה בשמירה לשרת');
-    showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+    const { doc, setDoc } = window.fbFirestore || {};
+    const db = window.db;
+    
+    if (doc && setDoc && db) {
+      await setDoc(doc(db, 'siteSettings', 'customizations'), activeCustomizations);
+      showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+    } else if (window.fbSetDoc && window.fbGetDoc && window.db) {
+      const docRef = window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations');
+      if (docRef) {
+         await window.fbSetDoc(docRef, activeCustomizations);
+         showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+      } else {
+         throw new Error('Firestore references missing');
+      }
+    } else {
+      throw new Error('Firebase Firestore functions not available');
+    }
   } catch (err) {
-    console.error(err);
-    showToast('❌ שגיאה בשמירה לשרת');
+    console.error('Firebase save error:', err);
+    try {
+      const res = await fetch('/api/customizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activeCustomizations)
+      });
+      if (!res.ok) throw new Error('שגיאה בשמירה לשרת המקומי');
+      showToast('✅ השינויים נשמרו בהצלחה (לוקאלי)!');
+    } catch (fallbackErr) {
+      console.error(fallbackErr);
+      showToast('❌ שגיאה בשמירה לשרת');
+    }
   }
 }
 
@@ -13812,18 +13916,39 @@ async function saveCustomizationsToServer() {
 async function initCustomizations() {
   initDeterministicIds();
   try {
-    const res = await fetch('/api/customizations');
-    if (res.ok) {
-      activeCustomizations = await res.json();
-      if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
-      applyAllCustomizations();
-      if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
-      // Restore section order & visibility
-      if (window.applySectionLayout) window.applySectionLayout();
+    const { doc, getDoc } = window.fbFirestore || {};
+    const db = window.db;
+    let dataLoaded = false;
+    
+    if (doc && getDoc && db) {
+      const snap = await getDoc(doc(db, 'siteSettings', 'customizations'));
+      if (snap.exists()) {
+        activeCustomizations = snap.data();
+        dataLoaded = true;
+      }
+    } else if (window.fbGetDoc && window.fbFirestore && window.fbFirestore.doc && window.db) {
+      const snap = await window.fbGetDoc(window.fbFirestore.doc(window.db, 'siteSettings', 'customizations'));
+      if (snap.exists()) {
+        activeCustomizations = snap.data();
+        dataLoaded = true;
+      }
     }
+    if (!dataLoaded) throw new Error('No Firebase data');
   } catch (err) {
-    console.error('Failed to load customizations:', err);
+    console.warn('Falling back to local API for customizations:', err);
+    try {
+      const res = await fetch('/api/customizations');
+      if (res.ok) {
+        activeCustomizations = await res.json();
+      }
+    } catch (fallbackErr) {
+      console.error(fallbackErr);
+    }
   }
+  
+  if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
+  applyAllCustomizations();
+  if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
 }
 
 // Initialize Customizations
