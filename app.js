@@ -1078,63 +1078,39 @@ function renderNewsLayout(page = 1) {
     const part2aHTML = part2a.map(a => renderSingleFeedItem(a)).join('');
     const part2bHTML = part2b.map(a => renderSingleFeedItem(a)).join('');
 
-    // "New users" strip — populated async by renderNewUsersStrip()
-    const newUsersHTML = `
-      <div class="live-cameras-section new-users-section" id="new-users-section">
-        <div class="live-cameras-header">
-          <div class="live-cameras-title">
-            <span class="pulse-badge" style="background:rgba(110,142,251,0.15); border-color:rgba(110,142,251,0.5); color:#9db4ff;"><span class="pulse-dot" style="background:#6E8EFB;"></span> חדשים</span>
-            משתמשים חדשים שהצטרפו 👋
-          </div>
-        </div>
-        <div class="new-users-slider" id="new-users-slider">
-          <div style="color:#86868b; font-size:0.85rem; padding:20px;">טוען משתמשים...</div>
-        </div>
-      </div>
-    `;
 
-    const liveVideosHTML = `
+
+    const topLiveFeeds = LIVE_FEEDS.slice(0, 2);
+    const randomShopItems = (typeof shopProducts !== 'undefined' && shopProducts) ? shopProducts.slice(0, 2) : [];
+    
+    const combinedStripHTML = `
       <div class="live-cameras-section">
-        <div class="live-cameras-header">
-          <div class="live-cameras-title">
-            <span class="pulse-badge"><span class="pulse-dot"></span> SOKI LIVE</span>
-            שידורים חיים מכל הארץ
+        <div class="live-cameras-header" style="margin-bottom: 12px;">
+          <div class="live-cameras-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="pulse-badge"><span class="pulse-dot"></span> SOKI LIVE</span>
+              <span style="font-size: 1rem; font-weight: 700; color: #fff;">שידורים חיים ומוצרי חנות</span>
+            </div>
+            <button onclick="navigateTab('shop')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">לכל החנות</button>
           </div>
         </div>
-        <div class="live-cameras-slider" id="live-cameras-slider">
-          ${LIVE_FEEDS.map((feed, idx) => `
-            <div class="live-camera-card" onclick="event.stopPropagation(); window.openLiveVideoLightbox('${feed.src}', '${feed.label}')">
+        <div class="live-cameras-slider" id="live-cameras-slider" style="display:flex; gap:12px; overflow-x:auto;">
+          ${topLiveFeeds.map((feed, idx) => `
+            <div class="live-camera-card" style="width: 200px; height: 160px; min-height: 160px; flex-shrink: 0;" onclick="event.stopPropagation(); window.openLiveVideoLightbox('${feed.src}', '${feed.label}')">
               <video muted loop playsinline preload="metadata" data-src="${feed.src}"></video>
               <div class="card-live-badge"><span class="card-live-dot"></span> LIVE</div>
               <div class="card-label">${feed.label}</div>
             </div>
           `).join('')}
-        </div>
-      </div>
-    `;
-
-    const randomShopItems = (typeof shopProducts !== 'undefined' && shopProducts) ? shopProducts.slice(0, 4) : [];
-    const shopStripHTML = `
-      <div class="live-cameras-section" style="margin-top:16px;">
-        <div class="live-cameras-header" style="margin-bottom: 12px;">
-          <div class="live-cameras-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-            <div>
-              <span class="pulse-badge" style="background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.5); color:#f59e0b; padding-left:10px;"><i class="fas fa-shopping-bag" style="margin-left:6px;"></i> חנות מבצעים</span>
-              מוצרים נבחרים ששווה לבדוק
-            </div>
-            <button onclick="navigateTab('shop')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap;">לכל החנות</button>
-          </div>
-        </div>
-        <div class="live-cameras-slider">
           ${randomShopItems.map(p => {
              const mainImg = Array.isArray(p.image) ? p.image[0] : (p.img || p.image);
              return `
-            <div class="live-camera-card" style="width: 180px; height: auto; aspect-ratio: auto; min-height: 200px; background: #111; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);" onclick="event.stopPropagation(); navigateTab('shop'); setTimeout(()=>window.openProductDetailsModal('${p.id}'), 300)">
-              <div style="width: 100%; height: 120px; border-radius: 8px; overflow: hidden; background: #fff; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+            <div class="live-camera-card" style="width: 200px; height: 160px; min-height: 160px; flex-shrink: 0; background: #111; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05);" onclick="event.stopPropagation(); navigateTab('shop'); setTimeout(()=>window.openProductDetailsModal('${p.id}'), 300)">
+              <div style="width: 100%; height: 90px; border-radius: 8px; overflow: hidden; background: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
                 <img src="${mainImg}" style="max-width:100%; max-height:100%; object-fit:contain;">
               </div>
-              <div style="font-weight: 700; color: #fff; font-size: 0.85rem; text-align: right; width: 100%; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.title}</div>
-              <div style="color: #f59e0b; font-weight: 800; font-size: 1rem; width: 100%; text-align: right;">${p.price}</div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.85rem; text-align: right; width: 100%; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${p.title}</div>
+              <div style="color: #f59e0b; font-weight: 800; font-size: 0.95rem; width: 100%; text-align: right;">${p.price}</div>
             </div>
           `}).join('')}
         </div>
@@ -1168,7 +1144,7 @@ function renderNewsLayout(page = 1) {
       </div>
     `;
 
-    articlesHTML = part1HTML + liveVideosHTML + shopStripHTML + part2aHTML + communityStripHTML + newUsersHTML + part2bHTML;
+    articlesHTML = part1HTML + combinedStripHTML + part2aHTML + communityStripHTML + part2bHTML;
     setTimeout(() => { if (typeof renderNewUsersStrip === 'function') renderNewUsersStrip(); }, 60);
   } else {
     articlesHTML = pageArticles.map(a => renderSingleFeedItem(a)).join('');
