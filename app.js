@@ -17892,7 +17892,19 @@ const UI_HIDEABLE = [
   { key: 'my_store',     name: 'קישור "My Store" (סיידבר)',         sel: '#link-my-store' },
   { key: 'video_wall',   name: 'קישור "וידאו חי" (סיידבר)',         sel: '#link-video-wall' },
   { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' },
-  { key: 'user_dropdown',name: 'תפריט המשתמש הנפתח (פרופיל/הגדרות/יציאה)', sel: '#nav-user-dropdown' }
+  { key: 'user_dropdown',name: 'תפריט המשתמש הנפתח (פרופיל/הגדרות/יציאה)', sel: '#nav-user-dropdown' },
+  // ── Footer ──
+  { key: 'footer_all',     name: 'פוטר — כל הפוטר',                  sel: '.soki-footer-premium' },
+  { key: 'footer_brand',   name: 'פוטר — לוגו SOKI ומותג',          sel: '.soki-footer-brand-col' },
+  { key: 'footer_socials', name: 'פוטר — אייקוני רשתות חברתיות',     sel: '.soki-footer-socials' },
+  { key: 'footer_apps',    name: 'פוטר — כפתורי App Store / Google Play', sel: '.soki-footer-apps' },
+  { key: 'footer_contact', name: 'פוטר — עמודת "צור קשר"',           sel: '#footer-col-contact' },
+  { key: 'footer_info',    name: 'פוטר — עמודת "מידע"',              sel: '#footer-col-information' },
+  { key: 'footer_admin',   name: 'פוטר — עמודת "מנהל"',              sel: '#footer-col-admin' },
+  { key: 'footer_legal',   name: 'פוטר — עמודת "מידע משפטי"',        sel: '#footer-col-legal' },
+  { key: 'footer_paypal',  name: 'פוטר — "תרום דרך PayPal"',         sel: '#footer-paypal-donate' },
+  { key: 'footer_monthly', name: 'פוטר — "מנוי חודשי"',             sel: '#footer-monthly-subscription' },
+  { key: 'footer_download',name: 'פוטר — "הורד אפליקציה"',          sel: '#footer-download-app' }
 ];
 
 window.applyUIVisibility = function() {
