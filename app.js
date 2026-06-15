@@ -4040,17 +4040,35 @@ function showProductDetailById(id) {
       }
     }
 
-    thumbList.innerHTML = images.map((img, i) => `
-      <div class="pdp-thumb ${i === 0 ? 'active' : ''}" onclick="changePdpImage(this, '${img}')">
+    let thumbHtml = images.map((img, i) => `
+      <div class="pdp-thumb ${i === 0 ? 'active' : ''}" onclick="changePdpImage(this, '${img}')" style="position: relative;">
         <img src="${img}" alt="Thumbnail ${i+1}" style="${hasAccess ? '' : 'filter: blur(4px);'}">
+        ${(typeof isAdmin !== 'undefined' && isAdmin) ? `<button onclick="event.stopPropagation(); pdpDeleteThumbnail(${i})" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;" title="מחק תמונה">&times;</button>` : ''}
       </div>
     `).join('');
+
+    if (typeof isAdmin !== 'undefined' && isAdmin) {
+      thumbHtml += `
+        <div class="pdp-thumb" onclick="pdpTriggerAddThumbnail()" style="display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); cursor: pointer;" title="הוסף תמונה">
+          <i class="fas fa-plus" style="font-size: 1.2rem; color: rgba(255,255,255,0.5);"></i>
+        </div>
+      `;
+    }
+    thumbList.innerHTML = thumbHtml;
   } else {
     const cidMap = { 'PDF': '1544716278-ca5e3f4abd8c', 'Software': '1517694712202-14dd9538aa97', 'Video': '1492724441997-5dc865305da7', 'File': '1544391490-01c6db9f5a70', 'Guide': '1497633762265-9d179a990aa6' };
     const cid = cidMap[item.type] || cidMap['PDF'];
     const fallback = `https://images.unsplash.com/photo-${cid}?auto=format&fit=crop&q=80&w=800`;
     mainImg.src = fallback;
-    thumbList.innerHTML = `<div class="pdp-thumb active"><img src="${fallback}"></div>`;
+    let thumbHtml = `<div class="pdp-thumb active"><img src="${fallback}"></div>`;
+    if (typeof isAdmin !== 'undefined' && isAdmin) {
+      thumbHtml += `
+        <div class="pdp-thumb" onclick="pdpTriggerAddThumbnail()" style="display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); cursor: pointer;" title="הוסף תמונה">
+          <i class="fas fa-plus" style="font-size: 1.2rem; color: rgba(255,255,255,0.5);"></i>
+        </div>
+      `;
+    }
+    thumbList.innerHTML = thumbHtml;
   }
   
 
@@ -4091,7 +4109,7 @@ window.pdpHandleImageUpload = function(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
-    img.onload = function() {
+    img.onload = async function() {
       const canvas = document.createElement('canvas');
       const MAX = 800;
       let w = img.width, h = img.height;
@@ -4103,30 +4121,30 @@ window.pdpHandleImageUpload = function(event) {
       // Update display
       document.getElementById('pdp-main-image').src = dataUrl;
       
-      // Update article data
       const id = window._currentPdpArticleId;
-      const art = newsArticles.find(x => String(x.id) === String(id));
-      if (art) {
-        art.image = dataUrl;
-        if (art.images) art.images[0] = dataUrl;
-        else art.images = [dataUrl];
-        localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-        // Save to server
-        fetch('/api/articles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(art)
-        }).catch(e => console.error(e));
+      let item = pdfStoreItems.find(x => String(x.id) === String(id));
+      if (!item) {
+        item = newsArticles.find(x => String(x.id) === String(id));
+      }
+      if (item) {
+        const updates = { image: dataUrl };
+        if (item.images) {
+          item.images[0] = dataUrl;
+          updates.images = item.images;
+        } else {
+          updates.images = [dataUrl];
+        }
+        await pdpSaveItemUpdate(id, updates);
       }
       showToast('✅ התמונה עודכנה בהצלחה!');
-      if (typeof renderNews === 'function') renderNews();
+      showProductDetailById(id);
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 };
 
-window.pdpEditText = function() {
+window.pdpEditText = async function() {
   const titleEl = document.getElementById('pdp-title');
   const descEl = document.getElementById('pdp-desc');
   const isEditing = titleEl.contentEditable === 'true';
@@ -4141,20 +4159,22 @@ window.pdpEditText = function() {
     descEl.style.outline = 'none';
     
     const id = window._currentPdpArticleId;
-    const art = newsArticles.find(x => String(x.id) === String(id));
-    if (art) {
-      art.title = titleEl.textContent;
-      art.desc = descEl.textContent;
-      art.snippet = descEl.textContent.substring(0, 120);
-      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-      fetch('/api/articles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(art)
-      }).catch(e => console.error(e));
+    let item = pdfStoreItems.find(x => String(x.id) === String(id));
+    if (!item) {
+      item = newsArticles.find(x => String(x.id) === String(id));
+    }
+    if (item) {
+      const updates = {
+        title: titleEl.textContent,
+        desc: descEl.textContent
+      };
+      if (item.hasOwnProperty('snippet')) {
+        updates.snippet = descEl.textContent.substring(0, 120);
+      }
+      await pdpSaveItemUpdate(id, updates);
     }
     showToast('✅ הטקסט נשמר בהצלחה!');
-    if (typeof renderNews === 'function') renderNews();
+    showProductDetailById(id);
   } else {
     // Enable editing
     titleEl.contentEditable = 'true';
@@ -4178,6 +4198,104 @@ window.pdpDeleteArticle = function() {
   if (!confirm('האם אתה בטוח שברצונך למחוק את הכתבה הזו?')) return;
   deleteArticle(id);
   goBack();
+};
+
+window.pdpSaveItemUpdate = async function(id, updates) {
+  // 1. Check in newsArticles
+  const art = newsArticles.find(x => String(x.id) === String(id));
+  if (art) {
+    Object.assign(art, updates);
+    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+    try {
+      await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(art)
+      });
+    } catch(e) { console.error('Error saving article to server:', e); }
+    if (typeof renderNews === 'function') renderNews();
+    if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
+    return true;
+  }
+
+  // 2. Check in pdfStoreItems
+  const pdfItem = pdfStoreItems.find(x => String(x.id) === String(id));
+  if (pdfItem) {
+    Object.assign(pdfItem, updates);
+    localStorage.setItem('pdfStoreItems', JSON.stringify(pdfStoreItems));
+    if (window.db && window.fbFirestore) {
+      const { doc, updateDoc } = window.fbFirestore;
+      try {
+        await updateDoc(doc(window.db, 'pdfStoreItems', id), updates);
+      } catch(e) { console.error('Error saving PDF item to Firestore:', e); }
+    }
+    if (typeof renderPdfStoreGrid === 'function') renderPdfStoreGrid();
+    return true;
+  }
+  return false;
+};
+
+window.pdpTriggerAddThumbnail = function() {
+  document.getElementById('pdp-add-thumb-upload').click();
+};
+
+window.pdpHandleAddThumbnail = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = async function() {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * (MAX / w)); w = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      const id = window._currentPdpArticleId;
+      let item = pdfStoreItems.find(x => String(x.id) === String(id));
+      if (!item) {
+        item = newsArticles.find(x => String(x.id) === String(id));
+      }
+      if (item) {
+        if (!item.images) {
+          item.images = [item.image || dataUrl];
+        }
+        item.images.push(dataUrl);
+        
+        await pdpSaveItemUpdate(id, { images: item.images });
+        showToast('✅ תמונה חדשה נוספה לגלריה!');
+        showProductDetailById(id);
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.pdpDeleteThumbnail = async function(index) {
+  if (!confirm('האם אתה בטוח שברצונך למחוק את התמונה הזו מהגלריה?')) return;
+  const id = window._currentPdpArticleId;
+  let item = pdfStoreItems.find(x => String(x.id) === String(id));
+  if (!item) {
+    item = newsArticles.find(x => String(x.id) === String(id));
+  }
+  if (item && item.images && item.images.length > index) {
+    item.images.splice(index, 1);
+    const updates = { images: item.images };
+    if (index === 0 && item.images.length > 0) {
+      updates.image = item.images[0];
+      item.image = item.images[0];
+    } else if (item.images.length === 0) {
+      updates.image = '';
+      item.image = '';
+    }
+    await pdpSaveItemUpdate(id, updates);
+    showToast('🗑️ התמונה נמחקה מהגלריה');
+    showProductDetailById(id);
+  }
 };
 
 function renderProductRecommendations(currentId) {
