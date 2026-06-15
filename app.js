@@ -17889,6 +17889,9 @@ const UI_HIDEABLE = [
   { key: 'premium_btn',  name: 'כפתור Premium (נאב עליון)',          sel: '.subscription-btn' },
   { key: 'telegram_btn', name: 'כפתור טלגרם (נאב עליון)',            sel: '#nav-telegram-link' },
   { key: 'download_btn', name: 'כפתור הורדה (נאב עליון)',            sel: 'button[title="Download SOKI Desktop Hub"]' },
+  { key: 'my_graphs',    name: 'קישור "הגרפים שלי" (סיידבר)',       sel: '#link-my-graphs',    defaultHidden: true },
+  { key: 'my_articles',  name: 'קישור "הכתבות שלי" (סיידבר)',       sel: '#link-my-articles',  defaultHidden: true },
+  { key: 'my_purchases', name: 'קישור "הרכישות שלי" (סיידבר)',      sel: '#link-my-purchases', defaultHidden: true },
   { key: 'my_store',     name: 'קישור "My Store" (סיידבר)',         sel: '#link-my-store' },
   { key: 'video_wall',   name: 'קישור "וידאו חי" (סיידבר)',         sel: '#link-video-wall' },
   { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' },
@@ -17912,7 +17915,7 @@ window.applyUIVisibility = function() {
     const state = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
     const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
     UI_HIDEABLE.forEach(item => {
-      const hidden = state[item.key] === true; // default visible
+      const hidden = item.defaultHidden ? (state[item.key] !== false) : (state[item.key] === true);
       document.querySelectorAll(item.sel).forEach(el => {
         if (hidden && !currentIsAdmin) {
           el.style.setProperty('display', 'none', 'important');
@@ -17941,7 +17944,7 @@ window.renderUIVisibilityControls = function() {
   if (!grid) return;
   const state = (activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
   grid.innerHTML = UI_HIDEABLE.map(item => {
-    const visible = state[item.key] !== true; // default visible
+    const visible = item.defaultHidden ? (state[item.key] === false) : (state[item.key] !== true);
     return `
       <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px;">
         <span style="font-size:0.92rem; color:#e5e5e7; font-weight:600;">${item.name}</span>
