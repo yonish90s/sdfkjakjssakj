@@ -164,11 +164,7 @@ function saveArticle(article) {
       `<p style="padding:12px;background:#f3f4f6;border-radius:8px;font-size:0.9em;color:#6b7280;margin-bottom:16px;">`,
       `📰 מקור: <a href="${article.link}" target="_blank" rel="noopener">${article.source}</a>`,
       `</p>`,
-      `<p>${article.description || ''}</p>`,
-      `<br>`,
-      `<a href="${article.link}" target="_blank" rel="noopener"`,
-      ` style="display:inline-block;padding:10px 20px;background:#0071e3;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">`,
-      `קרא את הכתבה המלאה ←</a>`,
+      `<p>${article.description || ''}</p>`
     ].join(''),
   };
 

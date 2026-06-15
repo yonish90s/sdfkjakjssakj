@@ -19,6 +19,17 @@
   <link rel="stylesheet" href="style.css?v=6">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <script>
+    try {
+      const cachedCSS = localStorage.getItem('cachedCustomizationsCSS');
+      if (cachedCSS) {
+        const style = document.createElement('style');
+        style.innerHTML = cachedCSS;
+        document.head.appendChild(style);
+      }
+    } catch (e) {}
+  </script>
+
   <style>
     /* Crop tool and switch styles */
     .switch input:checked + .slider {
@@ -67,11 +78,11 @@
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-  import { collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, onSnapshot, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, onSnapshot, deleteDoc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
   window.fbAuth = auth;
   window.db = db;
-  window.fbFirestore = { collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, onSnapshot, deleteDoc };
+  window.fbFirestore = { collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, onSnapshot, deleteDoc, setDoc, getDoc };
 
   onAuthStateChanged(auth, (user) => {
     const isGuest = localStorage.getItem('isGuest') === 'true';
@@ -104,7 +115,9 @@
       localStorage.setItem('currentUser', JSON.stringify(currentUser));
       if (typeof updateUserUI === 'function') updateUserUI();
     }
-    document.documentElement.style.visibility = 'visible';
+    window.authReady = true;
+    if (window.customizationsReady) document.documentElement.style.visibility = 'visible';
+    setTimeout(() => { document.documentElement.style.visibility = 'visible'; }, 3000);
   });
 </script>
 
@@ -150,9 +163,13 @@
       </div>
 
       <nav class="sidebar-nav">
-          <a href="#" class="sidebar-link active" data-page="home" onclick="clearSearchAndShowHome(); return false;">
+          <a href="#" class="sidebar-link active" data-page="main" onclick="showPage('main'); return false;">
             <i class="fas fa-home"></i>
-            <span id="sidebar-link-home">כתבות</span>
+            <span id="sidebar-link-main">ראשי</span>
+          </a>
+          <a href="#" class="sidebar-link" data-page="home" onclick="showPage('home'); return false;">
+            <i class="fas fa-newspaper"></i>
+            <span id="sidebar-link-home">מאמרים</span>
           </a>
           <a href="#" id="sidebar-admin-link" class="sidebar-link" data-page="admin" style="display:none;" onclick="showPage('admin'); return false;">
             <i class="fas fa-lock" style="color: #f9b233;"></i>
@@ -328,14 +345,19 @@
 
         <!-- LEFT SIDE: Navigation and Logo -->
         <div class="nav-right-section" id="apple-nav-items-container" style="display: flex; align-items: center; gap: 24px; flex-shrink: 0;">
+          <!-- Main -->
+          <button onclick="showPage('main')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+            <span id="nav-text-main">ראשי</span>
+          </button>
+
           <!-- SOKI Articles Logo -->
           <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:6px; cursor:pointer;">
             <i class="fas fa-crown" style="color:#f59e0b; font-size:1.1rem; filter: drop-shadow(0 2px 6px rgba(245,158,11,0.4));"></i>
-            <span class="soki-logo-text soki-logo-bounce" dir="ltr" style="font-weight: 900; font-size: 1.25rem; color: #fff; text-transform: uppercase; letter-spacing: -0.02em; direction: ltr; unicode-bidi: isolate;"><span class="soki-letter">Y</span><span class="soki-letter">H</span><span class="soki-letter">S</span><span class="soki-letter">H</span> <span id="nav-logo-subtext" style="font-weight: 500; color: #a1a1a6; font-size: 0.95rem; text-transform: none; margin-left: 2px;">Articles</span></span>
+            <span class="soki-logo-text soki-logo-bounce" dir="ltr" style="font-weight: 900; font-size: 1.25rem; color: #fff; text-transform: uppercase; letter-spacing: -0.02em; direction: ltr; unicode-bidi: isolate;"><span class="soki-letter">Y</span><span class="soki-letter">H</span><span class="soki-letter">S</span><span class="soki-letter">H</span> <span id="nav-logo-subtext" style="font-weight: 500; color: #a1a1a6; font-size: 0.95rem; text-transform: none; margin-left: 2px;">ראשי</span></span>
           </div>
 
           <!-- Articles -->
-          <button onclick="clearSearchAndShowHome()" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+          <button id="nav-btn-home-top" onclick="showPage('home')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
             <span id="nav-text-articles">מאמרים</span>
           </button>
 
@@ -367,10 +389,7 @@
         <!-- RIGHT SIDE: Actions, Buttons -->
         <div class="nav-left-section" style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
           
-          <!-- Telegram Link -->
-          <a href="https://t.me/yourusername" target="_blank" id="nav-telegram-link" class="cart-nav-btn" title="Telegram" style="background:none; border:none; cursor:pointer; position:relative; color:#fde047; width:36px; height:36px; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:color 0.2s, transform 0.2s;" onmouseover="this.style.color='#fff'; this.style.transform='scale(1.1)'" onmouseout="this.style.color='#fde047'; this.style.transform='scale(1)'">
-            <i class="fab fa-telegram-plane" style="font-size:1.3rem;"></i>
-          </a>
+
 
           <!-- Messages Button (hidden — handled by the "שיחות" pill instead) -->
           <button onclick="toggleMessagesDrawer()" class="cart-nav-btn" title="Messages" style="display:none !important;">
@@ -515,6 +534,11 @@
             </button>
           </div>
 
+          <a href="https://t.me/yourusername" target="_blank" id="nav-telegram-link" class="cart-nav-btn" title="Telegram" style="background:none; border:none; cursor:pointer; position:relative; top:-14px; height:36px; display:flex; flex-direction:row; align-items:center; justify-content:center; flex-wrap:nowrap; gap:4px; text-decoration:none; transition:transform 0.2s;" onmouseover="this.querySelector('span').style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.querySelector('span').style.color='#fde047'; this.style.transform='scale(1)'">
+            <span style="font-size: 0.65rem; font-weight: 700; color: #fde047; transition: color 0.2s; white-space: nowrap; line-height: 1;">שלח הודעה</span>
+            <i class="fab fa-telegram" style="font-size:1rem; color:#fde047; display:flex; align-items:center; justify-content:center; flex-shrink:0;"></i>
+          </a>
+
         </div>
 
       </div>
@@ -537,6 +561,7 @@
 
       <!-- Mobile Secondary Nav (Scrollable) -->
       <div class="nav-secondary-apple">
+        <button onclick="showPage('main')" class="sec-nav-item" id="sec-nav-main">ראשי</button>
         <button onclick="showPage('home')" class="sec-nav-item" id="sec-nav-home">מאמרים</button>
         <button onclick="showPage('pdf-store')" class="sec-nav-item" id="sec-nav-graphs">גרפים</button>
         <button onclick="showPage('groups')" class="sec-nav-item" id="sec-nav-forum">פורום</button>
@@ -647,7 +672,70 @@
   </div>
 </div>
 
-<div id="page-home" class="page active" style="padding-top: 0;">
+<div id="page-main" class="page" style="padding-top: 0;">
+  <!-- SECTION: MV Style Hero Banner -->
+  <div class="home-section" data-section-id="mv-hero" data-section-label="באנר ראשי MV">
+    <div style="width: 100%; border-radius: 20px; overflow: hidden; background: #111; position: relative; margin: 20px 0;">
+      <!-- Ticker -->
+      <div style="background: rgba(0,0,0,0.8); color: #fff; font-size: 0.8rem; font-weight: 700; padding: 6px 12px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <span style="color: #ff3366; margin-right: 12px; font-size: 0.9rem;">↗↗↗</span>
+        <marquee scrollamount="5" style="width: 100%; font-family: monospace; letter-spacing: 0.5px;">
+          <span style="display:inline-block;">SOLD! Vid to JNow19 &nbsp;&nbsp;&nbsp; SOLD! Vid to Ssseeeowc_aNrPhHve &nbsp;&nbsp;&nbsp; SOLD! Vid to cracklingvoice &nbsp;&nbsp;&nbsp; SOLD! Vid to jslate6</span>
+        </marquee>
+      </div>
+      <!-- Hero Content -->
+      <div id="main-hero-banner" style="position: relative; width: 100%; height: 350px; background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80'); background-position: center; background-size: cover;">
+        <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 100%); pointer-events: none;"></div>
+        <div style="position: absolute; top: 50%; left: 40px; transform: translateY(-50%); text-align: left; z-index: 2;">
+          <h1 style="color: #fff; font-size: 3.5rem; font-weight: 900; margin: 0; letter-spacing: -1px; text-transform: uppercase;">EXPLORE SOKI</h1>
+          <div style="display: inline-block; background: rgba(255,255,255,0.1); color: #ccc; padding: 4px 8px; font-size: 0.8rem; border-radius: 4px; margin-top: 8px;">Explore Premium Content</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-section" data-section-id="mv-grid" data-section-label="רשת וידאו MV">
+    <script>
+      window.toggleBeingViewedHeader = function() {
+        const isHidden = localStorage.getItem('hideBeingViewedHeader') === 'true';
+        localStorage.setItem('hideBeingViewedHeader', !isHidden);
+        window.applyBeingViewedVisibility();
+      };
+      window.applyBeingViewedVisibility = function() {
+        const el = document.getElementById('being-viewed-header');
+        if (!el) return;
+        const isHidden = localStorage.getItem('hideBeingViewedHeader') === 'true';
+        const icon = el.querySelector('.mv-hide-btn i');
+        if (isHidden && (!window.isEditModeActive)) {
+          el.style.display = 'none';
+        } else {
+          el.style.display = 'flex';
+          if (isHidden) {
+             el.style.opacity = '0.3';
+             if (icon) { icon.className = 'fas fa-eye'; }
+          } else {
+             el.style.opacity = '1';
+             if (icon) { icon.className = 'fas fa-eye-slash'; }
+          }
+        }
+      };
+      // Run once on load
+      document.addEventListener('DOMContentLoaded', () => { setTimeout(window.applyBeingViewedVisibility, 500); });
+    </script>
+    <div id="being-viewed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; transition: opacity 0.3s;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="edit-mode-only mv-hide-btn" onclick="toggleBeingViewedHeader()" style="display: none; background: #ff3b30; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer;" title="Hide/Show Header"><i class="fas fa-eye-slash"></i></button>
+        <h2 style="font-size: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">BEING VIEWED</h2>
+      </div>
+      <button style="background: rgba(255,255,255,0.1); color: #fff; border: none; padding: 6px 16px; border-radius: 980px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">VIEW MORE ↗</button>
+    </div>
+    <div id="main-page-grid" class="mv-card-grid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+<div id="page-home" class="page" style="padding-top: 0;">
 
   <!-- SECTIONS CONTAINER — drag-and-drop reordering in edit mode -->
   <div id="home-sections-container">
@@ -656,6 +744,8 @@
     <div class="home-section" data-section-id="category-bar" data-section-label="סינון קטגוריות">
       <div id="category-filter-bar" class="category-filter-bar" style="margin-top: 20px;"></div>
     </div>
+
+
 
     <!-- SECTION: Featured Carousel -->
     <div class="home-section" data-section-id="carousel" data-section-label="קרוסלה ראשית">
@@ -673,6 +763,7 @@
     <div class="home-section" data-section-id="news-feed" data-section-label="עדכוני חדשות">
       <div class="main-news-layout" style="margin-top: 40px; display: flex; gap: 40px;">
         <div class="news-feed" style="flex:1; min-width: 0;">
+
           <div id="news-feed-list">
             <!-- Populated by JS -->
           </div>

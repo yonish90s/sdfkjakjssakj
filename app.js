@@ -394,7 +394,7 @@ function showPage(pageId) {
   });
 
   // Secondary mobile nav active state
-  const secMap = { 'home': 'sec-nav-home', 'pdf-store': 'sec-nav-graphs', 'my-graphs': 'sec-nav-graphs', 'groups': 'sec-nav-forum', 'shop': 'sec-nav-shop', 'appointments': 'sec-nav-booking', 'services': 'sec-nav-services' };
+  const secMap = { 'main': 'sec-nav-main', 'home': 'sec-nav-home', 'pdf-store': 'sec-nav-graphs', 'my-graphs': 'sec-nav-graphs', 'groups': 'sec-nav-forum', 'shop': 'sec-nav-shop', 'appointments': 'sec-nav-booking', 'services': 'sec-nav-services' };
   document.querySelectorAll('.sec-nav-item').forEach(btn => btn.classList.remove('active'));
   const secId = secMap[pageId];
   if (secId) { const el = document.getElementById(secId); if (el) el.classList.add('active'); }
@@ -458,7 +458,7 @@ function showPage(pageId) {
     } else if (pageId === 'uber') {
       subtextEl.textContent = isHeb ? 'נסיעות' : 'Uber';
     } else {
-      subtextEl.textContent = isHeb ? 'מאמרים' : 'Articles';
+      subtextEl.textContent = isHeb ? 'ראשי' : 'Home';
     }
   }
 
@@ -477,6 +477,7 @@ function showPage(pageId) {
 
   // Trigger rendering logic based on pageId
   if (pageId === 'home') { renderNewsLayout(); if (window.renderRecentActivity) window.renderRecentActivity(); }
+  if (pageId === 'main') { if (typeof renderMainPage === 'function') renderMainPage(); }
   if (pageId === 'store') showPage('shop');
   if (pageId === 'pdf-store') { syncPdfItemsFromFirebase(); renderPdfStoreGrid(); }
   if (pageId === 'shop') { loadAliExpressProducts(); renderShopGrid(); }
@@ -881,6 +882,42 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') window.closeLiveVideoLightbox();
 });
 
+window.renderMainPage = function() {
+  const grid = document.getElementById('main-page-grid');
+  if (!grid) return;
+
+  const locationArticles = getLocationArticles();
+  // Get latest 12 articles for the main page grid
+  const recentArticles = locationArticles.slice(0, 12);
+  
+  grid.innerHTML = recentArticles.map((a, i) => {
+    // Generate random mock stats for the video look
+    const mockViews = Math.floor(Math.random() * 80 + 10) + 'K';
+    const mockDuration = Math.floor(Math.random() * 15 + 5) + ':' + (Math.floor(Math.random() * 50) + 10);
+    const mockPrice = a.isPremium ? '$15.99' : '$4.99';
+
+    return `
+      <div class="mv-card" id="main-card-${a.id}" onclick="if(!window.isEditModeActive) showProductDetailById(${a.id})" style="position: relative;">
+        <button class="mv-card-delete-btn" onclick="event.stopPropagation(); deleteArticle(${a.id});" style="display:none; position:absolute; top:8px; left:8px; z-index:10; background:rgba(255,59,48,0.9); color:#fff; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-trash" style="font-size:0.9rem;"></i></button>
+        <div class="mv-card-header">
+          <div class="mv-author" id="card-author-${a.id}">תמונה מספר ${i + 1}</div>
+        </div>
+        <div class="mv-thumbnail" id="card-image-${a.id}" style="background-image: url('${a.image}')">
+          ${a.isPremium ? `<div class="mv-premium-badge">Premium</div>` : ''}
+        </div>
+        <div class="mv-card-content">
+          <h2 class="mv-title" id="card-title-${a.id}">${escHtml(a.title)}</h2>
+          <div class="mv-footer">
+            <div class="mv-price-btn" id="card-price-${a.id}">כנס</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  if (typeof window.applyAllCustomizations === 'function') window.applyAllCustomizations();
+};
+
 function renderNewsLayout(page = 1) {
   currentPage = page;
   if (page === 1) {
@@ -1078,7 +1115,6 @@ function renderNewsLayout(page = 1) {
     const part1 = pageArticles.slice(0, 3);
     const part2a = pageArticles.slice(3, 6);
     const part2b = pageArticles.slice(6);
-
     const part1HTML = part1.map(a => renderSingleFeedItem(a)).join('');
     const part2aHTML = part2a.map(a => renderSingleFeedItem(a)).join('');
     const part2bHTML = part2b.map(a => renderSingleFeedItem(a)).join('');
@@ -1333,6 +1369,7 @@ function showArticle(id) {
     // Strip the source box paragraph completely
     processedContent = processedContent.replace(/<p[^>]*style="[^"]*background:#f3f4f6[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
     processedContent = processedContent.replace(/<p[^>]*class="article-source-box"[^>]*>[\s\S]*?<\/p>/gi, '');
+    processedContent = processedContent.replace(/(?:<br>\s*)*<a[^>]*>קרא את הכתבה המלאה ←<\/a>/gi, '');
   }
 
   document.getElementById('article-content').innerHTML = `
@@ -3872,7 +3909,13 @@ function renderSidebarPurchases() {
 
 
 function showProductDetailById(id) {
-  const item = pdfStoreItems.find(x => x.id === id);
+  let item = pdfStoreItems.find(x => String(x.id) === String(id));
+  if (!item) {
+    item = newsArticles.find(x => String(x.id) === String(id));
+    if (item && !item.images) {
+      item.images = [item.image];
+    }
+  }
   if (!item) return;
   
   document.getElementById('pdp-title').textContent = item.title;
@@ -6879,7 +6922,7 @@ function updateNavbarLanguage() {
     if (elB2b) elB2b.textContent = 'חיבור מפעלים';
     const activePage = document.querySelector('.page.active');
     const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
-    if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'גרפים' : 'מאמרים';
+    if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'גרפים' : 'ראשי';
     if (searchInput) searchInput.placeholder = 'חיפוש כתבות...';
     if (adminLoginTitle) adminLoginTitle.textContent = 'כניסת מנהל';
     if (adminLoginButton) adminLoginButton.textContent = 'התחבר';
@@ -6914,7 +6957,7 @@ function updateNavbarLanguage() {
     if (elB2b) elB2b.textContent = 'B2B Connect';
     const activePage = document.querySelector('.page.active');
     const isGraphs = activePage && (activePage.id === 'page-pdf-store' || activePage.id === 'page-my-graphs');
-    if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'Graphs' : 'Articles';
+    if (elLogoSubtext) elLogoSubtext.textContent = isGraphs ? 'Graphs' : 'Home';
     if (searchInput) searchInput.placeholder = 'Search Articles...';
     if (adminLoginTitle) adminLoginTitle.textContent = 'Admin Login';
     if (adminLoginButton) adminLoginButton.textContent = 'Login';
@@ -9106,7 +9149,7 @@ window.clearSearchAndShowHome = function() {
   searchQuery = '';
   const searchInput = document.getElementById('navbar-search-input');
   if (searchInput) searchInput.value = '';
-  showPage(typeof getHomePage === 'function' ? getHomePage() : 'home');
+  showPage('main');
 };
 
 // =====================================================================
@@ -13903,6 +13946,9 @@ async function initCustomizations(retryCount = 0) {
   if (typeof window.applyUIVisibility === 'function') window.applyUIVisibility();
   // Restore section order & visibility
   if (window.applySectionLayout) window.applySectionLayout();
+
+  window.customizationsReady = true;
+  if (window.authReady) document.documentElement.style.visibility = 'visible';
 }
 
 // Initialize Customizations
@@ -14256,7 +14302,7 @@ function findImageTarget(el) {
     }
     // Only match elements with explicit inline background-image (not CSS-class backgrounds)
     const styleAttr = current.getAttribute('style') || '';
-    if (styleAttr.includes('background-image') && styleAttr.includes('url(')) {
+    if ((styleAttr.includes('background-image') || styleAttr.includes('background:')) && styleAttr.includes('url(')) {
       return current;
     }
     current = current.parentElement;
@@ -14366,7 +14412,7 @@ window.handleImageEditorFile = function(input) {
     const img = new Image();
     img.onload = function() {
       const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 800; // Optimize Base64 size
+      const MAX_WIDTH = 2560; // Increased for higher resolution
       let width = img.width;
       let height = img.height;
       if (width > MAX_WIDTH) {
@@ -14378,7 +14424,7 @@ window.handleImageEditorFile = function(input) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
       
-      const compressedUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const compressedUrl = canvas.toDataURL('image/jpeg', 0.95);
       const preview = document.getElementById('image-editor-preview');
       if (preview) preview.src = compressedUrl;
       showToast('✅ תמונה הועלתה בהצלחה לתצוגה מקדימה');
@@ -14432,7 +14478,7 @@ window.applyImageEdit = async function() {
           canvas.height = sh;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(preview, sx, sy, sw, sh, 0, 0, sw, sh);
-          finalSrc = canvas.toDataURL('image/jpeg', 0.85);
+          finalSrc = canvas.toDataURL('image/jpeg', 0.95);
         } catch (e) {
           console.error('Cropping error:', e);
         }
@@ -17228,6 +17274,9 @@ window.renderSidebarArticles = window.renderSidebarArticles || function() {
    itself after 5 seconds. Shown once per session so it never nags. */
 (function initPromoBanner() {
   function show() {
+    const state = (activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
+    if (state['promo_banner'] === true) return; // Hidden by admin
+    
     if (sessionStorage.getItem('promo20_shown')) return;
     sessionStorage.setItem('promo20_shown', '1');
 
@@ -17882,6 +17931,8 @@ window.fxRenderChatBubble = function(opts) {
 
 /* ─── UI windows visibility (admin can hide any of these from the public) ─── */
 const UI_HIDEABLE = [
+  { key: 'search_bar',   name: 'שורת חיפוש עליונה',                  sel: '.apple-search-wrapper' },
+  { key: 'nav_home',     name: 'תפריט — כפתור מאמרים/כתבות',          sel: '#nav-btn-home-top, #sec-nav-home, .sidebar-link[data-page="home"]' },
   { key: 'pill_nav',     name: 'סרגל צף תחתון (כל הסרגל)',          sel: '#floating-pill-nav' },
   // ── pill nav — each button ──
   { key: 'pill_history', name: 'סרגל תחתון — כפתור היסטוריה',       sel: '#pill-btn-history' },
@@ -17920,6 +17971,7 @@ const UI_HIDEABLE = [
   { key: 'video_wall',   name: 'קישור "וידאו חי" (סיידבר)',         sel: '#link-video-wall' },
   { key: 'my_profile',   name: 'קישור "הפרופיל שלי" (סיידבר)',      sel: '#link-my-profile' },
   { key: 'user_dropdown',name: 'תפריט המשתמש הנפתח (פרופיל/הגדרות/יציאה)', sel: '#nav-user-dropdown' },
+  { key: 'promo_banner', name: 'פופאפ — הנחת 20%',                   sel: '#promo-20-banner' },
   // ── Footer ──
   { key: 'footer_all',     name: 'פוטר — כל הפוטר',                  sel: '.soki-footer-premium' },
   { key: 'footer_brand',   name: 'פוטר — לוגו SOKI ומותג',          sel: '.soki-footer-brand-col' },
@@ -17938,8 +17990,12 @@ window.applyUIVisibility = function() {
   try {
     const state = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
     const editMode = document.body.classList.contains('vis-edit-mode');
+    let cssString = '';
     UI_HIDEABLE.forEach(item => {
       const hidden = item.defaultHidden ? (state[item.key] !== false) : (state[item.key] === true);
+      if (hidden) {
+        cssString += `${item.sel} { display: none !important; }\n`;
+      }
       document.querySelectorAll(item.sel).forEach(el => {
         if (hidden && !editMode) {
           // hide it for EVERYONE — the admin restores it from the eye / panel toggle
@@ -17951,6 +18007,7 @@ window.applyUIVisibility = function() {
         }
       });
     });
+    localStorage.setItem('cachedCustomizationsCSS', cssString);
   } catch (e) { console.warn('applyUIVisibility failed:', e); }
 };
 
@@ -18070,6 +18127,7 @@ window.refreshVisibilityFab = refreshVisibilityFab;
 
 /* ─── Configurable home page (admin picks which page is the main one) ─── */
 const HOME_PAGE_OPTIONS = [
+  { id: 'main',   name: 'ראשי (חדש)' },
   { id: 'blank',  name: 'עמוד ריק (חדש)' },
   { id: 'home',   name: 'כתבות / מאמרים' },
   { id: 'shop',   name: 'חנות' },
@@ -18078,10 +18136,10 @@ const HOME_PAGE_OPTIONS = [
   { id: 'bets',   name: 'הימורים' }
 ];
 
-// default to the new blank page (the user wants it as the current main page)
+// default to the new main page
 window.getHomePage = function() {
   const v = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__homePage__']);
-  return v || 'blank';
+  return v || 'main';
 };
 
 window.renderHomePageChooser = function() {
