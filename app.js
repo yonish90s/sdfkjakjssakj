@@ -913,7 +913,6 @@ window.renderMainPage = function() {
         </div>
       </div>
     `;
-    `;
   }).join('');
   
   if (window.isEditModeActive) {
