@@ -11291,7 +11291,7 @@ async function saveEditedArticle(articleObj) {
 }
 
 async function duplicateArticle(id) {
-  const orig = newsArticles.find(x => x.id === id);
+  const orig = newsArticles.find(x => String(x.id) === String(id));
   if (!orig) return;
   
   const isHeb = document.body.classList.contains('rtl-layout');
@@ -11337,8 +11337,11 @@ async function deleteArticle(id) {
   const confirmMsg = isHeb ? 'האם אתה בטוח שברצונך למחוק את הכתבה הזו?' : 'Are you sure you want to delete this article?';
   if (!confirm(confirmMsg)) return;
 
-  const orig = newsArticles.find(x => x.id === id);
-  if (!orig) return;
+  const orig = newsArticles.find(x => String(x.id) === String(id));
+  if (!orig) {
+    console.warn("deleteArticle: Article not found for ID:", id);
+    return;
+  }
 
   showToast(isHeb ? '⏳ מוחק כתבה...' : '⏳ Deleting article...');
 
@@ -11354,11 +11357,11 @@ async function deleteArticle(id) {
     });
 
     // Remove from local array
-    newsArticles = newsArticles.filter(x => x.id !== id);
+    newsArticles = newsArticles.filter(x => String(x.id) !== String(id));
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
     
     // If viewing the deleted article, return to home
-    if (typeof currentArticleId !== 'undefined' && currentArticleId === id) {
+    if (typeof currentArticleId !== 'undefined' && String(currentArticleId) === String(id)) {
       showPage('home');
     } else {
       renderNewsLayout();
@@ -11450,7 +11453,7 @@ document.addEventListener('click', function(e) {
   const target = e.target;
   if (!target || typeof target.closest !== 'function') return;
 
-  // Ignore clicks inside our own UI
+  // Ignore clicks inside our own UI or user profile areas or buttons
   if (
     target.closest('#text-edit-popup') ||
     target.closest('#image-editor-modal') ||
@@ -11460,10 +11463,18 @@ document.addEventListener('click', function(e) {
     target.closest('.section-hide-btn') ||
     target.closest('.article-duplicate-btn') ||
     target.closest('.article-delete-btn') ||
+    target.closest('.mv-card-delete-btn') ||
     target.closest('.article-crop-btn') ||
     target.closest('#user-profile-badge') ||
+    target.closest('#nav-user-dropdown') ||
+    target.closest('button') ||
     target.closest('[data-no-edit]')
   ) return;
+
+  // Prioritize text editing: if the target is a text element, let the text click handler take it
+  if (target.closest('h1, h2, h3, h4, h5, h6, p, li, span')) {
+    return;
+  }
 
   // Check for image click
   const imgEl = findImageTarget(target);
@@ -11475,14 +11486,14 @@ document.addEventListener('click', function(e) {
   }
 }, true);
 
-// Double-click listener: click on text → text edit popup
+// Click listener: click on text → text edit popup
 document.addEventListener('click', function(e) {
   if (!window.isEditModeActive) return;
 
   const target = e.target;
   if (!target || typeof target.closest !== 'function') return;
 
-  // Ignore clicks inside our own UI
+  // Ignore clicks inside our own UI or user profile areas or buttons
   if (
     target.closest('#text-edit-popup') ||
     target.closest('#image-editor-modal') ||
@@ -11491,6 +11502,8 @@ document.addEventListener('click', function(e) {
     target.closest('.section-move-btn') ||
     target.closest('.section-hide-btn') ||
     target.closest('#user-profile-badge') ||
+    target.closest('#nav-user-dropdown') ||
+    target.closest('button') ||
     target.closest('[data-no-edit]')
   ) return;
 
