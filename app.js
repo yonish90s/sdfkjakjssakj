@@ -1089,7 +1089,7 @@ function renderNewsLayout(page = 1) {
     const randomShopItems = (typeof shopProducts !== 'undefined' && shopProducts) ? shopProducts.slice(0, 2) : [];
     
     const combinedStripHTML = `
-      <div class="live-cameras-section">
+      <div class="live-cameras-section" id="home-live-strip">
         <div class="live-cameras-header" style="margin-bottom: 12px;">
           <div class="live-cameras-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
             <div style="display:flex; align-items:center; gap:12px;">
@@ -1123,7 +1123,7 @@ function renderNewsLayout(page = 1) {
     `;
 
     const communityStripHTML = `
-      <div class="live-cameras-section" style="margin-top:16px;">
+      <div class="live-cameras-section" id="home-community-strip" style="margin-top:16px;">
         <div class="live-cameras-header" style="margin-bottom: 12px;">
           <div class="live-cameras-title" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
             <div>
@@ -17904,6 +17904,10 @@ const UI_HIDEABLE = [
   { key: 'dd_download',  name: 'תפריט משתמש — Download Desktop Hub', sel: '#dd-download' },
   { key: 'dd_logout',    name: 'תפריט משתמש — Log Out',             sel: '#dd-logout' },
   { key: 'sidebar_ad',   name: 'מודעה ממומנת בסיידבר',              sel: '.sidebar-ad-box' },
+  // ── home sections & promos ──
+  { key: 'quant_card',   name: 'כרטיס "Quant Premium" (פופאפ)',     sel: '#floating-ad-card' },
+  { key: 'home_live',    name: 'בית — "שידורים חיים ומוצרי חנות"',  sel: '#home-live-strip' },
+  { key: 'home_community', name: 'בית — "הקהילה שלנו / דיונים חמים"', sel: '#home-community-strip' },
   { key: 'ads_btn',      name: 'כפתור Ads (נאב עליון)',             sel: '.ads-btn' },
   { key: 'sell_btn',     name: 'כפתור "פרסם מוצר" (נאב עליון)',     sel: 'button[onclick="openMarketplaceModal()"]' },
   { key: 'premium_btn',  name: 'כפתור Premium (נאב עליון)',          sel: '.subscription-btn' },
