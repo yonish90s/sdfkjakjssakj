@@ -4213,6 +4213,24 @@ window.pdpSaveItemUpdate = async function(id, updates) {
         body: JSON.stringify(art)
       });
     } catch(e) { console.error('Error saving article to server:', e); }
+
+    // Sync to Firestore
+    if (window.db && window.fbFirestore) {
+      const { doc, updateDoc, collection, addDoc } = window.fbFirestore;
+      try {
+        if (art.firestoreId) {
+          const cleanUpdates = { ...updates };
+          delete cleanUpdates.firestoreId;
+          await updateDoc(doc(window.db, 'articles', art.firestoreId), cleanUpdates);
+        } else {
+          const clone = { ...art };
+          delete clone.firestoreId;
+          const docRef = await addDoc(collection(window.db, 'articles'), clone);
+          art.firestoreId = docRef.id;
+        }
+      } catch(e) { console.error('Error saving article to Firestore:', e); }
+    }
+
     if (typeof renderNews === 'function') renderNews();
     if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
     return true;
@@ -11249,16 +11267,14 @@ function positionTextEditPopup(el, popup) {
 async function saveEditedArticle(articleObj) {
   try {
     if (window.db && window.fbFirestore) {
-      const { doc, updateDoc } = window.fbFirestore;
+      const { doc, updateDoc, collection, addDoc } = window.fbFirestore;
+      const clone = { ...articleObj };
+      delete clone.firestoreId;
       if (articleObj.firestoreId) {
-        await updateDoc(doc(window.db, "articles", articleObj.firestoreId), {
-          title: articleObj.title || '',
-          author: articleObj.author || '',
-          time: articleObj.time || '',
-          content: articleObj.content || '',
-          text: articleObj.text || '',
-          category: articleObj.category || ''
-        });
+        await updateDoc(doc(window.db, "articles", articleObj.firestoreId), clone);
+      } else {
+        const docRef = await addDoc(collection(window.db, "articles"), clone);
+        articleObj.firestoreId = docRef.id;
       }
     }
     // Parallel save to local server disk
@@ -11360,6 +11376,31 @@ async function saveTextEdit(newText) {
   if (!_editPopupTarget) return;
   const el = _editPopupTarget;
 
+  // Check if editing a card title or author on the main grid
+  if (el.id && el.id.startsWith('card-title-')) {
+    const artId = el.id.replace('card-title-', '');
+    const a = newsArticles.find(x => String(x.id) === String(artId));
+    if (a) {
+      a.title = newText;
+      await saveEditedArticle(a);
+      if (typeof renderNews === 'function') renderNews();
+      if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
+      closeTextEditPopup();
+      return;
+    }
+  } else if (el.id && el.id.startsWith('card-author-')) {
+    const artId = el.id.replace('card-author-', '');
+    const a = newsArticles.find(x => String(x.id) === String(artId));
+    if (a) {
+      a.author = newText;
+      await saveEditedArticle(a);
+      if (typeof renderNews === 'function') renderNews();
+      if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
+      closeTextEditPopup();
+      return;
+    }
+  }
+
   // Check if editing an article detail element
   const articleContainer = el.closest('#article-content');
   if (articleContainer && typeof currentArticleId !== 'undefined' && currentArticleId) {
@@ -11434,14 +11475,14 @@ document.addEventListener('click', function(e) {
   }
 }, true);
 
-// Double-click listener: double click on text → text edit popup
-document.addEventListener('dblclick', function(e) {
+// Double-click listener: click on text → text edit popup
+document.addEventListener('click', function(e) {
   if (!window.isEditModeActive) return;
 
   const target = e.target;
   if (!target || typeof target.closest !== 'function') return;
 
-  // Ignore double clicks inside our own UI
+  // Ignore clicks inside our own UI
   if (
     target.closest('#text-edit-popup') ||
     target.closest('#image-editor-modal') ||
@@ -11460,7 +11501,7 @@ document.addEventListener('dblclick', function(e) {
     
     // Safely skip structural layout divs
     if (textEl.tagName === 'DIV') {
-      if (target === textEl && textEl.children.length > 0) return;
+      if (target !== textEl && textEl.children.length > 0) return;
       const classStr = textEl.className || '';
       const styleAttr = textEl.getAttribute('style') || '';
       if (
@@ -11478,7 +11519,7 @@ document.addEventListener('dblclick', function(e) {
     }
 
     // Allow editing inside sidebar, or if not inside sidebar, verify it's not standard chrome
-    if (isSidebarText || (!textEl.closest('button') && !textEl.closest('nav'))) {
+    if (isSidebarText || (!textEl.closest('button') && !textEl.closest('nav') && !textEl.closest('a') && !textEl.closest('.mv-price-btn'))) {
       // Skip very short spans (like icons or small badges)
       if (textEl.tagName === 'SPAN' && textEl.textContent.trim().length < 2) return;
       // Skip spans that are children of interactive buttons/links unless in sidebar
@@ -14823,22 +14864,43 @@ window.applyImageEdit = async function() {
   // If the edited image belongs to an article, persist into the article data
   // itself — otherwise the edit is lost whenever the feed re-renders.
   let editedArticleId = null;
-  const articleCard = currentEditingImg.closest('[onclick*="showArticle("]');
-  if (articleCard) {
-    const m = (articleCard.getAttribute('onclick') || '').match(/showArticle\((\d+)\)/);
-    if (m) editedArticleId = parseInt(m[1]);
-  } else if (currentEditingImg.closest('#article-content') && typeof currentArticleId !== 'undefined' && currentArticleId) {
-    editedArticleId = currentArticleId;
+  if (currentEditingImg.id && currentEditingImg.id.startsWith('card-image-')) {
+    editedArticleId = currentEditingImg.id.replace('card-image-', '');
+  } else {
+    const articleCard = currentEditingImg.closest('[onclick*="showArticle("]') || currentEditingImg.closest('[onclick*="showProductDetailById("]');
+    if (articleCard) {
+      const m = (articleCard.getAttribute('onclick') || '').match(/(?:showArticle|showProductDetailById)\((['"]?\w+['"]?)\)/);
+      if (m) editedArticleId = m[1].replace(/['"]/g, '');
+    } else if (currentEditingImg.closest('#article-content') && typeof currentArticleId !== 'undefined' && currentArticleId) {
+      editedArticleId = currentArticleId;
+    } else if (window._currentPdpArticleId) {
+      editedArticleId = window._currentPdpArticleId;
+    }
   }
+
   if (editedArticleId != null && typeof newsArticles !== 'undefined') {
-    const art = newsArticles.find(a => a.id === editedArticleId);
+    const art = newsArticles.find(a => String(a.id) === String(editedArticleId));
     if (art) {
       art.image = finalSrc;
       try { localStorage.setItem('newsArticles', JSON.stringify(newsArticles)); } catch (e) {}
-      if (art.firestoreId && window.db && window.fbFirestore) {
-        const { doc, updateDoc } = window.fbFirestore;
-        updateDoc(doc(window.db, "articles", art.firestoreId), { image: finalSrc }).catch(err => console.warn('Firestore image update failed:', err));
+      if (window.db && window.fbFirestore) {
+        const { doc, updateDoc, collection, addDoc } = window.fbFirestore;
+        if (art.firestoreId) {
+          updateDoc(doc(window.db, "articles", art.firestoreId), { image: finalSrc }).catch(err => console.warn('Firestore image update failed:', err));
+        } else {
+          const clone = { ...art };
+          delete clone.firestoreId;
+          addDoc(collection(window.db, "articles"), clone)
+            .then(docRef => { art.firestoreId = docRef.id; })
+            .catch(err => console.warn('Firestore image upload failed:', err));
+        }
       }
+      // Parallel save to local server disk
+      fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(art)
+      }).catch(err => console.error('Local API image update failed:', err));
     }
   }
 
@@ -18477,8 +18539,8 @@ window.saveHomePage = async function() {
   };
 })();
 
-window.addNewArticle = function() {
-  const newId = Date.now().toString();
+window.addNewArticle = async function() {
+  const newId = Date.now();
   const newArticle = {
     id: newId,
     title: 'כתבה חדשה',
@@ -18486,11 +18548,35 @@ window.addNewArticle = function() {
     image: 'https://via.placeholder.com/600x400?text=New+Image',
     images: ['https://via.placeholder.com/600x400?text=New+Image'],
     category: 'חדשות',
-    tags: []
+    tags: [],
+    approved: true
   };
-  newsArticles.unshift(newArticle);
-  localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-  if (typeof renderMainPage === 'function') renderMainPage();
-  if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
-  showToast('✅ ריבוע חדש נוסף!');
+
+  showToast('⏳ מוסיף ריבוע חדש...');
+
+  try {
+    if (window.db && window.fbFirestore) {
+      const { collection, addDoc } = window.fbFirestore;
+      const clone = { ...newArticle };
+      delete clone.firestoreId;
+      const docRef = await addDoc(collection(window.db, "articles"), clone);
+      newArticle.firestoreId = docRef.id;
+    }
+
+    await fetch('/api/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newArticle)
+    });
+
+    newsArticles.unshift(newArticle);
+    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+    
+    if (typeof renderMainPage === 'function') renderMainPage();
+    if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
+    showToast('✅ ריבוע חדש נוסף בהצלחה!');
+  } catch (err) {
+    console.error('Error adding new article:', err);
+    showToast('❌ שגיאה בהוספת ריבוע חדש', 'error');
+  }
 };
