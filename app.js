@@ -2287,7 +2287,7 @@ function loadAdminSettings() {
   const langInput = document.getElementById('admin-default-lang');
   const maintenanceInput = document.getElementById('admin-maintenance-mode');
 
-  if (titleInput) titleInput.value = settings.siteTitle || 'Quant Insight';
+  if (titleInput) titleInput.value = settings.siteTitle || 'Profile';
   if (descInput) descInput.value = settings.siteDescription || '';
   if (langInput) langInput.value = settings.defaultLang || 'he';
   if (maintenanceInput) maintenanceInput.checked = !!settings.maintenanceMode;
@@ -2309,7 +2309,7 @@ function applyAdminSettings(settings) {
 
 function saveAdminSettings() {
   const settings = {
-    siteTitle: document.getElementById('admin-site-title').value.trim() || 'Quant Insight',
+    siteTitle: document.getElementById('admin-site-title').value.trim() || 'Profile',
     siteDescription: document.getElementById('admin-site-description').value.trim(),
     defaultLang: document.getElementById('admin-default-lang').value,
     maintenanceMode: document.getElementById('admin-maintenance-mode').checked
