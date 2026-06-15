@@ -4863,7 +4863,7 @@ let currentArticleId = null;
 // Initial call
 setTimeout(() => {
   updateUserUI();
-  showPage('home');
+  showPage(typeof getHomePage === 'function' ? getHomePage() : 'home');
 }, 100);
 // ========== USER PDF UPLOADS ==========
 let selectedUserPdfImages = [];
@@ -9106,7 +9106,7 @@ window.clearSearchAndShowHome = function() {
   searchQuery = '';
   const searchInput = document.getElementById('navbar-search-input');
   if (searchInput) searchInput.value = '';
-  showPage('home');
+  showPage(typeof getHomePage === 'function' ? getHomePage() : 'home');
 };
 
 // =====================================================================
@@ -18067,3 +18067,56 @@ document.addEventListener('DOMContentLoaded', () => {
 // re-check admin status periodically (login can happen after load)
 setInterval(refreshVisibilityFab, 3000);
 window.refreshVisibilityFab = refreshVisibilityFab;
+
+/* ─── Configurable home page (admin picks which page is the main one) ─── */
+const HOME_PAGE_OPTIONS = [
+  { id: 'blank',  name: 'עמוד ריק (חדש)' },
+  { id: 'home',   name: 'כתבות / מאמרים' },
+  { id: 'shop',   name: 'חנות' },
+  { id: 'pdf-store', name: 'גרפים ונתונים' },
+  { id: 'groups', name: 'פורום' },
+  { id: 'bets',   name: 'הימורים' }
+];
+
+// default to the new blank page (the user wants it as the current main page)
+window.getHomePage = function() {
+  const v = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__homePage__']);
+  return v || 'blank';
+};
+
+window.renderHomePageChooser = function() {
+  const sel = document.getElementById('home-page-select');
+  if (!sel) return;
+  const current = getHomePage();
+  // include any custom pages too
+  let opts = [...HOME_PAGE_OPTIONS];
+  try {
+    const custom = (activeCustomizations && activeCustomizations['__customPages__']) || [];
+    custom.forEach(p => { if (!opts.find(o => o.id === p.id)) opts.push({ id: p.id, name: (p.name || p.id) + ' (מותאם)' }); });
+  } catch (e) {}
+  sel.innerHTML = opts.map(o => `<option value="${o.id}" ${o.id === current ? 'selected' : ''}>${o.name}</option>`).join('');
+  const cur = document.getElementById('home-page-current');
+  const curName = (opts.find(o => o.id === current) || {}).name || current;
+  if (cur) cur.textContent = `העמוד הראשי הנוכחי: ${curName}`;
+};
+
+window.saveHomePage = async function() {
+  const sel = document.getElementById('home-page-select');
+  if (!sel) return;
+  if (!activeCustomizations['__homePage__'] && !activeCustomizations) window.activeCustomizations = {};
+  activeCustomizations['__homePage__'] = sel.value;
+  await saveCustomizationsToServer();
+  renderHomePageChooser();
+  if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ העמוד הראשי עודכן!');
+  // jump to the newly chosen home so the admin sees it
+  showPage(sel.value);
+};
+
+// open the chooser when the tab is selected
+(function hookHomePageTab() {
+  const orig = window.switchAdminTab;
+  window.switchAdminTab = function(tabId, btn) {
+    if (typeof orig === 'function') orig(tabId, btn);
+    if (tabId === 'home-page') renderHomePageChooser();
+  };
+})();
