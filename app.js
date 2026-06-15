@@ -908,7 +908,7 @@ window.renderMainPage = function() {
         <div class="mv-card-content">
           <h2 class="mv-title" id="card-title-${a.id}">${escHtml(a.title)}</h2>
           <div class="mv-footer">
-            <div class="mv-price-btn" id="card-price-${a.id}">כנס</div>
+            <div class="mv-price-btn" id="card-price-${a.id}" onclick="event.stopPropagation(); showProductDetailById(${a.id})">כנס</div>
           </div>
         </div>
       </div>
@@ -2985,23 +2985,7 @@ function deleteMessageFromModal() {
   }
 }
 
-function deleteArticle(id) {
-  if (confirm('Are you sure you want to delete this article?')) {
-    const art = newsArticles.find(a => a.id === id);
-    if (art && art.firestoreId && window.db && window.fbFirestore) {
-      const { doc, deleteDoc } = window.fbFirestore;
-      deleteDoc(doc(window.db, "articles", art.firestoreId))
-        .then(() => showToast('🗑️ Deleted from Cloud'))
-        .catch(err => console.error("Firestore delete error:", err));
-    }
-    
-    newsArticles = newsArticles.filter(a => a.id !== id);
-    localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-    initAdminDashboard();
-    renderNewsLayout();
-    showToast('🗑️ Article deleted');
-  }
-}
+
 
 function openArticleEditor() {
   document.getElementById('admin-editor').classList.remove('hidden');
@@ -4084,9 +4068,117 @@ function showProductDetailById(id) {
     toRemove.forEach(el => el.remove());
   }
 
+  // Show admin controls if admin
+  const pdpAdminControls = document.getElementById('pdp-admin-controls');
+  if (pdpAdminControls) {
+    pdpAdminControls.style.display = (typeof isAdmin !== 'undefined' && isAdmin) ? 'flex' : 'none';
+  }
+  window._currentPdpArticleId = id;
+
   showPage('product-detail');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// ============ PDP ADMIN MANAGEMENT ============
+
+window.pdpEditImage = function() {
+  document.getElementById('pdp-image-upload').click();
+};
+
+window.pdpHandleImageUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * (MAX / w)); w = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      
+      // Update display
+      document.getElementById('pdp-main-image').src = dataUrl;
+      
+      // Update article data
+      const id = window._currentPdpArticleId;
+      const art = newsArticles.find(x => String(x.id) === String(id));
+      if (art) {
+        art.image = dataUrl;
+        if (art.images) art.images[0] = dataUrl;
+        else art.images = [dataUrl];
+        localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+        // Save to server
+        fetch('/api/articles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(art)
+        }).catch(e => console.error(e));
+      }
+      showToast('✅ התמונה עודכנה בהצלחה!');
+      if (typeof renderNews === 'function') renderNews();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.pdpEditText = function() {
+  const titleEl = document.getElementById('pdp-title');
+  const descEl = document.getElementById('pdp-desc');
+  const isEditing = titleEl.contentEditable === 'true';
+  
+  if (isEditing) {
+    // Save changes
+    titleEl.contentEditable = 'false';
+    descEl.contentEditable = 'false';
+    titleEl.style.border = 'none';
+    descEl.style.border = 'none';
+    titleEl.style.outline = 'none';
+    descEl.style.outline = 'none';
+    
+    const id = window._currentPdpArticleId;
+    const art = newsArticles.find(x => String(x.id) === String(id));
+    if (art) {
+      art.title = titleEl.textContent;
+      art.desc = descEl.textContent;
+      art.snippet = descEl.textContent.substring(0, 120);
+      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+      fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(art)
+      }).catch(e => console.error(e));
+    }
+    showToast('✅ הטקסט נשמר בהצלחה!');
+    if (typeof renderNews === 'function') renderNews();
+  } else {
+    // Enable editing
+    titleEl.contentEditable = 'true';
+    descEl.contentEditable = 'true';
+    titleEl.style.border = '2px dashed rgba(16,185,129,0.5)';
+    descEl.style.border = '2px dashed rgba(16,185,129,0.5)';
+    titleEl.style.outline = 'none';
+    descEl.style.outline = 'none';
+    titleEl.style.padding = '8px';
+    descEl.style.padding = '8px';
+    titleEl.style.borderRadius = '8px';
+    descEl.style.borderRadius = '8px';
+    titleEl.focus();
+    showToast('✏️ מצב עריכה פעיל — ערוך את הטקסט ולחץ שוב על "ערוך טקסט" לשמירה');
+  }
+};
+
+window.pdpDeleteArticle = function() {
+  const id = window._currentPdpArticleId;
+  if (!id) return;
+  if (!confirm('האם אתה בטוח שברצונך למחוק את הכתבה הזו?')) return;
+  deleteArticle(id);
+  goBack();
+};
 
 function renderProductRecommendations(currentId) {
   const grid = document.getElementById('product-recommendations-grid');
@@ -4355,16 +4447,7 @@ function handleProductImageUpload(event) {
 }
 
 
-function deletePdfItem(index) {
-  if (confirm('Delete this item?')) {
-    const items = getPdfItems();
-    items.splice(index, 1);
-    savePdfItems(items);
-    renderPdfAdminList();
-    renderPdfStoreGrid();
-    showToast('Item deleted');
-  }
-}
+
 
 
 function trackVisit() {
@@ -14046,7 +14129,6 @@ async function initCustomizations(retryCount = 0) {
   if (window.applySectionLayout) window.applySectionLayout();
 
   window.customizationsReady = true;
-  if (window.authReady) document.documentElement.style.visibility = 'visible';
 }
 
 // Initialize Customizations

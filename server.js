@@ -309,16 +309,42 @@ app.post('/api/articles', (req, res) => {
   }
 });
 
-// DELETE /api/articles/:id - Deletes an article from the server
+// DELETE /api/articles/:id - Deletes an article from the server (both articles/ dir and articles.json)
 app.delete('/api/articles/:id', (req, res) => {
   try {
     const { id } = req.params;
+    let deleted = false;
+
+    // 1. Try deleting from articles/ directory (user-added or edited local files)
     const articlesDir = path.join(process.cwd(), 'articles');
     const filename = `${id}.json`;
     const filePath = path.join(articlesDir, filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      return res.json({ success: true, message: 'Article deleted from server' });
+      deleted = true;
+    }
+
+    // 2. Try deleting from articles.json (scraped articles) if it exists
+    const staticArticlesPath = path.join(process.cwd(), 'articles.json');
+    if (fs.existsSync(staticArticlesPath)) {
+      try {
+        const content = fs.readFileSync(staticArticlesPath, 'utf8');
+        let articles = JSON.parse(content);
+        if (Array.isArray(articles)) {
+          const originalLength = articles.length;
+          articles = articles.filter(a => String(a.id) !== String(id));
+          if (articles.length < originalLength) {
+            fs.writeFileSync(staticArticlesPath, JSON.stringify(articles, null, 2));
+            deleted = true;
+          }
+        }
+      } catch (jsonErr) {
+        console.error('Error modifying articles.json:', jsonErr.message);
+      }
+    }
+
+    if (deleted) {
+      return res.json({ success: true, message: 'Article deleted successfully' });
     }
     res.status(404).json({ error: 'Article not found' });
   } catch (err) {

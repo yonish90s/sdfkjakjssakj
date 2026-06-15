@@ -1787,11 +1787,11 @@ body.dark-theme .toast {
 .product-pdp-container {
   display: flex;
   gap: 48px;
-  background: #fff;
+  background: #000;
   padding: 40px;
   border-radius: 28px;
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
   max-width: 100% !important;
   margin: 0 auto !important;
   min-height: 85vh;
@@ -1807,7 +1807,7 @@ body.dark-theme .toast {
 .pdp-title {
   font-size: 2.2rem;
   font-weight: 800;
-  color: #1d1d1f;
+  color: #fff;
   margin-bottom: 8px;
   letter-spacing: -0.015em;
   line-height: 1.2;
@@ -1864,7 +1864,7 @@ body.dark-theme .toast {
 .pdp-description {
   font-size: 1.05rem;
   line-height: 1.6;
-  color: #424245;
+  color: #e5e5e7;
   margin-bottom: 40px;
   white-space: pre-wrap;
 }
@@ -1884,13 +1884,13 @@ body.dark-theme .toast {
 
 .main-image-wrapper {
   flex: 1;
-  background: #fbfbfd;
+  background: #111;
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid #f2f2f2;
+  border: 1px solid rgba(255,255,255,0.1);
   min-height: 75vh;
   max-height: 90vh;
   width: 100%;
