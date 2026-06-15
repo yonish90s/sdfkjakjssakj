@@ -13907,23 +13907,29 @@ function applyAllCustomizations() {
 // Save active customizations to server API
 async function saveCustomizationsToServer() {
   showToast('⏳ שומר שינויים לשרת...');
+  
+  // Always cache to localStorage as immediate backup
+  try {
+    localStorage.setItem('siteCustomizationsCache', JSON.stringify(activeCustomizations));
+  } catch(e) { console.warn('localStorage cache failed:', e); }
+
   try {
     const { doc, setDoc } = window.fbFirestore || {};
     const db = window.db;
     
+    // Wrap the entire customizations object as a JSON string in a single field
+    // to avoid Firestore field-name restrictions (no [ ] . / etc.)
+    const payload = { data: JSON.stringify(activeCustomizations), updatedAt: Date.now() };
+    
     if (doc && setDoc && db) {
-      await setDoc(doc(db, 'siteSettings', 'customizations'), activeCustomizations);
+      await setDoc(doc(db, 'siteSettings', 'customizations'), payload);
       showToast('✅ השינויים נשמרו בהצלחה בשרת!');
       if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-    } else if (window.fbSetDoc && window.fbGetDoc && window.db) {
-      const docRef = window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations');
-      if (docRef) {
-         await window.fbSetDoc(docRef, activeCustomizations);
-         showToast('✅ השינויים נשמרו בהצלחה בשרת!');
-         if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
-      } else {
-         throw new Error('Firestore references missing');
-      }
+    } else if (window.fbSetDoc && window.fbDoc && window.db) {
+      const docRef = window.fbDoc(window.db, 'siteSettings', 'customizations');
+      await window.fbSetDoc(docRef, payload);
+      showToast('✅ השינויים נשמרו בהצלחה בשרת!');
+      if (typeof window.fxSavedToast === 'function') window.fxSavedToast('✅ השינויים נשמרו!');
     } else {
       throw new Error('Firebase Firestore functions not available');
     }
@@ -13980,22 +13986,42 @@ async function initCustomizations(retryCount = 0) {
 
   initDeterministicIds();
   let dataLoaded = false;
+
+  // 1) Try loading from localStorage cache first for instant display
+  try {
+    const cached = localStorage.getItem('siteCustomizationsCache');
+    if (cached) {
+      activeCustomizations = JSON.parse(cached);
+      dataLoaded = true;
+    }
+  } catch(e) { console.warn('Cache parse failed:', e); }
+
+  // 2) Try Firestore (will overwrite cache if newer data exists)
   try {
     const { doc, getDoc } = window.fbFirestore || {};
     const db = window.db;
 
+    let snap = null;
     if (getDoc && doc && db) {
-      const snap = await getDoc(doc(db, 'siteSettings', 'customizations'));
-      if (snap.exists()) {
-        activeCustomizations = snap.data();
-        dataLoaded = true;
-      }
+      snap = await getDoc(doc(db, 'siteSettings', 'customizations'));
     } else if (window.fbGetDoc && window.db) {
-      const snap = await window.fbGetDoc(window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : window.doc(window.db, 'siteSettings', 'customizations'));
-      if (snap.exists()) {
-        activeCustomizations = snap.data();
+      const docRef = window.fbDoc ? window.fbDoc(window.db, 'siteSettings', 'customizations') : (window.fbFirestore && window.fbFirestore.doc ? window.fbFirestore.doc(window.db, 'siteSettings', 'customizations') : null);
+      if (docRef) snap = await window.fbGetDoc(docRef);
+    }
+
+    if (snap && snap.exists()) {
+      const raw = snap.data();
+      // New format: { data: "JSON string", updatedAt: ... }
+      if (raw.data && typeof raw.data === 'string') {
+        activeCustomizations = JSON.parse(raw.data);
+        dataLoaded = true;
+      } else if (Object.keys(raw).length > 0) {
+        // Legacy format: direct object fields
+        activeCustomizations = raw;
         dataLoaded = true;
       }
+      // Update localStorage cache
+      try { localStorage.setItem('siteCustomizationsCache', JSON.stringify(activeCustomizations)); } catch(e) {}
     }
     if (!dataLoaded) throw new Error('No Firebase data');
   } catch (err) {
@@ -14004,6 +14030,8 @@ async function initCustomizations(retryCount = 0) {
       const res = await fetch('/api/customizations');
       if (res.ok) {
         activeCustomizations = await res.json();
+        dataLoaded = true;
+        try { localStorage.setItem('siteCustomizationsCache', JSON.stringify(activeCustomizations)); } catch(e) {}
       }
     } catch (fallbackErr) {
       console.error('Failed to load customizations:', fallbackErr);
