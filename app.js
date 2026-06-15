@@ -17917,12 +17917,13 @@ window.applyUIVisibility = function() {
     UI_HIDEABLE.forEach(item => {
       const hidden = item.defaultHidden ? (state[item.key] !== false) : (state[item.key] === true);
       document.querySelectorAll(item.sel).forEach(el => {
-        if (hidden && !currentIsAdmin) {
+        if (hidden) {
+          // hide it for EVERYONE (admin included) — the admin restores it
+          // from the toggle in the 'הסתרת חלונות' panel, not by seeing it inline
           el.style.setProperty('display', 'none', 'important');
         } else {
-          // admin still sees it (dimmed if hidden) so they can toggle back
           el.style.removeProperty('display');
-          el.style.opacity = (hidden && currentIsAdmin) ? '0.4' : '';
+          el.style.opacity = '';
         }
       });
     });
