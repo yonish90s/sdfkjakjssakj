@@ -1831,14 +1831,12 @@
 
 <!-- ====== BOOK READER MODAL ====== -->
 <div id="page-book-reader-modal" onclick="if(event.target===this)closeBookReader()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:100000; align-items:center; justify-content:center; backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:24px; direction:rtl; font-family:'Georgia', serif;">
-  <div style="background:#0d0d0d; border:1px solid rgba(255,255,255,0.08); border-radius:24px; width:100%; max-width:1100px; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,0.8); overflow:hidden; position:relative; max-height:92vh;">
+  <div style="background:#0d0d0d; border:1px solid rgba(255,255,255,0.08); border-radius:24px; width:100%; max-width:1300px; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,0.8); overflow:hidden; position:relative; max-height:92vh;">
     
     <!-- Top Control Bar -->
     <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.06); gap:16px; flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:16px;">
-        <span style="color:#ffffff; font-weight:700; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-          <i class="fas fa-book-open" style="color:#30d158;"></i> קריאה במצב ספר / Book Mode
-        </span>
+
         <span id="book-progress-text" style="color:#86868b; font-size:0.85rem; font-family:'Inter', sans-serif;"></span>
       </div>
 
@@ -1865,20 +1863,20 @@
 
     <!-- The Realistic Book Container -->
     <div style="padding:40px; display:flex; align-items:center; justify-content:center; flex:1; overflow-y:auto; background:#121214;">
-      <div style="display:flex; width:100%; max-width:960px; background:#fdfbf7; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.5); position:relative; overflow:hidden; border:8px solid #2c2c2e; min-height:480px;">
+      <div style="display:flex; width:100%; max-width:1150px; background:#fdfbf7; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.5); position:relative; overflow:hidden; border:8px solid #2c2c2e; min-height:670px;">
         
         <!-- Book Spine Shadow (Center Crease) -->
         <div style="position:absolute; top:0; bottom:0; left:50%; width:30px; transform:translateX(-50%); background:linear-gradient(to right, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.03) 100%); z-index:10; pointer-events:none;"></div>
 
         <!-- RIGHT PAGE (First page in Hebrew RTL) -->
         <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; position:relative; border-left:1px solid rgba(0,0,0,0.08); background:linear-gradient(to left, #fdfbf7 95%, #eae6dc 100%);">
-          <div id="book-page-right" style="font-size:1.15rem; line-height:1.8; color:#1c1c1e; font-family:'Georgia', serif; text-align:right; flex:1; overflow-y:auto; max-height:360px;"></div>
+          <div id="book-page-right" style="font-size:1.15rem; line-height:1.8; color:#1c1c1e; font-family:'Georgia', serif; text-align:right; flex:1; overflow-y:auto; max-height:550px;"></div>
           <div id="book-page-num-right" style="position:absolute; bottom:16px; right:24px; font-size:0.85rem; color:#8e8e93; font-weight:700; font-family:'Inter', sans-serif;">1</div>
         </div>
 
         <!-- LEFT PAGE (Second page in Hebrew RTL) -->
         <div style="flex:1; padding:40px 48px; display:flex; flex-direction:column; position:relative; background:linear-gradient(to right, #fdfbf7 95%, #eae6dc 100%);">
-          <div id="book-page-left" style="font-size:1.15rem; line-height:1.8; color:#1c1c1e; font-family:'Georgia', serif; text-align:right; flex:1; overflow-y:auto; max-height:360px;"></div>
+          <div id="book-page-left" style="font-size:1.15rem; line-height:1.8; color:#1c1c1e; font-family:'Georgia', serif; text-align:right; flex:1; overflow-y:auto; max-height:550px;"></div>
           <div id="book-page-num-left" style="position:absolute; bottom:16px; left:24px; font-size:0.85rem; color:#8e8e93; font-weight:700; font-family:'Inter', sans-serif;">2</div>
         </div>
 
@@ -2140,7 +2138,9 @@
 
 <!-- PRODUCT DETAIL PAGE -->
 <div id="page-product-detail" class="page">
-  <button class="back-btn" onclick="goBack()" style="margin-bottom: 40px; border:none; background:none; color:#0066cc; font-weight:600; cursor:pointer; font-size:1rem;">Back</button>
+  <div style="text-align: left; width: 100%; margin-bottom: 20px; padding-left: 20px;">
+    <button class="back-btn" onclick="goBack()" style="border:none; background:none; color:#0066cc; font-weight:600; cursor:pointer; font-size:1.1rem;">אחורה</button>
+  </div>
   
   <div class="product-pdp-container">
     <!-- Left: Info -->

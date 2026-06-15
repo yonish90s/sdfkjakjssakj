@@ -94,7 +94,9 @@
     "my_profile": true,
     "promo_banner": true,
     "search_bar": true,
-    "nav_home": true
+    "nav_home": true,
+    "footer_socials": true,
+    "footer_brand": false
   },
   "__homePage__": "home",
   "div[0]>div[5]>div[0]>div[0]>div[0]>span[0]": {

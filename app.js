@@ -913,7 +913,16 @@ window.renderMainPage = function() {
         </div>
       </div>
     `;
+    `;
   }).join('');
+  
+  if (window.isEditModeActive) {
+    grid.innerHTML += `
+      <div class="mv-card" onclick="addNewArticle()" style="display:flex; align-items:center; justify-content:center; cursor:pointer; background:rgba(255,255,255,0.02); border:2px dashed rgba(255,255,255,0.2); min-height: 250px;">
+        <i class="fas fa-plus" style="font-size:3rem; color:rgba(255,255,255,0.3);"></i>
+      </div>
+    `;
+  }
   
   if (typeof window.applyAllCustomizations === 'function') window.applyAllCustomizations();
 };
@@ -3909,6 +3918,7 @@ function renderSidebarPurchases() {
 
 
 function showProductDetailById(id) {
+  previousPage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'home';
   let item = pdfStoreItems.find(x => String(x.id) === String(id));
   if (!item) {
     item = newsArticles.find(x => String(x.id) === String(id));
@@ -3918,7 +3928,25 @@ function showProductDetailById(id) {
   }
   if (!item) return;
   
-  document.getElementById('pdp-title').textContent = item.title;
+  const titleEl = document.getElementById('pdp-title');
+  titleEl.textContent = item.title;
+  
+  if (window.isEditModeActive) {
+    titleEl.contentEditable = "true";
+    titleEl.style.border = "1px dashed rgba(100,100,100,0.5)";
+    titleEl.style.padding = "4px";
+    titleEl.onblur = () => {
+      item.title = titleEl.textContent;
+      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+      localStorage.setItem('pdfStoreItems', JSON.stringify(pdfStoreItems));
+      if(typeof renderNews === 'function') renderNews();
+    };
+  } else {
+    titleEl.contentEditable = "false";
+    titleEl.style.border = "none";
+    titleEl.style.padding = "0";
+    titleEl.onblur = null;
+  }
   const mainImg = document.getElementById('pdp-main-image');
   const thumbList = document.getElementById('pdp-thumbnails');
   const toggle3dBtn = document.getElementById('toggle-3d-btn');
@@ -3934,6 +3962,22 @@ function showProductDetailById(id) {
 
   const descEl = document.getElementById('pdp-desc');
   descEl.textContent = item.desc || '';
+  
+  if (window.isEditModeActive) {
+    descEl.contentEditable = "true";
+    descEl.style.border = "1px dashed rgba(100,100,100,0.5)";
+    descEl.style.padding = "4px";
+    descEl.onblur = () => {
+      item.desc = descEl.textContent;
+      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+      localStorage.setItem('pdfStoreItems', JSON.stringify(pdfStoreItems));
+    };
+  } else {
+    descEl.contentEditable = "false";
+    descEl.style.border = "none";
+    descEl.style.padding = "0";
+    descEl.onblur = null;
+  }
 
   // Reset 3D State
   container3d.classList.add('hidden');
@@ -3957,6 +4001,29 @@ function showProductDetailById(id) {
       // Remove any existing paywall overlay
       const existingPaywall = document.getElementById('pdp-paywall-overlay');
       if (existingPaywall) existingPaywall.remove();
+      
+      // Admin Image Edit
+      if (window.isEditModeActive) {
+        mainImg.style.cursor = 'pointer';
+        mainImg.title = "Click to edit image URL";
+        mainImg.onclick = () => {
+          const currentUrl = item.image || (item.images && item.images[0]) || '';
+          const newUrl = prompt("Enter new image URL:", currentUrl);
+          if (newUrl !== null && newUrl.trim() !== "") {
+            item.image = newUrl.trim();
+            if (!item.images) item.images = [];
+            item.images[0] = newUrl.trim();
+            mainImg.src = item.image;
+            localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+            localStorage.setItem('pdfStoreItems', JSON.stringify(pdfStoreItems));
+            if(typeof renderNews === 'function') renderNews();
+          }
+        };
+      } else {
+        mainImg.style.cursor = 'default';
+        mainImg.title = "";
+        mainImg.onclick = null;
+      }
     } else {
       // Locked State for non-premium users
       mainImg.src = images[0];
@@ -10849,6 +10916,8 @@ function enableLiveEditMode() {
   updateAdminEditBar();
   if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
   if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+  if (typeof window.renderMainPage === 'function') window.renderMainPage();
+  if (typeof window.renderNewsLayout === 'function') window.renderNewsLayout(currentPage);
   showToast('✏️ מצב עריכה פעיל — לחץ על כל טקסט או תמונה לעריכה');
 }
 window.enableLiveEditMode = enableLiveEditMode;
@@ -10873,6 +10942,8 @@ function disableLiveEditMode() {
   updateAdminEditBar();
   if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
   if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
+  if (typeof window.renderMainPage === 'function') window.renderMainPage();
+  if (typeof window.renderNewsLayout === 'function') window.renderNewsLayout(currentPage);
   showToast('🔒 מצב עריכה כבוי');
 }
 window.disableLiveEditMode = disableLiveEditMode;
@@ -18178,3 +18249,21 @@ window.saveHomePage = async function() {
     if (tabId === 'home-page') renderHomePageChooser();
   };
 })();
+
+window.addNewArticle = function() {
+  const newId = Date.now().toString();
+  const newArticle = {
+    id: newId,
+    title: 'כתבה חדשה',
+    desc: 'הכנס טקסט כאן',
+    image: 'https://via.placeholder.com/600x400?text=New+Image',
+    images: ['https://via.placeholder.com/600x400?text=New+Image'],
+    category: 'חדשות',
+    tags: []
+  };
+  newsArticles.unshift(newArticle);
+  localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+  if (typeof renderMainPage === 'function') renderMainPage();
+  if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
+  showToast('✅ ריבוע חדש נוסף!');
+};

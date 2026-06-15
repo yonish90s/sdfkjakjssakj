@@ -1792,8 +1792,9 @@ body.dark-theme .toast {
   border-radius: 28px;
   border: 1px solid var(--border-subtle);
   box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-  max-width: 70% !important;
+  max-width: 100% !important;
   margin: 0 auto !important;
+  min-height: 85vh;
 }
 
 .product-info-column {
@@ -1875,7 +1876,7 @@ body.dark-theme .toast {
 }
 
 .product-visual-column {
-  flex: 3;
+  flex: 5;
   display: flex;
   gap: 16px;
   min-width: 0;
@@ -1890,14 +1891,14 @@ body.dark-theme .toast {
   justify-content: center;
   overflow: hidden;
   border: 1px solid #f2f2f2;
-  min-height: 250px;
-  max-height: 420px;
+  min-height: 75vh;
+  max-height: 90vh;
   width: 100%;
 }
 
 .main-image-wrapper img {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 85vh;
   object-fit: contain;
 }
 
@@ -11097,6 +11098,10 @@ body.vis-edit-mode .vis-hideable-marked.vis-currently-hidden {
 /* Hide original news layout flex box properties that interfere */
 #page-home .main-news-layout {
   display: block !important;
+}
+
+body.admin-edit-mode-active .mv-card-delete-btn {
+  display: flex !important;
 }
 #page-home .news-sidebar {
   display: none !important;
