@@ -17913,15 +17913,15 @@ const UI_HIDEABLE = [
 window.applyUIVisibility = function() {
   try {
     const state = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
-    const currentIsAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    const editMode = document.body.classList.contains('vis-edit-mode');
     UI_HIDEABLE.forEach(item => {
       const hidden = item.defaultHidden ? (state[item.key] !== false) : (state[item.key] === true);
       document.querySelectorAll(item.sel).forEach(el => {
-        if (hidden) {
-          // hide it for EVERYONE (admin included) — the admin restores it
-          // from the toggle in the 'הסתרת חלונות' panel, not by seeing it inline
+        if (hidden && !editMode) {
+          // hide it for EVERYONE — the admin restores it from the eye / panel toggle
           el.style.setProperty('display', 'none', 'important');
         } else {
+          // visible, OR edit mode (so the admin can see & toggle hidden ones)
           el.style.removeProperty('display');
           el.style.opacity = '';
         }
@@ -17967,3 +17967,79 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(() => { if (windo
     if (tabId === 'ui-visibility' && window.renderUIVisibilityControls) window.renderUIVisibilityControls();
   };
 })();
+
+/* ─── Admin visibility EDIT MODE: an eye on every hideable element ───
+   Puts the decision in the manager's hands: an admin enters edit mode and
+   clicks the eye on any element to hide/show it (same idea as the page-eye). */
+window.toggleVisibilityEditMode = function() {
+  const on = document.body.classList.toggle('vis-edit-mode');
+  const fab = document.getElementById('visibility-edit-fab');
+  if (fab) {
+    fab.classList.toggle('on', on);
+    fab.querySelector('.vef-label').textContent = on ? 'סיים עריכת תצוגה' : 'ערוך מה מוצג 👁';
+  }
+  if (on) decorateHideablesWithEyes();
+  else clearHideableEyes();
+  applyUIVisibility();
+};
+
+function uiStateHidden(item) {
+  const state = (activeCustomizations && activeCustomizations['__uiVisibility__']) || {};
+  return item.defaultHidden ? (state[item.key] !== false) : (state[item.key] === true);
+}
+
+function decorateHideablesWithEyes() {
+  clearHideableEyes();
+  UI_HIDEABLE.forEach(item => {
+    document.querySelectorAll(item.sel).forEach(el => {
+      el.classList.add('vis-hideable-marked');
+      const hidden = uiStateHidden(item);
+      el.classList.toggle('vis-currently-hidden', hidden);
+      if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+      const eye = document.createElement('div');
+      eye.className = 'vis-eye-badge' + (hidden ? ' is-hidden' : '');
+      eye.title = item.name + (hidden ? ' (מוסתר — לחץ להצגה)' : ' (מוצג — לחץ להסתרה)');
+      eye.innerHTML = hidden ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+      eye.dataset.visKey = item.key;
+      eye.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const nowHidden = uiStateHidden(item);
+        await toggleUIVisibility(item.key, nowHidden /* makeVisible = currently hidden */);
+        // refresh the eyes to reflect the new state
+        decorateHideablesWithEyes();
+      });
+      el.appendChild(eye);
+    });
+  });
+}
+
+function clearHideableEyes() {
+  document.querySelectorAll('.vis-eye-badge').forEach(e => e.remove());
+  document.querySelectorAll('.vis-hideable-marked').forEach(el => {
+    el.classList.remove('vis-hideable-marked', 'vis-currently-hidden');
+  });
+}
+
+// show the FAB only for admins
+function refreshVisibilityFab() {
+  const fab = document.getElementById('visibility-edit-fab');
+  if (!fab) return;
+  const admin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  fab.style.display = admin ? 'flex' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // inject the floating edit button once
+  if (!document.getElementById('visibility-edit-fab')) {
+    const fab = document.createElement('button');
+    fab.id = 'visibility-edit-fab';
+    fab.innerHTML = '<i class="fas fa-eye"></i> <span class="vef-label">ערוך מה מוצג 👁</span>';
+    fab.onclick = window.toggleVisibilityEditMode;
+    document.body.appendChild(fab);
+  }
+  setTimeout(refreshVisibilityFab, 1000);
+});
+// re-check admin status periodically (login can happen after load)
+setInterval(refreshVisibilityFab, 3000);
+window.refreshVisibilityFab = refreshVisibilityFab;
