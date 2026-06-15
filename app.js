@@ -17882,7 +17882,27 @@ window.fxRenderChatBubble = function(opts) {
 
 /* ─── UI windows visibility (admin can hide any of these from the public) ─── */
 const UI_HIDEABLE = [
-  { key: 'pill_nav',     name: 'סרגל צף תחתון (היסטוריה/שיחות/AI)', sel: '#floating-pill-nav' },
+  { key: 'pill_nav',     name: 'סרגל צף תחתון (כל הסרגל)',          sel: '#floating-pill-nav' },
+  // ── pill nav — each button ──
+  { key: 'pill_history', name: 'סרגל תחתון — כפתור היסטוריה',       sel: '#pill-btn-history' },
+  { key: 'pill_chats',   name: 'סרגל תחתון — כפתור שיחות',          sel: '#pill-btn-chats' },
+  { key: 'pill_ai',      name: 'סרגל תחתון — כפתור AI',             sel: '#pill-btn-ai' },
+  // ── top-nav buttons (each) ──
+  { key: 'nav_saved',    name: 'נאב עליון — שמורים (סימנייה)',      sel: '#nav-btn-saved' },
+  { key: 'nav_cart',     name: 'נאב עליון — עגלה',                  sel: '#nav-btn-cart' },
+  { key: 'nav_forums',   name: 'נאב עליון — פורומים',               sel: '#nav-btn-forums' },
+  { key: 'nav_download',  name: 'נאב עליון — הורדה',                sel: '#nav-btn-download' },
+  // ── user dropdown — each item ──
+  { key: 'dd_coins',     name: 'תפריט משתמש — Coins',               sel: '#dd-coins' },
+  { key: 'dd_store',     name: 'תפריט משתמש — My Store / Orders',   sel: '#dd-store' },
+  { key: 'dd_integrations', name: 'תפריט משתמש — My Integrations',  sel: '#dd-integrations' },
+  { key: 'dd_viewprofile', name: 'תפריט משתמש — View Profile',      sel: '#dd-viewprofile' },
+  { key: 'dd_premium',   name: 'תפריט משתמש — Premium',             sel: '#dd-premium' },
+  { key: 'dd_display',   name: 'תפריט משתמש — Display Mode',        sel: '#dd-display' },
+  { key: 'dd_language',  name: 'תפריט משתמש — Language',            sel: '#dd-language' },
+  { key: 'dd_settings',  name: 'תפריט משתמש — Settings',            sel: '#dd-settings' },
+  { key: 'dd_download',  name: 'תפריט משתמש — Download Desktop Hub', sel: '#dd-download' },
+  { key: 'dd_logout',    name: 'תפריט משתמש — Log Out',             sel: '#dd-logout' },
   { key: 'sidebar_ad',   name: 'מודעה ממומנת בסיידבר',              sel: '.sidebar-ad-box' },
   { key: 'ads_btn',      name: 'כפתור Ads (נאב עליון)',             sel: '.ads-btn' },
   { key: 'sell_btn',     name: 'כפתור "פרסם מוצר" (נאב עליון)',     sel: 'button[onclick="openMarketplaceModal()"]' },

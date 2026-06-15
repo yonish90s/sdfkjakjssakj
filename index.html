@@ -379,23 +379,23 @@
           </button>
 
           <!-- Saved Button -->
-          <button onclick="toggleSavedDrawer('articles')" class="cart-nav-btn" title="Saved Articles" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+          <button id="nav-btn-saved" onclick="toggleSavedDrawer('articles')" class="cart-nav-btn" title="Saved Articles" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
             <i class="fas fa-bookmark" style="font-size:1.1rem;"></i>
           </button>
 
           <!-- Cart Drawer Button -->
-          <button onclick="toggleCartDrawer()" class="cart-nav-btn" title="My Cart" style="background:none; border:none; cursor:pointer; position:relative; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+          <button id="nav-btn-cart" onclick="toggleCartDrawer()" class="cart-nav-btn" title="My Cart" style="background:none; border:none; cursor:pointer; position:relative; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
             <i class="fas fa-bag-shopping" style="font-size:1.1rem;"></i>
             <span id="cart-badge" class="cart-badge" style="display:none; background:#ff3b30; color:#fff; border:none;">0</span>
           </button>
 
           <!-- Forums Button -->
-          <button onclick="toggleForumsDrawer()" class="cart-nav-btn" title="Forums" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;">
+          <button id="nav-btn-forums" onclick="toggleForumsDrawer()" class="cart-nav-btn" title="Forums" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;">
             <i class="fas fa-comments" style="font-size:1.1rem;"></i>
           </button>
 
           <!-- Download App Button -->
-          <button onclick="showPage('download')" class="cart-nav-btn" title="Download SOKI Desktop Hub" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#a1a1a6'">
+          <button id="nav-btn-download" onclick="showPage('download')" class="cart-nav-btn" title="Download SOKI Desktop Hub" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#a1a1a6'">
             <i class="fas fa-download" style="font-size:1.1rem;"></i>
           </button>
 
@@ -423,7 +423,7 @@
           </button>
 
           <!-- Sell Product Button -->
-          <button onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1.5px solid #f97316; color:#f97316; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:20px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit;" onmouseover="this.style.background='#f97316';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='#f97316';">
+          <button id="nav-btn-sell" onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1.5px solid #f97316; color:#f97316; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:20px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit;" onmouseover="this.style.background='#f97316';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='#f97316';">
             <i class="fas fa-plus" style="font-size:0.78rem;"></i> <span>פרסם מוצר</span>
           </button>
 
@@ -459,36 +459,36 @@
               </div>
 
               <!-- Coins and Shop -->
-              <div class="dropdown-item-reddit" onclick="openMarketplaceModal(); closeUserDropdown()" style="color:#facc15; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(250,204,21,0.1)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-coins" class="dropdown-item-reddit" onclick="openMarketplaceModal(); closeUserDropdown()" style="color:#facc15; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(250,204,21,0.1)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-coins" style="font-size:1rem;"></i> <span id="dropdown-coins-amount">1,000 Coins</span>
               </div>
               
               <!-- Order Tracking / My Store -->
-              <div class="dropdown-item-reddit" onclick="openOrderTrackingModal(); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-store" class="dropdown-item-reddit" onclick="openOrderTrackingModal(); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-store" style="font-size:1rem; color:#a1a1aa;"></i> <span>My Store / Orders</span>
               </div>
               
               <!-- Integrations / Workspace -->
-              <div class="dropdown-item-reddit" onclick="showPage('integrations'); closeUserDropdown()" style="color:#a855f7; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(168,85,247,0.1)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-integrations" class="dropdown-item-reddit" onclick="showPage('integrations'); closeUserDropdown()" style="color:#a855f7; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(168,85,247,0.1)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-cubes" style="font-size:1rem;"></i> <span>My Integrations</span>
               </div>
 
               <div style="height:1px; background:rgba(255,255,255,0.06); margin:6px 0;"></div>
 
               <!-- Menu Items (Clean text-only) -->
-              <div class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">View Profile</div>
-              <div class="dropdown-item-reddit" onclick="showPage('subscription'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Premium</div>
-              <div class="dropdown-item-reddit" onclick="toggleTheme(); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Display Mode</div>
-              <div class="dropdown-item-reddit" onclick="toggleLanguage(event); closeUserDropdown();" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; justify-content:space-between;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-viewprofile" class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">View Profile</div>
+              <div class="dropdown-item-reddit" id="dd-premium" onclick="showPage('subscription'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Premium</div>
+              <div class="dropdown-item-reddit" id="dd-display" onclick="toggleTheme(); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Display Mode</div>
+              <div class="dropdown-item-reddit" id="dd-language" onclick="toggleLanguage(event); closeUserDropdown();" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; justify-content:space-between;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                 <span>Language</span>
                 <span id="dropdown-language-label" style="color:#a1a1a6; font-size:0.8rem; font-weight:600;">English</span>
               </div>
-              <div class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Settings</div>
-              <div class="dropdown-item-reddit" onclick="showPage('download'); closeUserDropdown()" style="color:#30d158; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Download Desktop Hub 💻</div>
+              <div id="dd-settings" class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#e7e9ea; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Settings</div>
+              <div class="dropdown-item-reddit" id="dd-download" onclick="showPage('download'); closeUserDropdown()" style="color:#30d158; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Download Desktop Hub 💻</div>
               
               <div style="height:1px; background:rgba(255,255,255,0.06); margin:6px 0;"></div>
 
-              <div class="dropdown-item-reddit" onclick="logoutUser(); closeUserDropdown()" style="color:#ef4444; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background='transparent'">Log Out</div>
+              <div class="dropdown-item-reddit" id="dd-logout" onclick="logoutUser(); closeUserDropdown()" style="color:#ef4444; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background='transparent'">Log Out</div>
             </div>
             
             <script>
@@ -6017,13 +6017,13 @@ body.rtl-layout.sidebar-collapsed .floating-pill-panel {
 <!-- Floating Pill Navigation Bar -->
 <div id="floating-pill-nav" class="floating-pill-nav">
   <!-- Recent Activity (History) -->
-  <button class="pill-nav-item" onclick="openFloatingPillPanel('history')" title="היסטוריית פעילות / Recent Activity">
+  <button id="pill-btn-history" class="pill-nav-item" onclick="openFloatingPillPanel('history')" title="היסטוריית פעילות / Recent Activity">
     <div class="pill-nav-icon"><i class="fas fa-history"></i></div>
     <div class="pill-nav-label">היסטוריה</div>
   </button>
   
   <!-- Conversations (Chat) -->
-  <button class="pill-nav-item" onclick="openFloatingPillPanel('chats')" title="שיחות וצ'אטים / Conversations">
+  <button id="pill-btn-chats" class="pill-nav-item" onclick="openFloatingPillPanel('chats')" title="שיחות וצ'אטים / Conversations">
     <div class="pill-nav-icon" style="position: relative;">
       <i class="fas fa-comments"></i>
       <span id="floating-support-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#ff3b30; color:#fff; font-size:10px; font-weight:bold; border-radius:50%; width:16px; height:16px; align-items:center; justify-content:center; border:1px solid #000; box-shadow:0 1px 3px rgba(0,0,0,0.3);">0</span>
@@ -6033,7 +6033,7 @@ body.rtl-layout.sidebar-collapsed .floating-pill-panel {
   </button>
   
   <!-- AI Assistant (AI) -->
-  <button class="pill-nav-item pill-nav-ai" onclick="openFloatingPillPanel('ai')" title="עוזר קניות AI / AI Assistant">
+  <button id="pill-btn-ai" class="pill-nav-item pill-nav-ai" onclick="openFloatingPillPanel('ai')" title="עוזר קניות AI / AI Assistant">
     <div class="pill-nav-icon-ai">AI</div>
     <div class="pill-nav-label">עוזר AI</div>
   </button>
