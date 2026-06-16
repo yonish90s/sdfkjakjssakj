@@ -237,7 +237,16 @@ const servicesItems = [
         return a;
       };
 
-      const combined = [...firestoreArticles, ...scraped, ...local.map(normalize)];
+      // Read deleted article IDs from customizations
+      let deletedIds = [];
+      try {
+        const customizations = (typeof activeCustomizations !== 'undefined' && activeCustomizations)
+          || JSON.parse(localStorage.getItem('siteCustomizationsCache') || '{}');
+        deletedIds = customizations.deletedArticleIds || [];
+      } catch(e) {}
+
+      const combined = [...firestoreArticles, ...scraped, ...local.map(normalize)]
+        .filter(a => a && a.id && !deletedIds.includes(String(a.id)));
       const uniqueMap = new Map();
       combined.forEach(a => {
         if (a && a.id && !uniqueMap.has(a.id)) {
@@ -11132,6 +11141,17 @@ function enableLiveEditMode() {
   }
   enableDragAndDrop(true);
   updateAdminEditBar();
+  // Re-filter newsArticles and render
+  if (activeCustomizations && activeCustomizations.deletedArticleIds && typeof newsArticles !== 'undefined') {
+    const deletedIds = activeCustomizations.deletedArticleIds || [];
+    const originalLength = newsArticles.length;
+    newsArticles = newsArticles.filter(a => a && a.id && !deletedIds.includes(String(a.id)));
+    if (newsArticles.length < originalLength) {
+      localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
+      if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
+    }
+  }
+  
   if (typeof window.renderCustomPages === 'function') window.renderCustomPages();
   if (typeof window.applyPageVisibility === 'function') window.applyPageVisibility();
   if (typeof window.renderMainPage === 'function') window.renderMainPage();
@@ -11355,6 +11375,17 @@ async function deleteArticle(id) {
     await fetch(`/api/articles/${orig.id}`, {
       method: 'DELETE'
     });
+
+    // Save deleted ID to customizations to ensure it persists in read-only/Vercel environments
+    if (typeof activeCustomizations !== 'undefined') {
+      if (!activeCustomizations.deletedArticleIds) {
+        activeCustomizations.deletedArticleIds = [];
+      }
+      if (!activeCustomizations.deletedArticleIds.includes(String(id))) {
+        activeCustomizations.deletedArticleIds.push(String(id));
+      }
+      await saveCustomizationsToServer();
+    }
 
     // Remove from local array
     newsArticles = newsArticles.filter(x => String(x.id) !== String(id));
