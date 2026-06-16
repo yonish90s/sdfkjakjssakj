@@ -897,7 +897,7 @@ window.renderMainPage = function() {
 
   const locationArticles = getLocationArticles();
   // Get latest 12 articles for the main page grid
-  const recentArticles = locationArticles.slice(0, 12);
+  const recentArticles = locationArticles.slice(0, 3);
   
   grid.innerHTML = recentArticles.map((a, i) => {
     // Generate random mock stats for the video look
