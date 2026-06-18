@@ -1784,24 +1784,28 @@ body.dark-theme .toast {
 }
 
 /* PRODUCT DETAIL PAGE (PDP) */
+#page-product-detail.page {
+  padding: 4px 20px 8px;
+}
+
 .product-pdp-container {
   display: flex;
-  gap: 48px;
+  flex-direction: column;
+  gap: 8px;
   background: #000;
-  padding: 40px;
-  border-radius: 28px;
+  padding: 12px;
+  border-radius: 20px;
   border: 1px solid rgba(255,255,255,0.1);
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
   max-width: 100% !important;
   margin: 0 auto !important;
-  min-height: 85vh;
 }
 
 .product-info-column {
-  flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
 }
 
 .pdp-title {
@@ -1876,42 +1880,43 @@ body.dark-theme .toast {
 }
 
 .product-visual-column {
-  flex: 5;
   display: flex;
-  gap: 16px;
+  gap: 8px;
   min-width: 0;
+  width: 100%;
 }
 
 .main-image-wrapper {
   flex: 1;
   background: #111;
-  border-radius: 24px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
-  min-height: 75vh;
-  max-height: 90vh;
+  max-height: calc(100vh - 570px);
+  height: calc(100vh - 570px);
   width: 100%;
 }
 
 .main-image-wrapper img {
   width: 100%;
   height: 100%;
+  max-height: inherit;
   object-fit: cover;
 }
 
 .thumbnail-list {
-  width: 80px;
+  width: 50px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .pdp-thumb {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   border-radius: 10px;
   background: #fbfbfd;
   border: 1px solid #f2f2f2;
@@ -2272,7 +2277,7 @@ body.dark-theme .sidebar-card p {
   }
   
   .main-image-wrapper {
-    min-height: 320px;
+    min-height: 0;
   }
 
   /* Appointments */
@@ -2892,24 +2897,24 @@ body.dark-theme .btn-download-mac:hover {
 
 /* ========== RECOMMENDED ARTICLES SECTION ========== */
 .recommendations-wrapper {
-  margin-top: 80px;
-  padding-top: 60px;
-  margin-bottom: 60px;
+  margin-top: 8px;
+  padding-top: 8px;
+  margin-bottom: 0;
   border-top: 1px solid var(--border-subtle);
 }
 
 .recommendations-title {
-  font-size: 1.8rem;
+  font-size: 1.1rem;
   font-weight: 850;
-  margin-bottom: 32px;
+  margin-bottom: 12px;
   letter-spacing: -0.02em;
 }
 
 .recommendations-grid {
   display: flex;
-  gap: 24px;
+  gap: 12px;
   overflow-x: auto;
-  padding-bottom: 24px;
+  padding-bottom: 8px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -2923,7 +2928,7 @@ body.dark-theme .btn-download-mac:hover {
 }
 
 .rec-card {
-  flex: 0 0 210px;
+  flex: 0 0 150px;
   cursor: pointer;
   transition: var(--transition-smooth);
 }
@@ -2938,13 +2943,13 @@ body.dark-theme .btn-download-mac:hover {
   aspect-ratio: 16/9;
   background-size: cover;
   background-position: center;
-  border-radius: 16px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  margin-bottom: 8px;
   border: 1px solid var(--border-subtle);
 }
 
 .rec-meta {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #0071e3;
   text-transform: uppercase;
@@ -2953,7 +2958,7 @@ body.dark-theme .btn-download-mac:hover {
 }
 
 .rec-title {
-  font-size: 1.15rem;
+  font-size: 0.75rem;
   font-weight: 800;
   line-height: 1.4;
   color: var(--text-main);
