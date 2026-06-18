@@ -1805,7 +1805,7 @@ body.dark-theme .toast {
 }
 
 .pdp-title {
-  font-size: 2.2rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: #fff;
   margin-bottom: 8px;
@@ -1862,7 +1862,7 @@ body.dark-theme .toast {
 }
 
 .pdp-description {
-  font-size: 1.05rem;
+  font-size: 0.55rem;
   line-height: 1.6;
   color: #e5e5e7;
   margin-bottom: 40px;
@@ -2308,7 +2308,7 @@ body.dark-theme .sidebar-card p {
 /* Specific iPhone Tweaks */
 @media screen and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
   .pdp-title {
-    font-size: 1.8rem;
+    font-size: 0.9rem;
   }
   .section-title {
     font-size: 2rem;

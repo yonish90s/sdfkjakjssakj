@@ -897,7 +897,8 @@ window.renderMainPage = function() {
 
   const locationArticles = getLocationArticles();
   // Get latest 12 articles for the main page grid
-  const recentArticles = locationArticles.slice(0, 3);
+  const gridLimit = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations.mainGridCount) || 3;
+  const recentArticles = locationArticles.slice(0, gridLimit);
   
   grid.innerHTML = recentArticles.map((a, i) => {
     // Generate random mock stats for the video look
@@ -11384,6 +11385,9 @@ async function deleteArticle(id) {
       if (!activeCustomizations.deletedArticleIds.includes(String(id))) {
         activeCustomizations.deletedArticleIds.push(String(id));
       }
+      if (activeCustomizations.mainGridCount && activeCustomizations.mainGridCount > 1) {
+        activeCustomizations.mainGridCount--;
+      }
       await saveCustomizationsToServer();
     }
 
@@ -11397,7 +11401,8 @@ async function deleteArticle(id) {
     } else {
       renderNewsLayout();
     }
-    
+    if (typeof renderMainPage === 'function') renderMainPage();
+
     showToast(isHeb ? '✅ הכתבה נמחקה בהצלחה!' : '✅ Article deleted successfully!');
   } catch (err) {
     console.error('Error deleting article:', err);
@@ -18615,7 +18620,12 @@ window.addNewArticle = async function() {
 
     newsArticles.unshift(newArticle);
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
-    
+
+    if (typeof activeCustomizations !== 'undefined' && activeCustomizations) {
+      activeCustomizations.mainGridCount = (activeCustomizations.mainGridCount || 3) + 1;
+      await saveCustomizationsToServer();
+    }
+
     if (typeof renderMainPage === 'function') renderMainPage();
     if (typeof renderNewsLayout === 'function') renderNewsLayout(currentPage);
     showToast('✅ ריבוע חדש נוסף בהצלחה!');
