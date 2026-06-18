@@ -587,11 +587,11 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// ── כתבות שוק ההון בעברית – כל יום ב-05:00 שעון ישראל ──────────────────────
-cron.schedule('0 5 * * *', () => {
-  collectStockNews().catch(err => console.error('[Cron] שגיאה:', err.message));
-}, { timezone: 'Asia/Jerusalem' });
-console.log('📅 Stock news cron scheduled: daily at 05:00 Asia/Jerusalem');
+// ── כתבות שוק ההון בעברית – מנוטרל לפי בקשת המשתמש ──────────────────────
+// cron.schedule('0 5 * * *', () => {
+//   collectStockNews().catch(err => console.error('[Cron] שגיאה:', err.message));
+// }, { timezone: 'Asia/Jerusalem' });
+// console.log('📅 Stock news cron scheduled: daily at 05:00 Asia/Jerusalem');
 
 module.exports = app;
 // Force Redeploy Mon May 11 19:45:00 IDT 2026
