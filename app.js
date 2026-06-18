@@ -4351,30 +4351,31 @@ window.pdpDeleteThumbnail = async function(index) {
 function renderProductRecommendations(currentId) {
   const grid = document.getElementById('product-recommendations-grid');
   if (!grid) return;
-  
-  const allItems = pdfStoreItems;
-  // Filter out the current product and show up to 6 others randomly
-  const recommendations = allItems
-    .filter(item => item.id !== currentId)
-    .sort(() => 0.5 - Math.random())
+
+  const pinnedIds = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations.mainGridIds) || [];
+  const gridArticles = pinnedIds.length > 0
+    ? pinnedIds.map(id => newsArticles.find(a => String(a.id) === String(id))).filter(Boolean)
+    : getLocationArticles().slice(0, 3);
+
+  const recommendations = gridArticles
+    .filter(item => String(item.id) !== String(currentId))
     .slice(0, 6);
-    
+
   if (recommendations.length === 0) {
     document.getElementById('product-recommendations-wrapper').style.display = 'none';
     return;
   }
-  
+
   document.getElementById('product-recommendations-wrapper').style.display = 'block';
-  
+
   grid.innerHTML = recommendations.map(item => {
-    const mainImg = (item.images && item.images.length > 0) ? item.images[0] : '';
-    const icon = typeEmoji[item.type] || '📄';
-    
+    const mainImg = item.image || ((item.images && item.images.length > 0) ? item.images[0] : '');
+
     return `
-      <div class="rec-card" onclick="showProductDetailById('${item.id}')">
-        ${mainImg ? `<div class="rec-image" style="background-image: url('${mainImg}')"></div>` : 
-                    `<div class="rec-image" style="display:flex; align-items:center; justify-content:center; font-size:3rem; background:#f5f5f7;">${icon}</div>`}
-        <div class="rec-meta">${escHtml(item.type)}</div>
+      <div class="rec-card" onclick="showProductDetailById(${item.id})">
+        ${mainImg ? `<div class="rec-image" style="background-image: url('${mainImg}')"></div>` :
+                    `<div class="rec-image" style="display:flex; align-items:center; justify-content:center; font-size:3rem; background:#1c1c1e;">📄</div>`}
+        <div class="rec-meta">${escHtml(item.category || '')}</div>
         <div class="rec-title">${escHtml(item.title)}</div>
       </div>
     `;
