@@ -217,6 +217,24 @@ const servicesItems = [
   onSnapshot(q, async (snapshot) => {
     const firestoreArticles = snapshot.docs.map(doc => ({ ...doc.data(), firestoreId: doc.id }));
     
+    // Purge any stock agent articles from Firestore if user is admin
+    if (localStorage.getItem('isAdmin') === 'true' && window.db && window.fbFirestore) {
+      const { deleteDoc, doc } = window.fbFirestore;
+      firestoreArticles.forEach(async (art) => {
+        if (
+          art.category === 'שוק ההון' || 
+          art.sourceUrl || 
+          art.author === 'ynet כלכלה' || 
+          art.author === 'ice.co.il'
+        ) {
+          try {
+            await deleteDoc(doc(window.db, "articles", art.firestoreId));
+            console.log(`[CleanUp] Purged stock article from Firestore: ${art.title}`);
+          } catch(e) { console.error('Firestore cleanup delete error:', e); }
+        }
+      });
+    }
+    
     try {
       // 1. Fetch from static JSON (scraped/defaults)
       const scrapedR = await fetch('articles.json?ts=' + Date.now());
@@ -896,9 +914,13 @@ window.renderMainPage = function() {
   if (!grid) return;
 
   const locationArticles = getLocationArticles();
-  // Get latest 12 articles for the main page grid
-  const gridLimit = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations.mainGridCount) || 3;
-  const recentArticles = locationArticles.slice(0, gridLimit);
+  const pinnedIds = (typeof activeCustomizations !== 'undefined' && activeCustomizations && activeCustomizations.mainGridIds) || [];
+  let recentArticles;
+  if (pinnedIds.length > 0) {
+    recentArticles = pinnedIds.map(id => locationArticles.find(a => String(a.id) === String(id))).filter(Boolean);
+  } else {
+    recentArticles = locationArticles.slice(0, 3);
+  }
   
   grid.innerHTML = recentArticles.map((a, i) => {
     // Generate random mock stats for the video look
@@ -11385,8 +11407,8 @@ async function deleteArticle(id) {
       if (!activeCustomizations.deletedArticleIds.includes(String(id))) {
         activeCustomizations.deletedArticleIds.push(String(id));
       }
-      if (activeCustomizations.mainGridCount && activeCustomizations.mainGridCount > 1) {
-        activeCustomizations.mainGridCount--;
+      if (activeCustomizations.mainGridIds) {
+        activeCustomizations.mainGridIds = activeCustomizations.mainGridIds.filter(gid => String(gid) !== String(id));
       }
       await saveCustomizationsToServer();
     }
@@ -18622,7 +18644,11 @@ window.addNewArticle = async function() {
     localStorage.setItem('newsArticles', JSON.stringify(newsArticles));
 
     if (typeof activeCustomizations !== 'undefined' && activeCustomizations) {
-      activeCustomizations.mainGridCount = (activeCustomizations.mainGridCount || 3) + 1;
+      if (!activeCustomizations.mainGridIds) {
+        const locArts = getLocationArticles();
+        activeCustomizations.mainGridIds = locArts.slice(0, 3).map(a => String(a.id));
+      }
+      activeCustomizations.mainGridIds.unshift(String(newId));
       await saveCustomizationsToServer();
     }
 
