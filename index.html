@@ -556,6 +556,10 @@
         <span style="width: 6px; height: 6px; background: #30d158; border-radius: 50%; display: inline-block;"></span>
       </div>
       <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <label for="admin-bg-color-picker" style="color: #333; font-size: 0.8rem; font-weight: 600; direction: rtl;">צבע רקע:</label>
+          <input type="color" id="admin-bg-color-picker" onchange="window.updateSiteBgColor(this.value)" style="border: 1px solid #ccc; border-radius: 4px; width: 36px; height: 28px; cursor: pointer; padding: 0; background: none;" />
+        </div>
         <button onclick="window.toggleEditModeBtn()" id="admin-bar-toggle-edit" style="background: rgba(255,255,255,0.05); border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px 14px; color: #333; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: background 0.2s;">מצב עריכה: כבוי</button>
         <button onclick="window.openAddCustomPageModal()" style="background: rgba(255,255,255,0.08); border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; color: #333; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: background 0.2s; display: flex; align-items: center; gap: 6px;"><i class="fas fa-plus" style="color: #555;"></i> הוסף עמוד ➕</button>
         <button onclick="saveCustomizationsToServer()" style="background: #555; border: none; border-radius: 6px; padding: 6px 16px; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 700; font-family: inherit; transition: background 0.2s;">שמור שינויים 💾</button>
@@ -5314,7 +5318,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js?v=54"></script>
+  <script src="app.js?v=55"></script>
 
   <!-- ====== AUTH MODAL (global, outside main-wrapper so position:fixed is never broken by parent transforms) ====== -->
   <div id="auth-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);">

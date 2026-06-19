@@ -963,6 +963,9 @@ window.renderMainPage = function() {
     const feedItems = locationArticles.filter(a => a.approved !== false && !pinnedSet.has(String(a.id))).slice(0, 10);
     mainNewsFeedList.innerHTML = feedItems.map(a => `
       <div onclick="showArticle(${a.id})" style="display:flex; gap:24px; padding:24px 0; border-bottom:1px solid #e8e8e8; cursor:pointer; direction:rtl; transition: background 0.2s;" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='transparent'">
+        <div style="flex-shrink:0; width:200px; height:140px; border-radius:12px; overflow:hidden;">
+          <img src="${a.image}" alt="" style="width:100%; height:100%; object-fit:cover;">
+        </div>
         <div style="flex:1; min-width:0; text-align:right;">
           <h3 style="font-size:1.15rem; font-weight:700; color:#1a1a1a; margin-bottom:8px; line-height:1.5;">${escHtml(a.title)}</h3>
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.85rem;">
@@ -971,9 +974,6 @@ window.renderMainPage = function() {
             <span style="color:#999;">${escHtml(a.time || '')}</span>
           </div>
           ${a.snippet ? `<p style="font-size:0.9rem; color:#555; line-height:1.6; margin:0;">${escHtml(a.snippet)}</p>` : ''}
-        </div>
-        <div style="flex-shrink:0; width:200px; height:140px; border-radius:12px; overflow:hidden;">
-          <img src="${a.image}" alt="" style="width:100%; height:100%; object-fit:cover;">
         </div>
       </div>
     `).join('');
@@ -14179,9 +14179,39 @@ function getElementFromIdentifier(id) {
   return el;
 }
 
+window.updateSiteBgColor = function(color) {
+  if (typeof activeCustomizations === 'undefined') activeCustomizations = {};
+  activeCustomizations['__siteBgColor__'] = color;
+  window.applySiteBgColor(color);
+};
+
+window.applySiteBgColor = function(color) {
+  if (!color) return;
+  let styleEl = document.getElementById('custom-bg-color-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'custom-bg-color-style';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.innerHTML = `
+    body:not(.dark-theme),
+    html:not(.dark-theme) {
+      background: ${color} !important;
+      background-color: ${color} !important;
+    }
+  `;
+  const picker = document.getElementById('admin-bg-color-picker');
+  if (picker) {
+    picker.value = color;
+  }
+};
+
 // Apply loaded customizations to the page
 function applyAllCustomizations() {
   try {
+    if (activeCustomizations && activeCustomizations['__siteBgColor__']) {
+      window.applySiteBgColor(activeCustomizations['__siteBgColor__']);
+    }
     for (let key in activeCustomizations) {
       const cust = activeCustomizations[key];
       
