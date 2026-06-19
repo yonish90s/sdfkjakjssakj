@@ -1188,10 +1188,13 @@ function renderNewsLayout(page = 1) {
   const isUserAdmin = (localStorage.getItem('isAdmin') === 'true');
   if (isUserAdmin && page === 1) {
     addFeedCardHtml = `
-      <div class="feed-item add-article-feed-card" onclick="openUserArticleModal()" style="position: relative; border: 2px dashed rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); cursor: pointer; min-height: 120px; border-radius: 16px; margin-bottom: 16px; padding: 20px; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.background='rgba(255,255,255,0.02)'">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-          <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); font-weight: 300; line-height: 1;">+</div>
-          <div style="font-size: 0.95rem; color: rgba(255,255,255,0.6); font-weight: 700;">הוסף כתבה רגילה</div>
+      <div class="feed-item add-article-feed-card" onclick="openUserArticleModal()" style="position: relative; cursor: pointer; border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 16px; margin-bottom: 16px; display: flex; flex-direction: row-reverse; gap: 16px; padding: 12px; background: rgba(255, 255, 255, 0.01); transition: all 0.2s; min-height: 120px; box-sizing: border-box;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.15)'; this.style.background='rgba(255, 255, 255, 0.01)'">
+        <div style="width: 140px; height: 96px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); flex-shrink: 0;">
+          <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); font-weight: 300;">+</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: right; direction: rtl; padding-right: 8px;">
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: rgba(255,255,255,0.85); margin: 0 0 6px 0;">הוסף כתבה חדשה</h2>
+          <p style="font-size: 0.85rem; color: rgba(255,255,255,0.4); margin: 0;">לחץ כאן כדי להוסיף כתבה חדשה לפיד הכללי</p>
         </div>
       </div>
     `;
