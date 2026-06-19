@@ -1926,7 +1926,7 @@ window.aiShopSearch = async function() {
   let msgs = document.getElementById('ai-shop-messages');
   let results = document.getElementById('ai-shop-results');
 
-  const floatingPanel = document.getElementById('floating-pill-panel');
+  const floatingPanel = document.getElementById('floating-pill-panel-ai');
   if (floatingPanel && floatingPanel.classList.contains('active')) {
     input = floatingPanel.querySelector('#ai-shop-input') || input;
     msgs = floatingPanel.querySelector('#ai-shop-messages') || msgs;
@@ -10396,7 +10396,7 @@ window.initMessagesListeners = function() {
       }
       
       if (typeof window.loadDirectMessages === 'function' && window._supportChatMode === 'direct') {
-        const supportPanel = document.getElementById('floating-pill-panel');
+        const supportPanel = document.getElementById('floating-pill-panel-chats');
         if (supportPanel && supportPanel.style.display !== 'none') {
            window.loadDirectMessages();
         }
@@ -11786,7 +11786,7 @@ function updateSupportBadge(count) {
 
 async function sendDirectChatMessage() {
   let input = document.getElementById('direct-chat-input');
-  const floatingPanel = document.getElementById('floating-pill-panel');
+  const floatingPanel = document.getElementById('floating-pill-panel-chats');
   if (floatingPanel && floatingPanel.classList.contains('active')) {
     input = floatingPanel.querySelector('#direct-chat-input') || input;
   }
@@ -11833,7 +11833,7 @@ async function sendDirectChatMessage() {
 
 async function loadDirectMessages() {
   let container = document.getElementById('direct-chat-messages');
-  const floatingPanel = document.getElementById('floating-pill-panel');
+  const floatingPanel = document.getElementById('floating-pill-panel-chats');
   if (floatingPanel && floatingPanel.classList.contains('active')) {
     container = floatingPanel.querySelector('#direct-chat-messages') || container;
   }
@@ -17830,69 +17830,67 @@ window.fxGradientFor = function(name) {
 };
 
 /* ─── Floating Pill Panel Trigger Logic ─── */
+/* ─── Floating Pill Panel Trigger Logic ─── */
 window.openFloatingPillPanel = function(type) {
-  const panel = document.getElementById('floating-pill-panel');
-  const titleEl = document.getElementById('floating-pill-panel-title');
-  const bodyEl = document.getElementById('floating-pill-panel-body');
+  const panelTypes = ['history', 'chats', 'ai'];
+  
+  // Close any other open panels first
+  panelTypes.forEach(t => {
+    if (t !== type) {
+      const otherPanel = document.getElementById(`floating-pill-panel-${t}`);
+      if (otherPanel && otherPanel.classList.contains('active')) {
+        otherPanel.classList.remove('active');
+        setTimeout(() => {
+          otherPanel.style.display = 'none';
+        }, 300);
+      }
+    }
+  });
+
+  const panel = document.getElementById(`floating-pill-panel-${type}`);
   const pillNav = document.getElementById('floating-pill-nav');
-  if (!panel || !titleEl || !bodyEl) return;
+  if (!panel) return;
   
   const wasActive = panel.classList.contains('active');
-  const currentType = panel.getAttribute('data-active-type');
   
   // If clicking the same already open tab, close it
-  if (wasActive && currentType === type) {
-    window.closeFloatingPillPanel();
+  if (wasActive) {
+    window.closeFloatingPillPanel(type);
     return;
   }
   
-  panel.setAttribute('data-active-type', type);
-  let title = '';
-  let bodyHTML = '';
-  
-  if (type === 'history') {
-    title = '<i class="fas fa-history"></i> היסטוריית פעילות';
-    bodyHTML = `<div id="recent-activity-list" style="display:flex; flex-direction:column; gap:12px;"></div>`;
-    bodyEl.innerHTML = bodyHTML;
-    titleEl.innerHTML = title;
-    
-    panel.style.display = 'flex';
-    if (pillNav) pillNav.classList.add('hidden-state');
-    setTimeout(() => {
-      panel.classList.add('active');
-      if (window.renderRecentActivity) window.renderRecentActivity();
-    }, 10);
-  } 
-  else if (type === 'chats') {
+  // For chats, we need to dynamically populate body depending on user admin status
+  if (type === 'chats') {
     const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+    const bodyEl = document.getElementById('floating-pill-panel-body-chats');
+    const titleEl = document.getElementById('floating-pill-panel-title-chats');
     
     if (isUserAdmin) {
-      title = '<i class="fas fa-comments"></i> שיחות תמיכה עם משתמשים (Admin)';
-      bodyHTML = `
-        <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1;">
-          <!-- Left Side: Threads List Container -->
-          <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
-            <!-- Archive / Active Tabs -->
-            <div style="display:flex; background:rgba(255,255,255,0.04); padding:3px; border-radius:8px; gap:4px; margin-bottom:4px; direction:rtl;">
-              <button onclick="window.setAdminChatTab('active')" id="btn-admin-tab-active" style="flex:1; padding:6px; background:#e28743; border:none; border-radius:6px; color:#333; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">פעיל</button>
-              <button onclick="window.setAdminChatTab('archive')" id="btn-admin-tab-archive" style="flex:1; padding:6px; background:transparent; border:none; border-radius:6px; color:#a1a1aa; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">ארכיון</button>
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-comments"></i> שיחות תמיכה עם משתמשים (Admin)';
+      if (bodyEl) {
+        bodyEl.innerHTML = `
+          <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1;">
+            <!-- Left Side: Threads List Container -->
+            <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
+              <!-- Archive / Active Tabs -->
+              <div style="display:flex; background:rgba(255,255,255,0.04); padding:3px; border-radius:8px; gap:4px; margin-bottom:4px; direction:rtl;">
+                <button onclick="window.setAdminChatTab('active')" id="btn-admin-tab-active" style="flex:1; padding:6px; background:#e28743; border:none; border-radius:6px; color:#333; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">פעיל</button>
+                <button onclick="window.setAdminChatTab('archive')" id="btn-admin-tab-archive" style="flex:1; padding:6px; background:transparent; border:none; border-radius:6px; color:#a1a1aa; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">ארכיון</button>
+              </div>
+              <!-- Threads List -->
+              <div id="floating-admin-threads-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0;">
+                <div style="text-align:center; padding:20px; color:#86868b;">טוען שיחות... 💬</div>
+              </div>
             </div>
-            <!-- Threads List -->
-            <div id="floating-admin-threads-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0;">
-              <div style="text-align:center; padding:20px; color:#86868b;">טוען שיחות... 💬</div>
+            <!-- Right Side: Message Area -->
+            <div id="floating-admin-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
+              <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
+                בחר שיחה מהרשימה כדי להתחיל לענות 💬
+              </div>
             </div>
           </div>
-          <!-- Right Side: Message Area -->
-          <div id="floating-admin-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
-            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
-              בחר שיחה מהרשימה כדי להתחיל לענות 💬
-            </div>
-          </div>
-        </div>
-      `;
-      bodyEl.innerHTML = bodyHTML;
-      titleEl.innerHTML = title;
-      
+        `;
+      }
       panel.style.display = 'flex';
       if (pillNav) pillNav.classList.add('hidden-state');
       setTimeout(() => {
@@ -17903,23 +17901,19 @@ window.openFloatingPillPanel = function(type) {
       const isRegistered = (typeof currentUser !== 'undefined' && currentUser && currentUser.email);
       
       if (!isRegistered) {
-        title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
-        bodyHTML = `
-          <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
-            <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
-            <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f0f0f0; color:#333; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
-          </div>
-        `;
-        bodyEl.innerHTML = bodyHTML;
-        titleEl.innerHTML = title;
-
-        // mark the support thread as being actively read, so opening it here
-        // clears the unread badge (same as the full support window)
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
+        if (bodyEl) {
+          bodyEl.innerHTML = `
+            <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+              <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
+              <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f0f0f0; color:#333; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+            </div>
+          `;
+        }
         window._supportChatMode = 'direct';
-
         panel.style.display = 'flex';
         if (pillNav) pillNav.classList.add('hidden-state');
         setTimeout(() => {
@@ -17928,27 +17922,26 @@ window.openFloatingPillPanel = function(type) {
           if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
         }, 10);
       } else {
-        title = '<i class="fas fa-comments"></i> שיחות וצ\'אטים';
-        bodyHTML = `
-          <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1; direction:rtl;">
-            <!-- Right Side (in RTL): Threads List Container (Users list) -->
-            <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
-              <input type="text" id="floating-user-chat-search" placeholder="חיפוש משתמש..." style="width:100%; padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-size:0.85rem; outline:none; direction:rtl;" oninput="window.renderFloatingUserChatList()">
-              <div id="floating-user-threads-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0;">
-                טוען שיחות... 💬
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-comments"></i> שיחות וצ\'אטים';
+        if (bodyEl) {
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1; direction:rtl;">
+              <!-- Right Side (in RTL): Threads List Container (Users list) -->
+              <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
+                <input type="text" id="floating-user-chat-search" placeholder="חיפוש משתמש..." style="width:100%; padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-size:0.85rem; outline:none; direction:rtl;" oninput="window.renderFloatingUserChatList()">
+                <div id="floating-user-threads-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0;">
+                  טוען שיחות... 💬
+                </div>
+              </div>
+              <!-- Left Side (in RTL): Message Area -->
+              <div id="floating-user-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
+                <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
+                  בחר שיחה מהרשימה כדי להתחיל 💬
+                </div>
               </div>
             </div>
-            <!-- Left Side (in RTL): Message Area -->
-            <div id="floating-user-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
-              <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
-                בחר שיחה מהרשימה כדי להתחיל 💬
-              </div>
-            </div>
-          </div>
-        `;
-        bodyEl.innerHTML = bodyHTML;
-        titleEl.innerHTML = title;
-
+          `;
+        }
         panel.style.display = 'flex';
         if (pillNav) pillNav.classList.add('hidden-state');
         setTimeout(() => {
@@ -17960,23 +17953,15 @@ window.openFloatingPillPanel = function(type) {
       }
     }
   }
+  else if (type === 'history') {
+    panel.style.display = 'flex';
+    if (pillNav) pillNav.classList.add('hidden-state');
+    setTimeout(() => {
+      panel.classList.add('active');
+      if (window.renderRecentActivity) window.renderRecentActivity();
+    }, 10);
+  }
   else if (type === 'ai') {
-    title = '<i class="fas fa-robot"></i> עוזר קניות AI';
-    bodyHTML = `
-      <div id="ai-shop-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
-        <div class="ai-msg-bot" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color: #000;">
-          <span>👋 שלום! אני ה-AI של SOKI. תגיד לי מה אתה מחפש לקנות — ואני אמצא לך מוצרים רלוונטיים מהמשתמשים שלנו!</span>
-        </div>
-        <div id="ai-shop-results" style="display:none; flex-direction:column; gap:8px; margin-top:8px;"></div>
-      </div>
-      <div style="display:flex; gap:8px;">
-        <input type="text" id="ai-shop-input" class="admin-input" placeholder="לדוגמה: אייפון משומש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') aiShopSearch()">
-        <button onclick="aiShopSearch()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f0f0f0; color:#333; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
-      </div>
-    `;
-    bodyEl.innerHTML = bodyHTML;
-    titleEl.innerHTML = title;
-    
     panel.style.display = 'flex';
     if (pillNav) pillNav.classList.add('hidden-state');
     setTimeout(() => {
@@ -17985,25 +17970,26 @@ window.openFloatingPillPanel = function(type) {
   }
 };
 
-window.closeFloatingPillPanel = function() {
-  const panel = document.getElementById('floating-pill-panel');
+window.closeFloatingPillPanel = function(type) {
+  const panelTypes = type ? [type] : ['history', 'chats', 'ai'];
   const pillNav = document.getElementById('floating-pill-nav');
 
-  // leave "actively reading" mode so future replies count toward the badge again
   if (window._supportChatMode === 'direct') window._supportChatMode = 'assistant';
   window._activeFloatingUserChatId = null;
 
-  // Removed interval clearing
   if (pillNav) {
     pillNav.classList.remove('hidden-state');
   }
-  if (panel) {
-    panel.classList.remove('active');
-    panel.removeAttribute('data-active-type');
-    setTimeout(() => {
-      panel.style.display = 'none';
-    }, 300);
-  }
+
+  panelTypes.forEach(t => {
+    const panel = document.getElementById(`floating-pill-panel-${t}`);
+    if (panel) {
+      panel.classList.remove('active');
+      setTimeout(() => {
+        panel.style.display = 'none';
+      }, 300);
+    }
+  });
 };
 
 /* Floating User chats logic for registered members */

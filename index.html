@@ -6020,14 +6020,45 @@
     </div>
   </div>
 </div>
-<!-- Floating Pill Panel (Same size for all 3 features) -->
-<div id="floating-pill-panel" class="floating-pill-panel" style="display:none;">
+<!-- Floating Pill Panel History -->
+<div id="floating-pill-panel-history" class="floating-pill-panel" style="display:none;">
   <div class="panel-header">
-    <div id="floating-pill-panel-title" class="panel-title">היסטוריה</div>
-    <button onclick="closeFloatingPillPanel()" class="panel-close-btn">&times;</button>
+    <div id="floating-pill-panel-title-history" class="panel-title"><i class="fas fa-history"></i> היסטוריית פעילות</div>
+    <button onclick="closeFloatingPillPanel('history')" class="panel-close-btn">&times;</button>
   </div>
-  <div id="floating-pill-panel-body" class="panel-body">
-    <!-- Dynamic contents injected here -->
+  <div id="floating-pill-panel-body-history" class="panel-body">
+    <div id="recent-activity-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</div>
+
+<!-- Floating Pill Panel Chats -->
+<div id="floating-pill-panel-chats" class="floating-pill-panel" style="display:none;">
+  <div class="panel-header">
+    <div id="floating-pill-panel-title-chats" class="panel-title"><i class="fas fa-comments"></i> שיחות וצ'אטים</div>
+    <button onclick="closeFloatingPillPanel('chats')" class="panel-close-btn">&times;</button>
+  </div>
+  <div id="floating-pill-panel-body-chats" class="panel-body">
+    <!-- Dynamic content loaded via openFloatingPillPanel('chats') -->
+  </div>
+</div>
+
+<!-- Floating Pill Panel AI -->
+<div id="floating-pill-panel-ai" class="floating-pill-panel" style="display:none;">
+  <div class="panel-header">
+    <div id="floating-pill-panel-title-ai" class="panel-title"><i class="fas fa-robot"></i> עוזר קניות AI</div>
+    <button onclick="closeFloatingPillPanel('ai')" class="panel-close-btn">&times;</button>
+  </div>
+  <div id="floating-pill-panel-body-ai" class="panel-body">
+    <div id="ai-shop-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+      <div class="ai-msg-bot" style="background:#f1f1f1; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.9rem; text-align:left; color: #000;">
+        <span>👋 שלום! אני ה-AI של SOKI. תגיד לי מה אתה מחפש לקנות — ואני אמצא לך מוצרים רלוונטיים מהמשתמשים שלנו!</span>
+      </div>
+      <div id="ai-shop-results" style="display:none; flex-direction:column; gap:8px; margin-top:8px;"></div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="ai-shop-input" class="admin-input" placeholder="לדוגמה: אייפון משומש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') aiShopSearch()">
+      <button onclick="aiShopSearch()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f0f0f0; color:#333; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+    </div>
   </div>
 </div>
 
