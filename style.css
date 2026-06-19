@@ -139,6 +139,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html {
+  background-color: var(--bg-main);
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-main);
@@ -1679,11 +1683,11 @@ body.dark-theme .toast {
 }
 
 .pdf-card-bookmark-btn:hover {
-  color: #f9b233;
+  color: #555;
   transform: scale(1.1);
 }
 .pdf-card-bookmark-btn.active {
-  color: #f9b233 !important;
+  color: #555 !important;
   transform: scale(1.1);
 }
 
@@ -2171,7 +2175,7 @@ body.dark-theme .sidebar-card p {
   }
 
   .mobile-nav-link.premium-link {
-    color: #f9b233;
+    color: #555;
   }
 
   .mobile-menu-divider {
@@ -3594,12 +3598,12 @@ body.dark-theme .btn-pic-action {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #f4c842;
-  border: none;
+  background: #fff;
+  border: 1px solid #ddd;
   font-size: 1.4rem;
   font-weight: 400;
   line-height: 1;
-  color: #1d1d1f;
+  color: #333;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3609,7 +3613,7 @@ body.dark-theme .btn-pic-action {
   z-index: 3;
 }
 .shop-add-btn:hover {
-  background: #e6b800;
+  background: #f0f0f0;
   transform: scale(1.1);
 }
 
@@ -4007,7 +4011,7 @@ body.dark-theme .premium-overlay {
 .premium-overlay-icon {
   font-size: 3.5rem;
   margin-bottom: 24px;
-  background: linear-gradient(135deg, #f9b233, #f5d142);
+  background: linear-gradient(135deg, #555, #888);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
@@ -4332,8 +4336,8 @@ model-viewer {
   left: 0;
   height: 100vh;
   width: var(--sidebar-width);
-  background: #0a0a0a;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: #f8f8f8;
+  border-right: 1px solid #e0e0e0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   display: flex;
@@ -4428,7 +4432,7 @@ model-viewer {
   transition: background 0.2s, border 0.2s;
 }
 #sidebar-hamburger-btn:hover rect {
-  fill: #f59e0b !important;
+  fill: #555 !important;
 }
 
 .sidebar-nav {
@@ -4845,7 +4849,7 @@ body.dark-theme .btn-save-article {
 }
 
 .meta-bookmark-btn.active {
-  color: #f9b233; /* Yellow for active state */
+  color: #333;
 }
 
 body.dark-theme .meta-bookmark-btn {
@@ -4861,9 +4865,9 @@ body.dark-theme .meta-bookmark-btn.active {
 }
 
 .btn-save-article.active {
-  background: #f9b233 !important;
+  background: #333 !important;
   color: #ffffff !important;
-  border-color: #f9b233 !important;
+  border-color: #333 !important;
 }
 
 .btn-save-article.active i {
@@ -4971,8 +4975,8 @@ body.dark-theme .meta-bookmark-btn.active {
 
 /* Saved Highlight Style */
 .feed-item.saved-highlight {
-  background: rgba(249, 178, 51, 0.08) !important;
-  border-right: 4px solid #f9b233 !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-right: 4px solid #555 !important;
   transition: all 0.3s ease;
 }
 
@@ -4981,7 +4985,7 @@ body.dark-theme .feed-item.saved-highlight {
 }
 
 .featured-card.saved-highlight {
-  box-shadow: inset 0 0 0 4px #f9b233, 0 10px 30px rgba(249, 178, 51, 0.3) !important;
+  box-shadow: inset 0 0 0 4px #555, 0 10px 30px rgba(0, 0, 0, 0.15) !important;
 }
 
 .featured-card.saved-highlight::after {
@@ -4991,7 +4995,7 @@ body.dark-theme .feed-item.saved-highlight {
   position: absolute;
   top: 15px;
   left: 15px;
-  color: #f9b233;
+  color: #555;
   font-size: 1.2rem;
   z-index: 10;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -6289,8 +6293,8 @@ body.light-theme .location-chevron {
 .ad-badge {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #ff9500; /* Apple Premium Gold/Orange */
-  background: rgba(255, 149, 0, 0.15);
+  color: #888;
+  background: rgba(0, 0, 0, 0.06);
   padding: 4px 8px;
   border-radius: 6px;
   align-self: flex-start;
@@ -6311,8 +6315,8 @@ body.light-theme .location-chevron {
 }
 
 .ad-cta-btn {
-  background: #ff9500;
-  color: #000;
+  background: #333;
+  color: #fff;
   border: none;
   padding: 10px;
   border-radius: 10px;
@@ -6386,8 +6390,8 @@ body.dark-theme .navbar-sidebar-toggle-btn:hover {
 
 .soki-logo-crown {
   font-size: 18px;
-  color: #ff9500; /* Premium gold */
-  filter: drop-shadow(0 2px 6px rgba(255, 149, 0, 0.3));
+  color: #999;
+  filter: none;
   transition: transform 0.3s;
 }
 
@@ -6483,10 +6487,10 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
 
 /* ========== SOKI PREMIUM TECHCRUNCH FOOTER ========== */
 .soki-footer-premium {
-  background: #0d0f12; /* Dark luxury gray */
-  border-top: 1px solid var(--border-subtle);
+  background: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
   padding: 64px 48px 48px;
-  color: #f5f5f7;
+  color: #333;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   z-index: 10;
   position: relative;
@@ -6703,14 +6707,14 @@ body.dark-theme .apple-search-wrapper input:focus + .search-icon {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: #ffffff;
+  color: #333;
   z-index: 99999;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #e0e0e0;
   padding: 16px 28px;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
 }
@@ -11111,4 +11115,390 @@ body.admin-edit-mode-active .mv-card-delete-btn {
 #page-home .news-sidebar {
   display: none !important;
 }
+
+/* ========== LIGHT THEME (Default) ========== */
+body:not(.dark-theme) .sidebar {
+  background: #f8f8f8 !important;
+  border-right: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) .sidebar-link {
+  color: #333 !important;
+}
+body:not(.dark-theme) .sidebar-link.active {
+  background: #333 !important;
+  color: #fff !important;
+}
+body:not(.dark-theme) .sidebar-link:hover {
+  background: #e8e8e8 !important;
+}
+body:not(.dark-theme) #sidebar-title {
+  color: #1a1a1a !important;
+}
+body:not(.dark-theme) .navbar-apple {
+  background: rgba(255,255,255,0.9) !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) .apple-nav-item,
+body:not(.dark-theme) .sec-nav-item {
+  color: #333 !important;
+}
+body:not(.dark-theme) .nav-secondary-apple {
+  background: rgba(255,255,255,0.9) !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) .mv-card {
+  background: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) .mv-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+}
+body:not(.dark-theme) .mv-card-header {
+  border-bottom: 1px solid #eee !important;
+}
+body:not(.dark-theme) .mv-author {
+  color: #333 !important;
+}
+body:not(.dark-theme) .mv-title {
+  color: #1a1a1a !important;
+}
+body:not(.dark-theme) .mv-footer {
+  border-top: 1px solid #eee !important;
+}
+body:not(.dark-theme) .mv-views {
+  color: #666 !important;
+}
+body:not(.dark-theme) .mv-price-btn {
+  background: #0071e3 !important;
+  color: #fff !important;
+}
+body:not(.dark-theme) #main-wrapper {
+  background: #fff !important;
+}
+body:not(.dark-theme) .sidebar-search-bar {
+  background: rgba(0,0,0,0.05) !important;
+  border-color: #ddd !important;
+}
+body:not(.dark-theme) .sidebar-search-bar input {
+  color: #333 !important;
+}
+body:not(.dark-theme) .mv-avatar {
+  background: #e0e0e0 !important;
+  color: #666 !important;
+}
+body:not(.dark-theme) #nav-user-dropdown {
+  background: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) #nav-user-dropdown a,
+body:not(.dark-theme) #nav-user-dropdown span,
+body:not(.dark-theme) #nav-user-dropdown div {
+  color: #333 !important;
+}
+body:not(.dark-theme) .modal-content {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) input,
+body:not(.dark-theme) select,
+body:not(.dark-theme) textarea {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #ddd !important;
+}
+body:not(.dark-theme) .bottom-drawer {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .soki-footer-premium {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .soki-footer-premium a,
+body:not(.dark-theme) .soki-footer-premium span,
+body:not(.dark-theme) .soki-footer-premium h3 {
+  color: #555 !important;
+}
+body:not(.dark-theme) .product-pdp-container {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .main-image-wrapper {
+  background: #f5f5f5 !important;
+}
+body:not(.dark-theme) .pdp-title,
+body:not(.dark-theme) .pdp-description {
+  color: #1a1a1a !important;
+}
+body:not(.dark-theme) .rec-title {
+  color: #333 !important;
+}
+body:not(.dark-theme) .recommendations-title {
+  color: #1a1a1a !important;
+}
+body:not(.dark-theme) #support-floating-btn {
+  background: #0071e3 !important;
+}
+body:not(.dark-theme) .live-camera-card {
+  background: #f5f5f5 !important;
+}
+body:not(.dark-theme) .forum-widget {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .ap-card,
+body:not(.dark-theme) .pay-card,
+body:not(.dark-theme) .mp-card {
+  background: #fff !important;
+  color: #333 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) .ap-input,
+body:not(.dark-theme) .ap-textarea,
+body:not(.dark-theme) .ap-select,
+body:not(.dark-theme) .mp-input,
+body:not(.dark-theme) .mp-textarea,
+body:not(.dark-theme) .mp-select,
+body:not(.dark-theme) .admin-input {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #ddd !important;
+}
+body:not(.dark-theme) .page {
+  color: #333;
+}
+body:not(.dark-theme) h1,
+body:not(.dark-theme) h2,
+body:not(.dark-theme) h3,
+body:not(.dark-theme) h4 {
+  color: #1a1a1a !important;
+}
+body:not(.dark-theme) .btn-secondary {
+  background: #f0f0f0 !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) #navbar-search-input {
+  background: #f0f0f0 !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .edit-modal-card {
+  background: #fff !important;
+}
+body:not(.dark-theme) .recent-activity-floating-card {
+  background: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) #recent-activity-floating-btn {
+  background: #0071e3 !important;
+}
+body:not(.dark-theme) .carousel-slide {
+  background: #f5f5f5 !important;
+}
+
+/* ========== GLOBAL LIGHT OVERRIDE — catch all dark backgrounds ========== */
+body:not(.dark-theme) * {
+  --bg-main: #f5f5f7;
+  --bg-glass: rgba(255,255,255,0.72);
+  --bg-glass-hover: rgba(255,255,255,0.85);
+  --text-main: #1d1d1f;
+  --text-muted: #86868b;
+  --border-subtle: rgba(0,0,0,0.08);
+}
+body:not(.dark-theme) .page {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) #page-home,
+body:not(.dark-theme) #page-download,
+body:not(.dark-theme) #page-bets,
+body:not(.dark-theme) #page-giant-hero {
+  background: #fff !important;
+  color: #333 !important;
+}
+/* Chat */
+body:not(.dark-theme) .chat-search-input,
+body:not(.dark-theme) .chat-input,
+body:not(.dark-theme) #drawer-chat-search,
+body:not(.dark-theme) #drawer-chat-message-input,
+body:not(.dark-theme) #drawer-chat-active-pane,
+body:not(.dark-theme) #drawer-chat-users-sidebar,
+body:not(.dark-theme) #admin-chat-messages-pane {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #ddd !important;
+}
+body:not(.dark-theme) .message-view-modal .modal-content {
+  background: #fff !important;
+  color: #333 !important;
+}
+/* Forum */
+body:not(.dark-theme) #floating-post-reply-bar {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-top: 1px solid #e0e0e0 !important;
+}
+body:not(.dark-theme) #new-post-title,
+body:not(.dark-theme) #new-post-price,
+body:not(.dark-theme) #new-post-image,
+body:not(.dark-theme) #new-post-content,
+body:not(.dark-theme) #offer-message,
+body:not(.dark-theme) #private-message-content,
+body:not(.dark-theme) #article-comment-input-area {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #ddd !important;
+}
+/* Delivery & B2B & Sharing */
+body:not(.dark-theme) #delivery-tracking-panel,
+body:not(.dark-theme) #delivery-admin-section,
+body:not(.dark-theme) #b2b-my-offers-box,
+body:not(.dark-theme) #sharing-coins-display,
+body:not(.dark-theme) #uber-coins-display,
+body:not(.dark-theme) .uber-tier-card,
+body:not(.dark-theme) #uber-map-simulation,
+body:not(.dark-theme) #uber-driver-panel,
+body:not(.dark-theme) .delivery-step {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #e0e0e0 !important;
+}
+/* Drawers */
+body:not(.dark-theme) #manager-direct-chats-container,
+body:not(.dark-theme) #my-store-drawer {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+}
+/* Product Detail Page */
+body:not(.dark-theme) #page-product-detail {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .thumbnail-list .pdp-thumb {
+  border-color: #ddd !important;
+}
+/* AI chat modal */
+body:not(.dark-theme) #ai-shop-modal {
+  background: #fff !important;
+  color: #333 !important;
+}
+/* Marketplace */
+body:not(.dark-theme) .mp-container {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) .mp-card,
+body:not(.dark-theme) .mp-prev-body {
+  background: #fff !important;
+  color: #333 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+/* Banner editor */
+body:not(.dark-theme) #banner-editor-popup {
+  background: #fff !important;
+  color: #333 !important;
+}
+body:not(.dark-theme) #banner-url-input {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+}
+/* Admin */
+body:not(.dark-theme) #admin-links-form {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+}
+/* Auth modals */
+body:not(.dark-theme) .modal-otp-digit,
+body:not(.dark-theme) #modal-input-name,
+body:not(.dark-theme) #modal-input-email,
+body:not(.dark-theme) #modal-input-pw,
+body:not(.dark-theme) #admin-user,
+body:not(.dark-theme) #admin-pass {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #ddd !important;
+}
+/* Live cameras */
+body:not(.dark-theme) .live-cameras-section {
+  color: #333 !important;
+}
+body:not(.dark-theme) .live-cameras-section .pulse-badge {
+  color: #ff3366 !important;
+}
+/* Floating pill nav */
+body:not(.dark-theme) .floating-pill-nav {
+  background: rgba(255,255,255,0.9) !important;
+  border: 1px solid #e0e0e0 !important;
+  backdrop-filter: blur(10px) !important;
+}
+body:not(.dark-theme) .floating-pill-nav button {
+  color: #333 !important;
+}
+/* Support button */
+body:not(.dark-theme) #support-floating-btn {
+  color: #fff !important;
+}
+/* Group & backup */
+body:not(.dark-theme) #group-icon-wrap,
+body:not(.dark-theme) #backup-timeline-container,
+body:not(.dark-theme) .ap-empty-banner,
+body:not(.dark-theme) .perf-tab-btn.active {
+  background: #f0f0f0 !important;
+  color: #333 !important;
+}
+/* Cookie banner */
+body:not(.dark-theme) #apple-cookie-banner {
+  background: #fff !important;
+  color: #333 !important;
+  border-top: 1px solid #e0e0e0 !important;
+}
+/* Catch-all: any remaining element with very dark inline bg */
+body:not(.dark-theme) [style*="background:#0"] {
+  background: #f5f5f5 !important;
+}
+body:not(.dark-theme) [style*="background: #0"] {
+  background: #f5f5f5 !important;
+}
+body:not(.dark-theme) [style*="background-color:#0"] {
+  background-color: #f5f5f5 !important;
+}
+body:not(.dark-theme) [style*="color:#fff"],
+body:not(.dark-theme) [style*="color: #fff"],
+body:not(.dark-theme) [style*="color:#e"],
+body:not(.dark-theme) [style*="color: #e"],
+body:not(.dark-theme) [style*="color: white"],
+body:not(.dark-theme) [style*="color:#f4"],
+body:not(.dark-theme) [style*="color: #f4"] {
+  color: #333 !important;
+}
+/* Scrollbar light */
+body:not(.dark-theme) ::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+body:not(.dark-theme) ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+}
+body:not(.dark-theme) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.4);
+}
+
+/* Fix body and html background bleeding in light theme */
+body:not(.dark-theme)::before,
+html:not(.dark-theme)::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+body:not(.dark-theme)::after,
+html:not(.dark-theme)::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+body:not(.dark-theme),
+html:not(.dark-theme) {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
 

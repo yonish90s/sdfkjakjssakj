@@ -930,7 +930,7 @@ window.renderMainPage = function() {
 
     return `
       <div class="mv-card" id="main-card-${a.id}" onclick="if(!window.isEditModeActive) showProductDetailById(${a.id})" style="position: relative;">
-        <button class="mv-card-delete-btn" onclick="event.stopPropagation(); deleteArticle(${a.id});" style="display:none; position:absolute; top:8px; left:8px; z-index:10; background:rgba(255,59,48,0.9); color:#fff; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-trash" style="font-size:0.9rem;"></i></button>
+        <button class="mv-card-delete-btn" onclick="event.stopPropagation(); deleteArticle(${a.id});" style="display:none; position:absolute; top:8px; left:8px; z-index:10; background:rgba(255,59,48,0.9); color:#333; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-trash" style="font-size:0.9rem;"></i></button>
         <div class="mv-card-header">
           <div class="mv-author" id="card-author-${a.id}">תמונה מספר ${i + 1}</div>
         </div>
@@ -956,6 +956,28 @@ window.renderMainPage = function() {
   }
   
   if (typeof window.applyAllCustomizations === 'function') window.applyAllCustomizations();
+
+  const mainNewsFeedList = document.getElementById('main-news-feed-list');
+  if (mainNewsFeedList) {
+    const pinnedSet = new Set(pinnedIds.map(String));
+    const feedItems = locationArticles.filter(a => a.approved !== false && !pinnedSet.has(String(a.id))).slice(0, 10);
+    mainNewsFeedList.innerHTML = feedItems.map(a => `
+      <div onclick="showArticle(${a.id})" style="display:flex; gap:24px; padding:24px 0; border-bottom:1px solid #e8e8e8; cursor:pointer; direction:rtl; transition: background 0.2s;" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='transparent'">
+        <div style="flex:1; min-width:0; text-align:right;">
+          <h3 style="font-size:1.15rem; font-weight:700; color:#1a1a1a; margin-bottom:8px; line-height:1.5;">${escHtml(a.title)}</h3>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.85rem;">
+            <span style="color:#0071e3; font-weight:600;">${escHtml(a.author || a.source || '')}</span>
+            <span style="color:#999;">|</span>
+            <span style="color:#999;">${escHtml(a.time || '')}</span>
+          </div>
+          ${a.snippet ? `<p style="font-size:0.9rem; color:#555; line-height:1.6; margin:0;">${escHtml(a.snippet)}</p>` : ''}
+        </div>
+        <div style="flex-shrink:0; width:200px; height:140px; border-radius:12px; overflow:hidden;">
+          <img src="${a.image}" alt="" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+      </div>
+    `).join('');
+  }
 };
 
 function renderNewsLayout(page = 1) {
@@ -1106,7 +1128,7 @@ function renderNewsLayout(page = 1) {
     }
   }
 
-  const feedArticles = filteredArticles.filter(a => !displayFeatured.includes(a) && a.approved !== false);
+  const feedArticles = filteredArticles.filter(a => a.approved !== false);
   const totalPages = Math.max(1, Math.ceil(feedArticles.length / ARTICLES_PER_PAGE));
   const start = (page - 1) * ARTICLES_PER_PAGE;
   const pageArticles = feedArticles.slice(start, start + ARTICLES_PER_PAGE);
@@ -1172,7 +1194,7 @@ function renderNewsLayout(page = 1) {
               <span class="pulse-badge"><span class="pulse-dot"></span> SOKI LIVE</span>
               <span style="font-size: 1rem; font-weight: 700; color: #fff;">שידורים חיים ומוצרי חנות</span>
             </div>
-            <button onclick="navigateTab('shop')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">לכל החנות</button>
+            <button onclick="navigateTab('shop')" style="background:none; border:1px solid #e0e0e0; color:#333; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">לכל החנות</button>
           </div>
         </div>
         <div class="live-cameras-slider" id="live-cameras-slider" style="display:flex; gap:12px; overflow-x:auto;">
@@ -1206,7 +1228,7 @@ function renderNewsLayout(page = 1) {
               <span class="pulse-badge" style="background:rgba(139,92,246,0.15); border-color:rgba(139,92,246,0.5); color:#8b5cf6; padding-left:10px;"><i class="fas fa-users" style="margin-left:6px;"></i> הקהילה שלנו</span>
               הצטרף לדיונים החמים עכשיו
             </div>
-            <button onclick="navigateTab('groups')" style="background:none; border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap;">כנס לפורום</button>
+            <button onclick="navigateTab('groups')" style="background:none; border:1px solid #e0e0e0; color:#333; border-radius:980px; padding:6px 14px; font-size:0.8rem; cursor:pointer; font-weight:600; white-space:nowrap;">כנס לפורום</button>
           </div>
         </div>
         <div class="live-cameras-slider">
@@ -1817,7 +1839,7 @@ function myStoreRenderDrawer() {
     return;
   }
   list.innerHTML = mine.map(p => `
-    <div style="display:flex; gap:12px; background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; align-items:center;">
+    <div style="display:flex; gap:12px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; padding:12px; align-items:center;">
       <img src="${p.img}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; flex-shrink:0;" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=100'">
       <div style="flex:1; min-width:0;">
         <div style="font-weight:700; font-size:0.88rem; color:#f5f5f7; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.title}</div>
@@ -2192,7 +2214,7 @@ window.apSaveProduct = function() {
   const tbody = document.getElementById('admin-store-products-list');
   if (tbody) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><div style="width:40px;height:40px;border-radius:6px;background:#2c2c2e;"></div></td><td>${title}</td><td>${cat}</td><td>—</td><td>₪${price.toFixed(2)}</td><td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:#ef4444;cursor:pointer;">מחק</button></td>`;
+    tr.innerHTML = `<td><div style="width:40px;height:40px;border-radius:6px;background:#eee;"></div></td><td>${title}</td><td>${cat}</td><td>—</td><td>₪${price.toFixed(2)}</td><td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:#ef4444;cursor:pointer;">מחק</button></td>`;
     tbody.appendChild(tr);
   }
 };
@@ -2464,7 +2486,7 @@ async function sendChatMessage() {
   if (message === '5') {
     // Show prompt for user to type their message
     chatContainer.innerHTML += `
-      <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
+      <div style="background:#f5f5f5; color:#333; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
         ${isHeb 
           ? 'בטח! אנא הקלד את ההודעה שלך למטה ואני אדאג שהמנהל יראה אותה. ✉️' 
           : "Sure! Please type your message below and I'll make sure the manager sees it. ✉️"}
@@ -2533,7 +2555,7 @@ async function sendChatMessage() {
 
     setTimeout(() => {
       chatContainer.innerHTML += `
-        <div style="background:#1c1c1e; color:#fff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
+        <div style="background:#f5f5f5; color:#333; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:90%; font-size:0.95rem; text-align:${isHeb ? 'right' : 'left'}; direction:${isHeb ? 'rtl' : 'ltr'};">
           ${isHeb 
             ? '✅ ההודעה שלך נשלחה למנהל בהצלחה! נחזור אליך בהקדם.' 
             : "✅ Your message has been sent to the manager! We'll get back to you soon."}
@@ -2914,7 +2936,7 @@ async function renderManagerMessages() {
   container.innerHTML = msgs.map((m, i) => {
     const dateStr = m.timestamp ? new Date(m.timestamp).toLocaleString('he-IL') : '';
     return `
-      <div style="background:#1c1c1e; border:1px solid ${m.read ? 'rgba(255,255,255,0.06)' : 'rgba(245,158,11,0.4)'}; border-radius:12px; padding:16px; direction:rtl;">
+      <div style="background:#f5f5f5; border:1px solid ${m.read ? 'rgba(255,255,255,0.06)' : 'rgba(245,158,11,0.4)'}; border-radius:12px; padding:16px; direction:rtl;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
             ${!m.read ? '<span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;display:inline-block;flex-shrink:0;"></span>' : ''}
@@ -2925,9 +2947,9 @@ async function renderManagerMessages() {
         </div>
         <p style="color:#e5e5e5; font-size:0.9rem; margin:0 0 10px; line-height:1.5;">${m.message}</p>
         <div style="margin-top: 10px; display: flex; gap: 8px;">
-          <button onclick="markManagerMsgRead(${i})" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#a1a1aa; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer;">סמן כנקרא</button>
+          <button onclick="markManagerMsgRead(${i})" style="background:rgba(0,0,0,0.03); border:1px solid #e0e0e0; color:#a1a1aa; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer;">סמן כנקרא</button>
           ${m.email ? `
-            <button onclick="replyContactInDirectChat('${m.email}', '${m.from}')" style="background:#10b981; border:none; color:#fff; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:4px; box-shadow:0 4px 10px rgba(16,185,129,0.2);" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+            <button onclick="replyContactInDirectChat('${m.email}', '${m.from}')" style="background:#10b981; border:none; color:#333; padding:4px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:4px; box-shadow:0 4px 10px rgba(16,185,129,0.2);" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
               <i class="fas fa-reply"></i> השב בצ'אט ישיר
             </button>
           ` : ''}
@@ -3433,7 +3455,7 @@ function renderPdfStoreGrid() {
     const cardContent = `
       <div style="display:flex; gap:24px; align-items:stretch; width:100%; direction:rtl; text-align:right; min-height:140px;">
         <!-- Image / placeholder on the right -->
-        <div style="width:220px; height:140px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+        <div style="width:220px; height:140px; border-radius:12px; overflow:hidden; border:1px solid #e0e0e0; flex-shrink:0;">
           ${imageBlock}
         </div>
 
@@ -3463,9 +3485,9 @@ function renderPdfStoreGrid() {
     `;
 
     return `
-      <div class="premium-post-card" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);" 
-           onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" 
-           onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.transform='none'; this.style.boxShadow='none'" 
+      <div class="premium-post-card" style="background:#fff; border:1px solid #e5e5e5; border-radius:16px; padding:24px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);"
+           onmouseover="this.style.borderColor='#ccc'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)'"
+           onmouseout="this.style.borderColor='#e5e5e5'; this.style.transform='none'; this.style.boxShadow='none'" 
            onclick="showProductDetailById('${item.id}')">
         ${cardContent}
       </div>
@@ -3802,7 +3824,7 @@ function renderSavedDrawer() {
         return `
           <div class="bottom-drawer-item" onclick="showProductDetailById('${item.id}'); toggleSavedDrawer();" style="cursor:pointer;">
             <div class="bottom-drawer-item-img">
-              <i class="fas fa-chart-pie" style="font-size:2rem; color:#fff;"></i>
+              <i class="fas fa-chart-pie" style="font-size:2rem; color:#333;"></i>
             </div>
             <div class="bottom-drawer-item-title">${displayName}</div>
             <button class="bottom-drawer-item-remove" onclick="event.stopPropagation(); removeFromMyGraphs('${item.id}'); renderSavedDrawer();" title="Remove">&times;</button>
@@ -3826,7 +3848,7 @@ function renderSavedDrawer() {
         const displayName = savedItem.customName || art.title;
         const imgEl = art.image 
           ? `<img src="${art.image}" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` 
-          : `<i class="fas fa-newspaper" style="font-size:2rem; color:#fff;"></i>`;
+          : `<i class="fas fa-newspaper" style="font-size:2rem; color:#333;"></i>`;
         return `
           <div class="bottom-drawer-item" onclick="showArticle(${art.id}); toggleSavedDrawer();" style="cursor:pointer;">
             <div class="bottom-drawer-item-img">
@@ -4374,7 +4396,7 @@ function renderProductRecommendations(currentId) {
     return `
       <div class="rec-card" onclick="showProductDetailById(${item.id})">
         ${mainImg ? `<div class="rec-image" style="background-image: url('${mainImg}')"></div>` :
-                    `<div class="rec-image" style="display:flex; align-items:center; justify-content:center; font-size:3rem; background:#1c1c1e;">📄</div>`}
+                    `<div class="rec-image" style="display:flex; align-items:center; justify-content:center; font-size:3rem; background:#f5f5f5;">📄</div>`}
         <div class="rec-meta">${escHtml(item.category || '')}</div>
         <div class="rec-title">${escHtml(item.title)}</div>
       </div>
@@ -4401,7 +4423,7 @@ function renderPdfAdminList() {
   }
   list.innerHTML = items.map((item) => `
     <div style="background:#f5f5f7; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:8px; position:relative; border: ${item.approved === false ? '2px solid #f9b233' : '1px solid #eee'};">
-      ${item.approved === false ? '<div style="background:#f9b233; color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:4px; position:absolute; top:8px; right:8px; font-weight:800;">Pending Approval</div>' : ''}
+      ${item.approved === false ? '<div style="background:#f9b233; color:#333; font-size:0.65rem; padding:2px 6px; border-radius:4px; position:absolute; top:8px; right:8px; font-weight:800;">Pending Approval</div>' : ''}
       <div style="font-size:2rem; text-align:center;">${typeEmoji[item.type] || '📄'}</div>
       <div style="font-weight:700; font-size:0.9rem; text-align:center; color:#1d1d1f;">${escHtml(item.title)}</div>
       <div style="font-size:0.8rem; color:#86868b; text-align:center;">${escHtml(item.type)} · ${escHtml(item.price || 'Free')}</div>
@@ -4739,8 +4761,10 @@ function submitContactForm(e) {
 // ========== THEME LOGIC ==========
 function initTheme() {
   const savedTheme = localStorage.getItem('theme');
-  if (savedTheme !== 'light') {
+  if (savedTheme === 'dark') {
     document.body.classList.add('dark-theme');
+  } else {
+    document.body.classList.remove('dark-theme');
   }
 }
 
@@ -6264,7 +6288,7 @@ function renderCart() {
     } else if (c.type === 'store3d' && item.image) {
       imageEl = `<img src="${item.image}" alt="" style="width:100%; height:100%; object-fit:cover; background:#fff;">`;
     } else {
-      imageEl = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff;">${item.icon || '💼'}</div>`;
+      imageEl = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#333;">${item.icon || '💼'}</div>`;
     }
     
     return `
@@ -6360,7 +6384,7 @@ async function renderNotifications() {
         } else {
           return `
             <div style="display:flex; align-items:center; gap:12px; margin-top:8px; padding-bottom:8px; border-bottom:1px solid #1c1c1e;">
-              ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#1c1c1e; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
+              ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#f5f5f5; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
               <div style="font-size:0.85rem; color:#e5e5ea; flex:1;">${i.text}</div>
             </div>
           `;
@@ -6386,7 +6410,7 @@ async function renderNotifications() {
       const line2Color = step >= 3 ? '#34c759' : '#3a3a3c';
       
       const trackerHtml = `
-        <div style="margin-bottom: 24px; background:#000; border-radius:8px; padding:16px; border:1px solid #1c1c1e;">
+        <div style="margin-bottom: 24px; background:#f0f0f0; border-radius:8px; padding:16px; border:1px solid #1c1c1e;">
           <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Order Tracker</div>
           <div style="display:flex; align-items:center; justify-content:space-between; position:relative; padding:0 10px;">
             <div style="position:absolute; top:12px; left:30px; right:30px; height:2px; background:#3a3a3c; z-index:1;"></div>
@@ -6394,17 +6418,17 @@ async function renderNotifications() {
             <div style="position:absolute; top:12px; left:50%; width:calc(50% - 30px); height:2px; background:${line2Color}; z-index:2; transition: background 0.3s;"></div>
             
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
+              <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
               <div style="font-size:0.7rem; color:${step >= 1 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Ordered</div>
             </div>
             
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
+              <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
               <div style="font-size:0.7rem; color:${step >= 2 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Shipped</div>
             </div>
             
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
+              <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
               <div style="font-size:0.7rem; color:${step >= 3 ? '#e5e5ea' : '#86868b'}; font-weight:600;">Arrived</div>
             </div>
           </div>
@@ -6412,10 +6436,10 @@ async function renderNotifications() {
       `;
       
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2c2c2e'" onmouseout="this.style.background='#1c1c1e'" onclick="const d = this.querySelector('.receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; padding:12px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#eee'" onmouseout="this.style.background='#f5f5f5'" onclick="const d = this.querySelector('.receipt-details'); d.style.display = d.style.display === 'none' ? 'block' : 'none'">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div style="display:flex; align-items:flex-start; gap:12px;">
-              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #0071e3, #0a84ff); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; flex-shrink:0;">
+              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #0071e3, #0a84ff); display:flex; align-items:center; justify-content:center; color:#333; font-size:1rem; flex-shrink:0;">
                 <i class="fas fa-envelope-open-text"></i>
               </div>
               <div>
@@ -6433,11 +6457,11 @@ async function renderNotifications() {
               Hi ${data.customer_name || 'Customer'},<br><br>
               Thank you for your purchase! We have successfully processed your payment. Below are the details of your transaction:
             </div>
-            <div style="background:#000; border-radius:8px; padding:12px; margin-bottom:16px; border:1px solid #1c1c1e;">
+            <div style="background:#f0f0f0; border-radius:8px; padding:12px; margin-bottom:16px; border:1px solid #1c1c1e;">
               <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Order Summary</div>
               ${itemsHtml}
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#1c1c1e; padding:12px; border-radius:8px; border:1px solid #3a3a3c;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f5f5f5; padding:12px; border-radius:8px; border:1px solid #ddd;">
               <span style="font-weight:600; color:#86868b; font-size:0.9rem;">Total Paid</span>
               <span style="font-weight:800; color:#0071e3; font-size:1.2rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
             </div>
@@ -7556,8 +7580,8 @@ async function renderForum() {
 
     FORUM_CATEGORIES.forEach(category => {
       html += `
-        <div style="margin-bottom:28px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
-          <div style="padding:14px 20px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.08); direction:rtl; text-align:right;">
+        <div style="margin-bottom:28px; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden;">
+          <div style="padding:14px 20px; background:#fff; border-bottom:1px solid rgba(255,255,255,0.08); direction:rtl; text-align:right;">
             <span style="font-size:1rem; font-weight:800; color:${OR}; letter-spacing:-0.01em;">${category.title}</span>
           </div>
       `;
@@ -7574,7 +7598,7 @@ async function renderForum() {
           const avatarBg = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981'][latest.authorName?.charCodeAt(0) % 5 || 0];
           const avatarHtml = latest.authorAvatar
             ? `<img src="${latest.authorAvatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
-            : `<div style="width:32px;height:32px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.8rem;flex-shrink:0;">${initials}</div>`;
+            : `<div style="width:32px;height:32px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#333;font-weight:700;font-size:0.8rem;flex-shrink:0;">${initials}</div>`;
           latestHtml = `
             <div style="display:flex;align-items:center;gap:8px;min-width:0;">
               ${avatarHtml}
@@ -7670,7 +7694,7 @@ async function renderForum() {
         return `
           <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
             <span style="color:#86868b; font-size:0.8rem; font-weight:700; width:18px; text-align:center;">${i + 1}</span>
-            <div style="width:32px; height:32px; border-radius:50%; background:${aColor}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">${initials}</div>
+            <div style="width:32px; height:32px; border-radius:50%; background:${aColor}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">${initials}</div>
             <span style="color:#b5192b; font-weight:700; font-size:0.9rem; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.name}</span>
             <span style="color:#86868b; font-size:0.8rem;">${u.score}</span>
           </div>
@@ -7695,13 +7719,13 @@ async function renderForum() {
 
     rankingColumns.forEach(col => {
       html += `
-        <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px;">
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; padding:16px;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:10px;">
             <i class="fas ${col.icon}" style="color:#b5192b; font-size:0.9rem;"></i>
             <span style="font-weight:700; font-size:0.95rem; color:#ffffff;">${col.title}</span>
           </div>
           ${renderRankingList(col.users)}
-          <button onclick="showToast('תכונה זו תהיה זמינה בקרוב!', 'info')" style="width:100%; margin-top:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#86868b; padding:7px; border-radius:8px; cursor:pointer; font-size:0.8rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">ראה עוד...</button>
+          <button onclick="showToast('תכונה זו תהיה זמינה בקרוב!', 'info')" style="width:100%; margin-top:12px; background:rgba(255,255,255,0.04); border:1px solid #e0e0e0; color:#86868b; padding:7px; border-radius:8px; cursor:pointer; font-size:0.8rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">ראה עוד...</button>
         </div>
       `;
     });
@@ -7790,7 +7814,7 @@ async function renderPersonalArchive() {
           <div style="position:absolute; right: -33px; top: 4px; width: 16px; height: 16px; border-radius:50%; background:#ff453a; border: 3px solid #000; box-shadow: 0 0 0 4px rgba(255,69,58,0.15); z-index:3;"></div>
           <h3 style="font-size:1.8rem; font-weight:800; color:#ffffff; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
             ${year}
-            <span style="font-size:0.95rem; font-weight:500; color:#86868b; background:rgba(255,255,255,0.05); padding: 2px 10px; border-radius:980px;">${totalYearPosts} פוסטים</span>
+            <span style="font-size:0.95rem; font-weight:500; color:#86868b; background:rgba(0,0,0,0.03); padding: 2px 10px; border-radius:980px;">${totalYearPosts} פוסטים</span>
           </h3>
       `;
 
@@ -7807,7 +7831,7 @@ async function renderPersonalArchive() {
           const day = new Date(post.timestamp).getDate();
           
           html += `
-            <div class="archive-item-card" onclick="openPost('${post.id}')" style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,69,58,0.3)'; this.style.transform='translateX(-4px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.transform='none'">
+            <div class="archive-item-card" onclick="openPost('${post.id}')" style="background:#f5f5f5; border:1px solid #e5e5e5; border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,69,58,0.3)'; this.style.transform='translateX(-4px)'" onmouseout="this.style.borderColor='#e5e5e5'; this.style.transform='none'">
               <div style="display:flex; align-items:center; gap:16px;">
                 <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(255,69,58,0.1); color: #ff453a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0;">
                   ${day}
@@ -7818,7 +7842,7 @@ async function renderPersonalArchive() {
                 </div>
               </div>
               
-              <div style="display:flex; align-items:center; gap:8px; color:#86868b; font-size:0.9rem; background:rgba(255,255,255,0.03); padding:6px 12px; border-radius:8px;">
+              <div style="display:flex; align-items:center; gap:8px; color:#86868b; font-size:0.9rem; background:#fff; padding:6px 12px; border-radius:8px;">
                 <i class="far fa-comment"></i>
                 <span style="font-weight:700; color:#ffffff;">${numComments}</span>
               </div>
@@ -7898,7 +7922,7 @@ window.openGroup = async function(groupId, sortType = 'new') {
   const overlayEl = document.getElementById('group-banner-overlay');
   const bannerImg = document.getElementById('group-banner-img');
   if (bannerImg) { bannerImg.style.display = 'none'; bannerImg.src = ''; }
-  if (bannerEl) bannerEl.style.background = `linear-gradient(135deg, ${group.color}22, ${group.color}55, #0a0a0a)`;
+  if (bannerEl) bannerEl.style.background = `linear-gradient(135deg, ${group.color}22, ${group.color}55, #f5f5f5)`;
   if (overlayEl) overlayEl.style.background = group.color;
   loadSavedBanner(groupId);
 
@@ -7936,7 +7960,7 @@ window.openGroup = async function(groupId, sortType = 'new') {
 
     if (snapshot.empty) {
       container.innerHTML = `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:16px; padding:40px; text-align:center; color:#86868b; direction:rtl;">
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:16px; padding:40px; text-align:center; color:#86868b; direction:rtl;">
           אין עדיין דיונים בפורום זה. היה הראשון לפתוח דיון!
         </div>`;
       return;
@@ -7999,7 +8023,7 @@ window.renderNextPostBatch = function() {
     const avatarBg = avatarBgColors[authorInitials.charCodeAt(0) % avatarBgColors.length];
     const avatarHtml = data.authorAvatar
       ? `<img src="${data.authorAvatar}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
-      : `<div style="width:44px;height:44px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.1rem;flex-shrink:0;">${authorInitials}</div>`;
+      : `<div style="width:44px;height:44px;border-radius:50%;background:${avatarBg};display:flex;align-items:center;justify-content:center;color:#333;font-weight:800;font-size:1.1rem;flex-shrink:0;">${authorInitials}</div>`;
     const contentText = (data.content || '').replace(/<[^>]+>/g, '').trim();
     const handle = '@' + authorName.toLowerCase().replace(/\s+/g,'');
     const marketplaceBtn = currentGroupId === 'marketplace' ? `<button onclick="event.stopPropagation(); if(window.openMakeOfferModal) window.openMakeOfferModal('${doc.id}','${data.authorEmail||''}','${(data.title||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}');" style="background:#f59e0b;color:#000;border:none;padding:4px 14px;border-radius:980px;font-weight:700;cursor:pointer;font-size:0.75rem;">💰 הגש הצעה</button>` : '';
@@ -8008,13 +8032,13 @@ window.renderNextPostBatch = function() {
 
     // Reddit-style post image
     const imageHtml = data.image ? `
-      <div style="margin-top:10px; margin-bottom:12px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); width: 100%; aspect-ratio: 16 / 9; background: #0c0c0d; position: relative;">
+      <div style="margin-top:10px; margin-bottom:12px; border-radius:16px; overflow:hidden; border:1px solid #e0e0e0; width: 100%; aspect-ratio: 16 / 9; background: #0c0c0d; position: relative;">
         <img src="${data.image}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="event.stopPropagation(); if(window.openLightboxImage) window.openLightboxImage('${data.image}');">
       </div>` : '';
 
     html += `
-      <div onclick="openPost('${doc.id}')" style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;cursor:pointer;transition:background 0.15s;display:flex;gap:12px;direction:ltr;"
-        onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='#000'">
+      <div onclick="openPost('${doc.id}')" style="background:#f0f0f0;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;cursor:pointer;transition:background 0.15s;display:flex;gap:12px;direction:ltr;"
+        onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
 
         <!-- Avatar column -->
         <div style="flex-shrink:0;">${avatarHtml}</div>
@@ -8024,17 +8048,17 @@ window.renderNextPostBatch = function() {
 
           <!-- Header row: name · handle · time -->
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-            <span style="font-weight:700;color:#e7e9ea;font-size:0.97rem;">${authorName}</span>
+            <span style="font-weight:700;color:#333;font-size:0.97rem;">${authorName}</span>
             <span style="color:#71767b;font-size:0.9rem;">${handle}</span>
             <span style="color:#71767b;font-size:0.9rem;">·</span>
             <span style="color:#71767b;font-size:0.9rem;">${timeAgo}</span>
           </div>
 
           <!-- Title (bold) -->
-          ${data.title ? `<div style="font-weight:700;color:#e7e9ea;font-size:1rem;line-height:1.5;margin-bottom:6px;">${data.title}</div>` : ''}
+          ${data.title ? `<div style="font-weight:700;color:#333;font-size:1rem;line-height:1.5;margin-bottom:6px;">${data.title}</div>` : ''}
 
           <!-- Body text -->
-          ${contentText ? `<div style="color:#e7e9ea;font-size:0.95rem;line-height:1.6;margin-bottom:12px;white-space:pre-line;">${contentText.slice(0,280)}${contentText.length>280?'<span style="color:#1d9bf0"> הצג עוד</span>':''}</div>` : ''}
+          ${contentText ? `<div style="color:#333;font-size:0.95rem;line-height:1.6;margin-bottom:12px;white-space:pre-line;">${contentText.slice(0,280)}${contentText.length>280?'<span style="color:#1d9bf0"> הצג עוד</span>':''}</div>` : ''}
 
           <!-- Image -->
           ${imageHtml}
@@ -8158,7 +8182,7 @@ window.removeBanner = function() {
   const banner = document.getElementById('group-banner');
   if (img) img.style.display = 'none';
   const g = window._currentGroupObj;
-  if (banner && g) banner.style.background = `linear-gradient(135deg, ${g.color}22, ${g.color}55, #0a0a0a)`;
+  if (banner && g) banner.style.background = `linear-gradient(135deg, ${g.color}22, ${g.color}55, #f5f5f5)`;
   if (currentGroupId) localStorage.removeItem('banner_' + currentGroupId);
   document.getElementById('banner-editor-popup').style.display = 'none';
 };
@@ -8268,7 +8292,7 @@ window.openPost = async function(postId) {
       const color = colors[initials.charCodeAt(0) % colors.length];
       const avatarHtml = (currentUser?.avatar || currentUser?.photoURL)
         ? `<img src="${currentUser?.avatar || currentUser?.photoURL}" style="width:38px; height:38px; border-radius:50%; object-fit:cover;">`
-        : `<div style="width:38px; height:38px; border-radius:50%; background:${color}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem;">${initials}</div>`;
+        : `<div style="width:38px; height:38px; border-radius:50%; background:${color}; color:#333; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem;">${initials}</div>`;
       avatarContainer.innerHTML = avatarHtml;
     }
   }
@@ -8331,7 +8355,7 @@ window.openPost = async function(postId) {
       else if (postCount >= 5) { role = 'חבר'; }
       const avatarHtml = authorAvatar
         ? `<img src="${authorAvatar}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(245,158,11,0.3);">`
-        : `<div style="width:64px;height:64px;border-radius:50%;background:${avatarColor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;">${initials}</div>`;
+        : `<div style="width:64px;height:64px;border-radius:50%;background:${avatarColor};color:#333;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;">${initials}</div>`;
       const joinStr = joinDate ? new Date(joinDate).toLocaleDateString('he-IL') : '—';
       return `
         <div style="width:180px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:16px 10px;border-left:1px solid rgba(255,255,255,0.07);text-align:center;gap:6px;background:rgba(255,255,255,0.01);">
@@ -8353,7 +8377,7 @@ window.openPost = async function(postId) {
       const color = avatarColors[initials.charCodeAt(0) % avatarColors.length];
       return avatarUrl
         ? `<img src="${avatarUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
-        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${Math.round(size*0.4)}px;flex-shrink:0;">${initials}</div>`;
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#333;font-weight:800;font-size:${Math.round(size*0.4)}px;flex-shrink:0;">${initials}</div>`;
     }
 
     // Helper: format full date like "4:57 PM · May 29, 2026"
@@ -8377,29 +8401,29 @@ window.openPost = async function(postId) {
     const repliesCount = comments.length;
 
     let html = `
-      <div style="background:#000;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;">
+      <div style="background:#f0f0f0;border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 18px;">
         <!-- Author row -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;direction:rtl;">
           ${origAvatar}
           <div>
-            <div style="font-weight:700;color:#e7e9ea;font-size:1rem;">${origAuthor}</div>
+            <div style="font-weight:700;color:#333;font-size:1rem;">${origAuthor}</div>
             <div style="color:#71767b;font-size:0.88rem;">${origHandle}</div>
           </div>
         </div>
         <!-- Title -->
-        ${postData.title ? `<div style="font-weight:700;color:#e7e9ea;font-size:1.1rem;line-height:1.5;margin-bottom:10px;direction:rtl;text-align:right;">${postData.title}</div>` : ''}
+        ${postData.title ? `<div style="font-weight:700;color:#333;font-size:1.1rem;line-height:1.5;margin-bottom:10px;direction:rtl;text-align:right;">${postData.title}</div>` : ''}
         <!-- Full content -->
-        <div style="color:#e7e9ea;font-size:1rem;line-height:1.7;white-space:pre-wrap;margin-bottom:14px;direction:rtl;text-align:right;">${postData.content||''}</div>
+        <div style="color:#333;font-size:1rem;line-height:1.7;white-space:pre-wrap;margin-bottom:14px;direction:rtl;text-align:right;">${postData.content||''}</div>
         <!-- Post Image -->
-        ${postData.image ? `<div style="margin-top:12px; margin-bottom:16px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); width: 100%; aspect-ratio: 16 / 9; background: #0c0c0d; position: relative;"><img src="${postData.image}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="if(window.openLightboxImage) window.openLightboxImage('${postData.image}');"></div>` : ''}
+        ${postData.image ? `<div style="margin-top:12px; margin-bottom:16px; border-radius:16px; overflow:hidden; border:1px solid #e0e0e0; width: 100%; aspect-ratio: 16 / 9; background: #0c0c0d; position: relative;"><img src="${postData.image}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" onclick="if(window.openLightboxImage) window.openLightboxImage('${postData.image}');"></div>` : ''}
         <!-- Full date + views -->
         <div style="color:#71767b;font-size:0.88rem;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);">
-          ${fmtFullDate(postData.timestamp)} · <strong style="color:#e7e9ea;">${fmtN(postViews)}</strong> Views
+          ${fmtFullDate(postData.timestamp)} · <strong style="color:#333;">${fmtN(postViews)}</strong> Views
         </div>
         <!-- Stats row -->
         <div style="display:flex;gap:20px;font-size:0.9rem;color:#71767b;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);">
-          <span><strong style="color:#e7e9ea;">${fmtN(repliesCount)}</strong> Replies</span>
-          <span><strong style="color:#e7e9ea;">${fmtN(postVotes)}</strong> Likes</span>
+          <span><strong style="color:#333;">${fmtN(repliesCount)}</strong> Replies</span>
+          <span><strong style="color:#333;">${fmtN(postVotes)}</strong> Likes</span>
         </div>
         <!-- Action icons -->
         <div style="display:flex;justify-content:space-around;padding-top:6px;direction:rtl;" onclick="event.stopPropagation()">
@@ -8419,37 +8443,37 @@ window.openPost = async function(postId) {
       </div>
 
         <!-- Sort and Search filters underneath just like the screenshot! -->
-        <div style="display:flex; align-items:center; gap:16px; margin-top:16px; padding:12px 14px 12px 14px; border-top:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.06); direction:ltr; text-align:left; background:#000; position:relative;">
+        <div style="display:flex; align-items:center; gap:16px; margin-top:16px; padding:12px 14px 12px 14px; border-top:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.06); direction:ltr; text-align:left; background:#f0f0f0; position:relative;">
           <div style="font-size:0.85rem; color:#71767b; display:flex; align-items:center; gap:6px; position:relative; user-select:none;">
             <span>Sort by:</span>
-            <span id="comment-sort-btn" onclick="window.toggleCommentSortDropdown(event)" style="color:#e7e9ea; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition: color 0.15s;">
+            <span id="comment-sort-btn" onclick="window.toggleCommentSortDropdown(event)" style="color:#333; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition: color 0.15s;">
               <span id="current-sort-label">Best</span> <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#71767b;"></i>
             </span>
             <!-- Sort dropdown menu -->
-            <div id="comment-sort-dropdown" style="display:none; position:absolute; top:24px; left:50px; background:#1a1a1b; border:1px solid #343536; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.5); z-index:100; min-width:100px; padding:4px 0;">
-              <div onclick="window.setCommentSort('best')" style="color:#e7e9ea; padding:6px 12px; font-size:0.85rem; cursor:pointer; font-weight:700;" onmouseover="this.style.background='#272729'" onmouseout="this.style.background='transparent'">Best</div>
-              <div onclick="window.setCommentSort('new')" style="color:#e7e9ea; padding:6px 12px; font-size:0.85rem; cursor:pointer; font-weight:700;" onmouseover="this.style.background='#272729'" onmouseout="this.style.background='transparent'">New</div>
+            <div id="comment-sort-dropdown" style="display:none; position:absolute; top:24px; left:50px; background:#f5f5f5; border:1px solid #ddd; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.5); z-index:100; min-width:100px; padding:4px 0;">
+              <div onclick="window.setCommentSort('best')" style="color:#333; padding:6px 12px; font-size:0.85rem; cursor:pointer; font-weight:700;" onmouseover="this.style.background='#eee'" onmouseout="this.style.background='transparent'">Best</div>
+              <div onclick="window.setCommentSort('new')" style="color:#333; padding:6px 12px; font-size:0.85rem; cursor:pointer; font-weight:700;" onmouseover="this.style.background='#eee'" onmouseout="this.style.background='transparent'">New</div>
             </div>
           </div>
           
           <!-- Search input box matching the premium Reddit look exactly! -->
-          <div style="display:flex; align-items:center; background:#1a1a1b; border:1px solid rgba(255,255,255,0.08); border-radius:9999px; padding:4px 12px; gap:8px; flex:1; max-width:240px; transition: border-color 0.2s, background-color 0.2s;" id="comment-search-box-container">
+          <div style="display:flex; align-items:center; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:9999px; padding:4px 12px; gap:8px; flex:1; max-width:240px; transition: border-color 0.2s, background-color 0.2s;" id="comment-search-box-container">
             <i class="fas fa-search" style="color:#71767b; font-size:0.75rem;"></i>
-            <input type="text" id="comment-search-input" oninput="window.onCommentSearch(this.value)" placeholder="Search Comments" style="background:transparent; border:none; color:#e7e9ea; font-size:0.82rem; font-weight:500; outline:none; width:100%; font-family:inherit;" onfocus="document.getElementById('comment-search-box-container').style.borderColor='rgba(255,255,255,0.2)'; document.getElementById('comment-search-box-container').style.backgroundColor='#272729';" onblur="document.getElementById('comment-search-box-container').style.borderColor='rgba(255,255,255,0.08)'; document.getElementById('comment-search-box-container').style.backgroundColor='#1a1a1b';" />
+            <input type="text" id="comment-search-input" oninput="window.onCommentSearch(this.value)" placeholder="Search Comments" style="background:transparent; border:none; color:#333; font-size:0.82rem; font-weight:500; outline:none; width:100%; font-family:inherit;" onfocus="document.getElementById('comment-search-box-container').style.borderColor='rgba(255,255,255,0.2)'; document.getElementById('comment-search-box-container').style.backgroundColor='#272729';" onblur="document.getElementById('comment-search-box-container').style.borderColor='#e0e0e0'; document.getElementById('comment-search-box-container').style.backgroundColor='#1a1a1b';" />
           </div>
         </div>
       </div>
       
       <!-- Comments Wrapper -->
-      <div id="post-comments-list-wrapper" style="background:#000;"></div>
+      <div id="post-comments-list-wrapper" style="background:#f0f0f0;"></div>
     `;
 
     // ── Marketplace actions ──
     if (currentGroupId === 'marketplace' && currentUser && currentUser.email !== postData.authorEmail) {
       html += `
-        <div style="display:flex; gap:12px; padding:12px 18px; background:#000; border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div style="display:flex; gap:12px; padding:12px 18px; background:#f0f0f0; border-bottom:1px solid rgba(255,255,255,0.1);">
           <button class="btn-primary" onclick="openMakeOfferModal()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem;"><i class="fas fa-hand-holding-usd" style="margin-left:8px;"></i>הגש הצעת רכישה</button>
-          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; background:#2c2c2e; color:#fff;"><i class="fas fa-envelope" style="margin-left:8px;"></i>שלח הודעה למוכר</button>
+          <button class="btn-primary" onclick="openSendMessageModal()" style="border-radius:980px; padding:8px 20px; font-weight:700; font-size:0.9rem; background:#eee; color:#333;"><i class="fas fa-envelope" style="margin-left:8px;"></i>שלח הודעה למוכר</button>
         </div>
       `;
     }
@@ -8481,7 +8505,7 @@ window.openPost = async function(postId) {
       const commentVotes = c.data.votes || 0;
 
       return `
-        <div style="background:#000; padding:16px 14px 10px 14px; display:flex; gap:12px; direction:ltr; text-align:left; ${marginStyle}">
+        <div style="background:#f0f0f0; padding:16px 14px 10px 14px; display:flex; gap:12px; direction:ltr; text-align:left; ${marginStyle}">
           
           <!-- Avatar Column -->
           <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
@@ -8494,14 +8518,14 @@ window.openPost = async function(postId) {
             
             <!-- User Metadata Header -->
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
-              <span style="font-weight:700; color:#e7e9ea; font-size:0.92rem;">${cAuthor}</span>
+              <span style="font-weight:700; color:#333; font-size:0.92rem;">${cAuthor}</span>
               <span style="color:#71767b; font-size:0.85rem;">${cHandle}</span>
               <span style="color:#71767b; font-size:0.85rem;">·</span>
               <span style="color:#71767b; font-size:0.85rem;">${cTimeAgo}</span>
             </div>
 
             <!-- Comment Content Body -->
-            <div style="color:#e7e9ea; font-size:0.95rem; line-height:1.55; white-space:pre-wrap;">${cContent}</div>
+            <div style="color:#333; font-size:0.95rem; line-height:1.55; white-space:pre-wrap;">${cContent}</div>
 
             <!-- Reddit Action Toolbar -->
             <div style="display:flex; align-items:center; gap:16px; margin-top:8px; margin-bottom:8px;">
@@ -8511,7 +8535,7 @@ window.openPost = async function(postId) {
                 <button onclick="voteComment('${cId}', 1)" style="background:none; border:none; color:#71767b; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:2px; transition:color 0.15s;" onmouseover="this.style.color='#ff4500'" onmouseout="this.style.color='#71767b'">
                   <i class="fas fa-arrow-up" style="font-size:0.75rem;"></i>
                 </button>
-                <span style="font-size:0.8rem; font-weight:700; color:#e7e9ea; min-width:12px; text-align:center;">${commentVotes}</span>
+                <span style="font-size:0.8rem; font-weight:700; color:#333; min-width:12px; text-align:center;">${commentVotes}</span>
                 <button onclick="voteComment('${cId}', -1)" style="background:none; border:none; color:#71767b; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:2px; transition:color 0.15s;" onmouseover="this.style.color='#7193ff'" onmouseout="this.style.color='#71767b'">
                   <i class="fas fa-arrow-down" style="font-size:0.75rem;"></i>
                 </button>
@@ -8526,10 +8550,10 @@ window.openPost = async function(postId) {
 
             <!-- Dynamic Inline Reply Input Field -->
             <div id="${inlineReplyContainerId}" style="display:none; margin-top:10px; border-left:2px solid #ff9500; padding-left:14px; margin-bottom:12px;">
-              <textarea id="${replyInputId}" style="width:100%; min-height:80px; background:#18181b; border:1px solid #27272a; border-radius:12px; padding:12px; color:#fff; font-size:0.92rem; resize:vertical; outline:none; font-family:inherit; box-sizing:border-box;" placeholder="Reply to this comment..."></textarea>
+              <textarea id="${replyInputId}" style="width:100%; min-height:80px; background:#18181b; border:1px solid #27272a; border-radius:12px; padding:12px; color:#333; font-size:0.92rem; resize:vertical; outline:none; font-family:inherit; box-sizing:border-box;" placeholder="Reply to this comment..."></textarea>
               <div style="display:flex; gap:8px; margin-top:8px; justify-content:flex-start;">
                 <button class="btn-primary" onclick="window.submitNestedComment('${postId}', '${cId}', '${replyInputId}')" style="font-size:0.8rem; padding:6px 16px; border-radius:980px;">Reply</button>
-                <button class="btn-secondary" onclick="window.toggleReplyInput('${cId}')" style="font-size:0.8rem; padding:6px 16px; border-radius:980px; background:#27272a; border:none; color:#fff; cursor:pointer;">Cancel</button>
+                <button class="btn-secondary" onclick="window.toggleReplyInput('${cId}')" style="font-size:0.8rem; padding:6px 16px; border-radius:980px; background:#27272a; border:none; color:#333; cursor:pointer;">Cancel</button>
               </div>
             </div>
 
@@ -8967,10 +8991,10 @@ async function renderMarket() {
     snap.forEach(doc => {
       const s = { id: doc.id, ...doc.data() };
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:20px; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openTradeModal('${s.id}', '${s.name}', '${s.symbol}', ${s.currentPrice})">
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; padding:20px; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'" onclick="openTradeModal('${s.id}', '${s.name}', '${s.symbol}', ${s.currentPrice})">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
             <div>
-              <div style="font-size:0.8rem; background:#2c2c2e; color:#fff; display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700; margin-bottom:6px;">${s.symbol}</div>
+              <div style="font-size:0.8rem; background:#eee; color:#333; display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700; margin-bottom:6px;">${s.symbol}</div>
               <h3 style="font-size:1.2rem; font-weight:800; color:#fafafa; margin:0;">${s.name}</h3>
             </div>
             <div style="font-size:1.4rem; font-weight:800; color:#34c759;">₪${Math.round(s.currentPrice).toLocaleString()}</div>
@@ -9019,7 +9043,7 @@ async function renderPortfolio() {
       const totalVal = p.shares * stock.price;
       
       html += `
-        <div style="background:#2c2c2e; border:1px solid #3a3a3c; border-radius:12px; padding:16px;">
+        <div style="background:#eee; border:1px solid #ddd; border-radius:12px; padding:16px;">
           <h4 style="font-size:1.1rem; color:#fafafa; margin-bottom:4px;">${stock.name}</h4>
           <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;">
             <span style="color:#86868b;">Shares Owned:</span>
@@ -9205,7 +9229,7 @@ async function renderOffers() {
       const dateStr = new Date(data.timestamp).toLocaleString();
       
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:16px;">
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; padding:16px;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
             <div>
               <div style="font-size:0.8rem; color:#af52de; font-weight:700; text-transform:uppercase; margin-bottom:4px;">New Offer</div>
@@ -9213,7 +9237,7 @@ async function renderOffers() {
             </div>
             <div style="font-size:1.2rem; font-weight:800; color:#34c759;">$${data.offerAmount}</div>
           </div>
-          <div style="font-size:0.9rem; color:#a1a1aa; background:#2c2c2e; padding:10px; border-radius:8px; margin-bottom:12px;">
+          <div style="font-size:0.9rem; color:#a1a1aa; background:#eee; padding:10px; border-radius:8px; margin-bottom:12px;">
             <strong>From:</strong> ${data.buyerName} (${data.buyerEmail})<br>
             ${data.message ? `<div style="margin-top:6px; font-style:italic;">"${data.message}"</div>` : ''}
             ${data.signatureData ? `<div style="margin-top:12px; border-top:1px dashed #4a4a4c; padding-top:8px;"><strong style="font-size:0.8rem;">Contract Signature:</strong><br><img src="${data.signatureData}" style="max-height:60px; background:#fff; border-radius:4px; margin-top:4px;"></div>` : ''}
@@ -9221,7 +9245,7 @@ async function renderOffers() {
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
             <div style="display:flex; gap:8px;">
-              <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:0.85rem; font-weight:600; cursor:pointer;">Contact Buyer</button>
+              <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#333; border:none; border-radius:6px; padding:6px 12px; font-size:0.85rem; font-weight:600; cursor:pointer;">Contact Buyer</button>
             </div>
           </div>
         </div>
@@ -9282,7 +9306,7 @@ async function renderMessages() {
       const mailtoLink = `mailto:${data.senderEmail}?subject=${subject}`;
       
       html += `
-        <div style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:12px; padding:20px; text-align:left;">
+        <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; padding:20px; text-align:left;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
             <div>
               <div style="font-size:1.1rem; font-weight:700; color:#fafafa;">${data.postTitle}</div>
@@ -9290,7 +9314,7 @@ async function renderMessages() {
             </div>
             <a href="${mailtoLink}" class="btn-primary" style="text-decoration:none; padding:6px 12px; border-radius:6px; font-size:0.85rem;"><i class="fas fa-reply" style="margin-right:6px;"></i>Reply</a>
           </div>
-          <div style="font-size:0.95rem; color:#e4e4e7; background:#2c2c2e; padding:12px; border-radius:8px; margin-bottom:12px; white-space:pre-wrap;">${data.content}</div>
+          <div style="font-size:0.95rem; color:#e4e4e7; background:#eee; padding:12px; border-radius:8px; margin-bottom:12px; white-space:pre-wrap;">${data.content}</div>
           <div style="font-size:0.8rem; color:#86868b;">${dateStr}</div>
         </div>
       `;
@@ -9496,47 +9520,52 @@ window.syncCurrentUserProfileToFirestore = function() {
 // Fetch real registered users from localStorage & Firestore
 async function fetchRealChatUsers() {
   let usersMap = {};
+  const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
+  const isRegistered = (typeof currentUser !== 'undefined' && currentUser && currentUser.email);
   
-  // 1. Load from localStorage registeredUsers
-  try {
-    const localUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-    Object.keys(localUsers).forEach(email => {
-      usersMap[email] = {
-        id: email,
-        name: localUsers[email].name,
-        avatar: localUsers[email].avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
-        status: 'online',
-        lastActive: new Date().toISOString()
-      };
-    });
-  } catch(e) {
-    console.error(e);
-  }
-  
-  // 2. Load from Firestore 'users' collection
-  if (window.fbGetDocs && window.fbDb) {
+  // Only load other registered users if user is admin OR if user is a registered logged-in member
+  if (isUserAdmin || isRegistered) {
+    // 1. Load from localStorage registeredUsers
     try {
-      const usersRef = window.fbColl(window.fbDb, 'users');
-      const qSnap = await window.fbGetDocs(usersRef);
-      qSnap.forEach(doc => {
-        const data = doc.data();
-        const email = doc.id;
+      const localUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+      Object.keys(localUsers).forEach(email => {
         usersMap[email] = {
           id: email,
-          name: data.name || email,
-          avatar: data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+          name: localUsers[email].name,
+          avatar: localUsers[email].avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
           status: 'online',
-          lastActive: data.lastActive || new Date().toISOString()
+          lastActive: new Date().toISOString()
         };
       });
-    } catch (err) {
-      console.error("Error loading chat users from Firestore:", err);
+    } catch(e) {
+      console.error(e);
     }
-  }
-  
-  // 3. Filter out currently logged-in user
-  if (currentUser && currentUser.email) {
-    delete usersMap[currentUser.email];
+    
+    // 2. Load from Firestore 'users' collection
+    if (window.fbGetDocs && window.fbDb) {
+      try {
+        const usersRef = window.fbColl(window.fbDb, 'users');
+        const qSnap = await window.fbGetDocs(usersRef);
+        qSnap.forEach(doc => {
+          const data = doc.data();
+          const email = doc.id;
+          usersMap[email] = {
+            id: email,
+            name: data.name || email,
+            avatar: data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120&h=120',
+            status: 'online',
+            lastActive: data.lastActive || new Date().toISOString()
+          };
+        });
+      } catch (err) {
+        console.error("Error loading chat users from Firestore:", err);
+      }
+    }
+    
+    // 3. Filter out currently logged-in user
+    if (currentUser && currentUser.email) {
+      delete usersMap[currentUser.email];
+    }
   }
 
   // 4. Add support contacts.
@@ -9560,8 +9589,6 @@ async function fetchRealChatUsers() {
     } catch(e) { console.warn('[support] Firestore merge failed:', e); }
   }
 
-  const isUserAdmin = (typeof isAdmin !== 'undefined' && isAdmin === true);
-  
   if (isUserAdmin) {
     // Admin sees cards for all users who have sent support messages
     const supportUserIds = new Set();
@@ -9583,19 +9610,16 @@ async function fetchRealChatUsers() {
       };
     });
   } else {
-    // Regular user sees SOKI Support card if they have sent support messages
-    const currentUserId = currentUser?.email || getSupportUserId();
-    const hasSupportChat = allSupportMsgs.some(m => m.userId === currentUserId);
-    if (hasSupportChat) {
-      usersMap['soki_support'] = {
-        id: 'soki_support',
-        name: 'SOKI — תמיכה',
-        avatar: 'https://ui-avatars.com/api/?name=SOKI&background=0071e3&color=fff&size=80&rounded=true&bold=true',
-        status: 'online',
-        lastActive: new Date().toISOString(),
-        isSupport: true
-      };
-    }
+    // Regular user always sees SOKI Support card at the top
+    usersMap['soki_support'] = {
+      id: 'soki_support',
+      name: 'SOKI — תמיכה',
+      avatar: 'https://ui-avatars.com/api/?name=SOKI&background=0071e3&color=fff&size=80&rounded=true&bold=true',
+      status: 'online',
+      lastActive: new Date().toISOString(),
+      isSupport: true,
+      forceTop: true
+    };
   }
   
   return Object.values(usersMap);
@@ -9775,7 +9799,7 @@ window.renderChatUsersList = async function() {
           <span class="chat-user-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;">${user.name}</span>
           <span class="chat-user-time" style="font-size:0.75rem; color:#86868b; white-space:nowrap;">${lastMsgTime}</span>
         </div>
-        <div class="chat-user-lastmsg" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${hasUnread ? 'color:#fff; font-weight:700;' : 'color:#86868b;'}">
+        <div class="chat-user-lastmsg" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${hasUnread ? 'color:#333; font-weight:700;' : 'color:#86868b;'}">
           ${lastMsgText}
         </div>
       </div>
@@ -10033,18 +10057,18 @@ window.renderNotifications = async function() {
 
   // 6. Generate Filter bar HTML (Apple Premium Tab Bar)
   let html = `
-    <div class="notifications-filter-bar" style="display:flex; gap:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:4px; width:fit-content; margin-bottom:24px; box-shadow:inset 0 1px 2px rgba(255,255,255,0.05); flex-wrap:wrap;">
-      <button onclick="window.setAlertFilter('all')" style="background:${currentAlertFilter === 'all' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'all' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'all' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הכל' : 'All'}</button>
-      <button onclick="window.setAlertFilter('system')" style="background:${currentAlertFilter === 'system' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'system' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'system' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'התראות מערכת' : 'System Alerts'}</button>
-      <button onclick="window.setAlertFilter('order')" style="background:${currentAlertFilter === 'order' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'order' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'order' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הזמנות' : 'Orders'}</button>
-      <button onclick="window.setAlertFilter('offer')" style="background:${currentAlertFilter === 'offer' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'offer' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'offer' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הצעות מחיר' : 'Offers'}</button>
+    <div class="notifications-filter-bar" style="display:flex; gap:6px; background:#fff; border:1px solid #e5e5e5; border-radius:24px; padding:4px; width:fit-content; margin-bottom:24px; box-shadow:inset 0 1px 2px rgba(255,255,255,0.05); flex-wrap:wrap;">
+      <button onclick="window.setAlertFilter('all')" style="background:${currentAlertFilter === 'all' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'all' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#333; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'all' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הכל' : 'All'}</button>
+      <button onclick="window.setAlertFilter('system')" style="background:${currentAlertFilter === 'system' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'system' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#333; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'system' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'התראות מערכת' : 'System Alerts'}</button>
+      <button onclick="window.setAlertFilter('order')" style="background:${currentAlertFilter === 'order' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'order' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#333; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'order' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הזמנות' : 'Orders'}</button>
+      <button onclick="window.setAlertFilter('offer')" style="background:${currentAlertFilter === 'offer' ? 'rgba(255,255,255,0.12)' : 'transparent'}; border:${currentAlertFilter === 'offer' ? '1px solid rgba(255,255,255,0.1)' : 'none'}; border-radius:20px; padding:8px 18px; color:#333; font-size:0.85rem; font-weight:700; cursor:pointer; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:${currentAlertFilter === 'offer' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'};">${isHeb ? 'הצעות מחיר' : 'Offers'}</button>
     </div>
   `;
 
   if (combined.length === 0) {
     html += `
       <div style="text-align: center; padding: 60px 20px; color: #86868b; background:rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius:24px; backdrop-filter:blur(20px);">
-        <div style="font-size: 3.5rem; margin-bottom: 16px; opacity: 0.15; color:#fff;"><i class="fas fa-bell-slash"></i></div>
+        <div style="font-size: 3.5rem; margin-bottom: 16px; opacity: 0.15; color:#333;"><i class="fas fa-bell-slash"></i></div>
         <p style="font-size: 0.95rem; font-weight: 500; color:#86868b; margin:0;">${isHeb ? 'אין לך התראות חדשות בסינון זה.' : 'No new alerts found in this section.'}</p>
       </div>
     `;
@@ -10064,12 +10088,12 @@ window.renderNotifications = async function() {
       if (item.message.includes('🔒')) iconClass = 'fa-lock';
 
       html += `
-        <div class="notification-item ${isUnread ? 'notification-item-unread' : ''}" style="display:flex; align-items:center; gap:16px; background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:16px; margin-bottom:14px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease; flex-direction: ${isHeb ? 'row-reverse' : 'row'};" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';">
-          <div class="notification-icon-wrap" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; border:1px solid rgba(255,255,255,0.1); box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+        <div class="notification-item ${isUnread ? 'notification-item-unread' : ''}" style="display:flex; align-items:center; gap:16px; background:#fff; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid #e0e0e0; border-radius:20px; padding:16px; margin-bottom:14px; position:relative; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:all 0.3s ease; flex-direction: ${isHeb ? 'row-reverse' : 'row'};" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='#ccc'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#fff'; this.style.borderColor='#e0e0e0'; this.style.transform='translateY(0)';">
+          <div class="notification-icon-wrap" style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); display:flex; align-items:center; justify-content:center; color:#333; flex-shrink:0; border:1px solid #e0e0e0; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
             <i class="fa-solid ${iconClass}" style="font-size:1.05rem;"></i>
           </div>
           <div class="notification-content" style="flex:1; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'}; min-width:0;">
-            <div class="notification-text" style="font-size:0.95rem; color:#fff; font-weight:500; line-height:1.4; word-break:break-word;">${item.message}</div>
+            <div class="notification-text" style="font-size:0.95rem; color:#333; font-weight:500; line-height:1.4; word-break:break-word;">${item.message}</div>
             <div class="notification-time" style="font-size:0.8rem; color:#86868b; margin-top:6px; font-weight:500;">${item.displayTime}</div>
           </div>
           <button class="notification-delete-btn" onclick="window.deleteNotification('${item.id}')" title="${isHeb ? 'מחק' : 'Delete'}" style="background:none; border:none; color:#86868b; cursor:pointer; padding:8px; font-size:1.2rem; flex-shrink:0; transition:all 0.2s;" onmouseover="this.style.color='#ff3b30'; this.style.transform='scale(1.1)';" onmouseout="this.style.color='#86868b'; this.style.transform='scale(1)';">
@@ -10103,7 +10127,7 @@ window.renderNotifications = async function() {
         } else {
           return `
             <div style="display:flex; align-items:center; gap:12px; margin-top:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06); flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
-              ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#1c1c1e; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
+              ${i.image ? `<img src="${i.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; background:#fff;">` : `<div style="width:40px; height:40px; border-radius:6px; background:#f5f5f5; display:flex; align-items:center; justify-content:center;"><i class="fas fa-box" style="color:#86868b;"></i></div>`}
               <div style="font-size:0.85rem; color:#e5e5ea; flex:1; text-align: ${isHeb ? 'right' : 'left'};">${i.text}</div>
             </div>
           `;
@@ -10111,7 +10135,7 @@ window.renderNotifications = async function() {
       }).join('') : '';
 
       const trackerHtml = `
-        <div style="margin-bottom: 24px; background:#000; border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.06);">
+        <div style="margin-bottom: 24px; background:#f0f0f0; border-radius:12px; padding:16px; border:1px solid #e5e5e5;">
           <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; text-align:center;">${isHeb ? 'מעקב משלוח' : 'Order Tracker'}</div>
           <div style="display:flex; align-items:center; justify-content:space-between; position:relative; padding:0 10px; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
             <div style="position:absolute; top:12px; left:30px; right:30px; height:2px; background:#3a3a3c; z-index:1;"></div>
@@ -10119,15 +10143,15 @@ window.renderNotifications = async function() {
             <div style="position:absolute; top:12px; left:50%; width:calc(50% - 30px); height:2px; background:${line2Color}; z-index:2; transition: background 0.3s;"></div>
             
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
+              <div style="width:26px; height:26px; border-radius:50%; background:${step1Color}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-check"></i></div>
               <div style="font-size:0.7rem; color:${step >= 1 ? '#e5e5ea' : '#86868b'}; font-weight:600;">${isHeb ? 'הוזמן' : 'Ordered'}</div>
             </div>
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
+              <div style="width:26px; height:26px; border-radius:50%; background:${step2Color}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-truck"></i></div>
               <div style="font-size:0.7rem; color:${step >= 2 ? '#e5e5ea' : '#86868b'}; font-weight:600;">${isHeb ? 'נשלח לדרך' : 'Shipped'}</div>
             </div>
             <div style="position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
+              <div style="width:26px; height:26px; border-radius:50%; background:${step3Color}; color:#333; display:flex; align-items:center; justify-content:center; font-size:0.7rem; border:3px solid #000;"><i class="fas fa-box-open"></i></div>
               <div style="font-size:0.7rem; color:${step >= 3 ? '#e5e5ea' : '#86868b'}; font-weight:600;">${isHeb ? 'הגיע ליעד' : 'Arrived'}</div>
             </div>
           </div>
@@ -10135,14 +10159,14 @@ window.renderNotifications = async function() {
       `;
 
       html += `
-        <div class="notification-item" style="background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:18px; margin-bottom:14px; cursor:pointer; box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';" onclick="const d = this.querySelector('.hub-receipt-details'); const c = this.querySelector('.receipt-chevron'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; if(c) c.style.transform = d.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)'">
+        <div class="notification-item" style="background:#fff; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid #e0e0e0; border-radius:20px; padding:18px; margin-bottom:14px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='#ccc'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#fff'; this.style.borderColor='#e0e0e0'; this.style.transform='translateY(0)';" onclick="const d = this.querySelector('.hub-receipt-details'); const c = this.querySelector('.receipt-chevron'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; if(c) c.style.transform = d.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)'">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
             <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:0; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
-              <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #34c759, #28cd41); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; flex-shrink:0; border:1px solid rgba(255,255,255,0.2); box-shadow:0 4px 12px rgba(40,205,65,0.3);">
+              <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #34c759, #28cd41); display:flex; align-items:center; justify-content:center; color:#333; font-size:1.1rem; flex-shrink:0; border:1px solid rgba(255,255,255,0.2); box-shadow:0 4px 12px rgba(40,205,65,0.3);">
                 <i class="fas fa-receipt"></i>
               </div>
               <div style="direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'}; min-width:0; flex:1;">
-                <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:3px;">${isHeb ? 'אישור הזמנה 🧾' : 'Order Confirmation'}</div>
+                <div style="font-weight:700; color:#333; font-size:1rem; margin-bottom:3px;">${isHeb ? 'אישור הזמנה 🧾' : 'Order Confirmation'}</div>
                 <div style="font-weight:600; color:#a1a1aa; font-size:0.82rem; margin-bottom:3px; font-family:monospace;">${isHeb ? 'מזהה' : 'ID'}: #${item.id.slice(0, 8).toUpperCase()}</div>
                 <div style="font-size:0.85rem; color:#86868b; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${shortTitle}</div>
               </div>
@@ -10163,7 +10187,7 @@ window.renderNotifications = async function() {
               <div style="font-size:0.75rem; font-weight:700; color:#86868b; margin-bottom:10px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:6px;">${isHeb ? 'סיכום הזמנה' : 'Order Summary'}</div>
               ${itemsHtml}
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:14px; border-radius:12px; border:1px solid #e5e5e5; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
               <span style="font-weight:600; color:#86868b; font-size:0.9rem;">${isHeb ? 'סה"כ שולם' : 'Total Paid'}</span>
               <span style="font-weight:800; color:#34c759; font-size:1.25rem;">$${data.amount ? data.amount.toLocaleString() : '0'}</span>
             </div>
@@ -10177,24 +10201,24 @@ window.renderNotifications = async function() {
       const data = item.data;
 
       html += `
-        <div class="notification-item" style="background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:18px; margin-bottom:14px; box-shadow:0 8px 32px rgba(0,0,0,0.25); transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';">
+        <div class="notification-item" style="background:#fff; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid #e0e0e0; border-radius:20px; padding:18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.06)'; this.style.borderColor='#ccc'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#fff'; this.style.borderColor='#e0e0e0'; this.style.transform='translateY(0)';">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
             <div style="text-align: ${isHeb ? 'right' : 'left'}; flex:1; min-width:0;">
               <div style="font-size:0.75rem; color:#af52de; font-weight:700; text-transform:uppercase; margin-bottom:5px; letter-spacing:1px; display:flex; align-items:center; gap:6px; justify-content: ${isHeb ? 'flex-end' : 'flex'};">
                 <i class="fas fa-tag"></i> ${isHeb ? 'הצעת מחיר חדשה 🏷️' : 'New Offer'}
               </div>
-              <h3 style="font-size:1.1rem; font-weight:700; color:#fff; margin:0; line-height:1.4; word-break:break-word;">${data.postTitle}</h3>
+              <h3 style="font-size:1.1rem; font-weight:700; color:#333; margin:0; line-height:1.4; word-break:break-word;">${data.postTitle}</h3>
             </div>
             <div style="font-size:1.3rem; font-weight:800; color:#34c759; margin-left:14px; flex-shrink:0; background:rgba(52,199,89,0.12); padding:6px 12px; border-radius:10px; border:1px solid rgba(52,199,89,0.2); box-shadow:0 4px 10px rgba(52,199,89,0.15);">${isHeb ? '₪' : '$'}${data.offerAmount}</div>
           </div>
           <div style="font-size:0.9rem; color:#a1a1aa; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.04); padding:14px; border-radius:12px; margin-bottom:14px; direction: ${isHeb ? 'rtl' : 'ltr'}; text-align: ${isHeb ? 'right' : 'left'}; line-height:1.5; font-weight:450;">
-            <strong style="color:#fff;">${isHeb ? 'שולח:' : 'From:'}</strong> ${data.buyerName} (${data.buyerEmail})<br>
-            ${data.message ? `<div style="margin-top:8px; font-style:italic; color:#fff; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);">"${data.message}"</div>` : ''}
-            ${data.signatureData ? `<div style="margin-top:14px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:10px;"><strong style="font-size:0.8rem; color:#fff;">${isHeb ? 'חתימה על החוזה:' : 'Contract Signature:'}</strong><br><img src="${data.signatureData}" style="max-height:75px; background:#fff; border-radius:6px; margin-top:6px; border:1px solid rgba(255,255,255,0.1); padding:4px; box-shadow:0 4px 10px rgba(0,0,0,0.15);"></div>` : ''}
+            <strong style="color:#333;">${isHeb ? 'שולח:' : 'From:'}</strong> ${data.buyerName} (${data.buyerEmail})<br>
+            ${data.message ? `<div style="margin-top:8px; font-style:italic; color:#333; background:#fff; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);">"${data.message}"</div>` : ''}
+            ${data.signatureData ? `<div style="margin-top:14px; border-top:1px dashed rgba(255,255,255,0.08); padding-top:10px;"><strong style="font-size:0.8rem; color:#333;">${isHeb ? 'חתימה על החוזה:' : 'Contract Signature:'}</strong><br><img src="${data.signatureData}" style="max-height:75px; background:#fff; border-radius:6px; margin-top:6px; border:1px solid #e0e0e0; padding:4px; box-shadow:0 4px 10px rgba(0,0,0,0.15);"></div>` : ''}
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; flex-direction: ${isHeb ? 'row-reverse' : 'row'};">
             <div style="font-size:0.8rem; color:#86868b; font-weight:500;">${item.displayTime}</div>
-            <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,113,227,0.3); transition: all 0.2s;" onmouseover="this.style.background='#0077ed'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0071e3'; this.style.transform='translateY(0)';">${isHeb ? 'צור קשר עם הקונה 💬' : 'Contact Buyer'}</button>
+            <button onclick="window.location.href='mailto:${data.buyerEmail}?subject=Re: Offer for ${encodeURIComponent(data.postTitle)}'" style="background:#0071e3; color:#333; border:none; border-radius:10px; padding:8px 18px; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,113,227,0.3); transition: all 0.2s;" onmouseover="this.style.background='#0077ed'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0071e3'; this.style.transform='translateY(0)';">${isHeb ? 'צור קשר עם הקונה 💬' : 'Contact Buyer'}</button>
           </div>
         </div>
       `;
@@ -10291,6 +10315,12 @@ window.initMessagesListeners = function() {
             window.renderChatUsersList();
           }
         }
+        if (typeof window.renderFloatingUserChatList === 'function' && document.getElementById('floating-user-threads-list')) {
+          window.renderFloatingUserChatList();
+          if (window._activeFloatingUserChatId) {
+            window.loadFloatingUserChatMessages(window._activeFloatingUserChatId);
+          }
+        }
       }
     }, (e) => { console.error("Chats onSnapshot error:", e); });
   } catch(e) {}
@@ -10369,6 +10399,13 @@ window.initMessagesListeners = function() {
         const supportPanel = document.getElementById('floating-pill-panel');
         if (supportPanel && supportPanel.style.display !== 'none') {
            window.loadDirectMessages();
+        }
+      }
+      
+      if (typeof window.renderFloatingUserChatList === 'function' && document.getElementById('floating-user-threads-list')) {
+        window.renderFloatingUserChatList();
+        if (window._activeFloatingUserChatId) {
+          window.loadFloatingUserChatMessages(window._activeFloatingUserChatId);
         }
       }
       
@@ -10624,12 +10661,12 @@ async function renderDrawerChatUsersList() {
     `;
     
     pinnedUsers.forEach(u => {
-      const badge = u.unreadCount > 0 ? `<span class="chat-unread-pill" style="position:absolute; bottom:6px; left:6px; min-width:14px; height:14px; font-size:8px; display:flex; align-items:center; justify-content:center; background:#ff3b30; color:#fff; border-radius:50%; font-weight:bold; border:1px solid #000;">${u.unreadCount}</span>` : '';
-      const borderStyle = u.isSelected ? 'border: 1.5px solid #ff9500; background:rgba(255,149,0,0.15);' : 'border: 1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);';
+      const badge = u.unreadCount > 0 ? `<span class="chat-unread-pill" style="position:absolute; bottom:6px; left:6px; min-width:14px; height:14px; font-size:8px; display:flex; align-items:center; justify-content:center; background:#ff3b30; color:#333; border-radius:50%; font-weight:bold; border:1px solid #000;">${u.unreadCount}</span>` : '';
+      const borderStyle = u.isSelected ? 'border: 1.5px solid #ff9500; background:rgba(255,149,0,0.15);' : 'border: 1px solid rgba(255,255,255,0.08); background:#fff;';
       html += `
         <div onclick="selectDrawerChatUser('${u.id}')" style="position:relative; width:80px; height:80px; border-radius:12px; ${borderStyle} display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;" class="pinned-chat-widget">
           <img src="${u.avatar}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; margin-bottom:4px;">
-          <span style="font-size:0.7rem; color:#fff; font-weight:700; text-align:center; max-width:68px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.name.split(' ')[0]}</span>
+          <span style="font-size:0.7rem; color:#333; font-weight:700; text-align:center; max-width:68px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.name.split(' ')[0]}</span>
           <!-- Unpin toggle -->
           <button onclick="togglePinChat('${u.id}', event)" style="position:absolute; top:4px; right:4px; background:none; border:none; color:#ff9500; font-size:0.7rem; cursor:pointer; padding:0;">
             <i class="fas fa-thumbtack"></i>
@@ -10658,7 +10695,7 @@ async function renderDrawerChatUsersList() {
     unpinnedUsers.forEach(u => {
       const isSelected = u.isSelected;
       const border = isSelected ? 'border: 1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06);' : 'border: 1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02);';
-      const badge = u.unreadCount > 0 ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; min-width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; margin-right:auto;">${u.unreadCount}</span>` : '';
+      const badge = u.unreadCount > 0 ? `<span style="background:#ff3b30; color:#333; border-radius:50%; min-width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; margin-right:auto;">${u.unreadCount}</span>` : '';
       html += `
         <div class="chat-user-row" onclick="selectDrawerChatUser('${u.id}')" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:10px; ${border} cursor:pointer; transition:all 0.15s; direction:rtl; text-align:right;">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
@@ -10667,7 +10704,7 @@ async function renderDrawerChatUsersList() {
               <span class="chat-online-dot" style="bottom:0; right:0; border:1px solid #141416; width:8px; height:8px;"></span>
             </div>
             <div style="min-width:0; flex:1;">
-              <div style="font-size:0.8rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
+              <div style="font-size:0.8rem; font-weight:700; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
             </div>
             ${badge}
           </div>
@@ -11061,14 +11098,14 @@ function renderDrawerForumsList() {
 
   function forumCard(g, isFav) {
     return `
-      <div onclick="selectDrawerForum('${g.id}')" style="flex-shrink:0; width:180px; background:#141416; border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:14px; cursor:pointer; transition:all 0.2s; position:relative;" onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'; this.style.transform='none';">
+      <div onclick="selectDrawerForum('${g.id}')" style="flex-shrink:0; width:180px; background:#f5f5f5; border:1px solid #e5e5e5; border-radius:14px; padding:14px; cursor:pointer; transition:all 0.2s; position:relative;" onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e5e5e5'; this.style.transform='none';">
         <button onclick="toggleFavoriteForum(event, '${g.id}')" style="position:absolute; top:10px; left:10px; background:none; border:none; color:${isFav ? '#ffc107' : '#48484a'}; cursor:pointer; font-size:0.9rem; padding:0; transition:color 0.2s;">
           <i class="${isFav ? 'fas' : 'far'} fa-star"></i>
         </button>
         <div style="width:36px; height:36px; border-radius:10px; background:${g.color || '#0071e3'}22; border:1px solid ${g.color || '#0071e3'}44; display:flex; align-items:center; justify-content:center; color:${g.color || '#0071e3'}; font-size:1rem; margin-bottom:10px;">
           <i class="fas ${g.icon || 'fa-comments'}"></i>
         </div>
-        <div style="font-weight:700; color:#fff; font-size:0.85rem; margin-bottom:4px; padding-left:18px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${g.name}</div>
+        <div style="font-weight:700; color:#333; font-size:0.85rem; margin-bottom:4px; padding-left:18px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${g.name}</div>
         <div style="font-size:0.75rem; color:#86868b; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.4; height:34px;">${g.desc}</div>
         <div style="margin-top:10px; font-size:0.75rem; font-weight:600; color:#ff9500; display:flex; align-items:center; gap:4px;">
           <span>כניסה לפורום</span> <i class="fas fa-chevron-left" style="font-size:0.65rem;"></i>
@@ -12048,7 +12085,7 @@ function renderAdminChatPane(userId, msgs) {
     <div style="flex:1; display:flex; flex-direction:column; padding:16px; overflow-y:auto; gap:12px;" id="admin-chat-messages-log">
       ${messagesHtml}
     </div>
-    <div style="padding:16px; border-top:1px solid #2c2c2e; background:#1c1c1e; display:flex; gap:10px; align-items:center;">
+    <div style="padding:16px; border-top:1px solid #2c2c2e; background:#f5f5f5; display:flex; gap:10px; align-items:center;">
       <input type="text" id="admin-chat-reply-input" class="admin-input" placeholder="כתוב מענה למשתמש..." style="flex:1; margin:0;" onkeypress="if(event.key === 'Enter') sendAdminDirectReply('${userId}')">
       <button class="btn-primary" onclick="sendAdminDirectReply('${userId}')" style="height:44px; padding:0 20px;">שלח</button>
     </div>
@@ -12204,7 +12241,7 @@ window.renderRecentActivity = function() {
     return `
       <div onclick="${act.link}" style="display: flex; gap: 12px; padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s; align-items: flex-start; text-align: right; direction: rtl;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
         <!-- Avatar Icon -->
-        <img src="${act.userAvatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1);" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'" />
+        <img src="${act.userAvatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid #e0e0e0;" onerror="this.src='https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'" />
         
         <!-- Text details -->
         <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;">
@@ -12334,13 +12371,13 @@ window.enableLayoutDesignerMode = function() {
     `;
     bar.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:2px;">
-        <span style="font-weight:800; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:6px;">
+        <span style="font-weight:800; font-size:0.95rem; color:#333; display:flex; align-items:center; gap:6px;">
           <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; animation: pulse 1.5s infinite;"></span>
           מצב סידור חופשי פעיל 🔧
         </span>
         <span style="font-size:0.75rem; color:#a1a1aa;">לחץ לחיצה כפולה (Double Click) על כל אלמנט/אות באתר וגרור אותו לכל מקום!</span>
       </div>
-      <button onclick="saveLayoutDesignerOrder()" style="background:#10b981; color:#fff; border:none; padding:8px 18px; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">שמור וצא 💾</button>
+      <button onclick="saveLayoutDesignerOrder()" style="background:#10b981; color:#333; border:none; padding:8px 18px; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">שמור וצא 💾</button>
     `;
     document.body.appendChild(bar);
   } else {
@@ -13100,7 +13137,7 @@ window.renderBackupTimeline = function() {
 
     const typeBadge = b.isManual 
       ? '<span style="background:rgba(0,113,227,0.15); border:1px solid rgba(0,113,227,0.3); color:#30d158; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:700;">גיבוי ידני 📸</span>'
-      : '<span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#a1a1aa; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:500;">גיבוי אוטומטי 🕒</span>';
+      : '<span style="background:rgba(0,0,0,0.03); border:1px solid #e0e0e0; color:#a1a1aa; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:500;">גיבוי אוטומטי 🕒</span>';
 
     return `
       <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:16px 20px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
@@ -13109,7 +13146,7 @@ window.renderBackupTimeline = function() {
             <i class="fas fa-history"></i>
           </div>
           <div style="display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:0.95rem; font-weight:700; color:#fff;">${label}</span>
+            <span style="font-size:0.95rem; font-weight:700; color:#333;">${label}</span>
             <span style="font-size:0.78rem; color:#86868b; display:flex; align-items:center; gap:8px;">
               ${typeBadge}
               <span>נפח גיבוי: ${b.size || 'N/A'}</span>
@@ -13826,7 +13863,7 @@ function renderBetsGrid() {
         <div style="font-size:0.8rem; color:#facc15; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
           <i class="far fa-clock"></i> ${event.time}
         </div>
-        <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.4; min-height:50px;">${event.title}</h3>
+        <h3 style="font-size:1.15rem; font-weight:800; color:#333; margin:0 0 20px 0; line-height:1.4; min-height:50px;">${event.title}</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
           ${event.options.map(opt => `
             <button class="wc-bet-btn" onclick="openBetModal('${event.id}', '${opt.id}', '${event.title.replace(/'/g, "\\'")}', '${opt.text.replace(/'/g, "\\'")}', ${opt.odds})">
@@ -13864,7 +13901,7 @@ function renderPollsGrid() {
             </span>
             <span style="font-size:0.8rem; color:#86868b; font-weight:700;">הצבעתך התקבלה ✓</span>
           </div>
-          <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.45; min-height:60px;">${poll.question}</h3>
+          <h3 style="font-size:1.15rem; font-weight:800; color:#333; margin:0 0 20px 0; line-height:1.45; min-height:60px;">${poll.question}</h3>
           
           <div style="display:flex; flex-direction:column; gap:12px;">
             <!-- Yes Bar -->
@@ -13906,10 +13943,10 @@ function renderPollsGrid() {
       // Vote view: show options
       return `
         <div class="poll-card">
-          <span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px; font-size:0.75rem; color:#a1a1aa; font-weight:800; width:max-content; margin-bottom:12px;">
+          <span style="background:rgba(0,0,0,0.03); border:1px solid #e0e0e0; padding:4px 12px; border-radius:20px; font-size:0.75rem; color:#a1a1aa; font-weight:800; width:max-content; margin-bottom:12px;">
             ${poll.category}
           </span>
-          <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0 0 20px 0; line-height:1.45; min-height:60px;">${poll.question}</h3>
+          <h3 style="font-size:1.15rem; font-weight:800; color:#333; margin:0 0 20px 0; line-height:1.45; min-height:60px;">${poll.question}</h3>
           
           <div style="display:flex; flex-direction:column;">
             <button class="poll-option-btn voted-yes" onclick="voteInPoll('${poll.id}', 'yes')">
@@ -14276,7 +14313,7 @@ window.fxSavedToast = function(msg, isError) {
   }
   t.textContent = msg;
   t.style.cssText = `position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
-    background:${isError ? '#7f1d1d' : '#15803d'}; color:#fff; padding:12px 26px; border-radius:999px;
+    background:${isError ? '#7f1d1d' : '#15803d'}; color:#333; padding:12px 26px; border-radius:999px;
     font-size:0.95rem; font-weight:700; z-index:1000000; box-shadow:0 10px 30px rgba(0,0,0,0.5);
     opacity:0; transition:transform 0.4s cubic-bezier(0.34,1.4,0.64,1), opacity 0.3s ease; direction:rtl;`;
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -15692,7 +15729,7 @@ function renderB2bFilters() {
   ];
 
   chips.innerHTML = cats.map(c => `
-    <button onclick="setB2bCategory('${c.id}', this)" class="category-pill ${b2bCategory === c.id ? 'active' : ''}" style="white-space:nowrap; padding:8px 16px; border-radius:980px; border:1px solid rgba(255,255,255,0.1); background:${b2bCategory === c.id ? 'linear-gradient(135deg,#ff9500,#ffcc00)' : 'rgba(255,255,255,0.05)'}; color:${b2bCategory === c.id ? '#000' : '#fff'}; font-weight:700; cursor:pointer; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+    <button onclick="setB2bCategory('${c.id}', this)" class="category-pill ${b2bCategory === c.id ? 'active' : ''}" style="white-space:nowrap; padding:8px 16px; border-radius:980px; border:1px solid #e0e0e0; background:${b2bCategory === c.id ? 'linear-gradient(135deg,#ff9500,#ffcc00)' : 'rgba(255,255,255,0.05)'}; color:${b2bCategory === c.id ? '#000' : '#fff'}; font-weight:700; cursor:pointer; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
       <span>${c.emoji}</span> <span>${c.label}</span>
     </button>
   `).join('');
@@ -15728,9 +15765,9 @@ window.renderB2bFactories = function() {
 
   if (filtered.length === 0) {
     list.innerHTML = `
-      <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:60px 20px; text-align:center; color:#86868b;">
-        <i class="fas ${isFactories ? 'fa-industry' : 'fa-truck'}" style="font-size:3rem; margin-bottom:16px; opacity:0.4; color:#fff;"></i>
-        <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem;">לא נמצאו תוצאות תואמות</h3>
+      <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:16px; padding:60px 20px; text-align:center; color:#86868b;">
+        <i class="fas ${isFactories ? 'fa-industry' : 'fa-truck'}" style="font-size:3rem; margin-bottom:16px; opacity:0.4; color:#333;"></i>
+        <h3 style="color:#333; margin:0 0 8px 0; font-size:1.2rem;">לא נמצאו תוצאות תואמות</h3>
         <p style="margin:0; font-size:0.9rem;">נסה לשנות את הסינון או את מילות החיפוש.</p>
       </div>
     `;
@@ -15747,13 +15784,13 @@ window.renderB2bFactories = function() {
     const whatsAppUrl = `https://wa.me/972${f.phone.replace(/^0/, '')}?text=${encodeURIComponent(textMsg)}`;
 
     return `
-      <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:16px; transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+      <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:16px; transition:border-color 0.2s;" onmouseover="this.style.borderColor='#ccc'" onmouseout="this.style.borderColor='#e0e0e0'">
         <!-- Top header -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
           <div>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-              <h2 style="margin:0; font-size:1.3rem; font-weight:800; color:#fff;">${escHtml(f.name)}</h2>
-              <span style="font-size:0.75rem; background:rgba(255,255,255,0.05); color:#a1a1aa; padding:4px 10px; border-radius:980px; font-weight:700;">${categoryLabels[f.category] || 'אחר'}</span>
+              <h2 style="margin:0; font-size:1.3rem; font-weight:800; color:#333;">${escHtml(f.name)}</h2>
+              <span style="font-size:0.75rem; background:rgba(0,0,0,0.03); color:#a1a1aa; padding:4px 10px; border-radius:980px; font-weight:700;">${categoryLabels[f.category] || 'אחר'}</span>
             </div>
             <div style="display:flex; gap:16px; font-size:0.85rem; color:#86868b; align-items:center;">
               <span>📍 אזור פעילות/מיקום: <strong>${escHtml(f.location)}</strong></span>
@@ -15766,10 +15803,10 @@ window.renderB2bFactories = function() {
             <button onclick="openB2bOfferModal('${f.id}', '${escHtml(f.name.replace(/'/g, "\\'"))}')" style="background:linear-gradient(135deg,#ff9500,#ffcc00); color:#000; border:none; padding:10px 18px; border-radius:10px; font-weight:700; font-size:0.88rem; display:flex; align-items:center; gap:6px; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
               <i class="fas fa-paper-plane" style="font-size:0.85rem;"></i> הגש הצעה
             </button>
-            <a href="${whatsAppUrl}" target="_blank" style="background:#25D366; color:#fff; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+            <a href="${whatsAppUrl}" target="_blank" style="background:#25D366; color:#333; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
               <i class="fab fa-whatsapp" style="font-size:1rem;"></i> וואטסאפ
             </a>
-            <a href="tel:${f.phone}" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+            <a href="tel:${f.phone}" style="background:rgba(0,0,0,0.03); border:1px solid #e0e0e0; color:#333; padding:10px 18px; border-radius:10px; font-weight:700; text-decoration:none; font-size:0.88rem; display:flex; align-items:center; gap:6px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
               <i class="fas fa-phone-alt" style="font-size:0.85rem;"></i> התקשר
             </a>
           </div>
@@ -15955,9 +15992,9 @@ window.renderB2bMyOffers = function() {
 
   box.style.display = 'block';
   list.innerHTML = offers.map(o => `
-    <div style="background:#1c1c1e; border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:12px; font-size:0.85rem; text-align:right;">
+    <div style="background:#f5f5f5; border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:12px; font-size:0.85rem; text-align:right;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <strong style="color:#fff;">${escHtml(o.factoryName)}</strong>
+        <strong style="color:#333;">${escHtml(o.factoryName)}</strong>
         <span style="font-size:0.75rem; color:#86868b;">${o.date}</span>
       </div>
       <div style="color:#ff9500; font-weight:700; margin-bottom:4px;">נושא: ${escHtml(o.subject)}</div>
@@ -15999,7 +16036,7 @@ window.renderB2bMarket = function() {
 
   body.innerHTML = filtered.map(item => `
     <tr style="border-bottom:1px solid rgba(255,255,255,0.05); transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-      <td style="padding:16px 12px; font-weight:700; color:#fff;">${escHtml(item.name)}</td>
+      <td style="padding:16px 12px; font-weight:700; color:#333;">${escHtml(item.name)}</td>
       <td style="padding:16px 12px; color:#d2d2d7;">${escHtml(item.category)}</td>
       <td style="padding:16px 12px; color:#ff9500; font-weight:700;">${escHtml(item.price)}</td>
       <td style="padding:16px 12px;">${trendIcons[item.trend]}</td>
@@ -16185,9 +16222,9 @@ window.renderSharingAds = function() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div style="grid-column: 1/-1; text-align:center; padding:60px 20px; color:#86868b; background:#141416; border:1px solid rgba(255,255,255,0.05); border-radius:16px;">
+      <div style="grid-column: 1/-1; text-align:center; padding:60px 20px; color:#86868b; background:#f5f5f5; border:1px solid rgba(255,255,255,0.05); border-radius:16px;">
         <div style="font-size:2.5rem; margin-bottom:12px;">🔍</div>
-        <h3 style="color:#fff; margin:0 0 6px 0;">לא נמצאו מודעות מתאימות</h3>
+        <h3 style="color:#333; margin:0 0 6px 0;">לא נמצאו מודעות מתאימות</h3>
         <p style="margin:0; font-size:0.9rem;">נסה לשנות את מסנני החיפוש או פרסם מודעה חדשה משלך!</p>
       </div>
     `;
@@ -16198,14 +16235,14 @@ window.renderSharingAds = function() {
     const isGarden = ad.type === 'garden';
     const priceDisplay = isGarden 
       ? `<span style="color:#ffcc00; font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:4px;">${ad.price} <i class="fas fa-coins"></i></span>`
-      : `<span style="color:#fff; font-weight:800; font-size:1.1rem;">${ad.price}</span>`;
+      : `<span style="color:#333; font-weight:800; font-size:1.1rem;">${ad.price}</span>`;
 
     const buttonHtml = isGarden
       ? `<button onclick="buySharingGardenItem('${ad.id}')" class="btn-primary" style="background:linear-gradient(135deg,#ff9500,#ffcc00); color:#000; border:none; padding:10px 16px; border-radius:10px; font-weight:800; cursor:pointer; font-size:0.85rem; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;">רכוש עבור ${ad.price} Coins 💰</button>`
-      : `<a href="tel:${ad.phone}" class="btn-primary" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; text-decoration:none; padding:10px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; text-align:center; display:block;">📞 צור קשר: ${ad.owner}</a>`;
+      : `<a href="tel:${ad.phone}" class="btn-primary" style="background:rgba(255,255,255,0.06); border:1px solid #e0e0e0; color:#333; text-decoration:none; padding:10px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; text-align:center; display:block;">📞 צור קשר: ${ad.owner}</a>`;
 
     return `
-      <div style="background:#141416; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+      <div style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:20px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
         <div>
           <!-- Badge and Price -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -16215,7 +16252,7 @@ window.renderSharingAds = function() {
             ${priceDisplay}
           </div>
           
-          <h3 style="color:#fff; font-size:1.1rem; font-weight:800; margin:0 0 8px 0; line-height:1.4;">${ad.title}</h3>
+          <h3 style="color:#333; font-size:1.1rem; font-weight:800; margin:0 0 8px 0; line-height:1.4;">${ad.title}</h3>
           
           <!-- Metas -->
           <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:12px;">
@@ -16704,24 +16741,24 @@ window.openAddCustomPageModal = function() {
   modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:1000000; display:flex; align-items:center; justify-content:center; direction:rtl;';
   
   modal.innerHTML = `
-    <div style="background:#18181b; border:1px solid rgba(255,255,255,0.08); border-radius:24px; width:90%; max-width:400px; padding:32px; box-shadow:0 30px 70px rgba(0,0,0,0.8); color:#f4f4f5; font-family:inherit;">
+    <div style="background:#18181b; border:1px solid #e0e0e0; border-radius:24px; width:90%; max-width:400px; padding:32px; box-shadow:0 30px 70px rgba(0,0,0,0.8); color:#f4f4f5; font-family:inherit;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h3 style="font-size:1.4rem; font-weight:800; color:#fff; margin:0;">הוספת עמוד חדש</h3>
+        <h3 style="font-size:1.4rem; font-weight:800; color:#333; margin:0;">הוספת עמוד חדש</h3>
         <button onclick="document.getElementById('add-page-modal').remove()" style="background:none; border:none; color:#a1a1aa; font-size:1.5rem; cursor:pointer;">✕</button>
       </div>
       <div style="display:flex; flex-direction:column; gap:16px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:0.85rem; font-weight:600; color:#a1a1aa;">שם העמוד (יופיע בתפריט)</label>
-          <input type="text" id="new-page-name-input" placeholder="לדוגמה: עלינו" style="background:#09090b; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; color:#fff; font-family:inherit; outline:none;">
+          <input type="text" id="new-page-name-input" placeholder="לדוגמה: עלינו" style="background:#09090b; border:1px solid #e0e0e0; border-radius:10px; padding:10px 14px; color:#333; font-family:inherit; outline:none;">
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:0.85rem; font-weight:600; color:#a1a1aa;">מזהה באנגלית (לכתובת ה-URL)</label>
-          <input type="text" id="new-page-id-input" placeholder="לדוגמה: about" style="background:#09090b; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; color:#fff; font-family:inherit; outline:none;">
+          <input type="text" id="new-page-id-input" placeholder="לדוגמה: about" style="background:#09090b; border:1px solid #e0e0e0; border-radius:10px; padding:10px 14px; color:#333; font-family:inherit; outline:none;">
         </div>
       </div>
       <div style="display:flex; gap:12px; margin-top:32px;">
         <button id="add-page-submit-btn" style="flex:1; padding:12px; border-radius:10px; font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer; border:none; background:#e28743; color:#09090b;">צור עמוד 🚀</button>
-        <button onclick="document.getElementById('add-page-modal').remove()" style="flex:1; padding:12px; border-radius:10px; font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.06); color:#fff;">ביטול</button>
+        <button onclick="document.getElementById('add-page-modal').remove()" style="flex:1; padding:12px; border-radius:10px; font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer; border:1px solid #e0e0e0; background:rgba(255,255,255,0.06); color:#333;">ביטול</button>
       </div>
     </div>
   `;
@@ -16863,7 +16900,7 @@ window.renderDeliveriesList = function() {
         return `
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:16px; border-radius:12px; display:flex; flex-direction:column; gap:8px; font-size:0.9rem; cursor:pointer;" onclick="window.trackDeliveryItem('${d.firestoreId || d.id}')">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:700; color:#fff;">📦 משלוח מ-${d.pickup.split(',')[0]}</span>
+              <span style="font-weight:700; color:#333;">📦 משלוח מ-${d.pickup.split(',')[0]}</span>
               <span style="${statusClass}; font-weight:700;">${statusText}</span>
             </div>
             <div style="color:#a1a1aa; font-size:0.8rem;">
@@ -16886,19 +16923,19 @@ window.renderDeliveriesList = function() {
               <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
                   <div style="font-size:0.75rem; color:#8e8e93; font-weight:600; margin-bottom:4px;">מאת: ${d.userEmail}</div>
-                  <div style="font-weight:800; color:#fff; font-size:0.95rem;">📦 איסוף: ${d.pickup}</div>
+                  <div style="font-weight:800; color:#333; font-size:0.95rem;">📦 איסוף: ${d.pickup}</div>
                   <div style="font-weight:800; color:#ffb077; font-size:0.95rem; margin-top:4px;">🏁 יעד: ${d.destination}</div>
                 </div>
                 <button onclick="window.deleteDeliveryOrder('${d.firestoreId || d.id}')" style="background:none; border:none; color:#ff3b30; font-size:1.1rem; cursor:pointer; padding:2px;" title="מחק משלוח">✕</button>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; font-size:0.85rem; margin-top:8px;">
-                <div>🔑 קוד: <strong style="color:#fff;">${d.code}</strong></div>
+                <div>🔑 קוד: <strong style="color:#333;">${d.code}</strong></div>
                 <div>סוג: <strong>${getPackageTypeHebrew(d.packageType)}</strong></div>
               </div>
               ${d.notes ? `<div style="font-size:0.8rem; color:#a1a1aa; background:rgba(255,255,255,0.01); padding:8px; border-radius:6px; border-right:2px solid #e28743;">📝 <strong>הערה:</strong> ${d.notes}</div>` : ''}
               <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
                 <span style="font-size:0.8rem; color:#a1a1aa; font-weight:700;">עדכן סטטוס:</span>
-                <select onchange="window.updateDeliveryStatus('${d.firestoreId || d.id}', this.value)" style="background:#1c1c1e; border:1px solid #2c2c2e; border-radius:6px; padding:4px 8px; color:#fff; font-family:inherit; outline:none; font-size:0.8rem; flex:1; direction:rtl;">
+                <select onchange="window.updateDeliveryStatus('${d.firestoreId || d.id}', this.value)" style="background:#f5f5f5; border:1px solid #e0e0e0; border-radius:6px; padding:4px 8px; color:#333; font-family:inherit; outline:none; font-size:0.8rem; flex:1; direction:rtl;">
                   <option value="pending" ${d.status === 'pending' ? 'selected' : ''}>ממתין לאישור ⏳</option>
                   <option value="approved" ${d.status === 'approved' ? 'selected' : ''}>אושר - בדרך לאיסוף 🛵</option>
                   <option value="picked_up" ${d.status === 'picked_up' ? 'selected' : ''}>נאסף - בדרך ליעד 🚚</option>
@@ -17564,6 +17601,7 @@ function profileArticleCard(a) {
    image (body::before) remains as fallback until the video can play. */
 (function initVideoBackground() {
   function setup() {
+    if (document.body.classList.contains('dark-theme') === false) return;
     if (document.getElementById('bg-live-video')) return;
     const v = document.createElement('video');
     v.id = 'bg-live-video';
@@ -17806,7 +17844,7 @@ window.openFloatingPillPanel = function(type) {
           <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
             <!-- Archive / Active Tabs -->
             <div style="display:flex; background:rgba(255,255,255,0.04); padding:3px; border-radius:8px; gap:4px; margin-bottom:4px; direction:rtl;">
-              <button onclick="window.setAdminChatTab('active')" id="btn-admin-tab-active" style="flex:1; padding:6px; background:#e28743; border:none; border-radius:6px; color:#fff; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">פעיל</button>
+              <button onclick="window.setAdminChatTab('active')" id="btn-admin-tab-active" style="flex:1; padding:6px; background:#e28743; border:none; border-radius:6px; color:#333; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">פעיל</button>
               <button onclick="window.setAdminChatTab('archive')" id="btn-admin-tab-archive" style="flex:1; padding:6px; background:transparent; border:none; border-radius:6px; color:#a1a1aa; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;">ארכיון</button>
             </div>
             <!-- Threads List -->
@@ -17832,30 +17870,64 @@ window.openFloatingPillPanel = function(type) {
         if (window.loadFloatingAdminChats) window.loadFloatingAdminChats();
       }, 10);
     } else {
-      title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
-      bodyHTML = `
-        <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
-          <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
-          <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
-        </div>
-      `;
-      bodyEl.innerHTML = bodyHTML;
-      titleEl.innerHTML = title;
+      const isRegistered = (typeof currentUser !== 'undefined' && currentUser && currentUser.email);
+      
+      if (!isRegistered) {
+        title = '<i class="fas fa-comments"></i> שיחה עם תמיכה';
+        bodyHTML = `
+          <div id="direct-chat-messages" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:8px; background: rgba(0,0,0,0.02); border-radius:12px;">
+            <div style="text-align:center; padding:40px; color:#86868b;" id="direct-chat-placeholder">טוען הודעות... 💬</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="direct-chat-input" class="admin-input" placeholder="כתוב הודעה לתומך..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendDirectChatMessage()">
+            <button onclick="sendDirectChatMessage()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f0f0f0; color:#333; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+          </div>
+        `;
+        bodyEl.innerHTML = bodyHTML;
+        titleEl.innerHTML = title;
 
-      // mark the support thread as being actively read, so opening it here
-      // clears the unread badge (same as the full support window)
-      window._supportChatMode = 'direct';
+        // mark the support thread as being actively read, so opening it here
+        // clears the unread badge (same as the full support window)
+        window._supportChatMode = 'direct';
 
-      panel.style.display = 'flex';
-      if (pillNav) pillNav.classList.add('hidden-state');
-      setTimeout(() => {
-        panel.classList.add('active');
-        if (window.loadDirectMessages) window.loadDirectMessages();
-        if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
-      }, 10);
+        panel.style.display = 'flex';
+        if (pillNav) pillNav.classList.add('hidden-state');
+        setTimeout(() => {
+          panel.classList.add('active');
+          if (window.loadDirectMessages) window.loadDirectMessages();
+          if (typeof checkUnreadSupportMessages === 'function') checkUnreadSupportMessages();
+        }, 10);
+      } else {
+        title = '<i class="fas fa-comments"></i> שיחות וצ\'אטים';
+        bodyHTML = `
+          <div style="display:flex; gap:16px; height:100%; min-height:0; flex:1; direction:rtl;">
+            <!-- Right Side (in RTL): Threads List Container (Users list) -->
+            <div style="width:240px; border-left:1px solid rgba(255,255,255,0.08); padding-left:12px; display:flex; flex-direction:column; gap:8px; height:100%;">
+              <input type="text" id="floating-user-chat-search" placeholder="חיפוש משתמש..." style="width:100%; padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-size:0.85rem; outline:none; direction:rtl;" oninput="window.renderFloatingUserChatList()">
+              <div id="floating-user-threads-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0;">
+                טוען שיחות... 💬
+              </div>
+            </div>
+            <!-- Left Side (in RTL): Message Area -->
+            <div id="floating-user-chat-area" style="flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; height:100%;">
+              <div style="flex:1; display:flex; align-items:center; justify-content:center; color:#86868b; font-size:0.95rem; text-align:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.05);">
+                בחר שיחה מהרשימה כדי להתחיל 💬
+              </div>
+            </div>
+          </div>
+        `;
+        bodyEl.innerHTML = bodyHTML;
+        titleEl.innerHTML = title;
+
+        panel.style.display = 'flex';
+        if (pillNav) pillNav.classList.add('hidden-state');
+        setTimeout(() => {
+          panel.classList.add('active');
+          window._activeFloatingUserChatId = 'soki_support';
+          window.renderFloatingUserChatList();
+          window.selectFloatingUserChat('soki_support');
+        }, 10);
+      }
     }
   }
   else if (type === 'ai') {
@@ -17869,7 +17941,7 @@ window.openFloatingPillPanel = function(type) {
       </div>
       <div style="display:flex; gap:8px;">
         <input type="text" id="ai-shop-input" class="admin-input" placeholder="לדוגמה: אייפון משומש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') aiShopSearch()">
-        <button onclick="aiShopSearch()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#000; color:#fff; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
+        <button onclick="aiShopSearch()" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f0f0f0; color:#333; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Send</button>
       </div>
     `;
     bodyEl.innerHTML = bodyHTML;
@@ -17889,6 +17961,7 @@ window.closeFloatingPillPanel = function() {
 
   // leave "actively reading" mode so future replies count toward the badge again
   if (window._supportChatMode === 'direct') window._supportChatMode = 'assistant';
+  window._activeFloatingUserChatId = null;
 
   // Removed interval clearing
   if (pillNav) {
@@ -17901,6 +17974,263 @@ window.closeFloatingPillPanel = function() {
       panel.style.display = 'none';
     }, 300);
   }
+};
+
+/* Floating User chats logic for registered members */
+window._activeFloatingUserChatId = null;
+
+window.renderFloatingUserChatList = async function() {
+  const listEl = document.getElementById('floating-user-threads-list');
+  if (!listEl) return;
+  
+  const searchInput = document.getElementById('floating-user-chat-search');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  
+  const users = await fetchRealChatUsers();
+  const filteredUsers = users.filter(u => !query || u.name.toLowerCase().includes(query));
+  
+  filteredUsers.sort((a, b) => {
+    if (a.forceTop) return -1;
+    if (b.forceTop) return 1;
+    return 0;
+  });
+  
+  let html = '';
+  filteredUsers.forEach(u => {
+    const isSelected = (window._activeFloatingUserChatId === u.id);
+    const activeStyle = isSelected 
+      ? 'background: rgba(255, 149, 0, 0.15); border: 1.5px solid #ff9500;' 
+      : 'background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);';
+      
+    let unreadCount = 0;
+    if (u.id === 'soki_support') {
+      const currentUserId = currentUser?.email || getSupportUserId();
+      let allMsgs = [];
+      try {
+        allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      } catch(e) {}
+      unreadCount = allMsgs.filter(m => m.userId === currentUserId && m.isAdmin && !m.read).length;
+    } else {
+      const roomId = [currentUser?.email, u.id].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+      const localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+      unreadCount = localMsgs.filter(m => m.senderEmail === u.id && !m.read).length;
+    }
+    
+    const badge = unreadCount > 0 
+      ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; margin-right:auto; margin-left:4px;">${unreadCount}</span>` 
+      : '';
+      
+    html += `
+      <div class="chat-user-row" onclick="window.selectFloatingUserChat('${u.id}')" style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:10px; ${activeStyle} cursor:pointer; transition:all 0.15s; direction:rtl; text-align:right;">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+          <div style="position:relative; flex-shrink:0;">
+            <img src="${u.avatar}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+            <span class="chat-online-dot" style="bottom:0; right:0; border:1px solid #141416; width:8px; height:8px; background-color:#34c759; border-radius:50%; position:absolute;"></span>
+          </div>
+          <div style="min-width:0; flex:1;">
+            <div style="font-size:0.8rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
+          </div>
+          ${badge}
+        </div>
+      </div>
+    `;
+  });
+  
+  listEl.innerHTML = html || `<div style="text-align:center; padding:20px; color:#86868b; font-size:0.8rem;">אין משתמשים 💬</div>`;
+};
+
+window.selectFloatingUserChat = async function(userId) {
+  window._activeFloatingUserChatId = userId;
+  window.renderFloatingUserChatList();
+  
+  const chatArea = document.getElementById('floating-user-chat-area');
+  if (!chatArea) return;
+  
+  let targetName = 'תמיכה';
+  let targetAvatar = 'https://ui-avatars.com/api/?name=SOKI&background=0071e3&color=fff&size=80&rounded=true&bold=true';
+  
+  if (userId !== 'soki_support') {
+    const users = await fetchRealChatUsers();
+    const u = users.find(x => x.id === userId);
+    if (u) {
+      targetName = u.name;
+      targetAvatar = u.avatar;
+    }
+  }
+  
+  chatArea.innerHTML = `
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid rgba(255,255,255,0.08); direction:rtl;">
+      <img src="${targetAvatar}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+      <div style="font-size:0.95rem; font-weight:700; color:#fff; text-align:right;">${targetName}</div>
+    </div>
+    <!-- Messages Stream -->
+    <div id="floating-user-messages-stream" style="flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; min-height:0; background:rgba(0,0,0,0.1); border-radius:12px;">
+      טוען הודעות...
+    </div>
+    <!-- Input Box -->
+    <div style="display:flex; gap:8px; padding:10px; border-top:1px solid rgba(255,255,255,0.08); direction:rtl;">
+      <input type="text" id="floating-user-chat-input" class="admin-input" placeholder="הקלד הודעה..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') window.sendFloatingUserChatMessage('${userId}')">
+      <button onclick="window.sendFloatingUserChatMessage('${userId}')" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#e28743; color:#333; border:none; font-weight:700; font-size:0.9rem; cursor:pointer;">שלח</button>
+    </div>
+  `;
+  
+  window.loadFloatingUserChatMessages(userId);
+};
+
+window.loadFloatingUserChatMessages = async function(userId) {
+  const streamEl = document.getElementById('floating-user-messages-stream');
+  if (!streamEl) return;
+  
+  if (userId === 'soki_support') {
+    const currentUserId = currentUser?.email || getSupportUserId();
+    let msgs = [];
+    const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    msgs = localMsgs.filter(m => m.userId === currentUserId);
+    msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    let html = msgs.map(m => {
+      const isMe = !m.isAdmin;
+      const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+      const bubbleBg = isMe ? '#e28743' : 'rgba(255,255,255,0.1)';
+      const textColor = '#ffffff';
+      const align = isMe ? 'flex-end' : 'flex-start';
+      return `
+        <div style="background:${bubbleBg}; color:${textColor}; padding:10px 14px; border-radius:14px; align-self:${align}; max-width:85%; font-size:0.95rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: ${isMe ? 'flex-end' : 'flex-start'};">
+          <span style="font-weight: 500; font-size: 0.78rem; opacity: 0.7; color: #a1a1aa">${m.isAdmin ? 'Admin' : m.senderName}</span>
+          <span style="white-space: pre-wrap; word-break: break-word; text-align: ${isMe ? 'right' : 'left'};">${m.text}</span>
+          <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end; color: #a1a1aa">${timeStr}</span>
+        </div>
+      `;
+    }).join('');
+    
+    if (msgs.length > 0 && !msgs[msgs.length - 1].isAdmin) {
+      const autoReplyText = "המנהל יחזור אליכם עד 12 שעות אל תשכחו לכתוב גיל ומאיפה ואני אחזור אליכם עד 12 שעות מעכשיו";
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      html += `
+        <div style="background:rgba(255,255,255,0.05); color:#ffffff; padding:10px 14px; border-radius:14px; align-self:flex-start; max-width:85%; font-size:0.95rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 8px; border: 1px dashed rgba(255,255,255,0.15);">
+          <span style="font-weight: 500; font-size: 0.78rem; opacity: 0.7; color: #a1a1aa"><i class="fas fa-robot"></i> הודעה אוטומטית</span>
+          <span style="white-space: pre-wrap; word-break: break-word; font-weight: 600; text-align: left;">${autoReplyText}</span>
+          <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end; color: #a1a1aa">${timeStr}</span>
+        </div>
+      `;
+    }
+    
+    streamEl.innerHTML = html || `<div style="text-align:center; padding:40px; color:#86868b;">אין הודעות עדיין 💬</div>`;
+    
+    let changed = false;
+    let allMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+    allMsgs.forEach(m => {
+      if (m.userId === currentUserId && m.isAdmin && !m.read) {
+        m.read = true;
+        changed = true;
+        if (m._docId && window.fbSetDoc && window.fbDb && window.fbDoc) window.fbSetDoc(window.fbDoc(window.fbDb, 'supportDirectMessages', m._docId), { read: true }, { merge: true }).catch(()=>{});
+      }
+    });
+    if (changed) {
+      localStorage.setItem('supportDirectMessages', JSON.stringify(allMsgs));
+      checkUnreadSupportMessages();
+      window.updateMessagesBadge();
+    }
+  } else {
+    const roomId = [currentUser?.email, userId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+    let localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+    
+    let anyChanged = false;
+    localMsgs.forEach(m => {
+      if (m.senderEmail === userId && !m.read) {
+        m.read = true;
+        anyChanged = true;
+      }
+    });
+    if (anyChanged) {
+      localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMsgs));
+      if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+        window.fbSetDoc(window.fbDoc(window.fbDb, 'chats', roomId), { messages: localMsgs }, { merge: true }).catch(()=>{});
+      }
+      window.updateMessagesBadge();
+    }
+    
+    let html = localMsgs.map(m => {
+      const isMe = m.senderEmail === currentUser?.email;
+      const timeStr = m.time || '';
+      const bubbleBg = isMe ? '#e28743' : 'rgba(255,255,255,0.1)';
+      const textColor = '#ffffff';
+      const align = isMe ? 'flex-end' : 'flex-start';
+      return `
+        <div style="background:${bubbleBg}; color:${textColor}; padding:10px 14px; border-radius:14px; align-self:${align}; max-width:85%; font-size:0.95rem; display:flex; flex-direction:column; gap:4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: ${isMe ? 'flex-end' : 'flex-start'};">
+          <span style="white-space: pre-wrap; word-break: break-word; text-align: ${isMe ? 'right' : 'left'};">${m.text}</span>
+          <span style="font-size:0.68rem; opacity:0.5; align-self:flex-end; color: #a1a1aa">${timeStr}</span>
+        </div>
+      `;
+    }).join('');
+    
+    streamEl.innerHTML = html || `<div style="text-align:center; padding:40px; color:#86868b;">אין הודעות עדיין 💬</div>`;
+  }
+  
+  streamEl.scrollTop = streamEl.scrollHeight;
+};
+
+window.sendFloatingUserChatMessage = async function(userId) {
+  const inputEl = document.getElementById('floating-user-chat-input');
+  if (!inputEl) return;
+  const text = inputEl.value.trim();
+  if (!text) return;
+  
+  if (userId === 'soki_support') {
+    const currentUserId = currentUser?.email || getSupportUserId();
+    const userName = getSupportUserName();
+    const timestamp = new Date().toISOString();
+    
+    const msgObj = {
+      userId: currentUserId,
+      senderName: userName,
+      text: text,
+      timestamp: timestamp,
+      isAdmin: false,
+      read: false
+    };
+    
+    let savedToCloud = false;
+    if (window.fbAddDoc && window.fbDb) {
+      try {
+        await window.fbAddDoc(window.fbColl(window.fbDb, 'supportDirectMessages'), msgObj);
+        savedToCloud = true;
+      } catch(e) {}
+    }
+    if (!savedToCloud) {
+      const localMsgs = JSON.parse(localStorage.getItem('supportDirectMessages') || '[]');
+      localMsgs.push(msgObj);
+      localStorage.setItem('supportDirectMessages', JSON.stringify(localMsgs));
+    }
+    
+    inputEl.value = '';
+    window.loadFloatingUserChatMessages(userId);
+  } else {
+    const roomId = [currentUser?.email, userId].sort().join('_').replace(/[^a-zA-Z0-9_]/g, '');
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const msgObj = {
+      senderEmail: currentUser.email,
+      text: text,
+      time: timeStr,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    
+    let localMsgs = JSON.parse(localStorage.getItem(`real_chat_messages_${roomId}`) || '[]');
+    localMsgs.push(msgObj);
+    localStorage.setItem(`real_chat_messages_${roomId}`, JSON.stringify(localMsgs));
+    
+    if (window.fbSetDoc && window.fbDb && window.fbDoc) {
+      window.fbSetDoc(window.fbDoc(window.fbDb, 'chats', roomId), { messages: localMsgs }, { merge: true }).catch(()=>{});
+    }
+    
+    inputEl.value = '';
+    window.loadFloatingUserChatMessages(userId);
+  }
+  
+  window.renderFloatingUserChatList();
 };
 
 // ── Floating Admin Support Chats Functions ──
@@ -18019,7 +18349,7 @@ window.loadFloatingAdminChats = async function() {
     const border = isSelected ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.05)';
     
     const hasUnread = t.unreadCount > 0;
-    const badge = hasUnread ? `<span style="background:#ff3b30; color:#fff; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; margin-left:6px;">${t.unreadCount}</span>` : '';
+    const badge = hasUnread ? `<span style="background:#ff3b30; color:#333; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; margin-left:6px;">${t.unreadCount}</span>` : '';
     const redDot = hasUnread ? `<span style="background:#ff3b30; width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px;" title="הודעות חדשות"></span>` : '';
     
     // Subtitle logic: in English "New message received at HH:MM" if unread, otherwise normal message text
@@ -18038,7 +18368,7 @@ window.loadFloatingAdminChats = async function() {
       <div onclick="selectFloatingAdminChatThread('${t.userId}', '${t.senderName.replace(/'/g, "\\'")}')" style="background:${bg}; border:${border}; border-radius:12px; padding:10px; cursor:pointer; display:flex; flex-direction:column; gap:4px; text-align:right; direction:rtl; transition: background 0.2s;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
           <div style="display:flex; align-items:center; min-width:0; flex:1;">
-            <span style="font-weight:700; color:#fff; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.senderName}</span>
+            <span style="font-weight:700; color:#333; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.senderName}</span>
             ${redDot}
           </div>
           <div style="display:flex; align-items:center; gap:4px;">
@@ -18090,7 +18420,7 @@ window.selectFloatingAdminChatThread = async function(userId, senderName) {
     </div>
     <div style="display:flex; gap:8px;">
       <input type="text" id="floating-admin-reply-input" class="admin-input" placeholder="כתוב מענה למשתמש..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') sendFloatingAdminChatReply('${userId}')">
-      <button onclick="sendFloatingAdminChatReply('${userId}')" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#0071e3; color:#fff; border:none; font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">שלח</button>
+      <button onclick="sendFloatingAdminChatReply('${userId}')" style="padding:0 20px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#0071e3; color:#333; border:none; font-weight:700; font-size:0.9rem; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">שלח</button>
     </div>
   `;
 
@@ -18460,7 +18790,7 @@ window.renderUIVisibilityControls = function() {
   grid.innerHTML = UI_HIDEABLE.map(item => {
     const visible = item.defaultHidden ? (state[item.key] === false) : (state[item.key] !== true);
     return `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff; border:1px solid #e0e0e0; border-radius:12px; padding:14px 16px;">
         <span style="font-size:0.92rem; color:#e5e5e7; font-weight:600;">${item.name}</span>
         <label style="position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; cursor:pointer;">
           <input type="checkbox" ${visible ? 'checked' : ''} onchange="toggleUIVisibility('${item.key}', this.checked)" style="opacity:0; width:0; height:0;">
