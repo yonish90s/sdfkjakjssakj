@@ -14233,11 +14233,76 @@ window.applySiteBgColor = function(color) {
   }
 };
 
+window.handleSiteBgImageUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const base64Url = e.target.result;
+    if (typeof activeCustomizations === 'undefined') activeCustomizations = {};
+    activeCustomizations['__siteBgImage__'] = base64Url;
+    window.applySiteBgImage(base64Url);
+    await saveCustomizationsToServer();
+    showToast('תמונת הרקע הועלתה ונשמרה בהצלחה');
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearSiteBgImage = async function() {
+  if (!confirm('האם אתה בטוח שברצונך למחוק את תמונת הרקע?')) return;
+  if (typeof activeCustomizations === 'undefined') activeCustomizations = {};
+  activeCustomizations['__siteBgImage__'] = null;
+  
+  const styleEl = document.getElementById('custom-bg-image-style');
+  if (styleEl) styleEl.remove();
+  
+  const clearBtn = document.getElementById('admin-bg-image-clear-btn');
+  if (clearBtn) clearBtn.style.display = 'none';
+
+  await saveCustomizationsToServer();
+  showToast('תמונת הרקע נמחקה');
+};
+
+window.applySiteBgImage = function(imageUrl) {
+  if (!imageUrl) {
+    const styleEl = document.getElementById('custom-bg-image-style');
+    if (styleEl) styleEl.remove();
+    const clearBtn = document.getElementById('admin-bg-image-clear-btn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+  
+  let styleEl = document.getElementById('custom-bg-image-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'custom-bg-image-style';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.innerHTML = `
+    body, html,
+    body:not(.dark-theme),
+    html:not(.dark-theme) {
+      background-image: url('${imageUrl}') !important;
+      background-size: cover !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      background-attachment: fixed !important;
+    }
+  `;
+  
+  const clearBtn = document.getElementById('admin-bg-image-clear-btn');
+  if (clearBtn) clearBtn.style.display = 'inline-block';
+};
+
 // Apply loaded customizations to the page
 function applyAllCustomizations() {
   try {
     if (activeCustomizations && activeCustomizations['__siteBgColor__']) {
       window.applySiteBgColor(activeCustomizations['__siteBgColor__']);
+    }
+    if (activeCustomizations && activeCustomizations['__siteBgImage__']) {
+      window.applySiteBgImage(activeCustomizations['__siteBgImage__']);
     }
     for (let key in activeCustomizations) {
       const cust = activeCustomizations[key];

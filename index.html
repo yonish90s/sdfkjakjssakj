@@ -67,7 +67,58 @@
   </script>
 </head>
 <body>
+<!-- WEBSITE PRELOADER -->
+<div id="website-preloader" style="position: fixed; inset: 0; background: #0b0c0e; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+    <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+      <img src="logo.png" alt="Logo" onerror="this.style.display='none'; document.getElementById('preloader-logo-fallback').style.display='flex';" style="height: 80px; width: auto; animation: pulse-logo 1.4s infinite ease-in-out;" />
+      <div id="preloader-logo-fallback" style="display: none; width: 80px; height: 80px; border-radius: 50%; background: #1c1c1e; align-items: center; justify-content: center; color: #fff; font-size: 2.5rem; animation: pulse-logo 1.4s infinite ease-in-out;">
+        <i class="fas fa-crown"></i>
+      </div>
+    </div>
+    <div style="font-weight: 900; font-size: 1.8rem; color: #fff; text-transform: uppercase; letter-spacing: 0.12em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+      YHSH
+    </div>
+    <div style="width: 100px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: #fff; border-radius: 10px; animation: loading-bar 1.2s infinite linear;"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse-logo {
+  0% { transform: scale(0.96); opacity: 0.85; }
+  50% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(0.96); opacity: 0.85; }
+}
+@keyframes loading-bar {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+</style>
+
 <script>
+  // Hide preloader after 1.2 seconds
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const preloader = document.getElementById('website-preloader');
+      if (preloader) {
+        preloader.style.opacity = '0';
+        preloader.style.visibility = 'hidden';
+        setTimeout(() => preloader.remove(), 400);
+      }
+    }, 1100);
+  });
+  // Safety timeout in case window load event is delayed
+  setTimeout(() => {
+    const preloader = document.getElementById('website-preloader');
+    if (preloader) {
+      preloader.style.opacity = '0';
+      preloader.style.visibility = 'hidden';
+      setTimeout(() => preloader.remove(), 400);
+    }
+  }, 2500);
+
   if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark-theme');
   }
@@ -555,6 +606,13 @@
         <div style="display: flex; align-items: center; gap: 6px;">
           <label for="admin-bg-color-picker" style="color: #333; font-size: 0.8rem; font-weight: 600; direction: rtl;">צבע רקע:</label>
           <input type="color" id="admin-bg-color-picker" onchange="window.updateSiteBgColor(this.value)" style="border: 1px solid #ccc; border-radius: 4px; width: 36px; height: 28px; cursor: pointer; padding: 0; background: none;" />
+          <button onclick="document.getElementById('admin-bg-image-upload').click()" style="background: rgba(255,255,255,0.08); border: 1px solid #ddd; border-radius: 6px; padding: 4px 10px; color: #333; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px;" title="העלה תמונת רקע">
+            <i class="fas fa-image" style="color:#555;"></i> רקע
+          </button>
+          <input type="file" id="admin-bg-image-upload" accept="image/*" style="display:none;" onchange="window.handleSiteBgImageUpload(event)" />
+          <button onclick="window.clearSiteBgImage()" id="admin-bg-image-clear-btn" style="display:none; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; padding: 4px 8px; color: #ef4444; cursor: pointer; font-size: 0.8rem; font-weight: 600;" title="מחק תמונת רקע">
+            <i class="fas fa-trash-alt"></i>
+          </button>
         </div>
         <button onclick="window.toggleEditModeBtn()" id="admin-bar-toggle-edit" style="background: rgba(255,255,255,0.05); border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px 14px; color: #333; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: background 0.2s;">מצב עריכה: כבוי</button>
         <button onclick="window.openAddCustomPageModal()" style="background: rgba(255,255,255,0.08); border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; color: #333; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: background 0.2s; display: flex; align-items: center; gap: 6px;"><i class="fas fa-plus" style="color: #555;"></i> הוסף עמוד ➕</button>
