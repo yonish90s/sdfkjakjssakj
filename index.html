@@ -410,21 +410,31 @@
             <i class="fas fa-comments" style="font-size:1.1rem;"></i>
           </button>
 
-          <!-- Download App Button -->
-          <button id="nav-btn-download" onclick="showPage('download')" class="cart-nav-btn" title="Download SOKI Desktop Hub" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#a1a1a6'">
-            <i class="fas fa-download" style="font-size:1.1rem;"></i>
-          </button>
+          <!-- Telegram Link -->
+          <a href="https://t.me/yourusername" target="_blank" id="nav-telegram-link" class="cart-nav-btn" style="background:none; border:none; cursor:pointer; height:36px; display:flex; flex-direction:row; align-items:center; justify-content:center; flex-wrap:nowrap; gap:6px; text-decoration:none; transition:transform 0.2s;" onmouseover="this.querySelector('span').style.color='#1d1d1f'; this.querySelector('i').style.color='#1d1d1f'; this.style.transform='scale(1.05)'" onmouseout="this.querySelector('span').style.color='#86868b'; this.querySelector('i').style.color='#86868b'; this.style.transform='scale(1)'">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #86868b; transition: color 0.2s; white-space: nowrap; line-height: 1;">שלח הודעה</span>
+            <i class="fab fa-telegram" style="font-size:1.1rem; color:#86868b; display:flex; align-items:center; justify-content:center; flex-shrink:0;"></i>
+          </a>
 
           <!-- Premium Pill -->
+          <button class="btn-orange subscription-btn" onclick="window.openSubscriptionModal()" style="cursor:pointer; background: #1d1d1f; border: 1px solid #1d1d1f; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; transition: background 0.2s;" onmouseover="this.style.background='#000'; this.style.borderColor='#000';" onmouseout="this.style.background='#1d1d1f'; this.style.borderColor='#1d1d1f';">
+            <i class="fas fa-crown" style="color:#fff; font-size:0.95rem;"></i> <span id="nav-text-premium">Premium</span>
+          </button>
+
+          <!-- Sell Product Button -->
+          <button id="nav-btn-sell" onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1px solid #86868b; color:#1d1d1f; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:20px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f';" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#86868b';">
+            <i class="fas fa-plus" style="font-size:0.78rem;"></i> <span>פרסם מוצר</span>
+          </button>
+
           <!-- Ads Pill -->
           <button
             class="btn-blue ads-btn"
             onclick="window.openSubscriptionModal()"
             style="
               cursor: pointer;
-              background: #2563eb;
-              border: none;
-              color: #333;
+              background: #f5f5f7;
+              border: 1px solid #d2d2d7;
+              color: #1d1d1f;
               font-weight: 700;
               font-size: 0.8rem;
               padding: 6px 16px;
@@ -432,33 +442,29 @@
               display: flex;
               align-items: center;
               gap: 6px;
-              box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-            ">
-            <i class="fas fa-ad" style="color:#333; font-size:0.95rem;"></i>
+              transition: background 0.2s;
+            "
+            onmouseover="this.style.background='#e8e8ed'"
+            onmouseout="this.style.background='#f5f5f7'">
+            <i class="fas fa-ad" style="color:#1d1d1f; font-size:0.95rem;"></i>
             <span>Ads</span>
           </button>
 
-          <!-- Sell Product Button -->
-          <button id="nav-btn-sell" onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1.5px solid #f97316; color:#f97316; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:20px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit;" onmouseover="this.style.background='#f97316';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='#f97316';">
-            <i class="fas fa-plus" style="font-size:0.78rem;"></i> <span>פרסם מוצר</span>
-          </button>
-
-
-          <!-- Premium Pill -->
-          <button class="btn-orange subscription-btn" onclick="window.openSubscriptionModal()" style="cursor:pointer; background: #333; border: none; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);">
-            <i class="fas fa-crown" style="color:#fff; font-size:0.95rem;"></i> <span id="nav-text-premium">Premium</span>
-          </button>
-
           <!-- Coins / Balance Pill -->
-          <div id="nav-coins-badge" onclick="openMarketplaceModal()" style="display: none; cursor: pointer; border: 1px solid rgba(250, 204, 21, 0.3); background: rgba(250, 204, 21, 0.1); padding: 4px 12px; border-radius: 980px; align-items: center; gap: 8px; user-select: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(250, 204, 21, 0.2)'" onmouseout="this.style.background='rgba(250, 204, 21, 0.1)'" title="Your Coins - Click to Shop">
-            <i class="fas fa-coins" style="color: #facc15; font-size: 1.05rem;"></i>
-            <span id="nav-coins-amount" style="font-size: 0.9rem; font-weight: 800; color: #facc15; letter-spacing: 0.5px;">1,000</span>
+          <div id="nav-coins-badge" onclick="openMarketplaceModal()" style="display: none; cursor: pointer; border: 1px solid rgba(0, 0, 0, 0.15); background: #f5f5f7; padding: 4px 12px; border-radius: 980px; align-items: center; gap: 8px; user-select: none; transition: background 0.2s;" onmouseover="this.style.background='#e8e8ed'" onmouseout="this.style.background='#f5f5f7'" title="Your Coins - Click to Shop">
+            <i class="fas fa-coins" style="color: #1d1d1f; font-size: 1.05rem;"></i>
+            <span id="nav-coins-amount" style="font-size: 0.9rem; font-weight: 800; color: #1d1d1f; letter-spacing: 0.5px;">1,000</span>
           </div>
+
+          <!-- Download App Button -->
+          <button id="nav-btn-download" onclick="showPage('download')" class="cart-nav-btn" title="Download SOKI Desktop Hub" style="background:none; border:none; cursor:pointer; color:#86868b; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;" onmouseover="this.style.color='#1d1d1f'" onmouseout="this.style.color='#86868b'">
+            <i class="fas fa-download" style="font-size:1.1rem;"></i>
+          </button>
 
           <!-- Sign In / Profile -->
           <div id="user-nav-section" style="display: flex; align-items: center; gap: 8px; position: relative;">
-            <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.8rem; padding:6px 12px; height:32px; border-radius:8px; display:flex; align-items:center; gap:6px; background:#0071e3; border:1px solid #0071e3; color:#333; cursor:pointer; font-weight:600;">
-              <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-signin">Sign In</span>
+            <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.8rem; padding:6px 12px; height:32px; border-radius:8px; display:flex; align-items:center; gap:6px; background:#1d1d1f; border:1px solid #1d1d1f; color:#ffffff; cursor:pointer; font-weight:600; transition: background 0.2s;" onmouseover="this.style.background='#000'; this.style.borderColor='#000';" onmouseout="this.style.background='#1d1d1f'; this.style.borderColor='#1d1d1f';">
+              <i class="fas fa-circle-user" style="font-size:1rem; color:#fff;"></i> <span id="nav-text-signin">Sign In</span>
             </button>
             <div id="user-profile-badge" onclick="toggleUserDropdown(event)" style="display: none; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-main); padding: 4px 10px; border-radius: 980px; align-items: center; gap: 8px; user-select: none;">
               <img id="user-badge-avatar" class="user-avatar-small" src="">
@@ -475,7 +481,7 @@
               </div>
 
               <!-- Coins and Shop -->
-              <div id="dd-coins" class="dropdown-item-reddit" onclick="openMarketplaceModal(); closeUserDropdown()" style="color:#facc15; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(250,204,21,0.1)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-coins" class="dropdown-item-reddit" onclick="openMarketplaceModal(); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-coins" style="font-size:1rem;"></i> <span id="dropdown-coins-amount">1,000 Coins</span>
               </div>
               
@@ -485,7 +491,7 @@
               </div>
               
               <!-- Integrations / Workspace -->
-              <div id="dd-integrations" class="dropdown-item-reddit" onclick="showPage('integrations'); closeUserDropdown()" style="color:#a855f7; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(168,85,247,0.1)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-integrations" class="dropdown-item-reddit" onclick="showPage('integrations'); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-cubes" style="font-size:1rem;"></i> <span>My Integrations</span>
               </div>
 
@@ -500,7 +506,7 @@
                 <span id="dropdown-language-label" style="color:#a1a1a6; font-size:0.8rem; font-weight:600;">English</span>
               </div>
               <div id="dd-settings" class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Settings</div>
-              <div class="dropdown-item-reddit" id="dd-download" onclick="showPage('download'); closeUserDropdown()" style="color:#30d158; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Download Desktop Hub 💻</div>
+              <div class="dropdown-item-reddit" id="dd-download" onclick="showPage('download'); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Download Desktop Hub 💻</div>
               
               <div style="height:1px; background:#e5e5e5; margin:6px 0;"></div>
 
