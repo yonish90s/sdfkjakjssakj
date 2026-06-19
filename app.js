@@ -1082,12 +1082,24 @@ function renderNewsLayout(page = 1) {
         displayFeatured = [];
       }
 
-      if (displayFeatured.length > 0) {
+      const isUserAdmin = (localStorage.getItem('isAdmin') === 'true');
+      if (displayFeatured.length > 0 || isUserAdmin) {
         featuredCarousel.style.display = 'block';
+        let addCardHtml = '';
+        if (isUserAdmin) {
+          addCardHtml = `
+            <div class="carousel-slide featured-card add-article-card" onclick="openUserArticleModal()" style="position: relative; border: 2px dashed rgba(255,255,255,0.25); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); cursor: pointer; height: 100%; min-height: 220px; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.25)'; this.style.background='rgba(255,255,255,0.03)'">
+              <div style="font-size: 3rem; color: rgba(255,255,255,0.4); font-weight: 300; line-height: 1;">+</div>
+              <div style="font-size: 0.95rem; color: rgba(255,255,255,0.6); font-weight: 700; margin-top: 8px;">הוסף כתבה ראשית</div>
+            </div>
+          `;
+        }
+
         featuredCarousel.innerHTML = `
           <div class="carousel-track-wrapper">
             <button class="carousel-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
             <div class="carousel-track" id="main-carousel-track">
+              ${addCardHtml}
               ${displayFeatured.map(a => {
                 const actionsHtml = window.isEditModeActive ? `
                   <button class="article-crop-btn" onclick="event.stopPropagation(); openCropForArticle(this);" title="חתוך תמונה" style="position: absolute; top: 12px; left: 120px; z-index: 99; background: rgba(226, 135, 67, 0.9); border: 1px solid rgba(226, 135, 67, 0.6); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">
@@ -1172,6 +1184,18 @@ function renderNewsLayout(page = 1) {
 
   let articlesHTML = '';
   const shouldInjectLiveVideos = page === 1 && currentCategory === 'all' && (!searchQuery || searchQuery.trim() === '');
+  let addFeedCardHtml = '';
+  const isUserAdmin = (localStorage.getItem('isAdmin') === 'true');
+  if (isUserAdmin && page === 1) {
+    addFeedCardHtml = `
+      <div class="feed-item add-article-feed-card" onclick="openUserArticleModal()" style="position: relative; border: 2px dashed rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); cursor: pointer; min-height: 120px; border-radius: 16px; margin-bottom: 16px; padding: 20px; box-sizing: border-box; transition: border-color 0.2s, background 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.4)'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.background='rgba(255,255,255,0.02)'">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); font-weight: 300; line-height: 1;">+</div>
+          <div style="font-size: 0.95rem; color: rgba(255,255,255,0.6); font-weight: 700;">הוסף כתבה רגילה</div>
+        </div>
+      </div>
+    `;
+  }
 
   if (shouldInjectLiveVideos) {
     const part1 = pageArticles.slice(0, 3);
@@ -1247,10 +1271,10 @@ function renderNewsLayout(page = 1) {
       </div>
     `;
 
-    articlesHTML = part1HTML + combinedStripHTML + part2aHTML + communityStripHTML + part2bHTML;
+    articlesHTML = addFeedCardHtml + part1HTML + combinedStripHTML + part2aHTML + communityStripHTML + part2bHTML;
     setTimeout(() => { if (typeof renderNewUsersStrip === 'function') renderNewUsersStrip(); }, 60);
   } else {
-    articlesHTML = pageArticles.map(a => renderSingleFeedItem(a)).join('');
+    articlesHTML = (page === 1 ? addFeedCardHtml : '') + pageArticles.map(a => renderSingleFeedItem(a)).join('');
   }
 
   if (pageArticles.length === 0) {
