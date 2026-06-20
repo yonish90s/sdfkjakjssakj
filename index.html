@@ -389,208 +389,120 @@
 
   <div id="main-wrapper">
     <!-- APPLE GLOBAL NAVBAR -->
-    <header class="navbar-apple" style="background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="nav-inner-apple" style="display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 24px; max-width: 100%; gap: 16px; direction: rtl;">
+    <header class="navbar-apple" style="background: #fff; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid #e0e0e0;">
+      <div class="nav-inner-apple" style="display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 24px; max-width: 100%; gap: 20px; direction: ltr; flex-direction: row-reverse;">
 
-        <!-- LEFT SIDE: Navigation and Logo -->
-        <div class="nav-right-section" id="apple-nav-items-container" style="display: flex; align-items: center; gap: 24px; flex-shrink: 0;">
-          <!-- Main -->
-          <button onclick="showPage('main')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
-            <span id="nav-text-main">ראשי</span>
-          </button>
-
-          <!-- SOKI Articles Logo -->
-          <div class="soki-logo" onclick="clearSearchAndShowHome()" title="soki Home" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-            <div style="width: 26px; height: 26px; background: #16171a; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.08);">
+        <!-- RIGHT: Logo -->
+        <div class="nav-right-section" style="display: flex; align-items: center; flex-shrink: 0;">
+          <div class="soki-logo" onclick="clearSearchAndShowHome()" title="YHSH Home" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <div style="width: 28px; height: 28px; background: #1d1d1f; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem;">
               <i class="fas fa-infinity"></i>
             </div>
-            <span class="soki-logo-text soki-logo-bounce" dir="ltr" style="font-weight: 900; font-size: 1.25rem; color: #333; text-transform: uppercase; letter-spacing: -0.02em; direction: ltr; unicode-bidi: isolate;"><span class="soki-letter">Y</span><span class="soki-letter">H</span><span class="soki-letter">S</span><span class="soki-letter">H</span> <span id="nav-logo-subtext" style="font-weight: 500; color: #a1a1a6; font-size: 0.95rem; text-transform: none; margin-left: 2px;">ראשי</span></span>
+            <span class="soki-logo-text" dir="ltr" style="font-weight: 900; font-size: 1.25rem; color: #1d1d1f; text-transform: uppercase; letter-spacing: -0.02em; direction: ltr; unicode-bidi: isolate;">YHSH</span>
           </div>
+        </div>
 
-          <!-- Articles -->
-          <button id="nav-btn-home-top" onclick="showPage('home')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+        <!-- CENTER: Categories -->
+        <nav id="apple-nav-items-container" style="display: flex; align-items: center; gap: 28px; flex: 1; justify-content: center;">
+          <button onclick="showPage('main')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
+            <span id="nav-text-main">ראשי</span>
+          </button>
+          <button id="nav-btn-home-top" onclick="showPage('home')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
             <span id="nav-text-articles">מאמרים</span>
           </button>
-
-          <!-- Graphs -->
-          <button onclick="showPage('pdf-store')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
-            <span id="nav-text-graphs">Graphs</span>
-          </button>
-
-          <!-- Forum -->
-          <button onclick="showPage('groups')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
-            <span id="nav-text-forum">Forum</span>
-          </button>
-
-          <!-- Store -->
-          <button onclick="showPage('shop')" class="apple-nav-item" style="color:#f5f5f7; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer;">
+          <button onclick="showPage('shop')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
             <span id="nav-text-stores">חנות</span>
           </button>
-
-        </div>
-
-        <!-- CENTER: Search Bar -->
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
-          <div class="apple-search-wrapper" style="position:relative; width: 100%; max-width: 320px;">
-            <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" style="background:#f0f0f0; border:1px solid #ddd; border-radius:980px; padding:7px 16px 7px 36px; color:#333; font-size:0.85rem; width:100%; outline:none; text-align:right; box-sizing:border-box;" />
-            <i class="fas fa-search search-icon" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#86868b; font-size:0.85rem;"></i>
-          </div>
-        </div>
-
-        <!-- RIGHT SIDE: Actions, Buttons -->
-        <div class="nav-left-section" style="display: flex; align-items: center; gap: 14px; flex-shrink: 0;">
-          
-
-
-          <!-- Messages Button (hidden — handled by the "שיחות" pill instead) -->
-          <button onclick="toggleMessagesDrawer()" class="cart-nav-btn" title="Messages" style="display:none !important;">
-            <i class="fas fa-comment-dots" style="font-size:1.1rem;"></i>
-            <span id="messages-nav-badge" class="cart-badge" style="display:none; background:#ff3b30; color:#333; border:none;">0</span>
+          <button onclick="showPage('pdf-store')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
+            <span id="nav-text-graphs">גרפים</span>
           </button>
-
-          <!-- Saved Button -->
-          <button id="nav-btn-saved" onclick="toggleSavedDrawer('articles')" class="cart-nav-btn" title="Saved Articles" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-bookmark" style="font-size:1.1rem;"></i>
+          <button onclick="showPage('groups')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
+            <span id="nav-text-forum">פורום</span>
           </button>
-
-          <!-- Cart Drawer Button -->
-          <button id="nav-btn-cart" onclick="toggleCartDrawer()" class="cart-nav-btn" title="My Cart" style="background:none; border:none; cursor:pointer; position:relative; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-bag-shopping" style="font-size:1.1rem;"></i>
-            <span id="cart-badge" class="cart-badge" style="display:none; background:#ff3b30; color:#333; border:none;">0</span>
+          <button onclick="showPage('services')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
+            <span id="nav-text-services">שירותים</span>
           </button>
-
-          <!-- Forums Button -->
-          <button id="nav-btn-forums" onclick="toggleForumsDrawer()" class="cart-nav-btn" title="Forums" style="background:none; border:none; cursor:pointer; color:#a1a1a6; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;">
-            <i class="fas fa-comments" style="font-size:1.1rem;"></i>
+          <button onclick="showPage('booking')" class="apple-nav-item" style="color:#1d1d1f; font-size:0.9rem; font-weight:600; background:none; border:none; cursor:pointer; white-space:nowrap;">
+            <span id="nav-text-booking">הזמנת פגישה</span>
           </button>
+        </nav>
 
-
-
-          <!-- Premium Pill -->
-          <button class="btn-orange subscription-btn" onclick="window.openSubscriptionModal()" style="cursor:pointer; background: #1d1d1f; border: 1px solid #1d1d1f; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 6px 16px; border-radius: 20px; display:flex; align-items:center; gap:6px; transition: background 0.2s;" onmouseover="this.style.background='#000'; this.style.borderColor='#000';" onmouseout="this.style.background='#1d1d1f'; this.style.borderColor='#1d1d1f';">
-            <i class="fas fa-crown" style="color:#fff; font-size:0.95rem;"></i> <span id="nav-text-premium">Premium</span>
-          </button>
-
-          <!-- Sell Product Button -->
-          <button id="nav-btn-sell" onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1px solid #86868b; color:#1d1d1f; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:20px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f';" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#86868b';">
-            <i class="fas fa-plus" style="font-size:0.78rem;"></i> <span>פרסם מוצר</span>
-          </button>
-
-          <!-- Ads Pill -->
-          <button
-            class="btn-blue ads-btn"
-            onclick="window.openSubscriptionModal()"
-            style="
-              cursor: pointer;
-              background: #f5f5f7;
-              border: 1px solid #d2d2d7;
-              color: #1d1d1f;
-              font-weight: 700;
-              font-size: 0.8rem;
-              padding: 6px 16px;
-              border-radius: 20px;
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              transition: background 0.2s;
-            "
-            onmouseover="this.style.background='#e8e8ed'"
-            onmouseout="this.style.background='#f5f5f7'">
-            <i class="fas fa-ad" style="color:#1d1d1f; font-size:0.95rem;"></i>
-            <span>Ads</span>
-          </button>
-
-          <!-- Coins / Balance Pill -->
-          <div id="nav-coins-badge" onclick="openMarketplaceModal()" style="display: none; cursor: pointer; border: 1px solid rgba(0, 0, 0, 0.15); background: #f5f5f7; padding: 4px 12px; border-radius: 980px; align-items: center; gap: 8px; user-select: none; transition: background 0.2s;" onmouseover="this.style.background='#e8e8ed'" onmouseout="this.style.background='#f5f5f7'" title="Your Coins - Click to Shop">
-            <i class="fas fa-coins" style="color: #1d1d1f; font-size: 1.05rem;"></i>
-            <span id="nav-coins-amount" style="font-size: 0.9rem; font-weight: 800; color: #1d1d1f; letter-spacing: 0.5px;">1,000</span>
-          </div>
-
-          <!-- Download App Button -->
-          <button id="nav-btn-download" onclick="showPage('download')" class="cart-nav-btn" title="Download SOKI Desktop Hub" style="background:none; border:none; cursor:pointer; color:#86868b; width:36px; height:36px; display:flex; align-items:center; justify-content:center; transition:color 0.2s;" onmouseover="this.style.color='#1d1d1f'" onmouseout="this.style.color='#86868b'">
-            <i class="fas fa-download" style="font-size:1.1rem;"></i>
-          </button>
+        <!-- LEFT: Actions -->
+        <div class="nav-left-section" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
 
           <!-- Sign In / Profile -->
           <div id="user-nav-section" style="display: flex; align-items: center; gap: 8px; position: relative;">
-            <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.8rem; padding:6px 12px; height:32px; border-radius:8px; display:flex; align-items:center; gap:6px; background:#1d1d1f; border:1px solid #1d1d1f; color:#ffffff; cursor:pointer; font-weight:600; transition: background 0.2s;" onmouseover="this.style.background='#000'; this.style.borderColor='#000';" onmouseout="this.style.background='#1d1d1f'; this.style.borderColor='#1d1d1f';">
-              <i class="fas fa-circle-user" style="font-size:1rem; color:#fff;"></i> <span id="nav-text-signin">Sign In</span>
+            <button id="btn-join" class="btn-primary" onclick="openAuthModal('login')" style="font-size:0.85rem; padding:8px 18px; height:34px; border-radius:980px; display:flex; align-items:center; gap:6px; background:#1d1d1f; border:none; color:#fff; cursor:pointer; font-weight:600; transition: background 0.2s; white-space:nowrap;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='#1d1d1f'">
+              <i class="fas fa-user" style="font-size:0.85rem;"></i> <span id="nav-text-signin">התחבר</span>
             </button>
             <div id="user-profile-badge" onclick="toggleUserDropdown(event)" style="display: none; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-main); padding: 4px 10px; border-radius: 980px; align-items: center; gap: 8px; user-select: none;">
               <img id="user-badge-avatar" class="user-avatar-small" src="">
               <span id="user-badge-name" style="font-size: 0.85rem; font-weight: 700;"></span>
             </div>
 
-            <!-- Reddit-style clean text-only user dropdown menu -->
+            <!-- User dropdown menu -->
             <div id="nav-user-dropdown" style="display:none; position:absolute; top:38px; right:0; background:#fff; border:1px solid #e0e0e0; border-radius:12px; width:240px; box-shadow:0 8px 24px rgba(0,0,0,0.1); z-index:99999; padding:8px 0; font-family:'Inter', sans-serif; direction:ltr; text-align:left; color:#333;">
-              
-              <!-- Profile Header info -->
-              <div id="dropdown-profile-header" style="padding:8px 16px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:6px;">
-                <div id="dropdown-user-fullname" style="font-size:0.88rem; font-weight:700; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">User Name</div>
-                <div id="dropdown-user-username" style="font-size:0.75rem; color:#71767b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">u/username</div>
+              <div id="dropdown-profile-header" style="padding:8px 16px; border-bottom:1px solid #e5e5e5; margin-bottom:6px;">
+                <div id="dropdown-user-fullname" style="font-size:0.88rem; font-weight:700; color:#333;">User Name</div>
+                <div id="dropdown-user-username" style="font-size:0.75rem; color:#71767b; margin-top:2px;">u/username</div>
               </div>
-
-              <!-- Coins and Shop -->
-              <div id="dd-coins" class="dropdown-item-reddit" onclick="openMarketplaceModal(); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-coins" class="dropdown-item-reddit" onclick="openMarketplaceModal(); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-coins" style="font-size:1rem;"></i> <span id="dropdown-coins-amount">1,000 Coins</span>
               </div>
-              
-              <!-- Order Tracking / My Store -->
-              <div id="dd-store" class="dropdown-item-reddit" onclick="openOrderTrackingModal(); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-store" class="dropdown-item-reddit" onclick="openOrderTrackingModal(); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-store" style="font-size:1rem; color:#a1a1aa;"></i> <span>My Store / Orders</span>
               </div>
-              
-              <!-- Integrations / Workspace -->
-              <div id="dd-integrations" class="dropdown-item-reddit" onclick="showPage('integrations'); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+              <div id="dd-integrations" class="dropdown-item-reddit" onclick="showPage('integrations'); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:12px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
                 <i class="fas fa-cubes" style="font-size:1rem;"></i> <span>My Integrations</span>
               </div>
-
               <div style="height:1px; background:#e5e5e5; margin:6px 0;"></div>
-
-              <!-- Menu Items (Clean text-only) -->
-              <div id="dd-viewprofile" class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">View Profile</div>
-              <div class="dropdown-item-reddit" id="dd-premium" onclick="showPage('subscription'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Premium</div>
-              <div class="dropdown-item-reddit" id="dd-display" onclick="toggleTheme(); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Display Mode</div>
-              <div class="dropdown-item-reddit" id="dd-language" onclick="toggleLanguage(event); closeUserDropdown();" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; justify-content:space-between;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
-                <span>Language</span>
-                <span id="dropdown-language-label" style="color:#a1a1a6; font-size:0.8rem; font-weight:600;">English</span>
-              </div>
-              <div id="dd-settings" class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Settings</div>
-              <div class="dropdown-item-reddit" id="dd-download" onclick="showPage('download'); closeUserDropdown()" style="color:#1d1d1f; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Download Desktop Hub 💻</div>
-              
+              <div id="dd-viewprofile" class="dropdown-item-reddit" onclick="showPage('profile'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">View Profile</div>
+              <div class="dropdown-item-reddit" id="dd-premium" onclick="showPage('subscription'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Premium</div>
+              <div class="dropdown-item-reddit" id="dd-display" onclick="toggleTheme(); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Display Mode</div>
+              <div class="dropdown-item-reddit" id="dd-settings" onclick="showPage('profile'); closeUserDropdown()" style="color:#333; padding:8px 16px; font-size:0.85rem; font-weight:500; cursor:pointer;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">Settings</div>
               <div style="height:1px; background:#e5e5e5; margin:6px 0;"></div>
-
-              <div class="dropdown-item-reddit" id="dd-logout" onclick="logoutUser(); closeUserDropdown()" style="color:#ef4444; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background='transparent'">Log Out</div>
+              <div class="dropdown-item-reddit" id="dd-logout" onclick="logoutUser(); closeUserDropdown()" style="color:#ef4444; padding:8px 16px; font-size:0.85rem; font-weight:700; cursor:pointer;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background='transparent'">Log Out</div>
             </div>
-            
+
             <script>
               window.toggleUserDropdown = function(event) {
                 if (event) event.stopPropagation();
                 const dropdown = document.getElementById('nav-user-dropdown');
-                if (dropdown) {
-                  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-                }
+                if (dropdown) dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
               };
-
               window.closeUserDropdown = function() {
                 const dropdown = document.getElementById('nav-user-dropdown');
                 if (dropdown) dropdown.style.display = 'none';
               };
-
-              document.addEventListener('click', function() {
-                window.closeUserDropdown();
-              });
+              document.addEventListener('click', function() { window.closeUserDropdown(); });
             </script>
 
-            <button id="btn-logout-nav" class="btn-secondary" onclick="logoutUser()" style="display:none; font-size:0.75rem; padding:6px 12px; height:32px; color:#ef4444; border-color:rgba(239,68,68,0.2); background:transparent; display:flex; align-items:center; gap:5px; cursor:pointer;">
-              <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-logout">Logout</span>
+            <button id="btn-logout-nav" class="btn-secondary" onclick="logoutUser()" style="display:none; font-size:0.75rem; padding:6px 12px; height:32px; color:#ef4444; background:transparent; cursor:pointer;">
+              <i class="fas fa-circle-user" style="font-size:1rem;"></i> <span id="nav-text-logout">התנתק</span>
             </button>
           </div>
 
-          <a href="https://t.me/yourusername" target="_blank" id="nav-telegram-link" class="cart-nav-btn" title="Telegram" style="background:none; border:none; cursor:pointer; position:relative; top:-14px; height:36px; display:flex; flex-direction:row; align-items:center; justify-content:center; flex-wrap:nowrap; gap:4px; text-decoration:none; transition:transform 0.2s;" onmouseover="this.querySelector('span').style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.querySelector('span').style.color='#fde047'; this.style.transform='scale(1)'">
-            <span style="font-size: 0.65rem; font-weight: 700; color: #fde047; transition: color 0.2s; white-space: nowrap; line-height: 1;">שלח הודעה</span>
-            <i class="fab fa-telegram" style="font-size:1rem; color:#fde047; display:flex; align-items:center; justify-content:center; flex-shrink:0;"></i>
-          </a>
+          <!-- Search -->
+          <div class="apple-search-wrapper" style="position:relative; width:160px;">
+            <input type="text" id="navbar-search-input" placeholder="חיפוש כתבות..." oninput="handleSearchInput(event)" style="background:#f0f0f0; border:1px solid #e0e0e0; border-radius:980px; padding:7px 16px 7px 36px; color:#333; font-size:0.85rem; width:100%; outline:none; text-align:right; box-sizing:border-box;" />
+            <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#86868b; font-size:0.85rem;"></i>
+          </div>
+
+          <!-- Messages -->
+          <button onclick="toggleMessagesDrawer()" class="cart-nav-btn" title="הודעות" style="background:none; border:none; cursor:pointer; color:#86868b; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-comment-dots" style="font-size:1.15rem;"></i>
+            <span id="messages-nav-badge" class="cart-badge" style="display:none; background:#ff3b30; color:#fff; border:none;">0</span>
+          </button>
+
+          <!-- Saved / Heart -->
+          <button id="nav-btn-saved" onclick="toggleSavedDrawer('articles')" class="cart-nav-btn" title="שמורים" style="background:none; border:none; cursor:pointer; color:#86868b; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-heart" style="font-size:1.1rem;"></i>
+          </button>
+
+          <!-- Publish Ad -->
+          <button id="nav-btn-sell" onclick="openMarketplaceModal()" style="cursor:pointer; background:transparent; border:1px solid #1d1d1f; color:#1d1d1f; font-weight:700; font-size:0.82rem; padding:6px 16px; border-radius:980px; display:flex; align-items:center; gap:6px; transition:all 0.2s; font-family:inherit; white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">
+            <i class="fas fa-plus" style="font-size:0.75rem;"></i> <span>פרסום מודעה</span>
+          </button>
 
         </div>
 
@@ -737,15 +649,14 @@
 </div>
 
 <div id="page-main" class="page" style="padding-top: 0;">
+  <!-- SECTIONS CONTAINER — drag-and-drop reordering in edit mode -->
+  <div id="home-sections-container">
   <!-- SECTION: MV Style Hero Banner -->
   <div class="home-section" data-section-id="mv-hero" data-section-label="באנר ראשי MV">
     <div style="width: 100%; border-radius: 20px; overflow: hidden; background: #f0f0f0; position: relative; margin: 20px 0;">
       <!-- Hero Content -->
-      <div id="main-hero-banner" style="position: relative; width: 100%; height: 300px; background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1200&q=80'); background-position: center; background-size: cover;">
-        <div style="position: absolute; inset: 0; background: linear-gradient(to right, rgba(255,255,255,0.7) 0%, transparent 60%); pointer-events: none;"></div>
-        <div style="position: absolute; top: 50%; left: 40px; transform: translateY(-50%); text-align: left; z-index: 2;">
-          <h1 style="color: #1a1a1a; font-size: 3.5rem; font-weight: 900; margin: 0; letter-spacing: -1px; text-transform: uppercase;">EXPLORE SOKI</h1>
-        </div>
+      <div id="main-hero-banner" style="position: relative; width: 100%; height: 180px; background: linear-gradient(to right, #ffb3d9, #ffdfba, #ffffba, #baffc9, #bae1ff); border-radius: 20px; display: flex; align-items: center; padding: 0 40px;">
+        <h1 style="color: #1a1a1a; font-size: 4.5rem; font-weight: 900; margin: 0; padding: 0; line-height: 1;">גג</h1>
       </div>
     </div>
   </div>
@@ -791,17 +702,18 @@
   </div>
 
   <!-- SECTION: News Feed on Main Page (White Clean Style) -->
-  <div class="home-section" data-section-id="main-news-feed" style="margin-top: 30px; background: #fff; border-radius: 16px; padding: 30px 50px 30px 30px; direction: rtl;">
+  <div class="home-section" data-section-id="main-news-feed" data-section-label="פיד חדשות" style="margin-top: 30px; background: #fff; border-radius: 16px; padding: 30px 50px 30px 30px; direction: rtl;">
     <div id="main-news-feed-list">
       <!-- Populated by JS -->
     </div>
+  </div>
   </div>
 </div>
 
 <div id="page-home" class="page" style="padding-top: 0;">
 
   <!-- SECTIONS CONTAINER — drag-and-drop reordering in edit mode -->
-  <div id="home-sections-container">
+  <div id="home-sections-container-old">
 
     <!-- SECTION: Category Filter Bar -->
     <div class="home-section" data-section-id="category-bar" data-section-label="סינון קטגוריות">
@@ -859,7 +771,7 @@
   </div><!-- end #home-sections-container -->
 
   <!-- SOKI PREMIUM TECHCRUNCH FOOTER -->
-  <footer class="soki-footer-premium" style="margin-top: 80px; width: 100%;">
+  <footer class="soki-footer-premium" style="display:none !important; margin-top: 80px; width: 100%;">
     <div class="soki-footer-inner">
       <!-- Brand & Socials Column -->
       <div class="soki-footer-brand-col">
@@ -5670,7 +5582,7 @@
   </div>
 
 <!-- ====== APPLE COOKIE CONSENT BANNER ====== -->
-<div id="apple-cookie-banner" style="display:none; position:fixed; bottom:-120px; left:0; right:0; background:rgba(255,255,255,0.96); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); border-top:1px solid rgba(0,0,0,0.08); box-shadow:0 -10px 40px rgba(0,0,0,0.06); z-index:999999; padding:20px 40px; transition:bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1); direction:rtl; font-family:'Inter', sans-serif;">
+<div id="apple-cookie-banner" style="display:none !important; position:fixed; bottom:-120px; left:0; right:0; background:rgba(255,255,255,0.96); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); border-top:1px solid rgba(0,0,0,0.08); box-shadow:0 -10px 40px rgba(0,0,0,0.06); z-index:999999; padding:20px 40px; transition:bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1); direction:rtl; font-family:'Inter', sans-serif;">
   <div style="max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
     
     <!-- Text Block -->
@@ -5726,6 +5638,7 @@
 
 <script>
   function showCookieBanner() {
+    return;
     if (!localStorage.getItem('cookiesAccepted')) {
       const banner = document.getElementById('apple-cookie-banner');
       if (banner) {
@@ -5828,6 +5741,7 @@
       <button class="mp-tab active" onclick="mpSwitchTab('sell', this)">➕ פרסם מוצר חדש</button>
       <button class="mp-tab" onclick="mpSwitchTab('listings', this)">📋 המוצרים שלי</button>
       <button class="mp-tab" onclick="mpSwitchTab('browse', this)">🛒 כל המוצרים</button>
+      <button class="mp-tab" onclick="mpSwitchTab('offers', this)">📩 הצעות שקיבלתי</button>
     </div>
 
     <!-- ── SELL TAB ── -->
@@ -5956,6 +5870,39 @@
       </div>
     </div>
 
+    <!-- ── OFFERS RECEIVED TAB ── -->
+    <div id="mp-tab-offers" class="mp-pane" style="display:none;">
+      <div id="mp-offers-grid" class="mp-grid">
+        <div class="mp-empty">אין הצעות כרגע.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MP MAKE OFFER MODAL -->
+<div id="mp-offer-modal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:350000; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(16px);" onclick="if(event.target===this)closeMpOfferModal()">
+  <div class="modal-content" style="background:#1c1c1e; border:1px solid #333; border-radius:24px; padding:32px; width:100%; max-width:440px; position:relative; text-align:right; direction:rtl; box-shadow:0 24px 48px rgba(0,0,0,0.5);">
+    <button onclick="closeMpOfferModal()" style="position:absolute; top:24px; left:24px; background:none; border:none; color:#a1a1aa; font-size:1.5rem; cursor:pointer;">&times;</button>
+    <h2 style="font-size:1.8rem; font-weight:800; color:#fafafa; margin-bottom:8px;">הגש הצעה</h2>
+    <p id="mp-offer-prod-title" style="color:#a1a1aa; font-size:1rem; margin-bottom:24px;">מוצר</p>
+    
+    <div style="margin-bottom:20px;">
+      <label style="display:block; color:#fafafa; margin-bottom:8px; font-weight:600;">המחיר שאתה מציע (₪)</label>
+      <input type="number" id="mp-offer-price" class="mp-input" placeholder="0" min="0" style="font-size:1.5rem; font-weight:700;">
+    </div>
+    
+    <div style="margin-bottom:20px;">
+      <label style="display:block; color:#fafafa; margin-bottom:8px; font-weight:600;">טלפון / וואטסאפ לחזרה</label>
+      <input type="tel" id="mp-offer-phone" class="mp-input" placeholder="050-0000000">
+    </div>
+    
+    <div style="margin-bottom:24px;">
+      <label style="display:block; color:#fafafa; margin-bottom:8px; font-weight:600;">הודעה למוכר (אופציונלי)</label>
+      <textarea id="mp-offer-msg" class="mp-textarea" rows="3" placeholder="היי, אני מעוניין לקנות..."></textarea>
+    </div>
+    
+    <button onclick="submitMpOffer()" class="mp-btn-publish" style="width:100%;">שלח הצעה</button>
   </div>
 </div>
 
@@ -6235,7 +6182,7 @@ body.rtl-layout.sidebar-collapsed .floating-pill-panel {
 </style>
 
 <!-- Floating Pill Navigation Bar -->
-<div id="floating-pill-nav" class="floating-pill-nav">
+<div id="floating-pill-nav" class="floating-pill-nav" style="display:none !important;"
   <!-- Recent Activity (History) -->
   <button id="pill-btn-history" class="pill-nav-item" onclick="openFloatingPillPanel('history')" title="היסטוריית פעילות / Recent Activity">
     <div class="pill-nav-icon"><i class="fas fa-history"></i></div>

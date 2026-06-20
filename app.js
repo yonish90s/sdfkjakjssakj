@@ -2065,7 +2065,7 @@ window.closeMarketplaceModal = function() {
 };
 
 window.mpSwitchTab = function(tab, btn) {
-  ['sell','listings','browse'].forEach(t => {
+  ['sell','listings','browse','offers'].forEach(t => {
     const el = document.getElementById(`mp-tab-${t}`);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -2073,6 +2073,7 @@ window.mpSwitchTab = function(tab, btn) {
   if (btn) btn.classList.add('active');
   if (tab === 'listings') mpRenderMyListings();
   if (tab === 'browse')   mpRenderBrowse();
+  if (tab === 'offers')   mpRenderOffers();
 };
 
 function mpSetupPreviewListeners() {
@@ -2150,7 +2151,7 @@ function mpProductCard(p, showDelete) {
         <span>👤 ${p.seller}</span>
         ${p.phone ? `<a href="https://wa.me/972${p.phone.replace(/^0/,'').replace(/-/g,'')}" target="_blank" class="mp-whatsapp-btn">📱 וואטסאפ</a>` : ''}
       </div>
-      ${showDelete ? `<button class="mp-delete-btn" onclick="mpDeleteProduct('${p.id}')">🗑 מחק</button>` : ''}
+      ${showDelete ? `<button class="mp-delete-btn" onclick="mpDeleteProduct('${p.id}')">🗑 מחק</button>` : `<button class="mp-btn-publish" style="margin-top:8px; padding:6px; font-size:0.9rem;" onclick="openMpOfferModal('${p.id}', '${p.title.replace(/'/g, "\\'")}')">📩 הגש הצעה</button>`}
     </div>
   </div>`;
 }
@@ -2187,6 +2188,84 @@ window.mpDeleteProduct = function(id) {
   localStorage.setItem('marketplaceProducts', JSON.stringify(marketplaceProducts));
   mpRenderMyListings();
   showToast('המוצר נמחק');
+};
+
+let marketplaceOffers = JSON.parse(localStorage.getItem('marketplaceOffers') || '[]');
+
+let currentOfferProdId = null;
+
+window.openMpOfferModal = function(prodId, prodTitle) {
+  currentOfferProdId = prodId;
+  const modal = document.getElementById('mp-offer-modal');
+  const titleEl = document.getElementById('mp-offer-prod-title');
+  if (titleEl) titleEl.textContent = 'עבור: ' + prodTitle;
+  if (modal) modal.style.display = 'flex';
+};
+
+window.closeMpOfferModal = function() {
+  const modal = document.getElementById('mp-offer-modal');
+  if (modal) modal.style.display = 'none';
+  currentOfferProdId = null;
+};
+
+window.submitMpOffer = function() {
+  const price = document.getElementById('mp-offer-price')?.value;
+  const phone = document.getElementById('mp-offer-phone')?.value.trim();
+  const msg = document.getElementById('mp-offer-msg')?.value.trim();
+  
+  if (!price || !phone) {
+    showToast('אנא הזן מחיר ופרטי קשר', 'error');
+    return;
+  }
+  
+  const product = marketplaceProducts.find(p => p.id === currentOfferProdId);
+  if (!product) return;
+  
+  const offer = {
+    id: 'off_' + Date.now(),
+    prodId: product.id,
+    prodTitle: product.title,
+    sellerId: product.userId, // Send to the seller's userId
+    buyerId: window._fbUser?.email || 'guest',
+    price: price,
+    phone: phone,
+    msg: msg,
+    date: new Date().toLocaleDateString('he-IL')
+  };
+  
+  marketplaceOffers.unshift(offer);
+  localStorage.setItem('marketplaceOffers', JSON.stringify(marketplaceOffers));
+  
+  showToast('ההצעה נשלחה בהצלחה למוכר!');
+  closeMpOfferModal();
+  
+  // Clear modal inputs
+  if(document.getElementById('mp-offer-price')) document.getElementById('mp-offer-price').value = '';
+  if(document.getElementById('mp-offer-phone')) document.getElementById('mp-offer-phone').value = '';
+  if(document.getElementById('mp-offer-msg')) document.getElementById('mp-offer-msg').value = '';
+};
+
+window.mpRenderOffers = function() {
+  const grid = document.getElementById('mp-offers-grid');
+  if (!grid) return;
+  
+  const userId = window._fbUser?.email || 'guest';
+  const myOffers = marketplaceOffers.filter(o => o.sellerId === userId);
+  
+  if (myOffers.length === 0) {
+    grid.innerHTML = '<div class="mp-empty">אין הצעות כרגע.</div>';
+    return;
+  }
+  
+  grid.innerHTML = myOffers.map(o => `
+    <div class="mp-product-card" style="padding:16px; border:1px solid #333; border-radius:16px; background:#1c1c1e; display:flex; flex-direction:column; gap:8px;">
+      <h3 style="color:#fafafa; font-size:1.1rem; margin:0;">${o.prodTitle}</h3>
+      <div style="font-size:1.4rem; font-weight:800; color:#10b981; margin:0;">הצעה: ₪${o.price}</div>
+      <div style="color:#a1a1aa; font-size:0.9rem;">מאת: ${o.buyerId} ב-${o.date}</div>
+      ${o.msg ? `<div style="background:#0f1013; padding:8px; border-radius:8px; color:#d4d4d8; font-size:0.9rem; margin-top:4px;">"${o.msg}"</div>` : ''}
+      <a href="https://wa.me/972${o.phone.replace(/^0/,'').replace(/-/g,'')}" target="_blank" class="mp-whatsapp-btn" style="display:block; text-align:center; margin-top:auto;">📱 וואטסאפ אל הקונה</a>
+    </div>
+  `).join('');
 };
 
 window.payCloseMakeSetup = function() {

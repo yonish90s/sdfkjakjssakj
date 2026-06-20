@@ -10,7 +10,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cron = require('node-cron');
 const { collectStockNews } = require('./agent/hebrew_stock_agent');
 const app = express();
-const PORT = process.env.PORT || 4242;
+const PORT = process.env.PORT || 8080;
 
 // Enable trust proxy for Vercel to correctly identify client IPs
 app.set('trust proxy', 1);
